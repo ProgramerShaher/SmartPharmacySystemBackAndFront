@@ -1,6 +1,0 @@
-@SmartPharmacySystem_HostAddress = http://localhost:5150
-
-GET {{SmartPharmacySystem_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

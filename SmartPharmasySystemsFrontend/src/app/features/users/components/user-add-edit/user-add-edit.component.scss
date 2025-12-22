@@ -1,0 +1,264 @@
+.user-form-container {
+    background-color: var(--card-bg);
+    padding: 1.5rem 2.5rem;
+    font-family: var(--font-family);
+    color: var(--text-color);
+
+    .form-intro {
+        text-align: center;
+        margin-bottom: 2rem;
+
+        .decoration-dots {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-color-secondary);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+            margin: 1.5rem auto 0;
+            width: 80%;
+        }
+    }
+
+    .form-content {
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem 3rem;
+
+            .field {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+
+                &.full-width {
+                    grid-column: span 2;
+                }
+
+                label {
+                    font-weight: 700;
+                    font-size: 1.1rem;
+                    color: var(--text-color);
+                    margin-bottom: 0.25rem;
+                }
+
+                .input-wrapper {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+
+                    input {
+                        width: 100%;
+                        padding: 1rem 3.5rem 1rem 1.25rem; // Default: icon on right (RTL)
+                        border-radius: 12px;
+                        border: 1.5px solid var(--border-color);
+                        background: var(--bg-color);
+                        transition: all 0.3s;
+                        font-family: var(--font-family);
+                        font-size: 1.15rem;
+                        color: var(--text-color);
+
+                        &:focus {
+                            border-color: var(--primary-color);
+                            background: var(--card-bg);
+                            outline: none;
+                        }
+
+                        &[readonly] {
+                            background: var(--surface-hover);
+                        }
+                    }
+
+                    .input-icon {
+                        position: absolute;
+                        right: 1.25rem;
+                        color: var(--text-color-secondary);
+                        font-size: 1.2rem;
+                        pointer-events: none;
+                    }
+
+                    .password-toggle {
+                        position: absolute;
+                        left: 0.75rem;
+                        background: var(--card-bg);
+                        border: 1px solid var(--border-color);
+                        width: 38px;
+                        height: 38px;
+                        border-radius: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        cursor: pointer;
+                        color: var(--text-color-secondary);
+                        transition: all 0.2s;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+
+                        &:hover {
+                            color: var(--primary-color);
+                            border-color: var(--primary-color);
+                        }
+                    }
+                }
+
+                .error-text {
+                    color: #ef4444;
+                    font-size: 0.85rem;
+                    margin-top: 0.25rem;
+                    font-weight: 600;
+                }
+
+                .strength-meter {
+                    margin-top: 0.75rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+
+                    .meter-bar {
+                        flex: 1;
+                        height: 6px;
+                        background: var(--surface-hover);
+                        border-radius: 10px;
+                        overflow: hidden;
+
+                        .fill {
+                            height: 100%;
+                            transition: width 0.4s ease, background-color 0.4s ease;
+
+                            &.strength-1,
+                            &.strength-2 {
+                                background: #ef4444;
+                            }
+
+                            &.strength-3,
+                            &.strength-4 {
+                                background: #f59e0b;
+                            }
+
+                            &.strength-5 {
+                                background: #22c55e;
+                            }
+                        }
+                    }
+
+                    .strength-label {
+                        font-size: 0.9rem;
+                        font-weight: 700;
+                        color: var(--text-color-secondary);
+                        min-width: 65px;
+                    }
+                }
+
+                .switch-field {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    background: var(--surface-hover);
+                    padding: 1.5rem 2rem;
+                    border-radius: 16px;
+                    border: 1px solid var(--border-color);
+
+                    .switch-info {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 0.4rem;
+
+                        .switch-label {
+                            font-weight: 800;
+                            font-size: 1.15rem;
+                            color: var(--text-color);
+                        }
+
+                        .switch-desc {
+                            font-size: 0.95rem;
+                            color: var(--text-color-secondary);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .form-footer {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1.5rem;
+
+        button {
+            padding: 0.9rem 2.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-family: var(--font-family);
+            font-size: 1.05rem;
+            transition: all 0.3s;
+
+            &:hover:not(:disabled) {
+                transform: translateY(-2px);
+            }
+
+            &.p-button-primary {
+                background: var(--primary-color);
+                border: none;
+                box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.2);
+            }
+        }
+    }
+}
+
+:host ::ng-deep {
+    .p-dropdown {
+        border-radius: 12px;
+        background: var(--bg-color);
+        border: 1.5px solid var(--border-color);
+        padding: 0.25rem 0.5rem;
+        width: 100%;
+
+        .p-dropdown-label {
+            font-family: var(--font-family);
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--text-color);
+        }
+
+        .p-dropdown-trigger {
+            color: var(--text-color-secondary);
+        }
+    }
+
+    .p-inputswitch {
+        .p-inputswitch-slider {
+            background: var(--border-color);
+        }
+
+        &.p-inputswitch-checked .p-inputswitch-slider {
+            background: var(--primary-color);
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .user-form-container {
+        padding: 1rem;
+
+        .form-content .form-grid {
+            grid-template-columns: 1fr;
+
+            .field.full-width {
+                grid-column: span 1;
+            }
+        }
+    }
+}

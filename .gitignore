@@ -2,4 +2,10 @@ node_modules/
 .env
 dist/
 build/
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.vsidx
 .DS_Store

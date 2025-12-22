@@ -1,0 +1,154 @@
+<div class="medicine-details__container">
+    <!-- شريط العنوان -->
+    <header class="medicine-details__header">
+        <p-button 
+            class="medicine-details__header-back-btn"
+            icon="pi pi-arrow-right" 
+            [text]="true" 
+            [rounded]="true" 
+            severity="secondary" 
+            (onClick)="goBack()"
+            pTooltip="العودة للقائمة">
+        </p-button>
+        <h1 class="medicine-details__header-title">تفاصيل الدواء</h1>
+    </header>
+
+    <!-- حالة التحميل -->
+    <div *ngIf="loading" class="medicine-details__loading">
+        <p-progressSpinner 
+            styleClass="w-4rem h-4rem" 
+            strokeWidth="4"
+            animationDuration=".5s">
+        </p-progressSpinner>
+    </div>
+
+    <!-- محتوى التفاصيل -->
+    <div *ngIf="!loading && medicine" class="grid-container">
+        <!-- البطاقة الرئيسية -->
+        <div>
+            <div class="medicine-details__main-card">
+                <div class="medicine-details__main-card-header">
+                    <div class="medicine-details__main-card-title-section">
+                        <div class="medicine-details__main-card-icon">
+                            <i class="pi pi-briefcase"></i>
+                        </div>
+                        <div>
+                            <h2 class="medicine-details__main-card-name">{{medicine.name}}</h2>
+                            <p class="medicine-details__main-card-code">{{medicine.internalCode}}</p>
+                        </div>
+                    </div>
+                    
+                    <p-tag 
+                        class="medicine-details__main-card-status-tag"
+                        [value]="getStockStatus()"
+                        [severity]="getStockSeverity()">
+                    </p-tag>
+                </div>
+
+                <p-divider></p-divider>
+
+                <!-- معلومات الدواء -->
+                <div class="medicine-details__info-grid">
+                    <div class="grid">
+                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
+                            <span class="medicine-details__info-grid-label">الباركود</span>
+                            <span class="medicine-details__info-grid-value">
+                                <i class="pi pi-barcode"></i>
+                                {{medicine.defaultBarcode || 'غير محدد'}}
+                            </span>
+                        </div>
+
+                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
+                            <span class="medicine-details__info-grid-label">الفئة</span>
+                            <span class="medicine-details__info-grid-value">
+                                <i class="pi pi-tag"></i>
+                                {{medicine.categoryName || 'بدون فئة'}}
+                            </span>
+                        </div>
+
+                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
+                            <span class="medicine-details__info-grid-label">الجهة المصنعة</span>
+                            <span class="medicine-details__info-grid-value">
+                                <i class="pi pi-building"></i>
+                                {{medicine.manufacturer || '-'}}
+                            </span>
+                        </div>
+
+                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
+                            <span class="medicine-details__info-grid-label">تاريخ الإضافة</span>
+                            <span class="medicine-details__info-grid-value">
+                                <i class="pi pi-calendar"></i>
+                                {{medicine.createdAt | date:'mediumDate'}}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الملاحظات -->
+                <div class="medicine-details__notes">
+                    <span class="medicine-details__notes-label">ملاحظات</span>
+                    <p class="medicine-details__notes-content" [class.no-notes]="!medicine.notes">
+                        {{medicine.notes || 'لا توجد ملاحظات'}}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- بطاقة الإحصائيات -->
+        <div>
+            <div class="medicine-details__stats-card">
+                <div class="medicine-details__stats-card-header">
+                    <h3>الوضع المالي والمخزون</h3>
+                </div>
+                
+                <div class="medicine-details__stats-card-body">
+                    <!-- المخزون -->
+                    <div class="medicine-details__stat-item medicine-details__stat-item--stock"
+                         [class.medicine-details__low-stock]="getCurrentStock() === 0"
+                         [class.medicine-details__available-stock]="getCurrentStock() > 0">
+                        <div class="medicine-details__stat-item-content">
+                            <i class="pi pi-box medicine-details__stat-item-icon"></i>
+                            <span class="medicine-details__stat-item-label">المخزون الحالي</span>
+                        </div>
+                        <span class="medicine-details__stat-item-value">
+                            {{getCurrentStock()}}
+                        </span>
+                    </div>
+
+                    <!-- سعر الشراء -->
+                    <div class="medicine-details__stat-item medicine-details__stat-item--purchase">
+                        <div class="medicine-details__stat-item-content">
+                            <i class="pi pi-shopping-cart medicine-details__stat-item-icon"></i>
+                            <span class="medicine-details__stat-item-label">سعر الشراء</span>
+                        </div>
+                        <span class="medicine-details__stat-item-value">
+                            {{medicine.defaultPurchasePrice | currency:'USD':'symbol-narrow'}}
+                        </span>
+                    </div>
+
+                    <!-- سعر البيع -->
+                    <div class="medicine-details__stat-item medicine-details__stat-item--sale">
+                        <div class="medicine-details__stat-item-content">
+                            <i class="pi pi-money-bill medicine-details__stat-item-icon"></i>
+                            <span class="medicine-details__stat-item-label">سعر البيع</span>
+                        </div>
+                        <span class="medicine-details__stat-item-value">
+                            {{medicine.defaultSalePrice | currency:'USD':'symbol-narrow'}}
+                        </span>
+                    </div>
+
+                    <!-- حد التنبيه -->
+                    <div class="medicine-details__stat-item medicine-details__stat-item--alert">
+                        <div class="medicine-details__stat-item-content">
+                            <i class="pi pi-bell medicine-details__stat-item-icon"></i>
+                            <span class="medicine-details__stat-item-label">حد التنبيه</span>
+                        </div>
+                        <span class="medicine-details__stat-item-value">
+                            {{medicine.minAlertQuantity || 0}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

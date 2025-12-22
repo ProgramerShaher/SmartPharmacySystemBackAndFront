@@ -1,0 +1,68 @@
+<form [formGroup]="movementForm" (ngSubmit)="onSave()" class="movement-form p-fluid" dir="rtl">
+    <div class="field mb-4">
+        <label for="medicineId" class="font-bold block mb-2">الدواء <span class="text-danger">*</span></label>
+        <p-dropdown [options]="medicines" formControlName="medicineId" optionLabel="name" optionValue="id"
+            [filter]="true" filterBy="name" placeholder="اختر الدواء" (onChange)="onMedicineChange($event.value)"
+            [ngClass]="{'ng-invalid ng-dirty': movementForm.get('medicineId')?.touched && movementForm.get('medicineId')?.invalid}">
+        </p-dropdown>
+        <small class="p-error block"
+            *ngIf="movementForm.get('medicineId')?.touched && movementForm.get('medicineId')?.invalid">
+            يجب اختيار الدواء
+        </small>
+    </div>
+
+    <div class="grid">
+        <div class="col-12 md:col-6 field mb-4">
+            <label for="batchId" class="font-bold block mb-2">رقم التشغيلة</label>
+            <p-dropdown [options]="batches" formControlName="batchId" optionLabel="batchNumber" optionValue="id"
+                [loading]="loadingBatches" placeholder="اختر رقم التشغيلة" [emptyMessage]="'لا توجد تشغيلات متوفرة'">
+                <ng-template let-batch pTemplate="item">
+                    <div class="flex justify-content-between align-items-center w-full">
+                        <span>{{batch.batchNumber}}</span>
+                        <span class="text-xs text-secondary">متوفر: {{batch.quantity}}</span>
+                    </div>
+                </ng-template>
+            </p-dropdown>
+        </div>
+
+        <div class="col-12 md:col-6 field mb-4">
+            <label for="movementType" class="font-bold block mb-2">نوع الحركة <span class="text-danger">*</span></label>
+            <p-dropdown [options]="movementTypes" formControlName="movementType" placeholder="نوع الحركة"></p-dropdown>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="col-12 md:col-6 field mb-4">
+            <label for="quantity" class="font-bold block mb-2">الكمية <span class="text-danger">*</span></label>
+            <p-inputNumber formControlName="quantity" [min]="1" placeholder="أدخل الكمية"
+                [ngClass]="{'ng-invalid ng-dirty': movementForm.get('quantity')?.touched && movementForm.get('quantity')?.invalid}">
+            </p-inputNumber>
+            <small class="p-error block"
+                *ngIf="movementForm.get('quantity')?.touched && movementForm.get('quantity')?.invalid">
+                الكمية يجب أن تكون 1 على الأقل
+            </small>
+        </div>
+
+        <div class="col-12 md:col-6 field mb-4">
+            <label for="date" class="font-bold block mb-2">التاريخ <span class="text-danger">*</span></label>
+            <p-calendar formControlName="date" [showTime]="true" [showIcon]="true" dateFormat="dd/mm/yy"
+                [maxDate]="today"></p-calendar>
+        </div>
+    </div>
+
+    <div class="field mb-4">
+        <label for="referenceId" class="font-bold block mb-2">المرجع (رقم الفاتورة / رقم السند)</label>
+        <input pInputText id="referenceId" formControlName="referenceId" placeholder="مثلاً: INV-2023-001" />
+    </div>
+
+    <div class="field mb-4">
+        <label for="notes" class="font-bold block mb-2">ملاحظات إضافية</label>
+        <textarea pInputTextarea id="notes" formControlName="notes" rows="3" autoResize="true"></textarea>
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-4">
+        <p-button label="إلغاء" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="onCancel()"></p-button>
+        <p-button [label]="movement ? 'تحديث' : 'إضافة'" [icon]="movement ? 'pi pi-check' : 'pi pi-plus'"
+            [loading]="loading" (onClick)="onSave()"></p-button>
+    </div>
+</form>

@@ -1,0 +1,148 @@
+<!-- medicine-add-edit.component.html - Redesigned -->
+<div class="medicine-form-container" dir="rtl">
+    <div class="card p-0 overflow-hidden border-none shadow-4">
+        <!-- Header Section -->
+        <div class="form-header p-5 flex align-items-center justify-content-between">
+            <div class="flex align-items-center gap-4">
+                <div class="header-icon-box shadow-3">
+                    <i [class]="editMode ? 'pi pi-pencil' : 'pi pi-plus'"></i>
+                </div>
+                <div class="header-text">
+                    <h2 class="text-3xl font-bold m-0">{{editMode ? 'تعديل بيانات الدواء' : 'إضافة دواء جديد'}}</h2>
+                    <p class="text-secondary m-0 mt-1">{{editMode ? 'تحديث المعلومات التقنية والمخزنية للدواء' : 'إدخال
+                        بيانات دواء جديد للنظام'}}</p>
+                </div>
+            </div>
+            <div class="header-status" *ngIf="editMode">
+                <span class="status-badge">نسخة قيد التعديل</span>
+            </div>
+        </div>
+
+        <form [formGroup]="medicineForm" (ngSubmit)="saveMedicine()" class="p-5">
+            <div class="grid">
+                <!-- Section 1: الهوية والترميز -->
+                <div class="col-12 mb-4">
+                    <div class="section-title">
+                        <i class="pi pi-id-card"></i>
+                        <span>الهوية والترميز</span>
+                    </div>
+                    <div class="grid formgrid p-fluid mt-2">
+                        <div class="col-12 md:col-6 lg:col-4 field px-3">
+                            <label for="name" class="font-bold block mb-2">اسم الدواء (تجاري)</label>
+                            <span class="p-input-icon-left w-full">
+                                <i class="pi pi-tag"></i>
+                                <input pInputText id="name" formControlName="name" placeholder="أدخل اسم الدواء..." />
+                            </span>
+                            <small class="p-error"
+                                *ngIf="medicineForm.get('name')?.invalid && medicineForm.get('name')?.touched">
+                                الاسم التجاري مطلوب
+                            </small>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-4 field px-3">
+                            <label for="internalCode" class="font-bold block mb-2">الكود الداخلي</label>
+                            <span class="p-input-icon-left w-full">
+                                <i class="pi pi-hashtag"></i>
+                                <input pInputText id="internalCode" formControlName="internalCode"
+                                    placeholder="مثال: MED-001" />
+                            </span>
+                        </div>
+                        <div class="col-12 md:col-6 lg:col-4 field px-3">
+                            <label for="defaultBarcode" class="font-bold block mb-2">الباركود</label>
+                            <span class="p-input-icon-left w-full">
+                                <i class="pi pi-barcode"></i>
+                                <input pInputText id="defaultBarcode" formControlName="defaultBarcode"
+                                    placeholder="امسح الباركود هنا..." />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: التصنيف والمواصفات -->
+                <div class="col-12 mb-4">
+                    <div class="section-title">
+                        <i class="pi pi-filter"></i>
+                        <span>التصنيف والمواصفات</span>
+                    </div>
+                    <div class="grid formgrid p-fluid mt-2">
+                        <div class="col-12 md:col-6 field px-3">
+                            <label for="categoryId" class="font-bold block mb-2">الفئة العلاجية</label>
+                            <p-dropdown id="categoryId" formControlName="categoryId" [options]="categories"
+                                optionLabel="name" optionValue="id" placeholder="اختر الفئة" [showClear]="true"
+                                [filter]="true" class="w-full">
+                                <ng-template pTemplate="selectedItem">
+                                    <div class="flex align-items-center" *ngIf="medicineForm.get('categoryId')?.value">
+                                        <i class="pi pi-bookmark mr-2 text-primary"></i>
+                                        <div>{{ getCategoryName(medicineForm.get('categoryId')?.value) }}</div>
+                                    </div>
+                                </ng-template>
+                            </p-dropdown>
+                            <small class="p-error"
+                                *ngIf="medicineForm.get('categoryId')?.invalid && medicineForm.get('categoryId')?.touched">
+                                الفئة مطلوبة
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: الأسعار والمخزون -->
+                <div class="col-12 mb-4">
+                    <div class="section-title">
+                        <i class="pi pi-wallet"></i>
+                        <span>الأسعار والمخزون</span>
+                    </div>
+                    <div class="grid formgrid p-fluid mt-2 pricing-grid p-4 border-round-xl mx-2">
+                        <div class="col-12 md:col-4 field px-2">
+                            <label for="defaultPurchasePrice" class="font-bold block mb-2">سعر الشراء الافتراضي</label>
+                            <div class="p-inputgroup">
+                                <span class="p-inputgroup-addon">USD</span>
+                                <input pInputText id="defaultPurchasePrice" formControlName="defaultPurchasePrice"
+                                    type="number" />
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-4 field px-2">
+                            <label for="defaultSalePrice" class="font-bold block mb-2">سعر البيع الافتراضي</label>
+                            <div class="p-inputgroup">
+                                <span class="p-inputgroup-addon">USD</span>
+                                <input pInputText id="defaultSalePrice" formControlName="defaultSalePrice"
+                                    type="number" />
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-4 field px-2">
+                            <label for="minAlertQuantity" class="font-bold block mb-2 text-orange-600">تنبيه طلبية
+                                النواقص</label>
+                            <span class="p-input-icon-right w-full">
+                                <i class="pi pi-bell text-orange-600"></i>
+                                <input pInputText id="minAlertQuantity" formControlName="minAlertQuantity" type="number"
+                                    class="border-orange-200" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: ملاحظات إضافية -->
+                <div class="col-12 mb-4">
+                    <div class="section-title">
+                        <i class="pi pi-info-circle"></i>
+                        <span>ملاحظات إضافية</span>
+                    </div>
+                    <div class="field mt-2 px-3">
+                        <textarea pInputTextarea id="notes" formControlName="notes" rows="4"
+                            placeholder="أدخل أي ملاحظات إضافية هنا (طريقة الاستخدام، محاذير، إلخ)..."
+                            class="w-full"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="form-footer flex justify-content-end gap-3 mt-5 pt-5 border-top-1 border-gray-200">
+                <p-button label="إلغاء التغييرات" icon="pi pi-times"
+                    styleClass="p-button-outlined p-button-secondary border-round-xl px-5 py-3"
+                    (onClick)="cancel()"></p-button>
+                <p-button [label]="editMode ? 'حفظ البيانات' : 'إضافة الدواء'"
+                    [icon]="editMode ? 'pi pi-save' : 'pi pi-plus'" type="submit"
+                    styleClass="p-button-success border-round-xl px-5 py-3 shadow-3"
+                    [disabled]="medicineForm.invalid"></p-button>
+            </div>
+        </form>
+    </div>
+</div>

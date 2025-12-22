@@ -1,0 +1,132 @@
+<div class="alert-edit-container p-4">
+  <p-toast position="top-right"></p-toast>
+
+  <div class="max-w-4xl mx-auto">
+    <!-- Header Card -->
+    <div
+      class="card bg-primary-700 text-white border-none shadow-4 mb-4 p-5 border-round-xl flex align-items-center justify-content-between">
+      <div>
+        <h1 class="text-3xl font-bold m-0">{{ formTitle }}</h1>
+        <p class="text-primary-100 mt-2 m-0 text-lg">
+          {{ isEditMode ? "تعديل بيانات وتفاصيل التنبيه" : "إضافة تنبيه جديد وتحميله على الدفعة" }}
+        </p>
+      </div>
+      <button pButton icon="pi pi-arrow-left" class="p-button-rounded p-button-text text-white hover:bg-white-alpha-20"
+        (click)="goBack()" pTooltip="رجوع للقائمة" tooltipPosition="bottom"></button>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow-2 border-round-xl p-5 bg-surface-card">
+      <form [formGroup]="alertForm" (ngSubmit)="onSubmit()" class="p-fluid formgrid grid">
+
+        <!-- Batch Selection -->
+        <div class="field col-12 md:col-6">
+          <label for="batchId" class="font-semibold text-color-secondary block mb-2">رقم الدفعة / الدواء <span
+              class="text-red-500">*</span></label>
+          <p-dropdown id="batchId" [options]="batches" formControlName="batchId" placeholder="اختر الدفعة"
+            [filter]="true" filterBy="label" optionLabel="label" optionValue="value" [showClear]="true" appendTo="body"
+            [class.ng-dirty]="alertForm.get('batchId')?.touched">
+            <ng-template pTemplate="selectedItem" let-selectedOption>
+              <div class="flex align-items-center gap-2" *ngIf="selectedOption">
+                <i class="pi pi-box text-primary"></i>
+                <div>{{ selectedOption.label }}</div>
+              </div>
+            </ng-template>
+            <ng-template let-batch pTemplate="item">
+              <div class="flex align-items-center gap-2">
+                <div class="bg-primary-50 border-round p-1"><i class="pi pi-box text-primary"></i></div>
+                <div>{{ batch.label }}</div>
+              </div>
+            </ng-template>
+          </p-dropdown>
+          <small class="text-red-500 block mt-1"
+            *ngIf="alertForm.get('batchId')?.invalid && alertForm.get('batchId')?.touched">
+            رقم الدفعة مطلوب
+          </small>
+        </div>
+
+        <!-- Alert Type -->
+        <div class="field col-12 md:col-6">
+          <label for="alertType" class="font-semibold text-color-secondary block mb-2">نوع التنبيه <span
+              class="text-red-500">*</span></label>
+          <p-dropdown id="alertType" [options]="alertTypes" formControlName="alertType" placeholder="اختر نوع التنبيه"
+            optionLabel="label" optionValue="value" [showClear]="true"></p-dropdown>
+          <small class="text-red-500 block mt-1"
+            *ngIf="alertForm.get('alertType')?.invalid && alertForm.get('alertType')?.touched">
+            نوع التنبيه مطلوب
+          </small>
+        </div>
+
+        <!-- Status -->
+        <div class="field col-12 md:col-6">
+          <label for="status" class="font-semibold text-color-secondary block mb-2">حالة التنبيه <span
+              class="text-red-500">*</span></label>
+          <p-dropdown id="status" [options]="statusOptions" formControlName="status" placeholder="اختر الحالة"
+            optionLabel="label" optionValue="value">
+            <ng-template pTemplate="selectedItem" let-selectedOption>
+              <div class="flex align-items-center gap-2" *ngIf="selectedOption">
+                <p-tag [value]="selectedOption.label"
+                  [severity]="selectedOption.value === 1 ? 'success' : (selectedOption.value === 0 ? 'warning' : 'danger')"></p-tag>
+              </div>
+            </ng-template>
+            <ng-template let-status pTemplate="item">
+              <p-tag [value]="status.label"
+                [severity]="status.value === 1 ? 'success' : (status.value === 0 ? 'warning' : 'danger')"></p-tag>
+            </ng-template>
+          </p-dropdown>
+          <small class="text-red-500 block mt-1"
+            *ngIf="alertForm.get('status')?.invalid && alertForm.get('status')?.touched">
+            الحالة مطلوبة
+          </small>
+        </div>
+
+        <!-- Execution Date -->
+        <div class="field col-12 md:col-2">
+          <label for="executionDate" class="font-semibold text-color-secondary block mb-2">تاريخ التنفيذ <span
+              class="text-red-500">*</span></label>
+          <p-calendar id="executionDate" formControlName="executionDate" dateFormat="dd/mm/yy" [showIcon]="true"
+            placeholder="اختر التاريخ"></p-calendar>
+          <small class="text-red-500 block mt-1"
+            *ngIf="alertForm.get('executionDate')?.invalid && alertForm.get('executionDate')?.touched">
+            تاريخ التنفيذ مطلوب
+          </small>
+        </div>
+
+        <!-- Creation Date -->
+        <div class="field col-12 md:col-2">
+          <label for="createdAt" class="font-semibold text-color-secondary block mb-2">تاريخ الإنشاء</label>
+          <p-calendar id="createdAt" formControlName="createdAt" dateFormat="dd/mm/yy" [showIcon]="true"
+            placeholder="اختر التاريخ"></p-calendar>
+        </div>
+
+        <!-- Expiry Date -->
+        <div class="field col-12 md:col-2">
+          <label for="expiryDate" class="font-semibold text-color-secondary block mb-2">تاريخ الانتهاء</label>
+          <p-calendar id="expiryDate" formControlName="expiryDate" dateFormat="dd/mm/yy" [showIcon]="true"
+            placeholder="اختر التاريخ"></p-calendar>
+        </div>
+
+        <!-- Message -->
+        <div class="field col-12">
+          <label for="message" class="font-semibold text-color-secondary block mb-2">رسالة التنبيه <span
+              class="text-red-500">*</span></label>
+          <textarea id="message" pInputTextarea formControlName="message" rows="5"
+            placeholder="أدخل تفاصيل رسالة التنبيه هنا..." [autoResize]="true"></textarea>
+          <small class="text-red-500 block mt-1"
+            *ngIf="alertForm.get('message')?.invalid && alertForm.get('message')?.touched">
+            الرسالة مطلوبة (5 أحرف على الأقل)
+          </small>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-12 mt-4 border-top-1 border-gray-200 pt-4 flex justify-content-end gap-3">
+          <button pButton type="button" label="إلغاء" icon="pi pi-times"
+            class="p-button-outlined p-button-secondary w-8rem" (click)="goBack()"></button>
+          <button pButton type="submit" [label]="submitButtonText" icon="pi pi-check" class="p-button-primary w-10rem"
+            [loading]="loading" [disabled]="alertForm.invalid"></button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

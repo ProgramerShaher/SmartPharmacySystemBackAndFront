@@ -1,0 +1,126 @@
+<div class="card p-4 shadow-2 border-round-xl" dir="rtl" *ngIf="invoice">
+    <!-- Header Section -->
+    <div class="flex flex-column md:flex-row md:align-items-center justify-content-between mb-5 gap-3">
+        <div class="flex align-items-center gap-3">
+            <button pButton icon="pi pi-arrow-right" class="p-button-rounded p-button-text p-button-secondary"
+                (click)="backToList()" pTooltip="العودة للقائمة"></button>
+            <div>
+                <h2 class="text-2xl font-bold m-0 text-primary">فاتورة مبيعات #{{invoice.saleInvoiceNumber}}</h2>
+                <div class="flex align-items-center gap-2 mt-1">
+                    <p-tag [severity]="getStatusSeverity(invoice.status)" [value]="getStatusLabel(invoice.status)"
+                        [rounded]="true"></p-tag>
+                    <span class="text-500 text-sm">| {{invoice.saleInvoiceDate | date:'dd/MM/yyyy HH:mm'}}</span>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button *ngIf="invoice.status === 'DRAFT'" pButton label="اعتماد الفاتورة" icon="pi pi-check-circle"
+                severity="success" class="shadow-1" (click)="approveInvoice()"></button>
+            <p-button *ngIf="invoice.status === 'APPROVED'" label="إلغاء الفاتورة" icon="pi pi-times-circle"
+                severity="danger" class="shadow-1" (onClick)="cancelInvoice()"></p-button>
+            <p-button label="طباعة" icon="pi pi-print" severity="secondary" outlined></p-button>
+        </div>
+    </div>
+
+    <div class="grid mb-5">
+        <!-- Customer Info Card -->
+        <div class="col-12 lg:col-4">
+            <div class="p-4 border-round-xl bg-gray-50 border-1 border-gray-100 h-full">
+                <h3 class="text-lg font-bold mb-3 flex align-items-center gap-2">
+                    <i class="pi pi-user text-primary"></i> بيانات العميل
+                </h3>
+                <div class="flex flex-column gap-2 text-700">
+                    <div class="flex justify-content-between">
+                        <span>الاسم:</span>
+                        <span class="font-bold border-bottom-1 border-primary-200">{{invoice.customerName || 'عميل
+                            نقدي'}}</span>
+                    </div>
+                    <div class="flex justify-content-between">
+                        <span>طريقة الدفع:</span>
+                        <span class="font-bold text-primary">{{invoice.paymentMethod === 'Cash' ? 'نقدي' :
+                            invoice.paymentMethod}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Summary Card -->
+        <div class="col-12 lg:col-8">
+            <div
+                class="p-4 border-round-xl bg-primary-reverse border-1 border-primary-100 shadow-sm h-full flex flex-column md:flex-row align-items-center justify-content-around">
+                <div class="text-center mb-3 md:mb-0">
+                    <span class="block text-primary-600 font-bold mb-1">إجمالي الفاتورة</span>
+                    <span class="text-3xl font-extrabold text-primary">{{invoice.totalAmount | currency:'EGP
+                        ':'symbol':'1.2-2'}}</span>
+                </div>
+                <p-divider layout="vertical" class="hidden md:block"></p-divider>
+                <div class="text-center mb-3 md:mb-0">
+                    <span class="block text-green-600 font-bold mb-1">إجمالي الربح</span>
+                    <span class="text-3xl font-extrabold text-green-600">{{invoice.totalProfit | currency:'EGP
+                        ':'symbol':'1.2-2'}}</span>
+                </div>
+                <p-divider layout="vertical" class="hidden md:block"></p-divider>
+                <div class="text-center">
+                    <span class="block text-orange-600 font-bold mb-1">عدد البنود</span>
+                    <span class="text-3xl font-extrabold text-orange-600">{{invoice.saleInvoiceDetails?.length ||
+                        0}}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Table -->
+    <div class="mb-5">
+        <h3 class="text-lg font-bold mb-3 flex align-items-center gap-2">
+            <i class="pi pi-list text-primary"></i> تفاصيل الفاتورة (الأصناف)
+        </h3>
+        <p-table [value]="invoice.saleInvoiceDetails || []" responsiveLayout="scroll"
+            styleClass="p-datatable-gridlines p-datatable-sm shadow-1 border-round-xl overflow-hidden">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="bg-gray-50 p-3">الدواء</th>
+                    <th class="bg-gray-50 text-center p-3" style="width: 150px">الدفعة (Batch)</th>
+                    <th class="bg-gray-50 text-center p-3" style="width: 100px">الكمية</th>
+                    <th class="bg-gray-50 text-center p-3" style="width: 120px">سعر الوحدة</th>
+                    <th class="bg-gray-50 text-center p-3" style="width: 120px">الإجمالي</th>
+                    <th class="bg-gray-50 text-center p-3" style="width: 120px">الربح</th>
+                    <th class="bg-gray-50 text-center p-3" style="width: 80px">تعديل</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-detail>
+                <tr class="hover:bg-gray-50">
+                    <td class="font-bold text-primary">{{detail.medicineName}}</td>
+                    <td class="text-center font-mono text-secondary">{{detail.companyBatchNumber}}</td>
+                    <td class="text-center font-bold">{{detail.quantity}}</td>
+                    <td class="text-center">{{detail.salePrice | currency:'EGP ':'symbol':'1.2-2'}}</td>
+                    <td class="text-center font-bold text-primary">{{detail.totalSale | currency:'EGP
+                        ':'symbol':'1.2-2'}}</td>
+                    <td class="text-center font-bold text-green-600">{{detail.profit | currency:'EGP
+                        ':'symbol':'1.2-2'}}</td>
+                    <td class="text-center">
+                        <button pButton icon="pi pi-cog" class="p-button-rounded p-button-text p-button-secondary"
+                            pTooltip="حركة يدوية (تالف/تسوية)" (click)="openActionDialog(detail)"
+                            [disabled]="invoice.status === 'CANCELLED'"></button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+    <!-- Notes Section -->
+    <div class="p-3 border-round-xl bg-gray-50 border-1 border-gray-100" *ngIf="invoice.notes">
+        <span class="block font-bold mb-2 text-secondary">ملاحظات:</span>
+        <p class="m-0 text-700">{{invoice.notes}}</p>
+    </div>
+</div>
+
+<div class="flex flex-column align-items-center justify-content-center p-8" *ngIf="loading">
+    <i class="pi pi-spin pi-spinner text-primary text-5xl mb-3"></i>
+    <span class="text-xl font-bold text-primary">جاري تحميل الفاتورة...</span>
+</div>
+
+<!-- Actions Dialog -->
+<app-sale-invoice-actions-dialog [visible]="actionDialogVisible" [batch]="selectedBatch"
+    (onHide)="actionDialogVisible = false" (onComplete)="onActionComplete()"></app-sale-invoice-actions-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

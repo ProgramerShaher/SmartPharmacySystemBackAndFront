@@ -1,0 +1,226 @@
+<!-- medicine-list.component.html -->
+<div class="p-4" dir="rtl">
+
+    <!-- شريط العنوان والإجراءات -->
+    <div class="card mb-4">
+        <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center gap-4">
+            <div class="flex align-items-center gap-3">
+                <div class="w-3rem h-3rem border-circle flex align-items-center justify-content-center"
+                    style="background: var(--primary-100); color: var(--primary-color);">
+                    <i class="pi pi-capsule text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold m-0" style="color: var(--text-color)">
+                        إدارة الأدوية
+                    </h1>
+                    <p class="text-sm mt-1 m-0" style="color: var(--text-color-secondary)">
+                        عرض وإدارة قائمة الأدوية
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <p-button label="تصدير Excel" icon="pi pi-file-excel"
+                    styleClass="p-button-outlined border-round-xl px-4"
+                    [style]="{'border-color': 'var(--border-color)', 'color': 'var(--text-color)'}">
+                </p-button>
+                <p-button label="إضافة دواء جديد" icon="pi pi-plus" styleClass="border-round-xl px-4"
+                    (onClick)="createMedicine()">
+                </p-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- شريط البحث -->
+    <div class="card mb-4 p-4">
+        <div class="flex flex-column md:flex-row gap-3 align-items-center">
+            <span class="p-input-icon-left w-full md:w-auto flex-grow-1">
+                <i class="pi pi-search" style="color: var(--text-color-secondary)"></i>
+                <input pInputText type="text" (keyup)="onSearch($event)" placeholder="ابحث في الأدوية..."
+                    class="w-full border-round-xl p-3" />
+            </span>
+
+            <div class="flex gap-2">
+                <p-button icon="pi pi-filter" styleClass="p-button-outlined border-round-xl"
+                    [style]="{'border-color': 'var(--border-color)', 'color': 'var(--text-color)'}">
+                </p-button>
+                <p-button icon="pi pi-refresh" styleClass="p-button-outlined border-round-xl"
+                    [style]="{'border-color': 'var(--border-color)', 'color': 'var(--text-color)'}"
+                    (onClick)="loadMedicines()">
+                </p-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- الجدول الرئيسي -->
+    <div class="card">
+        <p-table #dt [value]="medicines" [rows]="10" [paginator]="true" [rowHover]="true" dataKey="id"
+            responsiveLayout="scroll" currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} دواء"
+            [showCurrentPageReport]="true" styleClass="p-datatable-gridlines">
+
+            <!-- رأس الجدول -->
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="name" class="font-bold p-4 text-right">
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-sort-alt" style="color: var(--text-color-secondary)"></i>
+                            <span style="color: var(--text-color)">الاسم التجاري</span>
+                        </div>
+                        <p-sortIcon field="name"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="internalCode" class="font-bold p-4 text-center">
+                        <span style="color: var(--text-color)">الكود</span>
+                        <p-sortIcon field="internalCode"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="stock" class="font-bold p-4 text-center">
+                        <span style="color: var(--text-color)">المخزون</span>
+                        <p-sortIcon field="stock"></p-sortIcon>
+                    </th>
+                    <th pSortableColumn="defaultSalePrice" class="font-bold p-4 text-right">
+                        <span style="color: var(--text-color)">سعر البيع</span>
+                        <p-sortIcon field="defaultSalePrice"></p-sortIcon>
+                    </th>
+                    <th class="font-bold p-4 text-center">
+                        <span style="color: var(--text-color)">الحالة</span>
+                    </th>
+                    <th class="font-bold p-4 text-center">
+                        <span style="color: var(--text-color)">الإجراءات</span>
+                    </th>
+                </tr>
+            </ng-template>
+
+            <!-- جسم الجدول -->
+            <ng-template pTemplate="body" let-medicine>
+                <tr>
+                    <!-- الاسم التجاري -->
+                    <td class="p-4">
+                        <div class="flex align-items-center gap-3">
+                            <div class="w-2.5rem h-2.5rem border-circle flex align-items-center justify-content-center"
+                                style="background: var(--surface-100); color: var(--primary-color);">
+                                <i class="pi pi-capsule"></i>
+                            </div>
+                            <div class="flex flex-column">
+                                <span class="font-bold" style="color: var(--text-color)">{{medicine.name}}</span>
+                                <small style="color: var(--text-color-secondary)">
+                                    <i class="pi pi-barcode mr-1"></i>
+                                    باركود: {{medicine.defaultBarcode || 'غير محدد'}}
+                                </small>
+                            </div>
+                            <i *ngIf="hasExpiredBatch(medicine)" class="pi pi-exclamation-triangle text-red-500"
+                                pTooltip="يوجد تشغيلات منتهية الصلاحية" tooltipPosition="top"></i>
+                        </div>
+                    </td>
+
+                    <!-- الكود الداخلي -->
+                    <td class="p-4 text-center">
+                        <span *ngIf="medicine.internalCode; else noCode"
+                            class="font-mono px-3 py-1 border-round-lg inline-block"
+                            style="background: var(--surface-100); color: var(--text-color);">
+                            {{medicine.internalCode}}
+                        </span>
+                        <ng-template #noCode>
+                            <span style="color: var(--text-color-secondary)">-</span>
+                        </ng-template>
+                    </td>
+
+                    <!-- المخزون -->
+                    <td class="p-4 text-center">
+                        <div class="flex flex-column align-items-center gap-1">
+                            <span class="font-bold text-xl" [ngClass]="{
+                                      'text-red-500': (medicine.stock ?? medicine.totalQuantity ?? 0) === 0, 
+                                      'text-orange-500': (medicine.stock ?? medicine.totalQuantity ?? 0) > 0 && (medicine.stock ?? medicine.totalQuantity ?? 0) < 10, 
+                                      'text-green-500': (medicine.stock ?? medicine.totalQuantity ?? 0) >= 10
+                                  }">
+                                {{ medicine.stock ?? medicine.totalQuantity ?? 0 }}
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- السعر -->
+                    <td class="p-4 text-right">
+                        <div class="flex flex-column align-items-end">
+                            <span class="font-bold text-green-500 text-xl">
+                                {{medicine.defaultSalePrice | currency:'USD':'symbol-narrow'}}
+                            </span>
+                            <small style="color: var(--text-color-secondary)">
+                                شراء: {{medicine.defaultPurchasePrice | currency:'USD':'symbol-narrow'}}
+                            </small>
+                        </div>
+                    </td>
+
+                    <!-- الحالة -->
+                    <td class="p-4 text-center">
+                        <p-tag [value]="(medicine.stock ?? medicine.totalQuantity ?? 0) > 0 ? 'متوفر' : 'نفذ'"
+                            [severity]="getSeverity(medicine)" [rounded]="true"
+                            styleClass="px-3 py-2 font-semibold"></p-tag>
+                    </td>
+
+                    <!-- الإجراءات -->
+                    <td class="p-4 text-center">
+                        <div class="flex align-items-center justify-content-center gap-2">
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="secondary"
+                                pTooltip="عرض التفاصيل" (onClick)="viewMedicine(medicine)"></p-button>
+                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
+                                pTooltip="تعديل" (onClick)="editMedicine(medicine)"></p-button>
+                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="حذف"
+                                (onClick)="deleteMedicine(medicine)"></p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <!-- حالة فارغة -->
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center p-8">
+                        <div class="flex flex-column align-items-center justify-content-center gap-3 py-6">
+                            <i class="pi pi-inbox text-6xl"
+                                style="color: var(--text-color-secondary); opacity: 0.2;"></i>
+                            <h3 class="text-xl font-bold" style="color: var(--text-color-secondary)">
+                                لا توجد أدوية
+                            </h3>
+                            <p style="color: var(--text-color-secondary)">ابدأ بإضافة أول دواء للمخزون</p>
+                            <p-button label="إضافة دواء جديد" icon="pi pi-plus" (onClick)="createMedicine()">
+                            </p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+    <!-- ملاحظة -->
+    <div class="mt-4 p-3 border-round-lg text-center"
+        style="background: var(--surface-50); border: 1px solid var(--border-color);">
+        <small style="color: var(--text-color-secondary)">
+            <i class="pi pi-info-circle mr-1"></i>
+            إجمالي الأدوية: {{medicines.length}} |
+            آخر تحديث: {{lastUpdate | date:'short'}}
+        </small>
+    </div>
+</div>
+
+<!-- نافذة الحوار -->
+<p-dialog [(visible)]="displayModal" [modal]="true" [style]="{width: '80vw'}" [draggable]="false" [resizable]="false"
+    styleClass="border-round-xl" [contentStyle]="{'padding': '0'}">
+
+    <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2 p-3">
+            <i class="pi" [ngClass]="selectedMedicineId ? 'pi-pencil' : 'pi-plus'"
+                style="color: var(--primary-color)"></i>
+            <span class="font-bold text-lg" style="color: var(--text-color)">
+                {{selectedMedicineId ? 'تعديل بيانات الدواء' : 'إضافة دواء جديد'}}
+            </span>
+        </div>
+    </ng-template>
+
+    <app-medicine-add-edit [medicineId]="selectedMedicineId" (onSave)="onModalSave()" (onCancel)="onModalCancel()">
+    </app-medicine-add-edit>
+</p-dialog>
+
+<!-- نافذة تأكيد الحذف -->
+<p-confirmDialog [style]="{width: '450px'}" acceptLabel="نعم" rejectLabel="لا"
+    icon="pi pi-exclamation-triangle"></p-confirmDialog>
+
+<!-- رسائل التواست -->
+<p-toast position="top-left"></p-toast>

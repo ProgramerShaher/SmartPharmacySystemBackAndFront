@@ -1,0 +1,68 @@
+<div class="card p-4 shadow-2 border-round-xl" dir="rtl">
+    <p-toolbar styleClass="mb-4 border-round-xl shadow-1" [style]="{'background': 'var(--surface-hover)'}">
+        <ng-template pTemplate="left">
+            <h2 class="text-2xl font-bold text-color m-0">قائمة الفئات</h2>
+        </ng-template>
+
+        <ng-template pTemplate="right">
+            <span class="p-input-icon-left mr-3">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" (input)="onSearch($event)" placeholder="بحث عن فئة..."
+                    class="border-round-xl p-2" />
+            </span>
+            <p-button label="إضافة فئة" icon="pi pi-plus" styleClass="p-button-success border-round-xl shadow-2"
+                (onClick)="showAddModal()"></p-button>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table [value]="categories" [lazy]="true" (onLazyLoad)="loadCategories($event)" [paginator]="true" [rows]="10"
+        [totalRecords]="totalRecords" [loading]="loading" [showCurrentPageReport]="true"
+        currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} فئة"
+        styleClass="p-datatable-striped p-datatable-gridlines border-round-xl overflow-hidden shadow-1"
+        [rowsPerPageOptions]="[5, 10, 25, 50]">
+        <ng-template pTemplate="header">
+            <tr [style]="{'background': 'var(--table-header-bg)'}">
+                <th pSortableColumn="id" class="text-center w-5rem">ID <p-sortIcon field="id"></p-sortIcon></th>
+                <th pSortableColumn="name">اسم الفئة <p-sortIcon field="name"></p-sortIcon></th>
+                <th>الوصف</th>
+                <th class="text-center w-8rem">الإجراءات</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-category>
+            <tr class="hover:bg-surface-hover transition-all transition-duration-200">
+                <td class="text-center font-bold text-color-secondary">{{category.id}}</td>
+                <td class="font-bold text-color">{{category.name}}</td>
+                <td class="text-color-secondary">{{category.description || '-'}}</td>
+                <td class="text-center">
+                    <div class="flex align-items-center justify-content-center gap-2">
+                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" pTooltip="تعديل"
+                            tooltipPosition="top" (onClick)="editCategory(category)"></p-button>
+                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="حذف"
+                            tooltipPosition="top" (onClick)="deleteCategory(category)"></p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="4" class="text-center p-5 text-500 italic">
+                    <i class="pi pi-info-circle mr-2"></i> لا توجد فئات حالياً.
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- Add/Edit Modal -->
+<p-dialog [(visible)]="displayModal" [header]="selectedCategoryId ? 'تعديل فئة' : 'إضافة فئة'" [modal]="true"
+    [style]="{ width: '450px' }" [draggable]="false" [resizable]="false"
+    styleClass="p-fluid border-round-2xl overflow-hidden" [breakpoints]="{'960px': '75vw', '640px': '90vw'}">
+    <app-category-add-edit [categoryId]="selectedCategoryId" (onSave)="onModalSave()"
+        (onCancel)="onModalCancel()"></app-category-add-edit>
+</p-dialog>
+
+<!-- Confirm Delete -->
+<p-confirmDialog [style]="{ width: '450px' }" acceptButtonStyleClass="p-button-danger border-round-xl"
+    rejectButtonStyleClass="p-button-text border-round-xl" position="top"></p-confirmDialog>

@@ -1,0 +1,165 @@
+.form-container {
+    padding: 24px;
+    background-color: var(--surface-ground);
+    min-height: 100vh;
+}
+
+:host ::ng-deep {
+
+    /* Premium Card overrides for ERP look */
+    .p-card {
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
+        border: 1px solid var(--surface-border);
+        transition: transform 0.2s, box-shadow 0.2s;
+
+        .p-card-header {
+            border-bottom: 1px solid var(--surface-border);
+            padding: 1rem 1.25rem;
+            background: var(--surface-section);
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+        }
+
+        .p-card-content {
+            padding: 1.25rem;
+        }
+    }
+
+    /* Professional Table Styling */
+    .p-datatable {
+        &.p-datatable-gridlines {
+            .p-datatable-header {
+                background: white;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
+            }
+
+            .p-datatable-thead>tr>th {
+                background: var(--surface-section);
+                color: var(--text-color-secondary);
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.025em;
+                font-weight: 600;
+                padding: 0.75rem 1rem;
+            }
+
+            .p-datatable-tbody>tr {
+                background: white;
+                transition: background-color 0.2s;
+
+                &:hover {
+                    background-color: var(--surface-hover) !important;
+                }
+
+                >td {
+                    padding: 0.75rem 1rem;
+                    border: 1px solid var(--surface-border);
+                }
+            }
+
+            .p-datatable-tfoot>tr>td {
+                background: var(--surface-section);
+                font-weight: 700;
+                color: var(--text-color);
+            }
+        }
+    }
+
+    /* Custom Toolbar for ERP actions */
+    .erp-toolbar {
+        background: var(--primary-color);
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 0;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+
+        .p-toolbar-group-start {
+            color: white;
+        }
+    }
+
+    /* Summary Card Styling */
+    .financial-summary {
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed var(--surface-border);
+
+            &:last-child {
+                border-bottom: none;
+                padding-top: 1rem;
+                margin-top: 0.5rem;
+            }
+
+            .label {
+                color: var(--text-color-secondary);
+                font-weight: 500;
+            }
+
+            .value {
+                font-weight: 700;
+                font-family: var(--font-mono, monospace);
+            }
+
+            &.total {
+
+                .label,
+                .value {
+                    color: var(--primary-color);
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                }
+            }
+        }
+    }
+
+    /* Fixed squashed calendar and month picker */
+    .expiry-calendar-panel {
+        min-width: 320px !important;
+        border-radius: 12px !important;
+
+        .p-datepicker-header {
+            padding: 1rem !important;
+        }
+
+        .p-monthpicker {
+            .p-monthpicker-month {
+                padding: 1.5rem 1rem !important;
+                font-weight: 500 !important;
+
+                &:hover {
+                    background: var(--surface-hover) !important;
+                    border-radius: 8px !important;
+                }
+            }
+        }
+    }
+
+    /* Status Badges */
+    .status-badge {
+        font-weight: 700;
+        padding: 0.35rem 0.85rem;
+        border-radius: 6px;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+
+        &.draft {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        &.approved {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        &.cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+    }
+}

@@ -1,0 +1,101 @@
+/* category-list.component.scss */
+:host {
+    ::ng-deep .pi {
+        color: inherit !important;
+    }
+}
+
+:host-context(.dark-theme) {
+    ::ng-deep {
+        /* ========== إصلاح شريط البحث ========== */
+        .p-inputtext {
+            background-color: var(--input-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+        
+        .p-input-icon-left > i {
+            color: var(--text-color-secondary) !important;
+        }
+        
+        /* ========== إصلاح الجدول ========== */
+        .p-datatable {
+            .p-datatable-thead > tr > th {
+                background-color: var(--table-header-bg) !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+            }
+            
+            .p-datatable-tbody > tr {
+                background-color: var(--card-bg) !important;
+                color: var(--text-color) !important;
+                
+                > td {
+                    background-color: inherit !important;
+                    color: var(--text-color) !important;
+                    border-color: var(--border-color) !important;
+                }
+                
+                &:nth-child(even) {
+                    background-color: var(--surface-50) !important;
+                }
+                
+                &:hover {
+                    background-color: var(--surface-hover) !important;
+                }
+            }
+        }
+        
+        /* ========== إصلاح Paginator ========== */
+        .p-paginator {
+            background-color: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+            
+            .p-paginator-pages .p-paginator-page {
+                background-color: transparent !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+                
+                &:hover:not(.p-disabled) {
+                    background-color: var(--surface-hover) !important;
+                }
+                
+                &.p-highlight {
+                    background-color: var(--primary-color) !important;
+                    color: white !important;
+                    border-color: var(--primary-color) !important;
+                }
+            }
+            
+            .p-paginator-first,
+            .p-paginator-prev,
+            .p-paginator-next,
+            .p-paginator-last {
+                background-color: transparent !important;
+                border-color: var(--border-color) !important;
+                color: var(--text-color) !important;
+                
+                &:hover:not(.p-disabled) {
+                    background-color: var(--surface-hover) !important;
+                }
+            }
+        }
+        
+        /* ========== إصلاح الأزرار ========== */
+        .p-button.p-button-outlined {
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+            
+            &:hover {
+                background-color: var(--surface-hover) !important;
+            }
+        }
+        
+        /* ========== إصلاح شريط الأدوات ========== */
+        .p-toolbar {
+            background-color: var(--surface-50) !important;
+            border-color: var(--border-color) !important;
+        }
+    }
+}

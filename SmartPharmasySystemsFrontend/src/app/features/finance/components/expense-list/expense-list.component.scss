@@ -1,0 +1,325 @@
+.expense-list-container {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+
+    .loading-text {
+      margin-top: 1rem;
+      color: #6c757d;
+      font-size: 1.1rem;
+    }
+  }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+    border: 1px solid #e9ecef;
+    overflow: hidden;
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid #e9ecef;
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+
+      h5 {
+        margin: 0;
+        color: white;
+        font-weight: 600;
+        font-size: 1.25rem;
+      }
+
+      .header-actions {
+        .p-button {
+          border-radius: 8px;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .filters-section {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    background: #f8f9fa;
+
+    .p-field {
+      flex: 1;
+      min-width: 0;
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #495057;
+        font-size: 0.9rem;
+      }
+
+      .search-input {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+        font-size: 0.95rem;
+
+        &:focus {
+          border-color: #28a745;
+          box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+      }
+
+      .expense-type-filter {
+        width: 100%;
+
+        ::ng-deep .p-dropdown {
+          border-radius: 8px;
+          border: 1px solid #ced4da;
+
+          &.p-focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+          }
+        }
+      }
+    }
+
+    .date-range-field {
+      .date-range-inputs {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+
+        .date-input {
+          flex: 1;
+
+          ::ng-deep .p-calendar {
+            width: 100%;
+
+            .p-inputtext {
+              border-radius: 8px;
+              border: 1px solid #ced4da;
+
+              &:focus {
+                border-color: #28a745;
+                box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+              }
+            }
+          }
+        }
+
+        .date-separator {
+          color: #6c757d;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+
+  .expenses-table {
+    ::ng-deep {
+      .p-datatable-thead > tr > th {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: 600;
+        color: #495057;
+        padding: 1rem 0.75rem;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .p-datatable-tbody > tr {
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: #f1f3f4;
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+      }
+
+      .p-datatable-tbody > tr > td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+      }
+    }
+
+    .expense-type-column { width: 25%; }
+    .amount-column { width: 15%; }
+    .date-column { width: 15%; }
+    .payment-method-column { width: 15%; }
+    .notes-column { width: 20%; }
+    .actions-column { width: 10%; }
+
+    .expense-type-cell {
+      .expense-type-content {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+
+        .expense-icon {
+          font-size: 1.2rem;
+          color: #28a745;
+          min-width: 20px;
+        }
+
+        .expense-type-text {
+          font-weight: 500;
+          color: #495057;
+          line-height: 1.4;
+        }
+      }
+    }
+
+    .amount-cell {
+      .amount-value {
+        font-weight: 700;
+        color: #28a745;
+        font-size: 1rem;
+        text-align: right;
+        direction: ltr;
+      }
+    }
+
+    .expense-date {
+      font-weight: 500;
+      color: #495057;
+    }
+
+    .payment-method-tag {
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
+    }
+
+    .notes-cell {
+      .notes-text {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .actions-cell {
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+
+        .p-button {
+          border-radius: 6px;
+          padding: 0.5rem;
+          min-width: auto;
+
+          &.p-button-icon-only {
+            width: 2.5rem;
+            height: 2.5rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 1024px) {
+  .expense-list-container {
+    .filters-section {
+      flex-wrap: wrap;
+
+      .p-field {
+        min-width: 200px;
+        flex: 1 1 auto;
+      }
+    }
+
+    .expenses-table {
+      .expense-type-column { width: 30%; }
+      .amount-column { width: 20%; }
+      .date-column { width: 20%; }
+      .payment-method-column { width: 15%; }
+      .notes-column { width: 0%; display: none; }
+      .actions-column { width: 15%; }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .expense-list-container {
+    padding: 1rem;
+
+    .card-header {
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+
+      h5 {
+        font-size: 1.1rem;
+      }
+    }
+
+    .filters-section {
+      flex-direction: column;
+      gap: 1rem;
+
+      .p-field {
+        min-width: 0;
+      }
+
+      .date-range-field {
+        .date-range-inputs {
+          flex-direction: column;
+          gap: 0.5rem;
+
+          .date-separator {
+            display: none;
+          }
+        }
+      }
+    }
+
+    .expenses-table {
+      .expense-type-column { width: 40%; }
+      .amount-column { width: 25%; }
+      .date-column { width: 35%; }
+      .payment-method-column { width: 0%; display: none; }
+      .notes-column { width: 0%; display: none; }
+      .actions-column { width: 35%; }
+
+      .actions-cell .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .expense-list-container {
+    .expenses-table {
+      .expense-type-column { width: 50%; }
+      .amount-column { width: 30%; }
+      .date-column { width: 20%; }
+      .actions-column { width: 50%; }
+    }
+  }
+}

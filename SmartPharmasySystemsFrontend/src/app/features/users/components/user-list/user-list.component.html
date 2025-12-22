@@ -1,0 +1,226 @@
+<div class="user-management-container">
+    <!-- ترويسة الصفحة -->
+    <header class="page-header">
+        <div class="header-content">
+            <div class="header-title-section">
+                <h1 class="page-title">
+                    <i class="pi pi-users header-icon"></i>
+                    إدارة المستخدمين
+                </h1>
+                <p class="page-subtitle">إدارة حسابات الموظفين، الصلاحيات، ومتابعة نشاط النظام</p>
+            </div>
+            <div class="header-actions">
+                <p-button label="إضافة مستخدم جديد" icon="pi pi-user-plus" class="new-user-btn" severity="success"
+                    (onClick)="openNew()">
+                </p-button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-card">
+        <!-- شريط التحكم -->
+        <div class="table-controls">
+            <div class="search-box">
+                <i class="pi pi-search search-icon"></i>
+                <input pInputText type="text" [ngModel]="searchTerm" (input)="onSearch($any($event.target).value)"
+                    placeholder="بحث عن مستخدم بالاسم، اسم المستخدم، أو الصلاحية..." class="search-input" />
+                <p-button *ngIf="searchTerm" icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary"
+                    class="clear-filter-btn" (onClick)="clearSearch()">
+                </p-button>
+            </div>
+            <div class="controls-right">
+                <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary"
+                    class="refresh-btn" pTooltip="تحديث البيانات" (onClick)="loadUsers()">
+                </p-button>
+            </div>
+        </div>
+
+        <!-- الجدول -->
+        <p-table #dt [value]="filteredUsers" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 25, 50]"
+            [loading]="loading" [rowHover]="true" dataKey="id" responsiveLayout="scroll"
+            styleClass="users-table p-datatable-sm"
+            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} مستخدم"
+            [showCurrentPageReport]="true">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="username" style="min-width: 14rem">
+                        <div class="column-header">المستخدم <p-sortIcon field="username"></p-sortIcon></div>
+                    </th>
+                    <th pSortableColumn="fullName" style="min-width: 14rem">
+                        <div class="column-header">الاسم الكامل <p-sortIcon field="fullName"></p-sortIcon></div>
+                    </th>
+                    <th pSortableColumn="role" style="min-width: 10rem">
+                        <div class="column-header">الصلاحية <p-sortIcon field="role"></p-sortIcon></div>
+                    </th>
+                    <th pSortableColumn="phoneNumber" style="min-width: 10rem">
+                        <div class="column-header">الهاتف <p-sortIcon field="phoneNumber"></p-sortIcon></div>
+                    </th>
+                    <th style="width: 10rem" class="text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-user>
+                <tr class="user-row">
+                    <td>
+                        <div class="user-cell">
+                            <div class="user-avatar">
+                                <i class="pi pi-user"></i>
+                            </div>
+                            <div class="user-info">
+                                <span class="username">{{user.username}}</span>
+                                <span class="user-id">ID: #{{user.id}}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="full-name">{{user.fullName}}</span></td>
+                    <td>
+                        <div [ngClass]="['role-badge', getRoleClass(user.role)]">
+                            <i [class]="getRoleIcon(user.role)"></i>
+                            <span>{{getRoleDisplayName(user.role)}}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="phone-cell">
+                            <i class="pi pi-phone text-xs" *ngIf="user.phoneNumber"></i>
+                            {{user.phoneNumber || '---'}}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" class="view-btn"
+                                pTooltip="عرض التفاصيل" (onClick)="viewUser(user)">
+                            </p-button>
+                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="success"
+                                class="edit-btn" pTooltip="تعديل" (onClick)="editUser(user)">
+                            </p-button>
+                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                class="delete-btn" pTooltip="حذف" (onClick)="deleteUser(user)">
+                            </p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="pi pi-users text-4xl text-200"></i>
+                            <h4>لا يوجد مستخدمين</h4>
+                            <p>لم يتم العثور على أي مستخدمين يطابقون معايير البحث.</p>
+                            <p-button label="إضافة مستخدم جديد" icon="pi pi-plus" severity="secondary" size="small"
+                                (onClick)="openNew()">
+                            </p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="loadingbody">
+                <tr>
+                    <td colspan="5">
+                        <div class="loading-row">
+                            <p-progressSpinner styleClass="w-2rem h-2rem" strokeWidth="4"></p-progressSpinner>
+                            <span class="mr-3">جاري تحميل بيانات المستخدمين...</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <!-- تذييل الجدول (الإحصائيات) -->
+        <footer class="table-footer">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-icon total-users">
+                        <i class="pi pi-users"></i>
+                    </div>
+                    <div class="stat-text">
+                        <span class="stat-value">{{users.length}}</span>
+                        <span class="stat-label">إجمالي المستخدمين</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon admins">
+                        <i class="pi pi-shield"></i>
+                    </div>
+                    <div class="stat-text">
+                        <span class="stat-value">{{adminCount}}</span>
+                        <span class="stat-label">مدراء النظام</span>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon regular-users">
+                        <i class="pi pi-user"></i>
+                    </div>
+                    <div class="stat-text">
+                        <span class="stat-value">{{regularUserCount}}</span>
+                        <span class="stat-label">مستخدمين عاديين</span>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<!-- نافذة الإضافة والتعديل -->
+<p-dialog [(visible)]="userDialog" [header]="selectedUser ? 'تعديل بيانات مستخدم' : 'إضافة مستخدم جديد'" [modal]="true"
+    styleClass="user-dialog" [draggable]="false" [resizable]="false" [closable]="true"
+    [style]="{width: '900px', maxWidth: '95vw'}">
+
+    <app-user-form *ngIf="userDialog" [user]="selectedUser" (save)="onSave($event)" (cancel)="hideDialog()">
+    </app-user-form>
+</p-dialog>
+
+<!-- نافذة العرض -->
+<p-dialog [(visible)]="viewDialog" header="تفاصيل المستخدم" [modal]="true" styleClass="view-dialog" [draggable]="false"
+    [resizable]="false" [style]="{width: '450px', maxWidth: '95vw'}">
+
+    <div class="user-details" *ngIf="viewedUser">
+        <div class="detail-avatar">
+            <i class="pi pi-user"></i>
+        </div>
+        <div class="detail-info">
+            <div class="detail-row">
+                <span class="detail-label">اسم المستخدم:</span>
+                <span class="detail-value">{{viewedUser.username}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">الاسم الكامل:</span>
+                <span class="detail-value">{{viewedUser.fullName}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">الصلاحية:</span>
+                <span
+                    [ngClass]="['role-badge', getRoleClass(viewedUser.role)]">{{getRoleDisplayName(viewedUser.role)}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">رقم الهاتف:</span>
+                <span class="detail-value">{{viewedUser.phoneNumber || '---'}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">البريد الإلكتروني:</span>
+                <span class="detail-value">{{viewedUser.email || '---'}}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">الحالة:</span>
+                <span [class.text-success]="viewedUser.isActive" [class.text-danger]="!viewedUser.isActive">
+                    {{viewedUser.isActive ? 'مفعل' : 'معطل'}}
+                </span>
+            </div>
+            <div class="mt-4 flex justify-content-end gap-2">
+                <p-button label="تعديل" icon="pi pi-pencil" (onClick)="editViewedUser()"></p-button>
+                <p-button label="إغلاق" icon="pi pi-times" severity="secondary"
+                    (onClick)="viewDialog = false"></p-button>
+            </div>
+        </div>
+    </div>
+</p-dialog>
+
+<!-- نافذة التأكيد -->
+<p-confirmDialog [breakpoints]="{'960px': '75vw', '640px': '90vw'}" [style]="{width: '450px'}">
+</p-confirmDialog>
+
+<!-- التنبيهات -->
+<p-toast position="top-center"></p-toast>

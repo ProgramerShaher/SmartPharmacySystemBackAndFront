@@ -1,0 +1,408 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
+
+/* PrimeIcons & PrimeFlex */
+@import "primeicons/primeicons.css";
+@import "primeflex/primeflex.css";
+
+/* Global Variables */
+:root {
+    /* Primary Color Palette (Deep Teal) - ACCENT COLORS (Don't change) */
+    --primary-color: #0d9488;
+    --primary-color-text: #ffffff;
+    --primary-rgb: 13, 148, 136;
+    --primary-50: #f0fdfa;
+    --primary-100: #ccfbf1;
+    --primary-200: #99f6e4;
+    --primary-300: #5eead4;
+    --primary-400: #2dd4bf;
+    --primary-500: #14b8a6;
+    --primary-600: #0d9488;
+    --primary-700: #0f766e;
+    --primary-800: #115e59;
+    --primary-900: #134e4a;
+
+    --font-family: 'Cairo', sans-serif;
+
+    /* Layout Dimensions */
+    --sidebar-width: 280px;
+    --topbar-height: 5rem;
+}
+
+/* User Defined Theme Variables */
+.light-theme {
+    --bg-color: #f8fafc;
+    --text-color: #1e293b;
+    --text-color-secondary: #64748b;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    --table-header-bg: #f1f5f9;
+    --modal-bg: #ffffff;
+    --input-bg: #ffffff;
+    --surface-hover: #f1f5f9;
+    --surface-border: #e2e8f0;
+    --surface-0: #ffffff;
+    --surface-50: #f8fafc;
+    --surface-100: #f1f5f9;
+    --surface-200: #e2e8f0;
+    --surface-300: #cbd5e1;
+    --surface-400: #94a3b8;
+    --surface-500: #64748b;
+    --surface-600: #475569;
+    --surface-700: #334155;
+    --surface-800: #1e293b;
+    --surface-900: #0f172a;
+    --surface-ground: #f8fafc;
+    --surface-section: #f8fafc;
+    --surface-card: #ffffff;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.dark-theme {
+    --bg-color: #020617;
+    --text-color: #f1f5f9;
+    --text-color-secondary: #94a3b8;
+    --card-bg: #0f172a;
+    --border-color: #1e293b;
+    --table-header-bg: #1e293b;
+    --modal-bg: #0f172a;
+    --input-bg: #1e293b;
+    --surface-hover: #1e293b;
+    --surface-border: #1e293b;
+    --surface-0: #0f172a;
+    --surface-50: #1e293b;
+    --surface-100: #334155;
+    --surface-200: #475569;
+    --surface-300: #64748b;
+    --surface-400: #94a3b8;
+    --surface-500: #cbd5e1;
+    --surface-600: #e2e8f0;
+    --surface-700: #f1f5f9;
+    --surface-800: #f8fafc;
+    --surface-900: #ffffff;
+    --surface-ground: #020617;
+    --surface-section: #020617;
+    --surface-card: #0f172a;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Global Transition for Theme Switching */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Global Selectors for Theme Mapping */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-color);
+    margin-top: 0;
+}
+
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+}
+
+.layout-sidebar {
+    background: var(--card-bg);
+    border-left: 1px solid var(--border-color);
+}
+
+.layout-topbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-color-secondary);
+}
+
+/* PrimeNG Theming Overrides (Generic) */
+::ng-deep {
+    .p-datatable {
+        .p-datatable-thead>tr>th {
+            background: var(--table-header-bg);
+            color: var(--text-color);
+            border-color: var(--border-color);
+        }
+
+        .p-datatable-tbody>tr {
+            background: var(--card-bg);
+            color: var(--text-color);
+            border-color: var(--border-color);
+
+            &.p-row-odd {
+                background: var(--bg-color);
+            }
+
+            &:hover {
+                background: var(--surface-hover);
+            }
+
+            >td {
+                background: inherit;
+                color: inherit;
+                border-color: var(--border-color);
+            }
+        }
+
+        &.p-datatable-striped .p-datatable-tbody>tr:nth-child(even) {
+            background: var(--bg-color);
+        }
+    }
+
+    .p-paginator {
+        background: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+
+        .p-paginator-pages .p-paginator-page {
+            color: var(--text-color);
+
+            &.p-highlight {
+                background: var(--primary-color) !important;
+                color: white !important;
+            }
+
+            &:hover {
+                background: var(--surface-hover);
+            }
+        }
+
+        .p-paginator-first,
+        .p-paginator-prev,
+        .p-paginator-next,
+        .p-paginator-last {
+            color: var(--text-color);
+
+            &:hover {
+                background: var(--surface-hover);
+            }
+        }
+    }
+
+    .p-dialog {
+        background: var(--modal-bg);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border-color);
+
+        .p-dialog-header,
+        .p-dialog-content,
+        .p-dialog-footer {
+            background: var(--modal-bg);
+            color: var(--text-color);
+            border-color: var(--border-color);
+        }
+    }
+
+    .p-inputtext,
+    .p-inputtextarea {
+        background: var(--input-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+
+        &:focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2) !important;
+        }
+    }
+
+    .p-dropdown {
+        background: var(--input-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+
+        .p-dropdown-label {
+            color: var(--text-color) !important;
+        }
+
+        .p-dropdown-trigger {
+            color: var(--text-color-secondary) !important;
+        }
+
+        &:not(.p-disabled).p-focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2) !important;
+        }
+    }
+
+    .p-dropdown-panel {
+        background: var(--modal-bg);
+        color: var(--text-color);
+        border-color: var(--border-color);
+
+        .p-dropdown-items {
+            padding: 0.5rem 0;
+
+            .p-dropdown-item {
+                color: var(--text-color);
+
+                &:hover {
+                    background: var(--surface-hover);
+                }
+
+                &.p-highlight {
+                    background: var(--primary-color);
+                    color: white;
+                }
+            }
+        }
+    }
+}
+
+/* styles.scss - الإضافات البسيطة */
+
+/* =================== */
+/* إصلاحات خاصة للوضع الداكن */
+/* =================== */
+
+.dark-theme {
+
+    /* ========== إصلاح شريط البحث في كافة المكونات ========== */
+    .p-inputtext,
+    input[type="text"],
+    input[type="search"] {
+        background-color: var(--input-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+    }
+
+    .p-input-icon-left>i,
+    .p-input-icon-right>i {
+        color: var(--text-color-secondary) !important;
+    }
+
+    /* ========== إصلاح الجداول ========== */
+    .p-datatable {
+        .p-datatable-thead>tr>th {
+            background-color: var(--table-header-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+        }
+
+        .p-datatable-tbody>tr {
+            background-color: var(--card-bg) !important;
+            color: var(--text-color) !important;
+
+            >td {
+                background-color: inherit !important;
+                color: var(--text-color) !important;
+                border-color: var(--border-color) !important;
+            }
+
+            &:nth-child(even) {
+                background-color: var(--surface-50) !important;
+            }
+
+            &:hover {
+                background-color: var(--surface-hover) !important;
+            }
+        }
+    }
+
+    /* ========== إصلاح Paginator ========== */
+    .p-paginator {
+        background-color: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+
+        .p-paginator-pages .p-paginator-page {
+            color: var(--text-color) !important;
+
+            &.p-highlight {
+                background-color: var(--primary-color) !important;
+                color: white !important;
+            }
+        }
+    }
+
+    /* ========== إصلاح الأزرار المحددة ========== */
+    .p-button.p-button-outlined {
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+
+        &:hover {
+            background-color: var(--surface-hover) !important;
+        }
+    }
+
+    /* ========== حماية الأيقونات الملونة ========== */
+    .pi.text-red-500,
+    .pi.text-green-500,
+    .pi.text-orange-500,
+    .pi.text-blue-500 {
+        color: inherit !important;
+    }
+
+    .pi.pi-capsule {
+        color: var(--primary-color) !important;
+    }
+
+    .pi.pi-barcode {
+        color: var(--text-color-secondary) !important;
+    }
+}
+
+/* =================== */
+/* الحفاظ على ألوان المخزون في كلا الوضعين */
+/* =================== */
+.stock-empty {
+    color: #ef4444 !important;
+}
+
+.stock-low {
+    color: #f59e0b !important;
+}
+
+.stock-available {
+    color: #10b981 !important;
+}
+
+.text-red-500 {
+    color: #ef4444 !important;
+}
+
+.text-green-500 {
+    color: #10b981 !important;
+}
+
+.text-orange-500 {
+    color: #f59e0b !important;
+}

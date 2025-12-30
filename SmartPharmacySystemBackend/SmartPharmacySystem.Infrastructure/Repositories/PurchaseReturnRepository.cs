@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Infrastructure.Repositories
 {
@@ -23,6 +24,9 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                     .ThenInclude(d => d.Medicine)
                 .Include(p => p.PurchaseReturnDetails)
                     .ThenInclude(d => d.Batch)
+                .Include(p => p.Creator)
+                .Include(p => p.Approver)
+                .Include(p => p.Canceller)
                 .FirstOrDefaultAsync(x => x.Id == id);
             // Assuming IsDeleted check handled if global filter exists or manually here.
             // Following other repos pattern (CategoryRepo checked IsDeleted=false).
@@ -35,6 +39,9 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .Include(p => p.Supplier)
                 .Include(p => p.PurchaseInvoice)
                 .Include(p => p.PurchaseReturnDetails)
+                .Include(p => p.Creator)
+                .Include(p => p.Approver)
+                .Include(p => p.Canceller)
                 .OrderByDescending(p => p.ReturnDate)
                 .ToListAsync();
         }
@@ -65,6 +72,13 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         public async Task<bool> ExistsAsync(int id)
         {
             return await _context.PurchaseReturns.AnyAsync(x => x.Id == id);
+        }
+        public async Task<IEnumerable<PurchaseReturn>> GetByPurchaseInvoiceIdAsync(int purchaseInvoiceId)
+        {
+            return await _context.PurchaseReturns
+                .Include(p => p.PurchaseReturnDetails)
+                .Where(x => x.PurchaseInvoiceId == purchaseInvoiceId && x.Status == DocumentStatus.Approved) // Only count Approved for validation
+                .ToListAsync();
         }
     }
 }

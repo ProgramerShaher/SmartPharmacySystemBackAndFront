@@ -42,9 +42,9 @@ public class SaleInvoiceDetail
     public decimal UnitCost { get; set; }
 
     /// <summary>
-    /// Total sale amount for this line.
+    /// Total sale amount for this line (Quantity * SalePrice).
     /// </summary>
-    public decimal TotalSale { get; set; }
+    public decimal TotalLineAmount { get; set; }
 
     /// <summary>
     /// Total cost for this line.
@@ -55,6 +55,11 @@ public class SaleInvoiceDetail
     /// Profit for this line.
     /// </summary>
     public decimal Profit { get; set; }
+
+    /// <summary>
+    /// Quantity remaining that can be returned.
+    /// </summary>
+    public int RemainingQtyToReturn { get; set; }
 
     /// <summary>
     /// Soft delete flag.

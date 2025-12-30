@@ -11,5 +11,7 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<MedicineDto> GetMedicineByIdAsync(int id);
         Task<IEnumerable<MedicineDto>> GetAllMedicinesAsync();
         Task<PagedResult<MedicineDto>> SearchAsync(MedicineQueryDto query);
+        Task<IEnumerable<SmartPharmacySystem.Application.DTOs.MedicineBatch.MedicineBatchResponseDto>> GetBatchesByFEFOAsync(int medicineId);
+        Task<IEnumerable<MedicineDto>> GetReorderReportAsync();
     }
 }

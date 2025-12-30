@@ -17,5 +17,10 @@ public enum ReferenceType
     SaleInvoice = 2,
     PurchaseReturn = 3,
     SalesReturn = 4,
-    Manual = 5
+    Manual = 5,
+    Expense = 6,
+    OpeningBalance = 7,
+    ManualAdjustment = 8,
+    SupplierPayment = 9,
+    CustomerReceipt = 10
 }

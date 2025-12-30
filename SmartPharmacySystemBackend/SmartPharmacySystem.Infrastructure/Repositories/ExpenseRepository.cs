@@ -21,12 +21,19 @@ public class ExpenseRepository : IExpenseRepository
 
     public async Task<Expense> GetByIdAsync(int id)
     {
-        return await _context.Expenses.FindAsync(id);
+        return await _context.Expenses
+            .Include(e => e.Category)
+            .Include(e => e.Account)
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
     }
 
     public async Task<IEnumerable<Expense>> GetAllAsync()
     {
-        return await _context.Expenses.ToListAsync();
+        return await _context.Expenses
+            .Include(e => e.Category)
+            .Include(e => e.Account)
+            .Where(e => !e.IsDeleted)
+            .ToListAsync();
     }
 
     public async Task AddAsync(Expense entity)
@@ -65,16 +72,19 @@ public class ExpenseRepository : IExpenseRepository
     }
 
     public async Task<(IEnumerable<Expense> Items, int TotalCount)> GetPagedAsync(
-        string? search, int page, int pageSize, string sortBy, string sortDir, 
-        DateTime? fromDate, DateTime? toDate, string? expenseType)
+        string? search, int page, int pageSize, string sortBy, string sortDir,
+        DateTime? fromDate, DateTime? toDate, int? categoryId)
     {
-        var query = _context.Expenses.Where(e => !e.IsDeleted);
+        var query = _context.Expenses
+            .Include(e => e.Category)
+            .Include(e => e.Account)
+            .Where(e => !e.IsDeleted);
 
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(search))
         {
             search = search.ToLower();
-            query = query.Where(e => e.ExpenseType.ToLower().Contains(search) ||
+            query = query.Where(e => (e.Category != null && e.Category.Name.ToLower().Contains(search)) ||
                                      (e.Notes != null && e.Notes.ToLower().Contains(search)));
         }
 
@@ -85,9 +95,9 @@ public class ExpenseRepository : IExpenseRepository
         if (toDate.HasValue)
             query = query.Where(e => e.ExpenseDate <= toDate.Value);
 
-        // Apply expense type filter
-        if (!string.IsNullOrWhiteSpace(expenseType))
-            query = query.Where(e => e.ExpenseType == expenseType);
+        // Apply category filter
+        if (categoryId.HasValue)
+            query = query.Where(e => e.CategoryId == categoryId.Value);
 
         // Get total count before pagination
         var totalCount = await query.CountAsync();

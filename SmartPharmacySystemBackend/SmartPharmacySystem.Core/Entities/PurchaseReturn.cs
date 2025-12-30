@@ -50,6 +50,26 @@ public class PurchaseReturn
     public int CreatedBy { get; set; }
 
     /// <summary>
+    /// ID of the user who approved this return.
+    /// </summary>
+    public int? ApprovedBy { get; set; }
+
+    /// <summary>
+    /// Date and time when the return was approved.
+    /// </summary>
+    public DateTime? ApprovedAt { get; set; }
+
+    /// <summary>
+    /// ID of the user who cancelled this return.
+    /// </summary>
+    public int? CancelledBy { get; set; }
+
+    /// <summary>
+    /// Date and time when the return was cancelled.
+    /// </summary>
+    public DateTime? CancelledAt { get; set; }
+
+    /// <summary>
     /// Soft delete flag.
     /// </summary>
     public bool IsDeleted { get; set; }
@@ -63,6 +83,15 @@ public class PurchaseReturn
     /// Navigation property to the purchase invoice.
     /// </summary>
     public PurchaseInvoice PurchaseInvoice { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public virtual User? Creator { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public virtual User? Approver { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public virtual User? Canceller { get; set; }
 
     /// <summary>
     /// Navigation property to the supplier.

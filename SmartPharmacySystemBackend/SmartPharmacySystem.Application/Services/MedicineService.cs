@@ -85,5 +85,17 @@ namespace SmartPharmacySystem.Application.Services
             var mappedItems = _mapper.Map<IEnumerable<MedicineDto>>(items);
             return new PagedResult<MedicineDto>(mappedItems, totalCount, query.Page, query.PageSize);
         }
+
+        public async Task<IEnumerable<SmartPharmacySystem.Application.DTOs.MedicineBatch.MedicineBatchResponseDto>> GetBatchesByFEFOAsync(int medicineId)
+        {
+            var batches = await _unitOfWork.Medicines.GetBatchesByFEFOAsync(medicineId);
+            return _mapper.Map<IEnumerable<SmartPharmacySystem.Application.DTOs.MedicineBatch.MedicineBatchResponseDto>>(batches);
+        }
+
+        public async Task<IEnumerable<MedicineDto>> GetReorderReportAsync()
+        {
+            var medicines = await _unitOfWork.Medicines.GetReorderReadyMedicinesAsync();
+            return _mapper.Map<IEnumerable<MedicineDto>>(medicines);
+        }
     }
 }

@@ -3,50 +3,32 @@ using SmartPharmacySystem.Core.Enums;
 namespace SmartPharmacySystem.Core.Entities;
 
 /// <summary>
-/// Represents alerts for medicine batches.
-/// Alerts notify about upcoming expiry dates.
+/// Represents alerts for medicine batches using .NET 9 Primary Constructor.
+/// يمثل التنبيهات لباتشات الأدوية.
 /// </summary>
-public class Alert
+public class Alert(
+    int batchId,
+    AlertType alertType,
+    AlertSeverity severity,
+    string message,
+    DateTime? expiryDateSnapshot = null)
 {
-    /// <summary>
-    /// Unique identifier for the alert.
-    /// </summary>
     public int Id { get; set; }
+    public int BatchId { get; set; } = batchId;
+    public AlertType AlertType { get; set; } = alertType;
+    public AlertSeverity Severity { get; set; } = severity;
+    public string Message { get; set; } = message;
+    public DateTime? ExpiryDateSnapshot { get; set; } = expiryDateSnapshot;
+
+    public bool IsRead { get; set; } = false;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public bool IsDeleted { get; set; } = false;
+
+    // Navigation property
+    public MedicineBatch Batch { get; set; } = null!;
 
     /// <summary>
-    /// Foreign key to the medicine batch.
+    /// For EF Core parameterless constructor requirement
     /// </summary>
-    public int BatchId { get; set; }
-
-    /// <summary>
-    /// Type of alert (expiry-related or other).
-    /// نوع التنبيه (متعلق بالصلاحية أو غيره).
-    /// </summary>
-    public AlertType AlertType { get; set; }
-
-    /// <summary>
-    /// Date when the alert was executed.
-    /// </summary>
-    public DateTime ExecutionDate { get; set; }
-
-    /// <summary>
-    /// Status of the alert.
-    /// حالة التنبيه.
-    /// </summary>
-    public AlertStatus Status { get; set; }
-
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
-    /// Date and time when the alert was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Navigation property to the medicine batch.
-    /// </summary>
-    public MedicineBatch Batch { get; set; }
+    protected Alert() : this(0, AlertType.LowStock, AlertSeverity.Info, string.Empty) { }
 }

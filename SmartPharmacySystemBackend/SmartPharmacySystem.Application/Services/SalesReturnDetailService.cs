@@ -4,6 +4,7 @@ using SmartPharmacySystem.Application.DTOs.SalesReturnDetails;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -27,32 +28,28 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.SalesReturnDetails.AddAsync(detail);
 
             // 2. Update Parent Return Total
-            var parentReturn = await _unitOfWork.SalesReturns.GetByIdAsync(dto.SalesReturnId);
-            if (parentReturn != null)
+            var parentReturn = await _unitOfWork.SalesReturns.GetByIdAsync(dto.SalesReturnId)
+                 ?? throw new KeyNotFoundException($"المرتجع الرئيسي برقم {dto.SalesReturnId} غير موجود");
+
+            if (parentReturn.Status != DocumentStatus.Draft)
+                throw new InvalidOperationException("لا يمكن إضافة أصناف لمرتجع معتمد أو ملغى. التعديل مسموح فقط لحالة مسودة (Draft).");
+
+            // Assuming SalePrice used for return calc
+            parentReturn.TotalAmount += (dto.Quantity * dto.SalePrice);
+            await _unitOfWork.SalesReturns.UpdateAsync(parentReturn);
+
+            // 4. Update Original Sale Invoice
+            var originalInvoice = await _unitOfWork.SaleInvoices.GetByIdAsync(parentReturn.SaleInvoiceId);
+            if (originalInvoice != null)
             {
-                // Assuming SalePrice used for return calc
-                parentReturn.TotalAmount += (dto.Quantity * dto.SalePrice);
-                await _unitOfWork.SalesReturns.UpdateAsync(parentReturn);
+                decimal totalReturnSale = dto.Quantity * dto.SalePrice;
+                decimal totalReturnCost = dto.Quantity * dto.UnitCost;
+                decimal profitReturn = totalReturnSale - totalReturnCost;
 
-                // 4. Update Original Sale Invoice
-                // Need to find Original Invoice from Parent Return?
-                var originalInvoice = await _unitOfWork.SaleInvoices.GetByIdAsync(parentReturn.SaleInvoiceId);
-                if (originalInvoice != null)
-                {
-                    // User requested:
-                    // saleInvoice.totalAmount -= totalReturnSale
-                    // saleInvoice.totalCost   -= totalReturnCost
-                    // saleInvoice.totalProfit -= profitReturn
-
-                    decimal totalReturnSale = dto.Quantity * dto.SalePrice;
-                    decimal totalReturnCost = dto.Quantity * dto.UnitCost;
-                    decimal profitReturn = totalReturnSale - totalReturnCost;
-
-                    originalInvoice.TotalAmount -= totalReturnSale;
-                    originalInvoice.TotalCost -= totalReturnCost;
-                    originalInvoice.TotalProfit -= profitReturn;
-                    await _unitOfWork.SaleInvoices.UpdateAsync(originalInvoice);
-                }
+                originalInvoice.TotalAmount -= totalReturnSale;
+                originalInvoice.TotalCost -= totalReturnCost;
+                originalInvoice.TotalProfit -= profitReturn;
+                await _unitOfWork.SaleInvoices.UpdateAsync(originalInvoice);
             }
 
             await _unitOfWork.SaveChangesAsync();
@@ -67,6 +64,12 @@ namespace SmartPharmacySystem.Application.Services
             var detail = await _unitOfWork.SalesReturnDetails.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"تفصيل مرتجع المبيعات برقم {id} غير موجود");
 
+            var parentReturn = await _unitOfWork.SalesReturns.GetByIdAsync(detail.SalesReturnId)
+                 ?? throw new KeyNotFoundException($"المرتجع الرئيسي غير موجود");
+
+            if (parentReturn.Status != DocumentStatus.Draft)
+                throw new InvalidOperationException("لا يمكن تعديل أصناف مرتجع معتمد أو ملغى. التعديل مسموح فقط لحالة مسودة (Draft).");
+
             _mapper.Map(dto, detail);
             await _unitOfWork.SalesReturnDetails.UpdateAsync(detail);
             await _unitOfWork.SaveChangesAsync();
@@ -74,40 +77,35 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task DeleteAsync(int id)
         {
-            var detail = await _unitOfWork.SalesReturnDetails.GetByIdAsync(id);
-            if (detail != null)
+            var detail = await _unitOfWork.SalesReturnDetails.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"تفصيل مرتجع المبيعات برقم {id} غير موجود");
+
+            var parentReturn = await _unitOfWork.SalesReturns.GetByIdAsync(detail.SalesReturnId)
+                 ?? throw new KeyNotFoundException($"المرتجع الرئيسي غير موجود");
+
+            if (parentReturn.Status != DocumentStatus.Draft)
+                throw new InvalidOperationException("لا يمكن حذف أصناف من مرتجع معتمد أو ملغى. التعديل مسموح فقط لحالة مسودة (Draft).");
+
+            // Update Parent return total
+            decimal totalReturnSale = detail.Quantity * detail.SalePrice;
+            parentReturn.TotalAmount -= totalReturnSale;
+            await _unitOfWork.SalesReturns.UpdateAsync(parentReturn);
+
+            // Revert Original Invoice Update
+            var originalInvoice = await _unitOfWork.SaleInvoices.GetByIdAsync(parentReturn.SaleInvoiceId);
+            if (originalInvoice != null)
             {
-                // Update Parent
+                decimal totalReturnCost = detail.Quantity * detail.UnitCost;
+                decimal profitReturn = totalReturnSale - totalReturnCost;
 
-                // Update Parent
-                var parentReturn = await _unitOfWork.SalesReturns.GetByIdAsync(detail.SalesReturnId);
-                if (parentReturn != null)
-                {
-                    decimal totalReturnSale = detail.Quantity * detail.SalePrice;
-                    parentReturn.TotalAmount -= totalReturnSale;
-                    await _unitOfWork.SalesReturns.UpdateAsync(parentReturn);
-
-                    // Revert Original Invoice Update
-                    var originalInvoice = await _unitOfWork.SaleInvoices.GetByIdAsync(parentReturn.SaleInvoiceId);
-                    if (originalInvoice != null)
-                    {
-                        decimal totalReturnCost = detail.Quantity * detail.UnitCost;
-                        decimal profitReturn = totalReturnSale - totalReturnCost;
-
-                        originalInvoice.TotalAmount += totalReturnSale;
-                        originalInvoice.TotalCost += totalReturnCost;
-                        originalInvoice.TotalProfit += profitReturn;
-                        await _unitOfWork.SaleInvoices.UpdateAsync(originalInvoice);
-                    }
-                }
-
-                await _unitOfWork.SalesReturnDetails.DeleteAsync(id);
-                await _unitOfWork.SaveChangesAsync();
+                originalInvoice.TotalAmount += totalReturnSale;
+                originalInvoice.TotalCost += totalReturnCost;
+                originalInvoice.TotalProfit += profitReturn;
+                await _unitOfWork.SaleInvoices.UpdateAsync(originalInvoice);
             }
-            else
-            {
-                throw new KeyNotFoundException($"تفصيل مرتجع المبيعات برقم {id} غير موجود");
-            }
+
+            await _unitOfWork.SalesReturnDetails.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<SalesReturnDetailDto> GetByIdAsync(int id)

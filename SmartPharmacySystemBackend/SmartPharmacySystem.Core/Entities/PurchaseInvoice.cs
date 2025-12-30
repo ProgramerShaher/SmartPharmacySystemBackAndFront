@@ -1,4 +1,5 @@
 using SmartPharmacySystem.Core.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace SmartPharmacySystem.Core.Entities;
 
@@ -41,12 +42,19 @@ public class PurchaseInvoice
     /// <summary>
     /// Payment method used (Cash/Credit).
     /// </summary>
-    public string PaymentMethod { get; set; }
+    [Required]
+    public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
     /// <summary>
     /// Additional notes about the invoice.
     /// </summary>
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// هل تم سداد الفاتورة (للفواتير الآجلة)
+    /// Has the invoice been paid (for credit invoices)
+    /// </summary>
+    public bool IsPaid { get; set; } = false;
 
     /// <summary>
     /// Date and time when the invoice was created.
@@ -58,6 +66,26 @@ public class PurchaseInvoice
     /// معرف المستخدم الذي أنشأ هذه الفاتورة.
     /// </summary>
     public int CreatedBy { get; set; }
+
+    /// <summary>
+    /// ID of the user who approved this invoice.
+    /// </summary>
+    public int? ApprovedBy { get; set; }
+
+    /// <summary>
+    /// Date and time when the invoice was approved.
+    /// </summary>
+    public DateTime? ApprovedAt { get; set; }
+
+    /// <summary>
+    /// ID of the user who cancelled this invoice.
+    /// </summary>
+    public int? CancelledBy { get; set; }
+
+    /// <summary>
+    /// Date and time when the invoice was cancelled.
+    /// </summary>
+    public DateTime? CancelledAt { get; set; }
 
     /// <summary>
     /// Soft delete flag.
@@ -73,6 +101,15 @@ public class PurchaseInvoice
     /// Navigation property to the supplier.
     /// </summary>
     public Supplier Supplier { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public virtual User? Creator { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public virtual User? Approver { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public virtual User? Canceller { get; set; }
 
     /// <summary>
     /// Collection of purchase invoice details.

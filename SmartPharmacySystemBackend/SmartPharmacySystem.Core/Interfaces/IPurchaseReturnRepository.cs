@@ -11,4 +11,5 @@ public interface IPurchaseReturnRepository
     Task DeleteAsync(int id);
     Task SoftDeleteAsync(int id); // Adding for consistency
     Task<bool> ExistsAsync(int id);
+    Task<IEnumerable<PurchaseReturn>> GetByPurchaseInvoiceIdAsync(int purchaseInvoiceId);
 }

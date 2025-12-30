@@ -41,7 +41,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     }
 
     /// <inheritdoc/>
-    public async Task<MedicineBatch?> GetByIdAsync(int id)
+    public async Task<MedicineBatch?> GetByIdAsync(int? id)
     {
         return await _db.MedicineBatches
             .Include(b => b.Medicine)
@@ -59,8 +59,21 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         return await _db.MedicineBatches
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
-            .Include(b => b.InventoryMovements)
             .FirstOrDefaultAsync(b => b.BatchBarcode == barcode && !b.IsDeleted);
+    }
+
+    /// <inheritdoc/>
+    public async Task<MedicineBatch?> GetByBarcodeAndExpiryAsync(string barcode, DateTime expiryDate)
+    {
+        if (string.IsNullOrWhiteSpace(barcode))
+            return null;
+
+        var dateOnly = expiryDate.Date;
+        return await _db.MedicineBatches
+            .Include(b => b.Medicine)
+            .FirstOrDefaultAsync(b => b.BatchBarcode == barcode
+                                      && b.ExpiryDate.Date == dateOnly
+                                      && !b.IsDeleted);
     }
 
     /// <inheritdoc/>
@@ -246,20 +259,27 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     public async Task<int> UpdateExpiredBatchesStatusAsync()
     {
         var now = DateTime.UtcNow.Date;
+        var thresholdDate = now.AddDays(3);
 
-        var expiredBatches = await _db.MedicineBatches
+        var batchesToUpdate = await _db.MedicineBatches
             .Where(b => !b.IsDeleted
-                        && b.ExpiryDate.Date <= now
-                        && b.Status != "Expired")
+                        && b.Status == "Active"
+                        && b.ExpiryDate.Date < thresholdDate)
             .ToListAsync();
 
-        foreach (var batch in expiredBatches)
+        foreach (var batch in batchesToUpdate)
         {
-            batch.Status = "Expired";
-            // batch.UpdatedAt = DateTime.UtcNow; // No UpdatedAt
+            if (batch.ExpiryDate.Date < now)
+            {
+                batch.Status = "Expired";
+            }
+            else if (batch.ExpiryDate.Date < thresholdDate)
+            {
+                batch.Status = "Quarantine";
+            }
         }
 
-        return expiredBatches.Count;
+        return batchesToUpdate.Count;
     }
 
     /// <inheritdoc/>
@@ -273,5 +293,23 @@ public class MedicineBatchRepository : IMedicineBatchRepository
                         && b.Status == "Active"
                         && b.ExpiryDate.Date > now)
             .SumAsync(b => b.InventoryMovements.Sum(m => m.Quantity));
+    }
+    /// <inheritdoc/>
+    public async Task<int> GetTotalQuantityAsync(int medicineId)
+    {
+        return await _db.MedicineBatches
+            .Where(b => !b.IsDeleted && b.MedicineId == medicineId)
+            .SumAsync(b => b.RemainingQuantity);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IEnumerable<MedicineBatch>> GetAllWithMedicineAsync()
+    {
+        return await _db.MedicineBatches
+            .Include(b => b.Medicine)
+            .Include(b => b.CreatedByUser)
+            .Where(b => !b.IsDeleted)
+            .OrderBy(b => b.ExpiryDate)
+            .ToListAsync();
     }
 }

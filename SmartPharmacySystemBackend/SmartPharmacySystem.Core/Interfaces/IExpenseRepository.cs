@@ -15,5 +15,5 @@ public interface IExpenseRepository
     Task DeleteAsync(int id);
     Task SoftDeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
-    Task<(IEnumerable<Expense> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize, string sortBy, string sortDir, DateTime? fromDate, DateTime? toDate, string? expenseType);
+    Task<(IEnumerable<Expense> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize, string sortBy, string sortDir, DateTime? fromDate, DateTime? toDate, int? categoryId);
 }

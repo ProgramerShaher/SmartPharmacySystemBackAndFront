@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.SalesInvoices;
 using SmartPharmacySystem.Application.Interfaces;
@@ -5,10 +7,12 @@ using SmartPharmacySystem.Application.Wrappers;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.OpenApi.Extensions;
 
 namespace SmartPharmacySystem.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class SalesInvoicesController : ControllerBase
     {
@@ -24,6 +28,10 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Get All / Search
         // -------------------------------------------------------------
+        /// <summary>
+        /// Get all sales invoices
+        /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? search = null)
         {
@@ -33,7 +41,7 @@ namespace SmartPharmacySystem.Controllers
             {
                 search = search.ToLower();
                 invoices = invoices.Where(i => i.CustomerName.ToLower().Contains(search) ||
-                                               i.PaymentMethod.ToLower().Contains(search));
+                                               i.PaymentMethod.GetDisplayName().Contains(search));
             }
 
             if (invoices == null || !invoices.Any())
@@ -62,10 +70,10 @@ namespace SmartPharmacySystem.Controllers
         // Create
         // -------------------------------------------------------------
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateSaleInvoiceDto dto)
+        public async Task<Results<Created<ApiResponse<SaleInvoiceDto>>, BadRequest<ApiResponse<object>>>> Create([FromBody] CreateSaleInvoiceDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ApiResponse<object>.Failed("بيانات الفاتورة غير صحيحة"));
+                return TypedResults.BadRequest(ApiResponse<object>.Failed("بيانات الفاتورة غير صحيحة"));
 
             // Populate CreatedBy from authenticated user or default (assuming ID 1 is System/Admin)
             int userId = 1;
@@ -74,10 +82,9 @@ namespace SmartPharmacySystem.Controllers
             {
                 userId = parsedId;
             }
-            dto.CreatedBy = userId;
-
-            var created = await _service.CreateAsync(dto);
-            return StatusCode(201, ApiResponse<SaleInvoiceDto>.Succeeded(created, "تم إضافة فاتورة المبيعات بنجاح", 201));
+            var created = await _service.CreateAsync(dto, userId);
+            return TypedResults.Created($"/api/SalesInvoices/{created.Id}",
+                ApiResponse<SaleInvoiceDto>.Succeeded(created, "تم إضافة فاتورة المبيعات بنجاح", 201));
         }
 
         // -------------------------------------------------------------
@@ -101,32 +108,83 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Approve
         // -------------------------------------------------------------
+        /// <summary>
+        /// Approve sales invoice
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpPost("{id}/approve")]
-        public async Task<IActionResult> Approve(int id)
+        public async Task<Results<Ok<ApiResponse<object>>, BadRequest<ApiResponse<object>>>> Approve(int id)
+        {
+            if (id <= 0)
+                return TypedResults.BadRequest(ApiResponse<object>.Failed("رقم الفاتورة غير صحيح"));
+
+            try
+            {
+                int userId = 1;
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+                if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+                {
+                    userId = parsedId;
+                }
+
+                await _service.ApproveAsync(id, userId);
+                return TypedResults.Ok(ApiResponse<object>.Succeeded(new { }, "تم اعتماد الفاتورة وتحديث المخزون بنجاح"));
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest(ApiResponse<object>.Failed(ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Unapprove sales invoice
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
+        [HttpPost("{id}/unapprove")]
+        public async Task<IActionResult> Unapprove(int id)
         {
             if (id <= 0)
                 return BadRequest(ApiResponse<object>.Failed("رقم الفاتورة غير صحيح"));
 
-            await _service.ApproveAsync(id);
-            return Ok(ApiResponse<object?>.Succeeded(null, "تم اعتماد الفاتورة وتحديث المخزون بنجاح"));
+            await _service.UnapproveSalesInvoiceAsync(id);
+            return Ok(ApiResponse<object?>.Succeeded(null, "تم إلغاء اعتماد الفاتورة وعكس حركات المخزون والمالية بنجاح"));
         }
 
         // -------------------------------------------------------------
         // Cancel
         // -------------------------------------------------------------
+        /// <summary>
+        /// Cancel sales invoice
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
             if (id <= 0)
                 return BadRequest(ApiResponse<object>.Failed("رقم الفاتورة غير صحيح"));
 
-            await _service.CancelAsync(id);
+            int userId = 1;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            await _service.CancelAsync(id, userId);
             return Ok(ApiResponse<object?>.Succeeded(null, "تم إلغاء الفاتورة وعكس حركات المخزون بنجاح"));
         }
 
         // -------------------------------------------------------------
         // Delete
         // -------------------------------------------------------------
+        /// <summary>
+        /// Delete sales invoice
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

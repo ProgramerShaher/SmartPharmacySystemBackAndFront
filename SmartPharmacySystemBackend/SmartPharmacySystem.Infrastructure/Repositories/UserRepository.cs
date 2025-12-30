@@ -83,7 +83,10 @@ public class UserRepository : IUserRepository
 
         // Apply role filter
         if (!string.IsNullOrWhiteSpace(role))
-            query = query.Where(u => u.Role == role);
+        {
+            query = query.Include(u => u.Role)
+                         .Where(u => u.Role.Name == role);
+        }
 
         // Apply isDeleted filter
         if (isDeleted.HasValue)

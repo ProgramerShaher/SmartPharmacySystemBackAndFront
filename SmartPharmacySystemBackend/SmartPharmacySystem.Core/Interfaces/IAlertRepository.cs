@@ -9,7 +9,7 @@ public interface IAlertRepository
     Task<Alert?> GetByIdAsync(int id);
 
     Task<IEnumerable<Alert>> GetByBatchIdAsync(int batchId);
-    Task<IEnumerable<Alert>> GetByStatusAsync(AlertStatus status);
+    Task<IEnumerable<Alert>> GetByReadStatusAsync(bool isRead);
     Task<IEnumerable<Alert>> GetExpiringAlertsAsync(DateTime date);
 
     Task<bool> ExistsAsync(int id);

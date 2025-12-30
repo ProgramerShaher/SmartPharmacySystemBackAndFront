@@ -9,13 +9,34 @@ public interface IFinancialService
     // Account operations
     Task<PharmacyAccountDto> GetBalanceAsync();
 
-    // Core logic
-    Task<FinancialTransactionDto> ProcessTransactionAsync(decimal amount, FinancialTransactionType type, string description, int? originalInvoiceId = null, FinancialInvoiceType? invoiceType = null);
+    // Core transaction processing
+    Task<FinancialTransactionDto> ProcessTransactionAsync(
+        int accountId,
+        decimal amount,
+        FinancialTransactionType type,
+        ReferenceType referenceType,
+        int referenceId,
+        string description);
+
+    Task<FinancialTransactionDto> AddOpeningBalanceAsync(
+        int accountId,
+        decimal amount,
+        string description = "الرصيد الافتتاحي");
+
+    Task<FinancialTransactionDto> AddManualAdjustmentAsync(
+        int accountId,
+        decimal amount,
+        string description,
+        bool isAdminUser = false);
 
     // Query operations
     Task<PagedResponse<FinancialTransactionDto>> GetTransactionsAsync(FinancialTransactionQueryDto query);
-    Task<PagedResponse<FinancialInvoiceDto>> GetFinancialInvoicesAsync(FinancialInvoiceQueryDto query);
 
     // Reporting
     Task<FinancialReportDto> GetFinancialReportAsync(DateTime? start, DateTime? end);
+
+    Task<PagedResponse<GeneralLedgerDto>> GetGeneralLedgerAsync(DateTime? start, DateTime? end, int page, int pageSize);
+    Task<IEnumerable<AnnualFinancialReportDto>> GetAnnualFinancialReportAsync(int year);
+    Task<IEnumerable<FinancialSummaryDto>> GetAnnualFinancialSummaryAsync(int year);
+    Task ReverseFinancialTransactionAsync(ReferenceType referenceType, int referenceId, string description);
 }

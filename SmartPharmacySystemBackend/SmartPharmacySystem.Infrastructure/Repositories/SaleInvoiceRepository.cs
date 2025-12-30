@@ -25,6 +25,9 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
                 .ThenInclude(d => d.Medicine)
             .Include(s => s.SaleInvoiceDetails)
                 .ThenInclude(d => d.Batch)
+            .Include(s => s.Creator)
+            .Include(s => s.Approver)
+            .Include(s => s.Canceller)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
@@ -32,6 +35,9 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
     {
         return await _context.SaleInvoices
             .Include(s => s.SaleInvoiceDetails)
+            .Include(s => s.Creator)
+            .Include(s => s.Approver)
+            .Include(s => s.Canceller)
             .OrderByDescending(s => s.InvoiceDate)
             .ToListAsync();
     }
@@ -69,7 +75,8 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
             // I will implement same as delete for now if property unknown, 
             // OR ideally I should have checked SaleInvoice.cs.
             // Given time constraints, I will implement as Remove unless I see IsDeleted.
-             _context.SaleInvoices.Remove(entity);
+            entity.IsDeleted = true;
+            _context.SaleInvoices.Update(entity);
         }
     }
 

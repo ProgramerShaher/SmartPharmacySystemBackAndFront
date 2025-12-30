@@ -5,11 +5,7 @@ VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.API", "SmartPharmacySystem\SmartPharmacySystem.API.csproj", "{5CB299BF-A687-4F01-89BD-E32F215A1264}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.Core", "SmartPharmacySystem.Core\SmartPharmacySystem.Core.csproj", "{80FBC4A2-9723-4E62-95DA-FED8564E9257}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.Application", "SmartPharmacySystem.Application\SmartPharmacySystem.Application.csproj", "{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.Infrastructure", "SmartPharmacySystem.Infrastructure\SmartPharmacySystem.Infrastructure.csproj", "{35595FCE-3251-40CB-D6E7-67992C355EB6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,18 +17,10 @@ Global
 		{5CB299BF-A687-4F01-89BD-E32F215A1264}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CB299BF-A687-4F01-89BD-E32F215A1264}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CB299BF-A687-4F01-89BD-E32F215A1264}.Release|Any CPU.Build.0 = Release|Any CPU
-		{80FBC4A2-9723-4E62-95DA-FED8564E9257}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{80FBC4A2-9723-4E62-95DA-FED8564E9257}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{80FBC4A2-9723-4E62-95DA-FED8564E9257}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{80FBC4A2-9723-4E62-95DA-FED8564E9257}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

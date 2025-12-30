@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
-using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
 using SmartPharmacySystem.Infrastructure.Extensions;
 
@@ -67,6 +66,22 @@ public class MedicineRepository : IMedicineRepository
         return await _context.Medicines.AnyAsync(m => m.Id == id);
     }
 
+    public async Task<IEnumerable<Medicine>> GetAlternativesAsync(string activeIngredient, int excludeMedicineId)
+    {
+        if (string.IsNullOrWhiteSpace(activeIngredient))
+            return new List<Medicine>();
+
+        return await _context.Medicines
+            .Include(m => m.MedicineBatches)
+            .Where(m => m.ActiveIngredient == activeIngredient
+                     && m.Id != excludeMedicineId
+                     && !m.IsDeleted
+                     && m.Status == "Active")
+            .OrderByDescending(m => m.MedicineBatches.Sum(b => b.RemainingQuantity))
+            .Take(3)
+            .ToListAsync();
+    }
+
     public async Task<(IEnumerable<Medicine> Items, int TotalCount)> GetPagedAsync(string search, int page, int pageSize, string sortBy, string sortDirection, int? categoryId, string manufacturer, string status)
     {
         var query = _context.Medicines
@@ -106,5 +121,27 @@ public class MedicineRepository : IMedicineRepository
         query = query.ApplyPaging(page, pageSize);
 
         return (await query.ToListAsync(), totalCount);
+    }
+
+    public async Task<IEnumerable<MedicineBatch>> GetBatchesByFEFOAsync(int medicineId)
+    {
+        return await _context.MedicineBatches
+            .Where(b => b.MedicineId == medicineId
+                     && b.RemainingQuantity > 0
+                     && b.ExpiryDate > DateTime.UtcNow
+                     && !b.IsDeleted
+                     && b.Status == "Active")
+            .OrderBy(b => b.ExpiryDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Medicine>> GetReorderReadyMedicinesAsync()
+    {
+        return await _context.Medicines
+            .Include(m => m.MedicineBatches)
+            .Where(m => !m.IsDeleted
+                     && m.Status == "Active"
+                     && m.MedicineBatches.Where(b => !b.IsDeleted && b.Status == "Active").Sum(b => b.RemainingQuantity) <= m.ReorderLevel)
+            .ToListAsync();
     }
 }

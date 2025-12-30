@@ -12,6 +12,14 @@ public class FinancialTransaction
     public int Id { get; set; }
 
     /// <summary>
+    /// معرف الحساب المرتبط بهذه الحركة
+    /// Account ID associated with this transaction
+    /// </summary>
+    [Required]
+    public int AccountId { get; set; }
+
+    /// <summary>
+    /// نوع الحركة (دخل أو مصروف)
     /// Type of the transaction (Income or Expense).
     /// </summary>
     [Required]
@@ -20,21 +28,43 @@ public class FinancialTransaction
     /// <summary>
     /// Amount of the transaction.
     /// </summary>
+    [Required]
     public decimal Amount { get; set; }
+
+    /// <summary>
+    /// نوع المرجع الذي أنشأ هذه الحركة
+    /// Reference type that created this transaction
+    /// </summary>
+    [Required]
+    public ReferenceType ReferenceType { get; set; }
+
+    /// <summary>
+    /// معرف المرجع (مثل: معرف الفاتورة)
+    /// Reference ID (e.g., Invoice ID)
+    /// </summary>
+    [Required]
+    public int ReferenceId { get; set; }
 
     /// <summary>
     /// Description explaining the reason for the transaction.
     /// </summary>
     [Required]
+    [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 
     /// <summary>
-    /// Date and time when the transaction occurred.
+    /// تاريخ الحركة المالية (قد يختلف عن تاريخ الإنشاء)
+    /// Transaction date (may differ from creation date)
     /// </summary>
-    public DateTime Date { get; set; }
+    public DateTime TransactionDate { get; set; }
 
     /// <summary>
-    /// Optional reference to a FinancialInvoice Id.
+    /// Date and time when the transaction was created in the system.
     /// </summary>
-    public int? RelatedInvoiceId { get; set; }
+    public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Navigation property to the pharmacy account.
+    /// </summary>
+    public PharmacyAccount Account { get; set; } = null!;
 }

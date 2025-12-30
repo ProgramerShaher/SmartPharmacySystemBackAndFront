@@ -99,6 +99,15 @@ public class MedicineBatchResponseDto
     /// <example>Active</example>
     public string Status { get; set; } = string.Empty;
 
+    // Status Tracking & Dynamic Colors
+    public string StatusName { get; set; } = string.Empty;
+    public string StatusColor { get; set; } = string.Empty;
+    public string StatusIcon { get; set; } = string.Empty;
+
+    // Action Tracking (Last Action)
+    public string ActionByName { get; set; } = string.Empty;
+    public DateTime ActionDate { get; set; }
+
     /// <summary>
     /// Whether the batch is expired.
     /// هل الدفعة منتهية الصلاحية.

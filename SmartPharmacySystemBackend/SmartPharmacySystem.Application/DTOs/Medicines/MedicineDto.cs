@@ -17,9 +17,19 @@ public class MedicineDto
     public string InternalCode { get; set; } = string.Empty;
 
     /// <summary>
-    /// اسم الدواء
+    /// اسم الدواء (الاسم التجاري)
     /// </summary>
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// الاسم العلمي
+    /// </summary>
+    public string? ScientificName { get; set; }
+
+    /// <summary>
+    /// المادة الفعالة
+    /// </summary>
+    public string? ActiveIngredient { get; set; }
 
     /// <summary>
     /// معرف الفئة
@@ -42,6 +52,11 @@ public class MedicineDto
     public string DefaultBarcode { get; set; } = string.Empty;
 
     /// <summary>
+    /// متوسط تكلفة الشراء
+    /// </summary>
+    public decimal MovingAverageCost { get; set; }
+
+    /// <summary>
     /// سعر الشراء الافتراضي
     /// </summary>
     public decimal DefaultPurchasePrice { get; set; }
@@ -55,6 +70,11 @@ public class MedicineDto
     /// الحد الأدنى للتنبيه بالكمية
     /// </summary>
     public int MinAlertQuantity { get; set; }
+
+    /// <summary>
+    /// نقطة إعادة الطلب
+    /// </summary>
+    public int ReorderLevel { get; set; }
 
     /// <summary>
     /// هل يُباع بالوحدة

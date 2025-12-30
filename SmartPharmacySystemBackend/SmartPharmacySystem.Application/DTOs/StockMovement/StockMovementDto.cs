@@ -14,6 +14,7 @@ public class StockMovementDto
     public int ReferenceId { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
+    public string FinancialDescription { get; set; } // ÇáæÕİ ÇáĞí ÓíÌáÈ ãä ÌÏæá ÇáãÇáíÉ
     public string? MedicineName { get; set; }
     public string? BatchNumber { get; set; }
 }

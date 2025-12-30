@@ -57,7 +57,22 @@ public class SalesReturnDetailDto
     public decimal UnitCost { get; set; }
 
     /// <summary>
-    /// المبلغ الإجمالي للإرجاع
+    /// المبلغ الإجمالي للإرجاع للسطر (الكمية * سعر البيع)
+    /// </summary>
+    public decimal TotalLineAmount { get; set; }
+
+    /// <summary>
+    /// التكلفة الإجمالية للسطر
+    /// </summary>
+    public decimal TotalCost { get; set; }
+
+    /// <summary>
+    /// أثر الربح للسطر
+    /// </summary>
+    public decimal Profit { get; set; }
+
+    /// <summary>
+    /// المبلغ الإجمالي للإرجاع (قديم - استعمل TotalLineAmount)
     /// </summary>
     public decimal TotalReturn { get; set; }
 

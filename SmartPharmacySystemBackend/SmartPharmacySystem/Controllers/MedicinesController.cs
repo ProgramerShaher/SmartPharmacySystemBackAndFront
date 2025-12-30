@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Medicine;
 using SmartPharmacySystem.Application.DTOs.Shared;
@@ -6,6 +7,7 @@ using SmartPharmacySystem.Application.Wrappers;
 
 namespace SmartPharmacySystem.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class MedicinesController : ControllerBase
@@ -22,6 +24,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Search and paginate medicines with optional filters (category, manufacturer, status)
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] MedicineQueryDto query)
         {
@@ -36,6 +39,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Get all medicines without pagination
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet("all")]
         public async Task<IActionResult> GetAllNoPaging()
         {
@@ -46,6 +50,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Get medicine by ID
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -62,6 +67,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Create a new medicine
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateMedicineDto dto)
         {
@@ -75,6 +81,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Update an existing medicine
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateMedicineDto dto)
         {
@@ -96,6 +103,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete a medicine (soft delete)
         /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -108,6 +117,26 @@ namespace SmartPharmacySystem.Controllers
 
             await _medicineService.DeleteMedicineAsync(id);
             return Ok(ApiResponse<object>.Succeeded(null, "Medicine deleted successfully"));
+        }
+
+        /// <summary>
+        /// Get batches suggest for a medicine by FEFO (First Expired First Out)
+        /// </summary>
+        [HttpGet("{id}/fefo-batches")]
+        public async Task<IActionResult> GetFEFOBatches(int id)
+        {
+            var batches = await _medicineService.GetBatchesByFEFOAsync(id);
+            return Ok(ApiResponse<IEnumerable<SmartPharmacySystem.Application.DTOs.MedicineBatch.MedicineBatchResponseDto>>.Succeeded(batches, "FEFO batches retrieved successfully"));
+        }
+
+        /// <summary>
+        /// Get report of medicines that reached reorder level
+        /// </summary>
+        [HttpGet("reorder-report")]
+        public async Task<IActionResult> GetReorderReport()
+        {
+            var report = await _medicineService.GetReorderReportAsync();
+            return Ok(ApiResponse<IEnumerable<MedicineDto>>.Succeeded(report, "Reorder report generated successfully"));
         }
     }
 }

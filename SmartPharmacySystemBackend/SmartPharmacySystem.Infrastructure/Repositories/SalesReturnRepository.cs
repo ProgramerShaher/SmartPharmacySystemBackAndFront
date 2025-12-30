@@ -26,6 +26,9 @@ public class SalesReturnRepository : ISalesReturnRepository
                 .ThenInclude(d => d.Medicine)
             .Include(r => r.SalesReturnDetails)
                 .ThenInclude(d => d.Batch)
+            .Include(r => r.Creator)
+            .Include(r => r.Approver)
+            .Include(r => r.Canceller)
             .FirstOrDefaultAsync(r => r.Id == id);
     }
 
@@ -34,6 +37,9 @@ public class SalesReturnRepository : ISalesReturnRepository
         return await _context.SalesReturns
             .Include(r => r.SaleInvoice)
             .Include(r => r.SalesReturnDetails)
+            .Include(r => r.Creator)
+            .Include(r => r.Approver)
+            .Include(r => r.Canceller)
             .OrderByDescending(r => r.ReturnDate)
             .ToListAsync();
     }
@@ -77,5 +83,13 @@ public class SalesReturnRepository : ISalesReturnRepository
     public async Task<bool> ExistsAsync(int id)
     {
         return await _context.SalesReturns.AnyAsync(x => x.Id == id);
+    }
+
+    public async Task<IEnumerable<SalesReturn>> GetBySaleInvoiceIdAsync(int saleInvoiceId)
+    {
+        return await _context.SalesReturns
+            .Include(r => r.SalesReturnDetails)
+            .Where(r => r.SaleInvoiceId == saleInvoiceId)
+            .ToListAsync();
     }
 }

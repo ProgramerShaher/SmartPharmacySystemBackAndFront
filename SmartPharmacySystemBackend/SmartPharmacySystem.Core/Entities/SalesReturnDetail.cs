@@ -42,7 +42,22 @@ public class SalesReturnDetail
     public decimal UnitCost { get; set; }
 
     /// <summary>
-    /// Total return amount for this line.
+    /// Total return amount for this line (Quantity * SalePrice).
+    /// </summary>
+    public decimal TotalLineAmount { get; set; }
+
+    /// <summary>
+    /// Total cost for this line (Quantity * UnitCost).
+    /// </summary>
+    public decimal TotalCost { get; set; }
+
+    /// <summary>
+    /// Profit impact for this line.
+    /// </summary>
+    public decimal Profit { get; set; }
+
+    /// <summary>
+    /// Total return amount for this line (Old property, deprecated in favor of TotalLineAmount).
     /// </summary>
     public decimal TotalReturn { get; set; }
 

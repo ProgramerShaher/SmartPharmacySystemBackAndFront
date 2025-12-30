@@ -18,6 +18,7 @@ public class SaleInvoiceDetailDto
     public decimal TotalLineAmount { get; set; }
     public decimal TotalCost { get; set; }
     public decimal Profit { get; set; }
+    public int RemainingQtyToReturn { get; set; }
     public bool IsDeleted { get; set; }
 
     // --- Invoice Data ---

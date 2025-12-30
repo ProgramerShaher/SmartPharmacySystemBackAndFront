@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 
@@ -31,8 +32,8 @@ public class CreatePurchaseInvoiceDto
     /// طريقة الدفع
     /// </summary>
     [Required]
-    [StringLength(50, MinimumLength = 1, ErrorMessage = "طريقة الدفع يجب أن تكون بين 1 و 50 حرف")]
-    public string PaymentMethod { get; set; } = string.Empty;
+    [EnumDataType(typeof(PaymentType))]
+    public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
     /// <summary>
     /// ملاحظات
@@ -40,9 +41,14 @@ public class CreatePurchaseInvoiceDto
     [StringLength(500, ErrorMessage = "الملاحظات يجب أن تكون أقل من 500 حرف")]
     public string Notes { get; set; } = string.Empty;
 
+
+
+
     /// <summary>
-    /// معرف المستخدم الذي أنشأ الفاتورة
-    /// ID of the user creating the invoice
+    /// قائمة أصناف الفاتورة
+    /// List of invoice items
     /// </summary>
-    public int CreatedBy { get; set; }
+    [Required]
+    [MinLength(1, ErrorMessage = "يجب إضافة صنف واحد على الأقل للفاتورة")]
+    public List<SmartPharmacySystem.Application.DTOs.PurchaseInvoiceDetails.CreatePurchaseInvoiceDetailDto> Items { get; set; } = new();
 }

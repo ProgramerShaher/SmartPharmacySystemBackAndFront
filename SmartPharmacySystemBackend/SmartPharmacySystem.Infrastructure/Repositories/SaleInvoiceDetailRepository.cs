@@ -61,5 +61,14 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         {
             return await _context.SaleInvoiceDetails.AnyAsync(x => x.Id == id);
         }
+
+        public async Task<IEnumerable<SaleInvoiceDetail>> GetDetailsByInvoiceIdAsync(int invoiceId)
+        {
+            return await _context.SaleInvoiceDetails
+                .Include(d => d.Medicine)
+                .Include(d => d.Batch)
+                .Where(d => d.SaleInvoiceId == invoiceId)
+                .ToListAsync();
+        }
     }
 }

@@ -21,10 +21,9 @@ public class CreateSaleInvoiceDetailDto
     public int MedicineId { get; set; }
 
     /// <summary>
-    /// معرف دفعة الدواء
+    /// معرف دفعة الدواء (اختياري، يحدده النظام آلياً بناءً على FEFO إذا لم يرسل)
     /// </summary>
-    [Required]
-    public int BatchId { get; set; }
+    public int? BatchId { get; set; }
 
     /// <summary>
     /// الكمية
@@ -40,10 +39,4 @@ public class CreateSaleInvoiceDetailDto
     [Range(0.01, double.MaxValue, ErrorMessage = "سعر البيع يجب أن يكون أكبر من صفر")]
     public decimal SalePrice { get; set; }
 
-    /// <summary>
-    /// التكلفة للوحدة
-    /// </summary>
-    [Required]
-    [Range(0.01, double.MaxValue, ErrorMessage = "التكلفة يجب أن تكون أكبر من صفر")]
-    public decimal UnitCost { get; set; }
 }

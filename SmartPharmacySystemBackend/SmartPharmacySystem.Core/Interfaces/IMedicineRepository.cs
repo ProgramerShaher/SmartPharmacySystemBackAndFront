@@ -15,5 +15,10 @@ public interface IMedicineRepository
     Task DeleteAsync(int id);
     Task SoftDeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
+    Task<IEnumerable<Medicine>> GetAlternativesAsync(string activeIngredient, int excludeMedicineId);
     Task<(IEnumerable<Medicine> Items, int TotalCount)> GetPagedAsync(string search, int page, int pageSize, string sortBy, string sortDirection, int? categoryId, string manufacturer, string status);
+
+    // FEFO & Reorder Logic
+    Task<IEnumerable<MedicineBatch>> GetBatchesByFEFOAsync(int medicineId);
+    Task<IEnumerable<Medicine>> GetReorderReadyMedicinesAsync();
 }

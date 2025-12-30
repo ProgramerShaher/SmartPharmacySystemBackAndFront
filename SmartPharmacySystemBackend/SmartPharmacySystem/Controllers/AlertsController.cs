@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Alerts;
 using SmartPharmacySystem.Application.Interfaces;
@@ -8,6 +10,7 @@ using SmartPharmacySystem.Core.Enums;
 namespace SmartPharmacySystem.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class AlertsController : ControllerBase
     {
@@ -73,20 +76,40 @@ namespace SmartPharmacySystem.Controllers
         // Mark As Read
         // -------------------------------------------------------------
         [HttpPost("{id}/read")]
-        public async Task<IActionResult> MarkAsRead(int id)
+        public async Task<Ok<ApiResponse<object>>> MarkAsRead(int id)
         {
             await _alertService.MarkAsReadAsync(id);
-            return Ok(ApiResponse<object>.Succeeded(null, "تم تحديد التنبيه كمقروء"));
+            return TypedResults.Ok(ApiResponse<object>.Succeeded(new { }, "تم تحديد التنبيه كمقروء"));
         }
 
         // -------------------------------------------------------------
         // Generate Expiry Alerts
         // -------------------------------------------------------------
         [HttpPost("generate-expiry")]
-        public async Task<IActionResult> GenerateExpiry()
+        public async Task<Ok<ApiResponse<object>>> GenerateExpiry()
         {
             await _alertService.GenerateExpiryAlertsAsync();
-            return Ok(ApiResponse<object>.Succeeded(null, "تم توليد تنبيهات الصلاحية بنجاح"));
+            return TypedResults.Ok(ApiResponse<object>.Succeeded(new { }, "تم توليد تنبيهات الصلاحية بنجاح"));
+        }
+
+        // -------------------------------------------------------------
+        // Generate Low Stock Alerts
+        // -------------------------------------------------------------
+        [HttpPost("generate-low-stock")]
+        public async Task<IActionResult> GenerateLowStock()
+        {
+            await _alertService.GenerateLowStockAlertsAsync();
+            return Ok(ApiResponse<object>.Succeeded(null, "تم توليد تنبيهات نقص المخزون بنجاح"));
+        }
+
+        // -------------------------------------------------------------
+        // Sync Medicine Alerts
+        // -------------------------------------------------------------
+        [HttpPost("sync/{medicineId}")]
+        public async Task<IActionResult> SyncMedicineAlerts(int medicineId)
+        {
+            await _alertService.SyncMedicineAlertsAsync(medicineId);
+            return Ok(ApiResponse<object>.Succeeded(null, $"تم مزامنة تنبيهات الصنف {medicineId} بنجاح"));
         }
 
         // -------------------------------------------------------------
@@ -122,12 +145,17 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Delete
         // -------------------------------------------------------------
+        /// <summary>
+        /// Delete alert
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var success = await _alertService.DeleteAsync(id);
             if (!success)
-                 return NotFound(ApiResponse<object>.Failed($"التنبيه {id} غير موجود", 404));
+                return NotFound(ApiResponse<object>.Failed($"التنبيه {id} غير موجود", 404));
 
             return Ok(ApiResponse<object>.Succeeded(null, "تم حذف التنبيه بنجاح"));
         }

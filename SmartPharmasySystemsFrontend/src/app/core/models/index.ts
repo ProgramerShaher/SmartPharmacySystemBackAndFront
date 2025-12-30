@@ -22,6 +22,7 @@ export * from './payment.interface';
 export * from './finance-reports.interface';
 export * from './partner.interface';
 export * from './stock-movement.enums';
+export * from './financial.interface';
 
 // Re-export PagedResult for convenience
 export type { PagedResult } from './api-response.interface';

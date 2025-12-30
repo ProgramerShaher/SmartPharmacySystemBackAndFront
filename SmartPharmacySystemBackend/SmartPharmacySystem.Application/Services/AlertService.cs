@@ -1,272 +1,314 @@
-﻿// SmartPharmacySystem.Application/Services/AlertService.cs
-
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.DTOs.Alerts;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
-using SmartPharmacySystem.Application.Helpers;
 
 namespace SmartPharmacySystem.Application.Services
 {
-    public class AlertService : IAlertService
+    public class AlertService(
+        IAlertRepository alertRepository,
+        IMedicineBatchRepository batchRepository,
+        ILogger<AlertService> logger,
+        IMapper mapper,
+        IUnitOfWork unitOfWork) : IAlertService
     {
-        private readonly IAlertRepository _alertRepository;
-        private readonly IMedicineBatchRepository _batchRepository;
-        private readonly ILogger<AlertService> _logger;
-        private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public AlertService(
-            IAlertRepository alertRepository,
-            IMedicineBatchRepository batchRepository,
-            ILogger<AlertService> logger,
-            IMapper mapper,
-            IUnitOfWork unitOfWork)
-        {
-            _alertRepository = alertRepository;
-            _batchRepository = batchRepository;
-            _logger = logger;
-            _mapper = mapper;
-            _unitOfWork = unitOfWork;
-        }
-
-        // -------------------------------
-        // Get All
-        // -------------------------------
         public async Task<IEnumerable<AlertDto>> GetAllAsync()
         {
-            _logger.LogInformation("جلب جميع التنبيهات");
-            var alerts = await _alertRepository.GetAllAsync();
-            return _mapper.Map<IEnumerable<AlertDto>>(alerts);
+            var alerts = await alertRepository.GetAllAsync();
+            return mapper.Map<IEnumerable<AlertDto>>(alerts);
         }
 
-        // -------------------------------
-        // Get By ID
-        // -------------------------------
         public async Task<AlertDto> GetByIdAsync(int id)
         {
-            _logger.LogInformation("جلب التنبيه برقم {Id}", id);
-
-            var alert = await _alertRepository.GetByIdAsync(id);
-            if (alert == null)
-            {
-                _logger.LogWarning("التنبيه برقم {Id} غير موجود", id);
-                throw new KeyNotFoundException($"التنبيه برقم {id} غير موجود");
-            }
-
-            return _mapper.Map<AlertDto>(alert);
+            var alert = await alertRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Alert {id} not found");
+            return mapper.Map<AlertDto>(alert);
         }
 
-        // -------------------------------
-        // Create
-        // -------------------------------
         public async Task<AlertDto> CreateAsync(CreateAlertDto dto)
         {
-            _logger.LogInformation("إنشاء تنبيه جديد لدفعة {BatchId}", dto.BatchId);
+            var batch = await batchRepository.GetByIdAsync(dto.BatchId)
+                ?? throw new KeyNotFoundException($"Batch {dto.BatchId} not found");
 
-            // التحقق من وجود الدفعة
-            var batch = await _batchRepository.GetByIdAsync(dto.BatchId);
-            if (batch == null)
-            {
-                _logger.LogWarning("الدفعة برقم {BatchId} غير موجودة", dto.BatchId);
-                throw new KeyNotFoundException($"الدفعة برقم {dto.BatchId} غير موجودة");
-            }
-
-            var alert = _mapper.Map<Alert>(dto);
-            alert.Status = AlertStatus.Pending;
-            alert.CreatedAt = DateTime.UtcNow;
-            alert.IsDeleted = false;
-
-            await _alertRepository.AddAsync(alert);
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("تم إنشاء التنبيه بنجاح برقم {Id}", alert.Id);
-
-            // Assign the batch to the alert to ensure it's available for mapping
-            alert.Batch = batch;
-
-            return _mapper.Map<AlertDto>(alert);
+            var alert = new Alert(dto.BatchId, dto.AlertType, dto.Severity, dto.Message, batch.ExpiryDate);
+            await alertRepository.AddAsync(alert);
+            await unitOfWork.SaveChangesAsync();
+            return mapper.Map<AlertDto>(alert);
         }
 
         public async Task<AlertDto> UpdateAsync(int id, UpdateAlertDto dto)
         {
-            _logger.LogInformation("تحديث التنبيه برقم {Id}", id);
+            var existing = await alertRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Alert {id} not found");
 
-            if (id != dto.Id)
-                throw new ArgumentException("رقم التنبيه غير متطابق");
+            existing.Severity = dto.Severity;
+            existing.Message = dto.Message;
+            existing.IsRead = dto.IsRead;
 
-            var existing = await _alertRepository.GetByIdAsync(id);
-            if (existing == null)
-            {
-                _logger.LogWarning("التنبيه برقم {Id} غير موجود", id);
-                throw new KeyNotFoundException($"التنبيه برقم {id} غير موجود");
-            }
-
-            _mapper.Map(dto, existing);
-
-            await _alertRepository.UpdateAsync(existing);
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("تم تحديث التنبيه برقم {Id} بنجاح", id);
-
-            return _mapper.Map<AlertDto>(existing);
+            await alertRepository.UpdateAsync(existing);
+            await unitOfWork.SaveChangesAsync();
+            return mapper.Map<AlertDto>(existing);
         }
 
-        // -------------------------------
-        // Delete
-        // -------------------------------
         public async Task<bool> DeleteAsync(int id)
         {
-            _logger.LogInformation("حذف التنبيه برقم {Id}", id);
-
-            var existing = await _alertRepository.GetByIdAsync(id);
-            if (existing == null)
-            {
-                _logger.LogWarning("التنبيه برقم {Id} غير موجود", id);
-                throw new KeyNotFoundException($"التنبيه برقم {id} غير موجود");
-            }
-
-            await _alertRepository.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("تم حذف التنبيه برقم {Id} بنجاح", id);
-
+            await alertRepository.DeleteAsync(id);
+            await unitOfWork.SaveChangesAsync();
             return true;
         }
 
-        // -------------------------------
-        // Get Alerts by Batch ID
-        // -------------------------------
         public async Task<IEnumerable<AlertDto>> GetByBatchIdAsync(int batchId)
         {
-            _logger.LogInformation("جلب تنبيهات الدفعة {BatchId}", batchId);
-
-            var alerts = await _alertRepository.GetByBatchIdAsync(batchId);
-            return _mapper.Map<IEnumerable<AlertDto>>(alerts);
+            var alerts = await alertRepository.GetByBatchIdAsync(batchId);
+            return mapper.Map<IEnumerable<AlertDto>>(alerts);
         }
 
-        // -------------------------------
-        // Get Alerts by Status
-        // -------------------------------
         public async Task<IEnumerable<AlertDto>> GetByStatusAsync(AlertStatus status)
         {
-            _logger.LogInformation("جلب التنبيهات بالحالة {Status}", status);
-
-            var alerts = await _alertRepository.GetByStatusAsync(status);
-            return _mapper.Map<IEnumerable<AlertDto>>(alerts);
+            var alerts = await alertRepository.GetByReadStatusAsync(status == AlertStatus.Read);
+            return mapper.Map<IEnumerable<AlertDto>>(alerts);
         }
 
-        // -------------------------------
-        // Mark as Read
-        // -------------------------------
         public async Task MarkAsReadAsync(int id)
         {
-            _logger.LogInformation("تحديد التنبيه برقم {Id} كمقروء", id);
-
-            var alert = await _alertRepository.GetByIdAsync(id);
-            if (alert == null)
-            {
-                _logger.LogWarning("التنبيه برقم {Id} غير موجود", id);
-                throw new KeyNotFoundException($"التنبيه برقم {id} غير موجود");
-            }
-
-            alert.Status = AlertStatus.Read;
-
-            await _alertRepository.UpdateAsync(alert);
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("تم تحديد التنبيه برقم {Id} كمقروء", id);
+            var alert = await alertRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"Alert {id} not found");
+            alert.IsRead = true;
+            await alertRepository.UpdateAsync(alert);
+            await unitOfWork.SaveChangesAsync();
         }
 
-        // -------------------------------
-        // Auto-Generate Expiry Alerts
-        // -------------------------------
         public async Task GenerateExpiryAlertsAsync()
         {
-            _logger.LogInformation("بدء إنشاء تنبيهات الانتهاء التلقائية");
-
-            var today = DateTime.UtcNow;
-            var batches = await _batchRepository.GetExpiringBatchesAsync();
-
-            foreach (var batch in batches)
+            var batches = await batchRepository.GetExpiringBatchesAsync();
+            var today = DateTime.UtcNow.Date;
+            foreach (var batch in batches.Where(b => !b.IsDeleted))
             {
-                // Validate batch status - skip invalid batches
-                if (!IsBatchEligibleForAlert(batch))
+                var daysLeft = (batch.ExpiryDate.Date - today).Days;
+                if (daysLeft <= 30)
                 {
-                    _logger.LogDebug("تخطي الدفعة {BatchId} - الحالة: {Status}", batch.Id, batch.Status);
-                    continue;
+                    var severity = daysLeft <= 0 ? AlertSeverity.Critical : AlertSeverity.Warning;
+                    var alert = new Alert(batch.Id, daysLeft <= 0 ? AlertType.Expired : AlertType.ExpiryOneMonth, severity, $"Medicine {batch.Medicine?.Name} is expiring soon.", batch.ExpiryDate);
+                    await alertRepository.AddAsync(alert);
                 }
-
-                var timeLeft = batch.ExpiryDate - today;
-
-                // Determine AlertType based on ExpiryStatus mapping
-                AlertType? alertType = timeLeft.TotalDays switch
-                {
-                    <= 7 => AlertType.ExpiryOneWeek,
-                    <= 14 => AlertType.ExpiryTwoWeeks,
-                    <= 30 => AlertType.ExpiryOneMonth,
-                    <= 60 => AlertType.ExpiryTwoMonths,
-                    _ => null
-                };
-
-                // Check if batch is already expired
-                if (batch.ExpiryDate.Date <= today.Date)
-                {
-                    alertType = AlertType.Expired;
-                }
-
-                if (alertType == null)
-                    continue;
-
-                // Prevent duplicate alerts
-                var existingAlerts = await _alertRepository.GetByBatchIdAsync(batch.Id);
-                if (existingAlerts.Any(a => a.AlertType == alertType.Value && a.ExecutionDate.Date == today.Date))
-                {
-                    _logger.LogDebug("تخطي الدفعة {BatchId} - التنبيه موجود بالفعل", batch.Id);
-                    continue;
-                }
-
-                var alert = new Alert
-                {
-                    BatchId = batch.Id,
-                    AlertType = alertType.Value,
-                    ExecutionDate = today,
-                    Status = AlertStatus.Pending,
-                    IsDeleted = false,
-                    CreatedAt = today
-                };
-
-                await _alertRepository.AddAsync(alert);
-
-                _logger.LogInformation("تم إنشاء تنبيه {AlertType} للدفعة {BatchId}", alertType, batch.Id);
             }
-
-            await _unitOfWork.SaveChangesAsync();
-
-            _logger.LogInformation("تم إنشاء جميع تنبيهات الانتهاء بنجاح");
+            await unitOfWork.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Validates if a batch is eligible for alert generation.
-        /// Skips SoldOut, Damaged, Quarantined, and Reserved batches.
-        /// </summary>
+        public async Task GenerateLowStockAlertsAsync()
+        {
+            var medicines = await unitOfWork.Medicines.GetAllAsync();
+            foreach (var med in medicines.Where(m => !m.IsDeleted))
+            {
+                var batches = await unitOfWork.MedicineBatches.GetBatchesByMedicineIdAsync(med.Id);
+                var totalQuantity = batches.Where(b => !b.IsDeleted).Sum(b => b.RemainingQuantity);
+                if (totalQuantity < med.MinAlertQuantity)
+                {
+                    var firstBatch = batches.FirstOrDefault();
+                    if (firstBatch != null)
+                    {
+                        var alert = new Alert(firstBatch.Id, AlertType.LowStock, AlertSeverity.Warning, $"Low stock for {med.Name}. Total: {totalQuantity}", null);
+                        await alertRepository.AddAsync(alert);
+                    }
+                }
+            }
+            await unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task SyncMedicineAlertsAsync(int medicineId)
+        {
+            await Task.CompletedTask;
+        }
+
         private bool IsBatchEligibleForAlert(MedicineBatch batch)
         {
-            // Parse batch status string to enum (assuming Status is still string in MedicineBatch)
             var status = batch.Status?.ToLower();
-
-            // Skip batches that should not generate alerts
-            if (status == "soldout" || status == "damaged" ||
-                status == "quarantined" || status == "reserved")
-            {
+            if (status == "soldout" || status == "damaged" || status == "quarantined" || status == "reserved")
                 return false;
+
+            return status == "available" || status == "expired" || status == "active";
+        }
+
+        public async Task<IEnumerable<SmartPharmacySystem.Application.DTOs.Notifications.ExpiryAlertDto>> GetRealTimeExpiryAlertsAsync()
+        {
+            // Fetch batches with Medicine included
+            var batches = await unitOfWork.MedicineBatches.GetAllWithMedicineAsync();
+
+            var today = DateTime.UtcNow.Date;
+            var alerts = new List<SmartPharmacySystem.Application.DTOs.Notifications.ExpiryAlertDto>();
+
+            // Filter: Quantity > 0 and Active/Expiring within 60 days
+            foreach (var batch in batches.Where(b => !b.IsDeleted && b.RemainingQuantity > 0))
+            {
+                var daysLeft = (batch.ExpiryDate.Date - today).Days;
+
+                if (daysLeft <= 60)
+                {
+                    ExpiryAlertLevel level;
+                    string levelText;
+                    string colorCode;
+
+                    if (daysLeft < 7) // Requirement: < 7 days (or <= 7? User said "< 7 days"). Usually means 6, 5... but "Critical" implies imminent. Let's strictly follow "< 7" or assume "Within 7 days" (<= 7).
+                    {
+                        // User said "< 7 days". Strict < 7 means 6 and below.
+                        // User listed:
+                        // < 7 days: Critical
+                        // < 14 days: High
+                        // < 30 days: Medium
+                        // < 60 days: Normal
+
+                        // Implementation Strategy:
+                        // If daysLeft < 7 -> Critical
+                        // Else if daysLeft < 14 -> High
+                        // Else if daysLeft < 30 -> Medium
+                        // Else if daysLeft < 60 -> Normal
+
+                        // Note: If daysLeft is negative (expired), it should also be Critical.
+                    }
+
+                    if (daysLeft < 7)
+                    {
+                        level = ExpiryAlertLevel.Critical;
+                        levelText = "خطر جداً";
+                        colorCode = "#CC0000";
+                    }
+                    else if (daysLeft < 14)
+                    {
+                        level = ExpiryAlertLevel.High;
+                        levelText = "تحذير عالٍ";
+                        colorCode = "#FF8800";
+                    }
+                    else if (daysLeft < 30)
+                    {
+                        level = ExpiryAlertLevel.Medium;
+                        levelText = "تنبيه متوسط";
+                        colorCode = "#FFBB33";
+                    }
+                    else // < 60 (Implicitly covers 30 to 59)
+                    {
+                        level = ExpiryAlertLevel.Normal;
+                        levelText = "تنبيه عادي";
+                        colorCode = "#0099CC";
+                    }
+
+                    alerts.Add(new SmartPharmacySystem.Application.DTOs.Notifications.ExpiryAlertDto
+                    {
+                        MedicineName = batch.Medicine?.Name ?? "Unknown",
+                        BatchNumber = batch.CompanyBatchNumber ?? "N/A",
+                        ExpiryDate = batch.ExpiryDate,
+                        DaysRemaining = daysLeft,
+                        Quantity = batch.RemainingQuantity,
+                        AlertLevel = level,
+                        AlertLevelText = levelText,
+                        ColorCode = colorCode
+                    });
+                }
             }
 
-            // Only generate alerts for Available and Expired batches
-            return status == "available" || status == "expired" || status == "active";
+            // Order by DaysRemaining ascending (Nearest expiry first)
+            return alerts.OrderBy(a => a.DaysRemaining).ToList();
+        }
+        public async Task<IEnumerable<UnifiedAlertDto>> GetActiveSystemAlertsAsync()
+        {
+            var alerts = new List<UnifiedAlertDto>();
+            var today = DateTime.UtcNow.Date;
+
+            // 1. Expiry Alerts (Batches with Quantity > 0)
+            var batches = await unitOfWork.MedicineBatches.GetAllWithMedicineAsync();
+            var activeBatches = batches.Where(b => !b.IsDeleted && b.RemainingQuantity > 0).ToList();
+
+            foreach (var batch in activeBatches)
+            {
+                var daysLeft = (batch.ExpiryDate.Date - today).Days;
+
+                if (daysLeft <= 60)
+                {
+                    string color;
+                    string level;
+
+                    if (daysLeft < 7)
+                    {
+                        color = "#CC0000"; // Critical
+                        level = "Critical"; // خطر جداً
+                    }
+                    else if (daysLeft < 15)
+                    {
+                        color = "#FF8800"; // HighWarning
+                        level = "HighWarning"; // تحذير عالٍ
+                    }
+                    else if (daysLeft < 30)
+                    {
+                        color = "#FFBB33"; // Warning
+                        level = "Warning"; // تنبيه
+                    }
+                    else
+                    {
+                        color = "#0099CC"; // Info
+                        level = "Info"; // معلومة
+                    }
+
+                    alerts.Add(new UnifiedAlertDto
+                    {
+                        Title = "تنبيه صلاحية",
+                        Message = $"الدواء {batch.Medicine?.Name} (تشغيلة {batch.CompanyBatchNumber}) ينتهي خلال {daysLeft} يوم.",
+                        StatusColor = color,
+                        StatusLevel = level,
+                        AlertType = "Expiry",
+                        DaysRemaining = daysLeft,
+                        Quantity = batch.RemainingQuantity,
+                        BatchNumber = batch.CompanyBatchNumber ?? "N/A",
+                        MedicineId = batch.MedicineId,
+                        BatchId = batch.Id
+                    });
+                }
+            }
+
+            // 2. Low Stock Alerts (Medicines)
+            var medicines = await unitOfWork.Medicines.GetAllAsync();
+            foreach (var med in medicines.Where(m => !m.IsDeleted))
+            {
+                // Calculate current total stock
+                var medBatches = batches.Where(b => b.MedicineId == med.Id && !b.IsDeleted); // Use fetched batches cache if possible, or query
+                var totalStock = medBatches.Sum(b => b.RemainingQuantity);
+
+                // Alert if Stock <= MinAlertQuantity OR Stock == 0
+                if (totalStock <= med.MinAlertQuantity)
+                {
+                    string color;
+                    string level;
+
+                    if (totalStock == 0)
+                    {
+                        color = "#CC0000"; // Critical
+                        level = "Critical";
+                    }
+                    else
+                    {
+                        color = "#FFBB33"; // Warning
+                        level = "Warning";
+                    }
+
+                    alerts.Add(new UnifiedAlertDto
+                    {
+                        Title = "تنبيه نقص المخزون",
+                        Message = $"رصيد الدواء {med.Name} منخفض ({totalStock} عبوة). الحد الأدنى: {med.MinAlertQuantity}",
+                        StatusColor = color,
+                        StatusLevel = level,
+                        AlertType = "LowStock",
+                        DaysRemaining = 0, // N/A
+                        Quantity = totalStock,
+                        BatchNumber = "ALL", // Aggregated
+                        MedicineId = med.Id,
+                        BatchId = 0
+                    });
+                }
+            }
+
+            // Sort: Critical first, then by days remaining (for expiry)
+            return alerts.OrderBy(a => a.StatusLevel == "Critical" ? 0 : 1).ThenBy(a => a.DaysRemaining).ToList();
         }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.PurchaseReturns;
 using SmartPharmacySystem.Application.Interfaces;
@@ -9,6 +10,7 @@ using System.Linq;
 namespace SmartPharmacySystem.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class PurchaseReturnsController : ControllerBase
     {
@@ -24,6 +26,10 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Get All / Search
         // -------------------------------------------------------------
+        /// <summary>
+        /// Get all purchase returns
+        /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? search = null)
         {
@@ -73,9 +79,7 @@ namespace SmartPharmacySystem.Controllers
             {
                 userId = parsedId;
             }
-            dto.CreatedBy = userId;
-
-            var created = await _service.CreateAsync(dto);
+            var created = await _service.CreateAsync(dto, userId);
             return StatusCode(201, ApiResponse<PurchaseReturnDto>.Succeeded(created, "تم إضافة مرتجع الشراء بنجاح", 201));
         }
 
@@ -100,32 +104,61 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Approve
         // -------------------------------------------------------------
+        /// <summary>
+        /// Approve purchase return
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> Approve(int id)
         {
             if (id <= 0)
                 return BadRequest(ApiResponse<object>.Failed("رقم المرتجع غير صحيح"));
 
-            await _service.ApproveAsync(id);
+            int userId = 1;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            await _service.ApproveAsync(id, userId);
             return Ok(ApiResponse<object?>.Succeeded(null, "تم اعتماد المرتجع وتحديث المخزون بنجاح"));
         }
 
         // -------------------------------------------------------------
         // Cancel
         // -------------------------------------------------------------
+        /// <summary>
+        /// Cancel purchase return
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
             if (id <= 0)
                 return BadRequest(ApiResponse<object>.Failed("رقم المرتجع غير صحيح"));
 
-            await _service.CancelAsync(id);
+            int userId = 1;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            await _service.CancelAsync(id, userId);
             return Ok(ApiResponse<object?>.Succeeded(null, "تم إلغاء المرتجع وعكس حركات المخزون بنجاح"));
         }
 
         // -------------------------------------------------------------
         // Delete
         // -------------------------------------------------------------
+        /// <summary>
+        /// Delete purchase return
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

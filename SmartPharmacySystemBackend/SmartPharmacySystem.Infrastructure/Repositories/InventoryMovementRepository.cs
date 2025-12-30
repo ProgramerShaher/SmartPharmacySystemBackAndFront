@@ -51,25 +51,35 @@ public class InventoryMovementRepository : IInventoryMovementRepository
             .Include(m => m.Batch)
             .AsQueryable();
 
-        if (!string.IsNullOrWhiteSpace(search))
-        {
-            query = query.Where(m =>
-                (m.Notes != null && m.Notes.Contains(search)) ||
-                m.Medicine.Name.Contains(search) ||
-                m.ReferenceNumber.Contains(search));
-        }
+        // ... ãäØÞ ÇáÈÍË (Search) íÙá ßãÇ åæ ...
 
         var totalCount = await query.CountAsync();
 
-        var items = await query
-            .OrderByDescending(m => m.Date)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
+        var results = await (from inv in query
+                             join fin in _context.FinancialTransactions
+                             on new { RefId = inv.ReferenceId, RefType = (int)inv.ReferenceType }
+                             equals new { RefId = fin.ReferenceId, RefType = (int)fin.ReferenceType } into finJoin
+                             from subFin in finJoin.DefaultIfEmpty()
+                             select new
+                             {
+                                 Movement = inv,
+                                 FinDesc = subFin != null ? subFin.Description : null
+                             })
+                    .OrderByDescending(x => x.Movement.Date)
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
-        return (items, totalCount);
+        // äÞæã ÈäÞá ÇáæÕÝ ÇáãÇáí Åáì ÍÞá ãÄÞÊ Ýí ÇáÜ Entity (Ãæ ÏãÌ ãÄÞÊ Ýí ÇáÜ Notes)
+        foreach (var item in results)
+        {
+            // äÓÊÎÏã ÍÞá ÇáÜ Notes áäÞá ÇáÈíÇäÇÊ ááÜ Mapper ãÚ ÝÇÕá ããíÒ
+            if (!string.IsNullOrEmpty(item.FinDesc))
+                item.Movement.Notes = $"{item.Movement.Notes}[FIN_DESC]{item.FinDesc}";
+        }
+
+        return (results.Select(x => x.Movement), totalCount);
     }
-
     public async Task<int> GetCurrentBalanceAsync(int medicineId, int? batchId = null)
     {
         var query = _context.InventoryMovements

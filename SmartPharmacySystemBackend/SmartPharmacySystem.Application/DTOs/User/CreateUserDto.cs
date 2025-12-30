@@ -14,8 +14,7 @@ public class CreateUserDto
     /// <summary>
     /// كلمة المرور
     /// </summary>
-    public string Password { get; set; } = string.Empty;
-
+    public string PasswordHash { get; set; } = string.Empty;
     /// <summary>
     /// إعادة كلمة المرور
     /// </summary>
@@ -34,8 +33,7 @@ public class CreateUserDto
     /// <summary>
     /// الدور (e.g., Admin, Pharmacist, Cashier)
     /// </summary>
-    public string Role { get; set; } = string.Empty;
-
+    public int RoleId { get; set; }
     /// <summary>
     /// رقم الهاتف
     /// </summary>

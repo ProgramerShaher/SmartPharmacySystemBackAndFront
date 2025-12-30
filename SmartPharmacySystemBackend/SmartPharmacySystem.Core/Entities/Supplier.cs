@@ -35,7 +35,7 @@ public class Supplier
     public string? Email { get; set; }
 
     /// <summary>
-    /// Current balance owed to or by the supplier.
+    /// Current balance owed to the supplier.
     /// </summary>
     public decimal Balance { get; set; }
 

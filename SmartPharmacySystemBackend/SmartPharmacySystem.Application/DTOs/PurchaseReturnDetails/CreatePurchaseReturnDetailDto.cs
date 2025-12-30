@@ -8,11 +8,8 @@ namespace SmartPharmacySystem.Application.DTOs.PurchaseReturnDetails;
 /// </summary>
 public class CreatePurchaseReturnDetailDto
 {
-    /// <summary>
-    /// معرف إرجاع الشراء
-    /// </summary>
-    [Required]
-    public int PurchaseReturnId { get; set; }
+    // PurchaseReturnId removed - inferred from parent
+
 
     /// <summary>
     /// معرف الدواء

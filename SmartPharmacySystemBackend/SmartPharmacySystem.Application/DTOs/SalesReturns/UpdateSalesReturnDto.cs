@@ -32,4 +32,9 @@ public class UpdateSalesReturnDto
     [Required]
     [StringLength(500, MinimumLength = 1, ErrorMessage = "سبب الإرجاع يجب أن يكون بين 1 و 500 حرف")]
     public string Reason { get; set; } = string.Empty;
+
+    /// <summary>
+    /// تفاصيل المرتجع (قائمة الأصناف الجديدة)
+    /// </summary>
+    public List<SalesReturnDetails.CreateSalesReturnDetailDto> Details { get; set; } = new();
 }

@@ -8,6 +8,8 @@ namespace SmartPharmacySystem.Application.DTOs.SalesReturnDetails;
 /// </summary>
 public class CreateSalesReturnDetailDto
 {
+    internal readonly int UnitCost;
+
     /// <summary>
     /// معرف إرجاع البيع
     /// </summary>
@@ -40,10 +42,4 @@ public class CreateSalesReturnDetailDto
     [Range(0.01, double.MaxValue, ErrorMessage = "سعر البيع يجب أن يكون أكبر من صفر")]
     public decimal SalePrice { get; set; }
 
-    /// <summary>
-    /// تكلفة الوحدة
-    /// </summary>
-    [Required]
-    [Range(0.01, double.MaxValue, ErrorMessage = "التكلفة يجب أن تكون أكبر من صفر")]
-    public decimal UnitCost { get; set; }
 }

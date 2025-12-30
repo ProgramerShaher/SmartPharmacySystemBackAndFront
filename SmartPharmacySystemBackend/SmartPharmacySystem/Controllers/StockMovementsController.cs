@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.StockMovement;
 using SmartPharmacySystem.Application.DTOs.Shared;
@@ -10,6 +11,7 @@ using System.Collections.Generic;
 namespace SmartPharmacySystem.Controllers
 {
     [Route("api/Movements")]
+    [Authorize]
     [ApiController]
     public class StockMovementsController : ControllerBase
     {
@@ -62,6 +64,11 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Manual Movement (Adjustment/Damage ONLY)
         // -------------------------------------------------------------
+        /// <summary>
+        /// Create manual stock movement (Adjustment/Damage)
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpPost("manual")]
         public async Task<IActionResult> CreateManual([FromBody] CreateManualMovementDto dto)
         {

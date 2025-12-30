@@ -156,7 +156,7 @@ namespace SmartPharmacySystem.Application.Services
                 ?? throw new KeyNotFoundException("فاتورة الشراء غير موجودة");
 
             if (invoice.Status != DocumentStatus.Approved)
-                throw new InvalidOperationException("لا يمكن توليد حركات مخزنية لفاتورة غير معتمدة.");
+                throw new InvalidOperationException("لا يمكن توليد حركات مخزنية لفاتورة غير معتمد.");
 
             foreach (var detail in invoice.PurchaseInvoiceDetails)
             {

@@ -7,7 +7,7 @@ using SmartPharmacySystem.Infrastructure.Data;
 
 namespace SmartPharmacySystem.Infrastructure.Repositories;
 
-public class AlertRepository : IAlertRepository
+public class AlertRepository : IAlertRepository 
 {
     private readonly ApplicationDbContext _context;
 
@@ -22,7 +22,7 @@ public class AlertRepository : IAlertRepository
             .Include(a => a.Batch)
                 .ThenInclude(b => b.Medicine)
             .Where(a => !a.IsDeleted)
-            .OrderByDescending(a => a.ExecutionDate)
+            .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
     }
 
@@ -41,17 +41,17 @@ public class AlertRepository : IAlertRepository
             .Include(a => a.Batch)
                 .ThenInclude(b => b.Medicine)
             .Where(a => a.BatchId == batchId && !a.IsDeleted)
-            .OrderByDescending(a => a.ExecutionDate)
+            .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<Alert>> GetByStatusAsync(AlertStatus status)
+    public async Task<IEnumerable<Alert>> GetByReadStatusAsync(bool isRead)
     {
         return await _context.Alerts
             .Include(a => a.Batch)
                 .ThenInclude(b => b.Medicine)
-            .Where(a => a.Status == status && !a.IsDeleted)
-            .OrderByDescending(a => a.ExecutionDate)
+            .Where(a => a.IsRead == isRead && !a.IsDeleted)
+            .OrderByDescending(a => a.CreatedAt)
             .ToListAsync();
     }
 
@@ -60,9 +60,9 @@ public class AlertRepository : IAlertRepository
         return await _context.Alerts
             .Include(a => a.Batch)
                 .ThenInclude(b => b.Medicine)
-            .Where(a => a.ExecutionDate.Date == date.Date &&
+            .Where(a => a.CreatedAt.Date == date.Date &&
                        !a.IsDeleted &&
-                       a.Status == AlertStatus.Pending)
+                       a.Severity == AlertSeverity.Warning)
             .ToListAsync();
     }
 

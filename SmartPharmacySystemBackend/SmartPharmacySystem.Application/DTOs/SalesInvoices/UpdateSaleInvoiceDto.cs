@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Application.DTOs.SalesInvoices;
 
@@ -24,12 +25,16 @@ public class UpdateSaleInvoiceDto
     /// طريقة الدفع
     /// </summary>
     [Required]
-    [StringLength(50, MinimumLength = 1, ErrorMessage = "طريقة الدفع يجب أن تكون بين 1 و 50 حرف")]
-    public string PaymentMethod { get; set; } = string.Empty;
+    //[StringLength(50, MinimumLength = 1, ErrorMessage = "طريقة الدفع يجب أن تكون بين 1 و 50 حرف")]
+    public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
     /// <summary>
-    /// اسم العميل
+    /// معرف العميل
     /// </summary>
-    [StringLength(100, ErrorMessage = "اسم العميل يجب أن يكون أقل من 100 حرف")]
-    public string CustomerName { get; set; } = string.Empty;
+    public int? CustomerId { get; set; }
+
+    /// <summary>
+    /// تفاصيل الفاتورة (قائمة الأصناف الجديدة)
+    /// </summary>
+    public List<SalesInvoiceDetails.CreateSaleInvoiceDetailDto> Details { get; set; } = new();
 }

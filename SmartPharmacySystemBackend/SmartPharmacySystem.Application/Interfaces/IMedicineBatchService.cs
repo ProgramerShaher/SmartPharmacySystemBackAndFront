@@ -1,4 +1,4 @@
-﻿using SmartPharmacySystem.Application.DTOs.MedicineBatch;
+using SmartPharmacySystem.Application.DTOs.MedicineBatch;
 using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Application.Interfaces;
@@ -26,7 +26,7 @@ public interface IMedicineBatchService
     /// <param name="batchId">ID of the batch to update</param>
     /// <param name="dto">Updated batch data</param>
     /// <returns>Updated batch response</returns>
-    Task<MedicineBatchResponseDto> UpdateBatchAsync(int batchId, MedicineBatchUpdateDto dto);
+    Task<MedicineBatchResponseDto> UpdateBatchAsync(int batchId, MedicineBatchUpdateDto dto, int userId);
 
     /// <summary>
     /// Soft deletes a medicine batch.
@@ -133,6 +133,19 @@ public interface IMedicineBatchService
     /// </summary>
     /// <returns>Number of batches updated</returns>
     Task<int> UpdateExpiredBatchesAsync();
+
+    /// <summary>
+    /// Scraps a batch permanently due to expiry or damage.
+    /// إعدام دفعة دواء نهائياً بسبب التلف أو انتهاء الصلاحية.
+    /// </summary>
+    Task ScrapBatchAsync(int batchId, int userId, string reason);
+
+    /// <summary>
+    /// Processes financial loss automatically for an expired batch.
+    /// يعالج الخسارة المالية تلقائياً لدفعة منتهية الصلاحية.
+    /// </summary>
+    /// <param name="batchId">ID of the expired batch</param>
+    Task ProcessFinancialLossAsync(int batchId);
 
     /// <summary>
     /// Gets total available quantity for a medicine.

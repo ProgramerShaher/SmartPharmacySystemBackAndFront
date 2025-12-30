@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Categories;
 using SmartPharmacySystem.Application.DTOs.Shared;
@@ -5,6 +6,7 @@ using SmartPharmacySystem.Application.Wrappers;
 
 namespace SmartPharmacySystem.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class CategoriesController : ControllerBase
@@ -21,6 +23,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Search and paginate categories with optional filters
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] CategoryQueryDto query)
         {
@@ -35,6 +38,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Get category by ID
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -51,6 +55,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Create a new category
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateCategoryDto dto)
         {
@@ -64,6 +69,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Update an existing category
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateCategoryDto dto)
         {
@@ -85,6 +91,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete a category (soft delete)
         /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

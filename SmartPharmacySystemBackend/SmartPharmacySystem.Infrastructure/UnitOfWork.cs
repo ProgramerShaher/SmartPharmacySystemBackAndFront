@@ -19,6 +19,9 @@ namespace SmartPharmacySystem.Infrastructure
         private IUserRepository? _users;
         public IUserRepository Users => _users ??= new UserRepository(_context);
 
+        private IRoleRepository? _roles;
+        public IRoleRepository Roles => _roles ??= new RoleRepository(_context);
+
         private ISupplierRepository? _suppliers;
         public ISupplierRepository Suppliers => _suppliers ??= new SupplierRepository(_context);
 
@@ -39,6 +42,9 @@ namespace SmartPharmacySystem.Infrastructure
 
         private IExpenseRepository? _expenses;
         public IExpenseRepository Expenses => _expenses ??= new ExpenseRepository(_context);
+
+        private IExpenseCategoryRepository? _expenseCategories;
+        public IExpenseCategoryRepository ExpenseCategories => _expenseCategories ??= new ExpenseCategoryRepository(_context);
 
         private IAlertRepository? _alerts;
         public IAlertRepository Alerts => _alerts ??= new AlertRepository(_context);
@@ -63,6 +69,19 @@ namespace SmartPharmacySystem.Infrastructure
 
         private IFinancialRepository? _financials;
         public IFinancialRepository Financials => _financials ??= new FinancialRepository(_context);
+
+        private IInvoiceSequenceRepository? _invoiceSequences;
+        public IInvoiceSequenceRepository InvoiceSequences => _invoiceSequences ??= new InvoiceSequenceRepository(_context);
+
+        private ISupplierPaymentRepository? _supplierPayments;
+        private ICustomerRepository? _customers;
+        private ICustomerReceiptRepository? _customerReceipts;
+        public ISupplierPaymentRepository SupplierPayments => _supplierPayments ??= new SupplierPaymentRepository(_context);
+        public ICustomerRepository Customers => _customers ??= new CustomerRepository(_context);
+        public ICustomerReceiptRepository CustomerReceipts => _customerReceipts ??= new CustomerReceiptRepository(_context);
+
+        private IPriceOverrideRepository? _priceOverrides;
+        public IPriceOverrideRepository PriceOverrides => _priceOverrides ??= new PriceOverrideRepository(_context);
 
         public async Task<int> SaveChangesAsync()
         {

@@ -14,4 +14,5 @@ public interface ISalesReturnRepository
     Task DeleteAsync(int id);
     Task SoftDeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
+    Task<IEnumerable<SalesReturn>> GetBySaleInvoiceIdAsync(int saleInvoiceId);
 }

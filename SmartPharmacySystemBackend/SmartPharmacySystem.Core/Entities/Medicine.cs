@@ -18,8 +18,21 @@ public class Medicine
 
     /// <summary>
     /// Name of the medicine.
+    /// الاسم التجاري
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    /// Scientific name.
+    /// الاسم العلمي
+    /// </summary>
+    public string? ScientificName { get; set; }
+
+    /// <summary>
+    /// Active ingredient(s).
+    /// المادة الفعالة
+    /// </summary>
+    public string? ActiveIngredient { get; set; }
 
     /// <summary>
     /// Foreign key to the category this medicine belongs to.
@@ -37,6 +50,12 @@ public class Medicine
     public string? DefaultBarcode { get; set; }
 
     /// <summary>
+    /// Moving Average Cost (MAC) per unit.
+    /// متوسط تكلفة الشراء
+    /// </summary>
+    public decimal MovingAverageCost { get; set; }
+
+    /// <summary>
     /// Default purchase price per unit.
     /// </summary>
     public decimal DefaultPurchasePrice { get; set; }
@@ -50,6 +69,11 @@ public class Medicine
     /// Minimum quantity that triggers an alert for low stock.
     /// </summary>
     public int MinAlertQuantity { get; set; }
+
+    /// <summary>
+    /// Point at which a reorder notification should be generated.
+    /// </summary>
+    public int ReorderLevel { get; set; } = 10;
 
     /// <summary>
     /// Indicates if the medicine is sold by unit (true) or by quantity (false).

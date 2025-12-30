@@ -31,13 +31,14 @@ public interface IMedicineBatchRepository
     /// Gets a medicine batch by its ID.
     /// يحصل على دفعة دواء بمعرفها.
     /// </summary>
-    Task<MedicineBatch?> GetByIdAsync(int id);
+    Task<MedicineBatch?> GetByIdAsync(int? id);
 
     /// <summary>
     /// Gets a medicine batch by its barcode.
     /// يحصل على دفعة دواء بالباركود.
     /// </summary>
     Task<MedicineBatch?> GetByBarcodeAsync(string barcode);
+    Task<MedicineBatch?> GetByBarcodeAndExpiryAsync(string barcode, DateTime expiryDate);
 
     /// <summary>
     /// Gets a medicine batch by medicine ID and batch number (unique combination).
@@ -116,4 +117,14 @@ public interface IMedicineBatchRepository
     /// يحصل على إجمالي الكمية المتاحة لدواء عبر جميع الدفعات.
     /// </summary>
     Task<int> GetTotalAvailableQuantityAsync(int medicineId);
+    /// <summary>
+    /// Gets total physical quantity (RemainingQuantity) for a medicine across all batches (including expired/quarantined if > 0).
+    /// </summary>
+    Task<int> GetTotalQuantityAsync(int medicineId);
+
+    /// <summary>
+    /// Gets all batches including the Medicine entity (eager load).
+    /// يحصل على جميع الدفعات بما في ذلك كيان الدواء (تحميل مبكر).
+    /// </summary>
+    Task<IEnumerable<MedicineBatch>> GetAllWithMedicineAsync();
 }

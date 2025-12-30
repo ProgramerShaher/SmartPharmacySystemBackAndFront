@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.DTOs.Suppliers;
@@ -6,6 +7,7 @@ using SmartPharmacySystem.Application.Wrappers;
 
 namespace SmartPharmacySystem.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class SuppliersController : ControllerBase
@@ -22,6 +24,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Search and paginate suppliers with optional filters
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] SupplierQueryDto query)
         {
@@ -36,6 +39,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Get supplier by ID
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -52,6 +56,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Create a new supplier
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateSupplierDto dto)
         {
@@ -65,6 +70,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Update an existing supplier
         /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateSupplierDto dto)
         {
@@ -86,6 +92,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete a supplier (soft delete)
         /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

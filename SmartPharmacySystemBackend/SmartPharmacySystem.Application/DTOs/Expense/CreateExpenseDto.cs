@@ -1,3 +1,6 @@
+using SmartPharmacySystem.Core.Enums;
+using System.ComponentModel.DataAnnotations;
+
 namespace SmartPharmacySystem.Application.DTOs.Expense;
 
 /// <summary>
@@ -7,28 +10,38 @@ namespace SmartPharmacySystem.Application.DTOs.Expense;
 public class CreateExpenseDto
 {
     /// <summary>
-    /// نوع المصروف
+    /// معرف الحساب المرتبط بهذا المصروف
     /// </summary>
-    public string ExpenseType { get; set; } = string.Empty;
+    public int? AccountId { get; set; }
+
+    /// <summary>
+    /// معرف فئة المصروف
+    /// </summary>
+    [Required]
+    public int CategoryId { get; set; }
 
     /// <summary>
     /// مبلغ المصروف
     /// </summary>
+    [Required]
+    [Range(0.01, double.MaxValue)]
     public decimal Amount { get; set; }
 
     /// <summary>
     /// تاريخ المصروف
     /// </summary>
+    [Required]
     public DateTime ExpenseDate { get; set; }
 
     /// <summary>
     /// طريقة الدفع
     /// </summary>
-    public string PaymentMethod { get; set; } = string.Empty;
+    public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
     /// <summary>
     /// ملاحظات إضافية
     /// </summary>
     public string Notes { get; set; } = string.Empty;
-    public int CreatedBy { get; set; } 
+
+    public int CreatedBy { get; set; }
 }

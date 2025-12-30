@@ -33,9 +33,14 @@ public class CreatePurchaseReturnDto
     [StringLength(500, MinimumLength = 1, ErrorMessage = "سبب الإرجاع يجب أن يكون بين 1 و 500 حرف")]
     public string Reason { get; set; } = string.Empty;
 
+
+
+
     /// <summary>
-    /// معرف المستخدم الذي أنشأ المرتجع
-    /// ID of the user creating the return
+    /// قائمة تفاصيل المرتجع
     /// </summary>
-    public int CreatedBy { get; set; }
+    [Required]
+    [MinLength(1, ErrorMessage = "يجب إضافة صنف واحد على الأقل")]
+    public List<SmartPharmacySystem.Application.DTOs.PurchaseReturnDetails.CreatePurchaseReturnDetailDto> Details { get; set; } = new();
+
 }

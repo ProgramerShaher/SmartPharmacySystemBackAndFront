@@ -32,14 +32,29 @@ public class PurchaseInvoiceDetail
     public int Quantity { get; set; }
 
     /// <summary>
+    /// Free quantity received (Bonus).
+    /// </summary>
+    public int BonusQuantity { get; set; }
+
+    /// <summary>
     /// Purchase price per unit.
     /// </summary>
     public decimal PurchasePrice { get; set; }
 
     /// <summary>
+    /// Sale price per unit recorded at purchase.
+    /// </summary>
+    public decimal SalePrice { get; set; }
+
+    /// <summary>
     /// Total amount for this line (Quantity * PurchasePrice).
     /// </summary>
     public decimal Total { get; set; }
+
+    /// <summary>
+    /// Calculated true cost per unit after bonus.
+    /// </summary>
+    public decimal TrueUnitCost { get; set; }
 
     /// <summary>
     /// Soft delete flag.

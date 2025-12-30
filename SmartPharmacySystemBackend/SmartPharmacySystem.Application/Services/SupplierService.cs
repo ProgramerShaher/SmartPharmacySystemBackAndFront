@@ -47,9 +47,17 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task DeleteAsync(int id)
         {
-            var exists = await _unitOfWork.Suppliers.ExistsAsync(id);
-            if (!exists)
-                throw new KeyNotFoundException($"المورد برقم {id} غير موجود");
+            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"المورد برقم {id} غير موجود");
+
+            // 1. Balance check
+            if (supplier.Balance != 0)
+                throw new InvalidOperationException("لا يمكن حذف مورد لديه رصيد مستحق (مديونية أو دائنية).");
+
+            // 2. Transaction check (Alternative: check related collections if loaded, or use specific repo check)
+            var hasInvoices = (await _unitOfWork.PurchaseInvoices.GetAllAsync()).Any(i => i.SupplierId == id && !i.IsDeleted);
+            if (hasInvoices)
+                throw new InvalidOperationException("لا يمكن حذف مورد لديه فواتير شراء مسجلة.");
 
             await _unitOfWork.Suppliers.SoftDeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();

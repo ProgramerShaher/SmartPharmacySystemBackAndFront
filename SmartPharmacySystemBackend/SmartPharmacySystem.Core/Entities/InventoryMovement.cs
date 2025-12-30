@@ -61,7 +61,7 @@ public class InventoryMovement
     /// <summary>
     /// Additional notes or reason for manual adjustment.
     /// </summary>
-    public string Notes { get; private set; } = string.Empty;
+    public string Notes { get;  set; } = string.Empty;
 
     public InventoryMovement() { } // For EF Core
 

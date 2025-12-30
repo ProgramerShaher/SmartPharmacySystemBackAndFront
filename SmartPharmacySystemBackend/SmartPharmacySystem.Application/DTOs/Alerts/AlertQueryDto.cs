@@ -5,6 +5,7 @@ namespace SmartPharmacySystem.Application.DTOs.Alerts;
 
 public class AlertQueryDto : BaseQueryDto
 {
-    public AlertStatus? Status { get; set; }
+    public AlertSeverity? Severity { get; set; }
+    public bool? IsRead { get; set; }
     public int? BatchId { get; set; }
 }

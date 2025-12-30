@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Expense;
 using SmartPharmacySystem.Application.DTOs.Shared;
@@ -6,6 +7,7 @@ using SmartPharmacySystem.Application.Wrappers;
 
 namespace SmartPharmacySystem.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class ExpensesController : ControllerBase
@@ -22,6 +24,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Search and paginate expenses with optional filters (date range, expense type)
         /// </summary>
+        /// <access>Admin</access>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] ExpenseQueryDto query)
         {
@@ -36,6 +39,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Get expense by ID
         /// </summary>
+        /// <access>Admin</access>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -52,6 +56,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Create a new expense
         /// </summary>
+        /// <access>Admin</access>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateExpenseDto dto)
         {
@@ -60,13 +65,13 @@ namespace SmartPharmacySystem.Controllers
 
             // Populate CreatedBy from authenticated user or default (assuming ID 1 is System/Admin)
             // If we can't parse the User ID, we default to 1 (or another valid default ID in your DB)
-            int userId = 1; 
+            int userId = 1;
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
             if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
             {
                 userId = parsedId;
             }
-            
+
             dto.CreatedBy = userId;
 
             var created = await _expenseService.CreateExpenseAsync(dto);
@@ -76,6 +81,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Update an existing expense
         /// </summary>
+        /// <access>Admin</access>
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateExpenseDto dto)
         {
@@ -97,6 +103,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete an expense (soft delete)
         /// </summary>
+        /// <access>Admin</access>
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

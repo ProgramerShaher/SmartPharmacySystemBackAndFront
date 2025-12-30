@@ -11,5 +11,11 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<ExpenseDto?> GetExpenseByIdAsync(int id);
         Task<IEnumerable<ExpenseDto>> GetAllExpensesAsync();
         Task<PagedResult<ExpenseDto>> SearchAsync(ExpenseQueryDto query);
+
+        // Category Methods
+        Task<IEnumerable<ExpenseCategoryDto>> GetAllCategoriesAsync();
+        Task<ExpenseCategoryDto> CreateCategoryAsync(CreateExpenseCategoryDto dto);
+        Task UpdateCategoryAsync(int id, UpdateExpenseCategoryDto dto);
+        Task DeleteCategoryAsync(int id);
     }
 }

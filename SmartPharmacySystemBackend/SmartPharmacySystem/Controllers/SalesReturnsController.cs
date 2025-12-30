@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.SalesReturns;
@@ -7,6 +8,7 @@ using SmartPharmacySystem.Application.Wrappers;
 namespace SmartPharmacySystem.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class SalesReturnsController : ControllerBase
     {
@@ -22,6 +24,10 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Get All / Search
         // -------------------------------------------------------------
+        /// <summary>
+        /// Get all sales returns
+        /// </summary>
+        /// <access>Admin | Pharmacist</access>
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? search = null)
         {
@@ -64,7 +70,15 @@ namespace SmartPharmacySystem.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<object>.Failed("بيانات المرتجع غير صحيحة"));
 
-            var created = await _service.CreateAsync(dto);
+            // Populate CreatedBy from authenticated user or default (assuming ID 1 is System/Admin)
+            int userId = 1;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            var created = await _service.CreateAsync(dto, userId);
             return StatusCode(201, ApiResponse<SalesReturnDto>.Succeeded(created, "تم إضافة مرتجع المبيعات بنجاح", 201));
         }
 
@@ -89,32 +103,61 @@ namespace SmartPharmacySystem.Controllers
         // -------------------------------------------------------------
         // Approve
         // -------------------------------------------------------------
+        /// <summary>
+        /// Approve sales return
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> Approve(int id)
         {
             if (id <= 0)
                 return BadRequest(ApiResponse<object>.Failed("رقم المرتجع غير صحيح"));
 
-            await _service.ApproveAsync(id);
+            int userId = 1;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            await _service.ApproveAsync(id, userId);
             return Ok(ApiResponse<object?>.Succeeded(null, "تم اعتماد المرتجع وتحديث المخزون بنجاح"));
         }
 
         // -------------------------------------------------------------
         // Cancel
         // -------------------------------------------------------------
+        /// <summary>
+        /// Cancel sales return
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
             if (id <= 0)
                 return BadRequest(ApiResponse<object>.Failed("رقم المرتجع غير صحيح"));
 
-            await _service.CancelAsync(id);
+            int userId = 1;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            await _service.CancelAsync(id, userId);
             return Ok(ApiResponse<object?>.Succeeded(null, "تم إلغاء المرتجع وعكس حركات المخزون بنجاح"));
         }
 
         // -------------------------------------------------------------
         // Delete
         // -------------------------------------------------------------
+        /// <summary>
+        /// Delete sales return
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

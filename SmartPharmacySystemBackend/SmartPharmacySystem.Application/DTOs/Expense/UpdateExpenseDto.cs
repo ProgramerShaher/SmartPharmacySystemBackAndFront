@@ -1,5 +1,5 @@
-using System;
 using System.ComponentModel.DataAnnotations;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Application.DTOs.Expense;
 
@@ -15,10 +15,10 @@ public class UpdateExpenseDto
     public int Id { get; set; }
 
     /// <summary>
-    /// Type of expense.
+    /// معرف فئة المصروف
     /// </summary>
     [Required]
-    public string ExpenseType { get; set; } = string.Empty;
+    public int CategoryId { get; set; }
 
     /// <summary>
     /// Amount of the expense.
@@ -36,7 +36,7 @@ public class UpdateExpenseDto
     /// <summary>
     /// Payment method used.
     /// </summary>
-    public string PaymentMethod { get; set; } = string.Empty;
+    public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
     /// <summary>
     /// Additional notes about the expense.
@@ -44,7 +44,7 @@ public class UpdateExpenseDto
     public string Notes { get; set; } = string.Empty;
 
     /// <summary>
-    /// Date and time when the expense was last updated.
+    /// معرف الحساب المرتبط بهذا المصروف
     /// </summary>
-    public DateTime? UpdatedAt { get; set; } = DateTime.UtcNow;
+    public int? AccountId { get; set; }
 }

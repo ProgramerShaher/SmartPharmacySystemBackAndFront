@@ -5,7 +5,7 @@ using SmartPharmacySystem.Application.DTOs.User;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
-    
+
 namespace SmartPharmacySystem.Application.Services
 {
     public class UserService : IUserService
@@ -23,7 +23,7 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task<UserDto> CreateUserAsync(CreateUserDto dto)
         {
-            if (dto.Password != dto.ConfirmPassword)
+            if (dto.PasswordHash != dto.ConfirmPassword)
             {
                 throw new ArgumentException("كلمات المرور غير متطابقة");
             }
@@ -50,12 +50,12 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     throw new ArgumentException("كلمات المرور غير متطابقة");
                 }
-                user.Password = dto.Password; // Assuming hashing is handled or not required yet
+                user.PasswordHash = dto.Password; // TODO: Hash password properly
             }
 
             // Map other fields but exclude Password to avoid overwriting it if empty (handled manually above)
             _mapper.Map(dto, user);
-            
+
             // Re-ensure password isn't lost if Map accidentally touched it (though typically Map won't touch it if ignored or name mismatch, but safety first)
             // Actually, a better way is to tell AutoMapper to ignore Password in UpdateUserDto -> User mapping if it's null/empty.
             // For now, manual assignment is clear.

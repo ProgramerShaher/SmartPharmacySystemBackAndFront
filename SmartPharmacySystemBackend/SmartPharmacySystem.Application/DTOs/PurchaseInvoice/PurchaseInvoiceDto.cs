@@ -1,3 +1,5 @@
+using SmartPharmacySystem.Core.Enums;
+
 namespace SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 
 /// <summary>
@@ -44,7 +46,7 @@ public class PurchaseInvoiceDto
     /// <summary>
     /// طريقة الدفع
     /// </summary>
-    public string PaymentMethod { get; set; } = string.Empty;
+    public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
     /// <summary>
     /// ملاحظات
@@ -61,8 +63,27 @@ public class PurchaseInvoiceDto
     /// </summary>
     public DateTime CreatedAt { get; set; }
 
+    public string CreatedByName { get; set; } = string.Empty;
+    public string? ApprovedByName { get; set; }
+    public string? CancelledByName { get; set; }
+    public DocumentStatus Status { get; set; }
+
+    // Status Tracking & Dynamic Colors
+    public string StatusName { get; set; } = string.Empty;
+    public string StatusColor { get; set; } = string.Empty;
+    public string StatusIcon { get; set; } = string.Empty;
+
+    // Action Tracking (Last Action)
+    public string ActionByName { get; set; } = string.Empty;
+    public DateTime ActionDate { get; set; }
+
     /// <summary>
     /// هل محذوف
     /// </summary>
     public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// تفاصيل الفاتورة (الأصناف)
+    /// </summary>
+    public List<PurchaseInvoiceDetails.PurchaseInvoiceDetailDto> Items { get; set; } = new();
 }

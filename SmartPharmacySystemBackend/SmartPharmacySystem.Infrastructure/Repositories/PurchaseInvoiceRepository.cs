@@ -2,74 +2,89 @@ using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace SmartPharmacySystem.Infrastructure.Repositories;
-
-/// <summary>
-/// Implements the purchase invoice repository for data access operations.
-/// This class provides concrete implementations of purchase invoice data operations.
-/// </summary>
-public class PurchaseInvoiceRepository : IPurchaseInvoiceRepository
+namespace SmartPharmacySystem.Infrastructure.Repositories
 {
-    private readonly ApplicationDbContext _context;
-
-    public PurchaseInvoiceRepository(ApplicationDbContext context)
+    public class PurchaseInvoiceRepository : IPurchaseInvoiceRepository
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    public async Task<PurchaseInvoice> GetByIdAsync(int id)
-    {
-        return await _context.PurchaseInvoices
-            .Include(p => p.Supplier)
-            .Include(p => p.PurchaseInvoiceDetails)
-                .ThenInclude(pid => pid.Medicine)
-            .Include(p => p.PurchaseInvoiceDetails)
-                .ThenInclude(pid => pid.Batch)
-            .FirstOrDefaultAsync(p => p.Id == id);
-    }
-
-    public async Task<IEnumerable<PurchaseInvoice>> GetAllAsync()
-    {
-        return await _context.PurchaseInvoices
-            .Include(p => p.Supplier)
-            .Include(p => p.PurchaseInvoiceDetails)
-            .OrderByDescending(p => p.PurchaseDate)
-            .ToListAsync();
-    }
-
-    public async Task AddAsync(PurchaseInvoice entity)
-    {
-        await _context.PurchaseInvoices.AddAsync(entity);
-    }
-
-    public Task UpdateAsync(PurchaseInvoice entity)
-    {
-        _context.PurchaseInvoices.Update(entity);
-        return Task.CompletedTask;
-    }
-
-    public async Task DeleteAsync(int id)
-    {
-        var entity = await _context.PurchaseInvoices.FindAsync(id);
-        if (entity != null)
+        public PurchaseInvoiceRepository(ApplicationDbContext context)
         {
-            _context.PurchaseInvoices.Remove(entity);
+            _context = context;
         }
-    }
 
-    public async Task SoftDeleteAsync(int id)
-    {
-        var entity = await _context.PurchaseInvoices.FindAsync(id);
-        if (entity != null)
+        public async Task<PurchaseInvoice?> GetByIdAsync(int id)
         {
-            entity.IsDeleted = true;
+            return await _context.PurchaseInvoices
+                .Include(i => i.Supplier) // Include Supplier
+                .Include(i => i.PurchaseInvoiceDetails)
+                    .ThenInclude(d => d.Medicine)
+                .Include(i => i.PurchaseInvoiceDetails)
+                    .ThenInclude(d => d.Batch)
+                .Include(i => i.Creator)
+                .Include(i => i.Approver)
+                .Include(i => i.Canceller)
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
+
+        public async Task<IEnumerable<PurchaseInvoice>> GetAllAsync()
+        {
+            return await _context.PurchaseInvoices
+                .Include(i => i.Supplier) // Include Supplier
+                .Include(i => i.PurchaseInvoiceDetails)
+                    .ThenInclude(d => d.Medicine)
+                 .Include(i => i.PurchaseInvoiceDetails)
+                    .ThenInclude(d => d.Batch)
+                .Include(i => i.Creator)
+                .Include(i => i.Approver)
+                .Include(i => i.Canceller)
+                .OrderByDescending(i => i.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task AddAsync(PurchaseInvoice entity)
+        {
+            await _context.PurchaseInvoices.AddAsync(entity);
+        }
+
+        public Task UpdateAsync(PurchaseInvoice entity)
+        {
             _context.PurchaseInvoices.Update(entity);
+            return Task.CompletedTask;
         }
-    }
 
-    public async Task<bool> ExistsAsync(int id)
-    {
-        return await _context.PurchaseInvoices.AnyAsync(pi => pi.Id == id);
+        public async Task DeleteAsync(int id)
+        {
+            var entity = await _context.PurchaseInvoices.FindAsync(id);
+            if (entity != null)
+            {
+                _context.PurchaseInvoices.Remove(entity);
+            }
+        }
+
+        public async Task SoftDeleteAsync(int id)
+        {
+            var entity = await _context.PurchaseInvoices.FindAsync(id);
+            if (entity != null)
+            {
+                entity.IsDeleted = true;
+                _context.PurchaseInvoices.Update(entity);
+            }
+        }
+
+        public async Task<bool> ExistsAsync(int id)
+        {
+            return await _context.PurchaseInvoices.AnyAsync(e => e.Id == id);
+        }
+
+        public async Task<PurchaseInvoice?> GetByIdWithDetailsAsync(int id)
+        {
+            return await _context.PurchaseInvoices
+                .Include(i => i.PurchaseInvoiceDetails)
+                .FirstOrDefaultAsync(i => i.Id == id);
+        }
     }
 }

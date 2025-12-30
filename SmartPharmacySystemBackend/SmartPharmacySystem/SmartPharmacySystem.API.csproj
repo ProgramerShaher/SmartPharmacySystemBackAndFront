@@ -8,30 +8,27 @@
   </PropertyGroup>
 
   <ItemGroup>
-
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.10" NoWarn="NU1605" />
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+    
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+    
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Identity.Web" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
-    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.0.1" />
-    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.6" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
+
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+
+    <PackageReference Include="Swashbuckle.AspNetCore.ReDoc" Version="10.1.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SmartPharmacySystem.Application\SmartPharmacySystem.Application.csproj" />
-    <ProjectReference Include="..\SmartPharmacySystem.Core\SmartPharmacySystem.Core.csproj" />
-    <ProjectReference Include="..\SmartPharmacySystem.Infrastructure\SmartPharmacySystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

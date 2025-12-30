@@ -50,23 +50,33 @@ public class MedicineBatch
 
     /// <summary>
     /// Remaining quantity available for sale.
-    /// Calculated dynamically from InventoryMovements.
-    /// الكمية المتبقية المتاحة للبيع (يتم حسابها ديناميكياً).
+    /// الكمية المتبقية المتاحة للبيع.
     /// </summary>
-    [NotMapped]
-    public int RemainingQuantity => InventoryMovements?.Sum(m => m.Quantity) ?? 0;
+    [Required]
+    [Range(0, int.MaxValue)]
+    public int RemainingQuantity { get; set; }
 
     /// <summary>
     /// Unit purchase price for this batch.
-    /// سعر الشراء للوحدة لهذه الدفعة.
     /// </summary>
     [Required]
     [Column(TypeName = "decimal(18,2)")]
     public decimal UnitPurchasePrice { get; set; }
 
     /// <summary>
+    /// Suggested retail/sale price for this batch.
+    /// </summary>
+    [Required]
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal RetailPrice { get; set; }
+
+    /// <summary>
+    /// Linked purchase invoice ID.
+    /// </summary>
+    public int? PurchaseInvoiceId { get; set; }
+
+    /// <summary>
     /// Unique barcode for this specific batch.
-    /// الباركود الفريد لهذه الدفعة المحددة.
     /// </summary>
     [StringLength(100)]
     public string? BatchBarcode { get; set; }
@@ -166,11 +176,18 @@ public class MedicineBatch
     public bool IsExpired => ExpiryDate.Date < DateTime.UtcNow.Date;
 
     /// <summary>
-    /// Checks if the batch is expiring soon (within 60 days).
-    /// يتحقق إذا كانت الدفعة ستنتهي قريباً (خلال 60 يوماً).
+    /// Checks if the batch is expiring soon (within 30 days).
+    /// يتحقق إذا كانت الدفعة ستنتهي قريباً (خلال 30 يوماً).
     /// </summary>
     [NotMapped]
     public bool IsExpiringSoon => !IsExpired && (ExpiryDate.Date - DateTime.UtcNow.Date).Days <= 30;
+
+    /// <summary>
+    /// Checks if the batch is near expiry (within 3 days).
+    /// CRITICAL: Sale is blocked if this is true.
+    /// </summary>
+    [NotMapped]
+    public bool IsNearExpiry => !IsExpired && (ExpiryDate.Date - DateTime.UtcNow.Date).Days < 3;
 
     /// <summary>
     /// Calculates the days until expiry. Negative value means already expired.
@@ -184,10 +201,15 @@ public class MedicineBatch
     /// يتحقق إذا كان يمكن بيع الدفعة.
     /// </summary>
     [NotMapped]
-    public bool IsSellable => RemainingQuantity > 0 && !IsExpired && !IsDeleted;
+    public bool IsSellable => RemainingQuantity > 0 && !IsExpired && !IsNearExpiry && Status == "Active";
 
-    [NotMapped]
-    public int SoldQuantity => Quantity - RemainingQuantity;
+    /// <summary>
+    /// Total quantity sold from this batch.
+    /// إجمالي الكمية المباعة من هذه الدفعة.
+    /// </summary>
+    [Required]
+    [Range(0, int.MaxValue)]
+    public int SoldQuantity { get; set; }
 
     // ===================== Business Logic Methods =====================
 
@@ -198,6 +220,14 @@ public class MedicineBatch
     public void MarkAsExpired()
     {
         Status = "Expired";
+    }
+
+    /// <summary>
+    /// Marks the batch as quarantine (near expiry).
+    /// </summary>
+    public void MarkAsQuarantine()
+    {
+        Status = "Quarantine";
     }
 
     /// <summary>

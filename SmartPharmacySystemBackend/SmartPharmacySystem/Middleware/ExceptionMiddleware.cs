@@ -32,30 +32,48 @@ namespace SmartPharmacySystem.Middleware
         {
             context.Response.ContentType = "application/json";
 
-            var response = new
-            {
-                status = 500,
-                message = "حدث خطأ غير متوقع",
-                error = ex.Message 
-            };
+            // القيم الافتراضية (للأخطاء غير المتوقعة)
+            var statusCode = (int)HttpStatusCode.InternalServerError;
+            var message = "حدث خطأ غير متوقع في الخادم";
 
+            // تحديد الحالة بناءً على نوع الخطأ
             switch (ex)
             {
                 case KeyNotFoundException:
-                    context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    response = new { status = 404, message = ex.Message, error = ex.Message };
+                    statusCode = (int)HttpStatusCode.NotFound; // 404
+                    message = ex.Message;
                     break;
+
+                case InvalidOperationException:
+                    statusCode = (int)HttpStatusCode.BadRequest; // 400
+                    message = ex.Message; // هنا ستظهر رسالة "لا يمكن اعتماد فاتورة بإجمالي صفر"
+                    break;
+
                 case ArgumentException:
-                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response = new { status = 400, message = ex.Message, error = ex.Message };
+                    statusCode = (int)HttpStatusCode.BadRequest; // 400
+                    message = ex.Message;
                     break;
+
+                case UnauthorizedAccessException:
+                    statusCode = (int)HttpStatusCode.Forbidden; // 403
+                    message = "ليس لديك صلاحية للقيام بهذا الإجراء";
+                    break;
+
                 default:
-                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    statusCode = (int)HttpStatusCode.InternalServerError; // 500
+                    message = "حدث خطأ داخلي، يرجى التواصل مع الدعم الفني";
                     break;
             }
 
-            var responseResponse = ApiResponse<object>.Failed(response.message, response.status);
-            var json = JsonSerializer.Serialize(responseResponse);
+            context.Response.StatusCode = statusCode;
+
+            // استخدام الـ Wrapper الخاص بك لتوحيد شكل الرد
+            var responseResponse = ApiResponse<object>.Failed(message, statusCode);
+
+            // إعدادات الـ JSON لضمان خروج البيانات بشكل CamelCase (اختياري)
+            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            var json = JsonSerializer.Serialize(responseResponse, options);
+
             return context.Response.WriteAsync(json);
         }
     }

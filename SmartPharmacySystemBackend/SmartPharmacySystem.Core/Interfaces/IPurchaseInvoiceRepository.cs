@@ -15,4 +15,5 @@ public interface IPurchaseInvoiceRepository
     Task DeleteAsync(int id);
     Task SoftDeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
+    Task<PurchaseInvoice?> GetByIdWithDetailsAsync(int id);
 }

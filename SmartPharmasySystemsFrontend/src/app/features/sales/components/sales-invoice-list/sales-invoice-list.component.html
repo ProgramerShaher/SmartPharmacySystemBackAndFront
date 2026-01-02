@@ -1,0 +1,266 @@
+<div class="sales-container p-4 animate-fade-in" dir="rtl">
+    <!-- Premium Header -->
+    <div class="flex justify-content-between align-items-center mb-5">
+        <div class="flex align-items-center gap-3">
+            <div class="icon-circle bg-gradient-sales">
+                <i class="pi pi-dollar text-3xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold m-0 text-gray-800">فواتير المبيعات</h1>
+                <p class="text-gray-500 text-sm mt-1">إدارة متكاملة لمبيعات الصيدلية والعملاء</p>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <p-button icon="pi pi-filter" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="الفلاتر"
+                tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
+            <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger" pTooltip="تصدير PDF"
+                tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
+            <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success"
+                pTooltip="تصدير Excel" tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
+            <p-button label="فاتورة جديدة" icon="pi pi-plus" [rounded]="true" severity="primary"
+                (onClick)="navigateToCreate()"></p-button>
+        </div>
+    </div>
+
+    <!-- 🔥 KPI Cards - Imperial Premium Design with Live Data -->
+    <div class="grid mb-4">
+        <!-- 💰 Total Sales Card -->
+        <div class="col-12 md:col-3">
+            <div class="imperial-kpi-card sales-card h-full">
+                <div class="kpi-accent accent-success"></div>
+                <div class="flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="kpi-label">إجمالي المبيعات (اليوم)</span>
+                        <h3 class="kpi-value text-success">{{ totalSales() | number:'1.0-2' }}</h3>
+                        <span class="kpi-currency">ر.ي</span>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-success-light">
+                        <i class="pi pi-dollar text-success"></i>
+                    </div>
+                </div>
+                <div style="height: 60px;">
+                    <p-chart type="line" [data]="salesTrendData" [options]="salesTrendOptions" height="60px"></p-chart>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📈 Total Profit Card -->
+        <div class="col-12 md:col-3">
+            <div class="imperial-kpi-card profit-card h-full">
+                <div class="kpi-accent accent-emerald"></div>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span class="kpi-label">صافي الأرباح (اليوم)</span>
+                        <h3 class="kpi-value text-emerald">{{ totalProfit() | number:'1.0-2' }}</h3>
+                        <span class="kpi-currency">ر.ي</span>
+                        <div class="mt-2">
+                            <span class="kpi-badge badge-emerald">
+                                <i class="pi pi-chart-line"></i> {{ cashPercentage() | number:'1.0-1' }}% نقدي
+                            </span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-emerald-light">
+                        <i class="pi pi-chart-bar text-emerald"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 💳 Customer Debts Card -->
+        <div class="col-12 md:col-3">
+            <div class="imperial-kpi-card debts-card h-full">
+                <div class="kpi-accent accent-royal"></div>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span class="kpi-label">ديون العملاء</span>
+                        <h3 class="kpi-value text-royal">{{ customerDebts() | number:'1.0-2' }}</h3>
+                        <span class="kpi-currency">ر.ي</span>
+                        <div class="mt-2">
+                            <span class="kpi-badge badge-royal">
+                                <i class="pi pi-users"></i> متابعة دقيقة
+                            </span>
+                        </div>
+                    </div>
+                    <div class="kpi-icon-wrapper bg-royal-light">
+                        <i class="pi pi-wallet text-royal"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔄 Returns Card -->
+        <div class="col-12 md:col-3">
+            <div class="imperial-kpi-card returns-card h-full">
+                <div class="kpi-accent accent-crimson"></div>
+                <div>
+                    <span class="kpi-label">المرتجعات (اليوم)</span>
+                    <h3 class="kpi-value text-crimson">{{ totalReturns() | number:'1.0-2' }}</h3>
+                    <span class="kpi-currency">ر.ي</span>
+                    <div style="height: 100px; margin-top: 10px;">
+                        <p-chart type="doughnut" [data]="customerDistributionData"
+                            [options]="customerDistributionOptions" height="100px"></p-chart>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filters (Collapsible) -->
+    <div class="glass-panel p-4 mb-4 border-round-2xl shadow-1 bg-white" *ngIf="showFilters()">
+        <div class="grid p-fluid">
+            <div class="col-12 md:col-3">
+                <label class="font-bold text-gray-700 text-sm mb-2 block">الحالة</label>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="statusFilter" optionLabel="label" optionValue="value"
+                    placeholder="جميع الحالات" styleClass="premium-dropdown"></p-dropdown>
+            </div>
+
+            <div class="col-12 md:col-3">
+                <label class="font-bold text-gray-700 text-sm mb-2 block">من تاريخ</label>
+                <p-calendar [(ngModel)]="startDate" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="اختر التاريخ"
+                    inputStyleClass="premium-input"></p-calendar>
+            </div>
+
+            <div class="col-12 md:col-3">
+                <label class="font-bold text-gray-700 text-sm mb-2 block">إلى تاريخ</label>
+                <p-calendar [(ngModel)]="endDate" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="اختر التاريخ"
+                    inputStyleClass="premium-input"></p-calendar>
+            </div>
+
+            <div class="col-12 md:col-3 flex align-items-end">
+                <p-button label="تطبيق الفلاتر" icon="pi pi-check" styleClass="w-full premium-btn-blue"
+                    (onClick)="loadInvoices()"></p-button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium Table -->
+    <div class="glass-panel border-round-2xl shadow-2 bg-white overflow-hidden">
+        <p-table [value]="invoices()" [rows]="25" [totalRecords]="invoices().length" [loading]="loading()"
+            [paginator]="true" [rowsPerPageOptions]="[10, 25, 50, 100]" styleClass="p-datatable-striped p-datatable-sm"
+            responsiveLayout="scroll" currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} فاتورة"
+            [showCurrentPageReport]="true">
+
+            <ng-template pTemplate="header">
+                <tr class="bg-gray-50 text-gray-700 uppercase text-xs">
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">رقم الفاتورة</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">التاريخ</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">العميل</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الإجمالي</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الربح</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الحالة</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-invoice>
+                <tr class="hover:surface-50 transition-colors">
+                    <td class="px-4 py-3 border-bottom-1 border-gray-100">
+                        <span class="font-bold text-blue-600 text-lg">{{ invoice.saleInvoiceNumber || '#' + invoice.id
+                            }}</span>
+                    </td>
+                    <td class="px-4 py-3 border-bottom-1 border-gray-100">
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-calendar text-gray-400"></i>
+                            <span class="font-mono text-sm text-gray-600">{{ invoice.invoiceDate | date:'dd/MM/yyyy'
+                                }}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 border-bottom-1 border-gray-100">
+                        <div class="font-bold text-gray-700">{{ invoice.customerName || 'نقدي' }}</div>
+                    </td>
+                    <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
+                        <span class="font-bold text-xl text-blue-600 bg-blue-50 px-3 py-1 border-round">
+                            {{ (invoice.totalAmount || 0) | number:'1.0-2' }} ر.ي
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
+                        <span class="font-bold text-lg text-emerald-600 bg-emerald-50 px-2 py-1 border-round">
+                            {{ (invoice.totalProfit || 0) | number:'1.0-2' }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
+                        <p-tag [value]="getStatusLabel(invoice.status)" [severity]="getStatusSeverity(invoice.status)"
+                            styleClass="text-xs font-bold"></p-tag>
+                    </td>
+                    <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
+                        <div class="flex justify-content-center gap-1 action-buttons-container">
+                            <!-- 👁️ View Details (Always visible) -->
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                                pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(invoice.id)"
+                                styleClass="action-btn-view">
+                            </p-button>
+
+                            <!-- 📝 DRAFT STATUS (0) - Blue Approve, Edit, Delete -->
+                            <ng-container *ngIf="isDraft(invoice)">
+                                <p-button icon="pi pi-check-circle" [rounded]="true" [text]="true" severity="success"
+                                    size="small" pTooltip="اعتماد الفاتورة" tooltipPosition="top"
+                                    (onClick)="approveInvoice(invoice.id)"
+                                    styleClass="action-btn-approve imperial-pulse">
+                                </p-button>
+                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
+                                    size="small" pTooltip="تعديل المسودة" tooltipPosition="top"
+                                    (onClick)="editInvoice(invoice.id)" styleClass="action-btn-edit">
+                                </p-button>
+                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                    size="small" pTooltip="حذف المسودة" tooltipPosition="top"
+                                    (onClick)="deleteDraft(invoice.id)" styleClass="action-btn-delete">
+                                </p-button>
+                            </ng-container>
+
+                            <!-- ✅ APPROVED STATUS (1) - Green Check, Print, Quick Return -->
+                            <ng-container *ngIf="isApproved(invoice)">
+                                <div class="approved-badge">
+                                    <i class="pi pi-check-circle text-success" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary"
+                                    size="small" pTooltip="طباعة الفاتورة" tooltipPosition="top"
+                                    (onClick)="printInvoice(invoice.id)" styleClass="action-btn-print">
+                                </p-button>
+                                <p-button icon="pi pi-replay" [rounded]="true" [text]="true" severity="warning"
+                                    size="small" pTooltip="مرتجع سريع" tooltipPosition="top"
+                                    (onClick)="navigateToReturn(invoice.id)"
+                                    styleClass="action-btn-return imperial-glow">
+                                </p-button>
+                                <p-button icon="pi pi-times-circle" [rounded]="true" [text]="true" severity="danger"
+                                    size="small" pTooltip="إلغاء الفاتورة" tooltipPosition="top"
+                                    (onClick)="cancelInvoice(invoice.id)" styleClass="action-btn-cancel">
+                                </p-button>
+                            </ng-container>
+
+                            <!-- 🔒 CANCELLED STATUS (2) - Red Lock, View Only -->
+                            <ng-container *ngIf="isCancelled(invoice)">
+                                <div class="cancelled-badge">
+                                    <i class="pi pi-lock text-crimson" style="font-size: 1.5rem;"
+                                        pTooltip="فاتورة ملغاة"></i>
+                                </div>
+                                <p-button icon="pi pi-file-pdf" [rounded]="true" [text]="true" [disabled]="true"
+                                    severity="secondary" size="small" pTooltip="عرض فقط (ملغاة)" tooltipPosition="top"
+                                    styleClass="action-btn-disabled">
+                                </p-button>
+                            </ng-container>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="text-center p-6">
+                        <div class="flex flex-column align-items-center">
+                            <div
+                                class="w-5rem h-5rem bg-gray-50 border-circle flex align-items-center justify-content-center mb-3">
+                                <i class="pi pi-dollar text-4xl text-gray-300"></i>
+                            </div>
+                            <span class="text-gray-500 font-medium text-lg">لا توجد فواتير مبيعات</span>
+                            <span class="text-gray-400 text-sm mt-1">ابدأ بإضافة فاتورة بيع جديدة</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
+<p-toast position="top-left"></p-toast>

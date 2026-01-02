@@ -1,148 +1,118 @@
-<!-- medicine-add-edit.component.html - Redesigned -->
-<div class="medicine-form-container" dir="rtl">
-    <div class="card p-0 overflow-hidden border-none shadow-4">
-        <!-- Header Section -->
-        <div class="form-header p-5 flex align-items-center justify-content-between">
-            <div class="flex align-items-center gap-4">
-                <div class="header-icon-box shadow-3">
-                    <i [class]="editMode ? 'pi pi-pencil' : 'pi pi-plus'"></i>
-                </div>
-                <div class="header-text">
-                    <h2 class="text-3xl font-bold m-0">{{editMode ? 'تعديل بيانات الدواء' : 'إضافة دواء جديد'}}</h2>
-                    <p class="text-secondary m-0 mt-1">{{editMode ? 'تحديث المعلومات التقنية والمخزنية للدواء' : 'إدخال
-                        بيانات دواء جديد للنظام'}}</p>
-                </div>
-            </div>
-            <div class="header-status" *ngIf="editMode">
-                <span class="status-badge">نسخة قيد التعديل</span>
-            </div>
+<p-sidebar [(visible)]="visible" (onHide)="close()" position="left" styleClass="w-full md:w-30rem lg:w-40rem p-0"
+    [modal]="true" [blockScroll]="true">
+    <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2">
+            <span class="w-2rem h-2rem border-circle bg-teal-50 flex align-items-center justify-content-center">
+                <i class="pi" [ngClass]="medicine ? 'pi-pencil text-teal-600' : 'pi-plus text-teal-600'"></i>
+            </span>
+            <span class="font-bold text-xl">{{ medicine ? 'تعديل دواء' : 'إضافة دواء جديد' }}</span>
         </div>
-
-        <form [formGroup]="medicineForm" (ngSubmit)="saveMedicine()" class="p-5">
-            <div class="grid">
-                <!-- Section 1: الهوية والترميز -->
-                <div class="col-12 mb-4">
-                    <div class="section-title">
-                        <i class="pi pi-id-card"></i>
-                        <span>الهوية والترميز</span>
-                    </div>
-                    <div class="grid formgrid p-fluid mt-2">
-                        <div class="col-12 md:col-6 lg:col-4 field px-3">
-                            <label for="name" class="font-bold block mb-2">اسم الدواء (تجاري)</label>
-                            <span class="p-input-icon-left w-full">
-                                <i class="pi pi-tag"></i>
-                                <input pInputText id="name" formControlName="name" placeholder="أدخل اسم الدواء..." />
-                            </span>
-                            <small class="p-error"
-                                *ngIf="medicineForm.get('name')?.invalid && medicineForm.get('name')?.touched">
-                                الاسم التجاري مطلوب
-                            </small>
-                        </div>
-                        <div class="col-12 md:col-6 lg:col-4 field px-3">
-                            <label for="internalCode" class="font-bold block mb-2">الكود الداخلي</label>
-                            <span class="p-input-icon-left w-full">
-                                <i class="pi pi-hashtag"></i>
-                                <input pInputText id="internalCode" formControlName="internalCode"
-                                    placeholder="مثال: MED-001" />
-                            </span>
-                        </div>
-                        <div class="col-12 md:col-6 lg:col-4 field px-3">
-                            <label for="defaultBarcode" class="font-bold block mb-2">الباركود</label>
-                            <span class="p-input-icon-left w-full">
-                                <i class="pi pi-barcode"></i>
-                                <input pInputText id="defaultBarcode" formControlName="defaultBarcode"
-                                    placeholder="امسح الباركود هنا..." />
-                            </span>
-                        </div>
-                    </div>
+    </ng-template>
+    
+    <div class="flex flex-column h-full">
+        <div class="flex-grow-1 overflow-y-auto px-4 pb-4">
+            <form [formGroup]="medicineForm" class="grid p-fluid mt-2">
+    
+                <!-- Basic Info Section -->
+                <div class="col-12 text-sm text-500 font-bold mb-2">📌 المعلومات الأساسية</div>
+    
+                <div class="col-12">
+                    <label class="block font-bold mb-2 required-star">الاسم التجاري</label>
+                    <input pInputText formControlName="name"
+                        [ngClass]="{'ng-invalid ng-dirty': medicineForm.get('name')?.invalid && medicineForm.get('name')?.touched}" />
+                    <small class="text-red-500 block mt-1"
+                        *ngIf="medicineForm.get('name')?.invalid && medicineForm.get('name')?.touched">الاسم مطلوب</small>
                 </div>
-
-                <!-- Section 2: التصنيف والمواصفات -->
-                <div class="col-12 mb-4">
-                    <div class="section-title">
-                        <i class="pi pi-filter"></i>
-                        <span>التصنيف والمواصفات</span>
-                    </div>
-                    <div class="grid formgrid p-fluid mt-2">
-                        <div class="col-12 md:col-6 field px-3">
-                            <label for="categoryId" class="font-bold block mb-2">الفئة العلاجية</label>
-                            <p-dropdown id="categoryId" formControlName="categoryId" [options]="categories"
-                                optionLabel="name" optionValue="id" placeholder="اختر الفئة" [showClear]="true"
-                                [filter]="true" class="w-full">
-                                <ng-template pTemplate="selectedItem">
-                                    <div class="flex align-items-center" *ngIf="medicineForm.get('categoryId')?.value">
-                                        <i class="pi pi-bookmark mr-2 text-primary"></i>
-                                        <div>{{ getCategoryName(medicineForm.get('categoryId')?.value) }}</div>
-                                    </div>
-                                </ng-template>
-                            </p-dropdown>
-                            <small class="p-error"
-                                *ngIf="medicineForm.get('categoryId')?.invalid && medicineForm.get('categoryId')?.touched">
-                                الفئة مطلوبة
-                            </small>
-                        </div>
-                    </div>
+<div class="col-12 md:col-6">
+    <label class="block font-bold mb-2">الكود الداخلي</label>
+    <input pInputText formControlName="internalCode" placeholder="تلقائي" />
                 </div>
-
-                <!-- Section 3: الأسعار والمخزون -->
-                <div class="col-12 mb-4">
-                    <div class="section-title">
-                        <i class="pi pi-wallet"></i>
-                        <span>الأسعار والمخزون</span>
-                    </div>
-                    <div class="grid formgrid p-fluid mt-2 pricing-grid p-4 border-round-xl mx-2">
-                        <div class="col-12 md:col-4 field px-2">
-                            <label for="defaultPurchasePrice" class="font-bold block mb-2">سعر الشراء الافتراضي</label>
-                            <div class="p-inputgroup">
-                                <span class="p-inputgroup-addon">USD</span>
-                                <input pInputText id="defaultPurchasePrice" formControlName="defaultPurchasePrice"
-                                    type="number" />
-                            </div>
-                        </div>
-                        <div class="col-12 md:col-4 field px-2">
-                            <label for="defaultSalePrice" class="font-bold block mb-2">سعر البيع الافتراضي</label>
-                            <div class="p-inputgroup">
-                                <span class="p-inputgroup-addon">USD</span>
-                                <input pInputText id="defaultSalePrice" formControlName="defaultSalePrice"
-                                    type="number" />
-                            </div>
-                        </div>
-                        <div class="col-12 md:col-4 field px-2">
-                            <label for="minAlertQuantity" class="font-bold block mb-2 text-orange-600">تنبيه طلبية
-                                النواقص</label>
-                            <span class="p-input-icon-right w-full">
-                                <i class="pi pi-bell text-orange-600"></i>
-                                <input pInputText id="minAlertQuantity" formControlName="minAlertQuantity" type="number"
-                                    class="border-orange-200" />
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Section 4: ملاحظات إضافية -->
-                <div class="col-12 mb-4">
-                    <div class="section-title">
-                        <i class="pi pi-info-circle"></i>
-                        <span>ملاحظات إضافية</span>
-                    </div>
-                    <div class="field mt-2 px-3">
-                        <textarea pInputTextarea id="notes" formControlName="notes" rows="4"
-                            placeholder="أدخل أي ملاحظات إضافية هنا (طريقة الاستخدام، محاذير، إلخ)..."
-                            class="w-full"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="form-footer flex justify-content-end gap-3 mt-5 pt-5 border-top-1 border-gray-200">
-                <p-button label="إلغاء التغييرات" icon="pi pi-times"
-                    styleClass="p-button-outlined p-button-secondary border-round-xl px-5 py-3"
-                    (onClick)="cancel()"></p-button>
-                <p-button [label]="editMode ? 'حفظ البيانات' : 'إضافة الدواء'"
-                    [icon]="editMode ? 'pi pi-save' : 'pi pi-plus'" type="submit"
-                    styleClass="p-button-success border-round-xl px-5 py-3 shadow-3"
-                    [disabled]="medicineForm.invalid"></p-button>
-            </div>
-        </form>
+<div class="col-12 md:col-6">
+    <label class="block font-bold mb-2">الباركود</label>
+    <div class="p-inputgroup">
+        <span class="p-inputgroup-addon"><i class="pi pi-barcode"></i></span>
+        <input pInputText formControlName="defaultBarcode" />
     </div>
 </div>
+
+                <div class="col-12 md:col-6">
+                    <label class="block font-bold mb-2">الاسم العلمي</label>
+                    <input pInputText formControlName="scientificName" />
+                </div>
+<div class="col-12 md:col-6">
+    <label class="block font-bold mb-2">التصنيف</label>
+    <p-dropdown [options]="categories" formControlName="categoryId" optionLabel="name" optionValue="id"
+        placeholder="اختر التصنيف" [filter]="true" [showClear]="true"></p-dropdown>
+                </div>
+
+                <div class="col-12 md:col-6">
+                    <label class="block font-bold mb-2">الشركة المصنعة</label>
+                    <input pInputText formControlName="manufacturer" />
+                </div>
+<div class="col-12 md:col-6" *ngIf="medicine">
+    <label class="block font-bold mb-2">الحالة</label>
+    <p-dropdown [options]="statusOptions" formControlName="status" optionLabel="label" optionValue="value">
+        <ng-template pTemplate="selectedItem" let-selected>
+            <p-tag [value]="selected.label" [severity]="selected.value === 'Active' ? 'success' : 'danger'"></p-tag>
+        </ng-template>
+        <ng-template pTemplate="item" let-item>
+            <p-tag [value]="item.label" [severity]="item.value === 'Active' ? 'success' : 'danger'"></p-tag>
+        </ng-template>
+    </p-dropdown>
+                </div>
+
+                <div class="col-12">
+                    <div class="border-top-1 border-200 my-2"></div>
+                </div>
+                <!-- Price Section -->
+                <div class="col-12 text-sm text-500 font-bold mb-2">💰 التسعير (العملة الأساسية)</div>
+                
+                <div class="col-12 md:col-6">
+                    <label class="block font-bold mb-2 required-star">سعر الشراء</label>
+                    <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"
+                        suffix=" ر.ي"></p-inputNumber>
+                </div>
+<div class="col-12 md:col-6">
+    <label class="block font-bold mb-2 required-star">سعر البيع</label>
+    <p-inputNumber formControlName="defaultSalePrice" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"
+        suffix=" ر.ي"></p-inputNumber>
+    <small class="text-red-500 block mt-1"
+        *ngIf="medicineForm.errors?.['invalidPrice'] && (medicineForm.touched || medicineForm.dirty)">
+        سعر البيع أقل من الشراء!
+    </small>
+                </div>
+<div class="col-12">
+    <div class="border-top-1 border-200 my-2"></div>
+</div>
+
+<!-- Inventory Section -->
+<div class="col-12 text-sm text-500 font-bold mb-2">📦 إعدادات المخزون</div>
+
+<div class="col-12 md:col-6">
+    <label class="block font-bold mb-2">حد التنبيه (تنبيه بالنقص)</label>
+    <p-inputNumber formControlName="minAlertQuantity" [showButtons]="true" [min]="0"></p-inputNumber>
+</div>
+<div class="col-12 md:col-6">
+    <label class="block font-bold mb-2">مستوى إعادة الطلب</label>
+    <p-inputNumber formControlName="reorderLevel" [showButtons]="true" [min]="0"></p-inputNumber>
+</div>
+<div class="col-12 md:col-6 flex align-items-center mt-3">
+    <p-checkbox formControlName="soldByUnit" [binary]="true" inputId="soldByUnit"></p-checkbox>
+    <label for="soldByUnit" class="mr-2 cursor-pointer select-none">يباع بالوحدة (وليس بالعلبة)</label>
+</div>
+
+                <div class="col-12 mt-3">
+                    <label class="block font-bold mb-2">ملاحظات إضافية</label>
+                    <textarea pInputTextarea formControlName="notes" rows="3" class="w-full"></textarea>
+                </div>
+                </form>
+                </div>
+<div class="flex justify-content-end p-4 border-top-1 border-200 bg-gray-50 gap-2">
+    <button pButton label="إلغاء" icon="pi pi-times" class="p-button-outlined p-button-secondary"
+        (click)="close()"></button>
+    <button pButton [label]="medicine ? 'حفظ التعديلات' : 'إضافة دواء'" icon="pi pi-check"
+        class="p-button-raised p-button-success" [loading]="loading" (click)="save()"
+        [disabled]="medicineForm.invalid"></button>
+        </div>
+    </div>
+    </p-sidebar>

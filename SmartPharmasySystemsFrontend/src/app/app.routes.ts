@@ -5,7 +5,7 @@ import { MainLayoutComponent } from './layout/main-layout/main-layout.component'
 export const routes: Routes = [
     {
         path: '',
-        redirectTo: 'dashboard',
+        redirectTo: 'auth/login',
         pathMatch: 'full'
     },
     {
@@ -26,14 +26,6 @@ export const routes: Routes = [
                 loadChildren: () => import('./features/inventory/inventory.routes').then(m => m.INVENTORY_ROUTES)
             },
             {
-                path: 'sales-invoices',
-                loadChildren: () => import('./features/sales/sales.routes').then(m => m.SALES_ROUTES)
-            },
-            {
-                path: 'purchase-invoices',
-                loadChildren: () => import('./features/purchases/purchases.routes').then(m => m.PURCHASES_ROUTES)
-            },
-            {
                 path: 'sales',
                 loadChildren: () => import('./features/sales/sales.routes').then(m => m.SALES_ROUTES)
             },
@@ -42,8 +34,16 @@ export const routes: Routes = [
                 loadChildren: () => import('./features/purchases/purchases.routes').then(m => m.PURCHASES_ROUTES)
             },
             {
+                path: 'customers',
+                loadChildren: () => import('./features/customers/customers.routes').then(m => m.CUSTOMERS_ROUTES)
+            },
+            {
                 path: 'partners',
                 loadChildren: () => import('./features/partners/partners.routes').then(m => m.PARTNERS_ROUTES)
+            },
+            {
+                path: 'financial',
+                loadChildren: () => import('./features/financial/financial.routes').then(m => m.FINANCIAL_ROUTES)
             },
             {
                 path: 'finance',

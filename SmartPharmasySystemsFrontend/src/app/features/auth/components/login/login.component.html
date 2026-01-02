@@ -1,59 +1,64 @@
-<div class="flex justify-content-center align-items-center min-h-screen w-full bg-cover bg-no-repeat relative overflow-hidden"
-    style="background-image: url('assets/images/pharmacy-bg-blur.jpg'); background-color: var(--bg-color)">
-
-    <!-- Decorative Shapes -->
-    <div
-        class="absolute w-30rem h-30rem bg-primary-300 border-circle opacity-20 filter-blur-3xl top-0 left-0 -mt-5 -ml-5 animation-float">
+<div class="login-wrapper">
+    <div class="animated-bg">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
     </div>
-    <div
-        class="absolute w-30rem h-30rem bg-purple-300 border-circle opacity-20 filter-blur-3xl bottom-0 right-0 -mb-5 -mr-5 animation-float-delayed">
-    </div>
-
-    <div class="card p-4 shadow-8 border-round-2xl w-full lg:w-4 border-1 border-white-alpha-30 glass-effect relative z-1"
-        dir="rtl">
-        <div class="text-center mb-5">
-            <div class="inline-flex align-items-center justify-content-center w-5rem h-5rem border-circle mb-3 shadow-2"
-                [style]="{'background': 'var(--surface-hover)'}">
-                <i class="pi pi-heart-fill text-4xl text-primary-600"></i>
+    
+    <div class="login-container glass-panel animate-fade-in">
+        <p-toast></p-toast>
+    
+        <div class="login-header">
+            <div class="logo-box">
+                <i class="pi pi-shield"></i>
             </div>
-            <div class="text-color text-3xl font-bold mb-3">مرحباً بعودتك</div>
-            <span class="text-color-secondary font-medium">سجل الدخول للمتابعة</span>
+            <h1>نظام الصيدلية الذكي</h1>
+            <p>سجل دخولك للمتابعة</p>
         </div>
 
-        <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" class="flex flex-column gap-3">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
             <div class="field">
-                <label for="username" class="block text-color font-medium mb-2">اسم المستخدم</label>
-                <input id="username" type="text" pInputText formControlName="username"
-                    class="w-full p-3 border-round-xl border-1 border-color hover:bg-surface-hover focus:bg-transparent transition-colors"
-                    [style]="{'background': 'var(--bg-color)'}" placeholder="أدخل اسم المستخدم" />
+                <span class="p-input-icon-left w-full">
+                    <i class="pi pi-user"></i>
+                    <input pInputText id="username" formControlName="username" placeholder="اسم المستخدم" class="w-full h-3rem"
+                        autocomplete="username" />
+                </span>
             </div>
 
-            <div class="field">
-                <label for="password" class="block text-color font-medium mb-2">كلمة المرور</label>
-                <div class="p-input-icon-left w-full">
-                    <input id="password" type="password" pInputText formControlName="password"
-                        class="w-full p-3 border-round-xl border-1 border-color hover:bg-surface-hover focus:bg-transparent transition-colors"
-                        [style]="{'background': 'var(--bg-color)'}" placeholder="أدخل كلمة المرور" />
+            <div class="field mt-3">
+                <span class="p-input-icon-left w-full">
+                    <i class="pi pi-lock"></i>
+                    <p-password formControlName="password" placeholder="كلمة المرور" [toggleMask]="true" [feedback]="false"
+                        styleClass="w-full" inputStyleClass="w-full h-3rem" autocomplete="current-password"></p-password>
+                </span>
+            </div>
+
+            <div class="flex align-items-center justify-content-between mt-3 mb-4 text-sm">
+                <div class="flex align-items-center gap-2">
+                    <p-checkbox formControlName="rememberMe" [binary]="true" inputId="rem"></p-checkbox>
+                    <label for="rem" class="cursor-pointer opacity-70">تذكرني</label>
                 </div>
+                <a class="text-primary no-underline font-bold hover:underline">نسيت كلمة المرور؟</a>
             </div>
 
-            <div class="flex align-items-center justify-content-between mb-4">
-                <div class="flex align-items-center">
-                    <p-checkbox id="rememberme" [binary]="true" styleClass="mr-2"></p-checkbox>
-                    <label for="rememberme" class="text-color-secondary cursor-pointer">تذكرني</label>
-                </div>
-                <a
-                    class="font-medium no-underline text-primary cursor-pointer hover:text-primary-600 transition-colors">نسيت
-                    كلمة المرور؟</a>
+            <p-button type="submit" label="دخول" icon="pi pi-sign-in" [loading]="loading" [disabled]="loginForm.invalid"
+                styleClass="w-full p-button-raised p-button-lg h-3rem"></p-button>
+            
+            <div class="divider">
+                <span>أو الدخول السريع</span>
             </div>
 
-            <button pButton pRipple label="تسجيل الدخول" type="submit"
-                class="w-full p-3 text-xl font-bold border-round-xl shadow-4 hover:shadow-6 transition-all"
-                [loading]="loading"></button>
-
-            <div class="mt-4 text-center text-color-secondary text-sm">
-                ليس لديك حساب؟ <a class="font-bold text-primary cursor-pointer hover:underline">تواصل مع المسؤول</a>
+            <div class="flex gap-2">
+                <button type="button" class="quick-login-btn admin" (click)="quickLogin('admin')">
+                    <i class="pi pi-user-edit"></i> مدبر
+                </button>
+                <button type="button" class="quick-login-btn pharmacist" (click)="quickLogin('pharmacist')">
+                    <i class="pi pi-user"></i> صيدلي
+                </button>
             </div>
         </form>
+<div class="login-footer">
+    ليس لديك حساب؟ <a routerLink="/auth/register" class="text-primary font-bold">إنشاء حساب جديد</a>
+</div>
     </div>
 </div>

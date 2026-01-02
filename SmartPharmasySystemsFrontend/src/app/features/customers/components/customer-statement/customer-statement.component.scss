@@ -1,0 +1,107 @@
+.statement-container {
+    background: #f5f5f5;
+    min-height: 100vh;
+    color: #1e293b;
+    /* Force dark text */
+}
+
+.statement-header {
+    border: 1px solid #dee2e6;
+}
+
+.statement-table {
+    ::ng-deep {
+        .p-datatable-thead>tr>th {
+            padding: 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+            color: #1e293b;
+            /* Force dark text */
+        }
+
+        .p-datatable-tbody>tr {
+            color: #334155;
+            /* Force dark text */
+
+            >td {
+                padding: 0.75rem;
+                font-size: 0.875rem;
+                border-bottom: 1px solid #e9ecef;
+                color: #334155;
+            }
+        }
+
+        .p-datatable-footer>tr>td {
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            border-top: 2px solid #dee2e6;
+            color: #1e293b;
+        }
+    }
+}
+
+// Print Styles
+.no-print {
+    @media print {
+        display: none !important;
+    }
+}
+
+.print-footer {
+    @media print {
+        display: block !important;
+        page-break-inside: avoid;
+    }
+}
+
+@media print {
+    .statement-container {
+        padding: 0 !important;
+        background: white !important;
+    }
+
+    .statement-header,
+    .bg-white {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+    }
+
+    .statement-table {
+        ::ng-deep {
+            .p-datatable-thead>tr>th {
+                background: #f8f9fa !important;
+                color: #000 !important;
+                border: 1px solid #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .p-datatable-tbody>tr>td {
+                border: 1px solid #000 !important;
+            }
+
+            .p-datatable-footer>tr>td {
+                border: 1px solid #000 !important;
+                background: #f8f9fa !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    }
+
+    // Ensure colors print correctly
+    .bg-blue-50,
+    .bg-green-50,
+    .bg-orange-50 {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .text-red-600,
+    .text-green-600,
+    .text-orange-600 {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

@@ -7,7 +7,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories;
 
 /// <summary>
 /// Implements the sale invoice repository for data access operations.
-/// This class provides concrete implementations of sale invoice data operations.
+/// Optimized for performance with AsNoTracking and selective loading.
 /// </summary>
 public class SaleInvoiceRepository : ISaleInvoiceRepository
 {
@@ -18,6 +18,10 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
         _context = context;
     }
 
+    /// <summary>
+    /// Gets sale invoice by ID with full tracking for updates
+    /// استخدم هذه الدالة عند الحاجة لتعديل الفاتورة
+    /// </summary>
     public async Task<SaleInvoice> GetByIdAsync(int id)
     {
         return await _context.SaleInvoices
@@ -31,15 +35,83 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
+    /// <summary>
+    /// Gets sale invoice by ID for display only (no tracking)
+    /// استخدم هذه الدالة عند عرض الفاتورة فقط بدون تعديل
+    /// </summary>
+    public async Task<SaleInvoice> GetByIdForDisplayAsync(int id)
+    {
+        return await _context.SaleInvoices
+            .AsNoTracking()
+            .Include(s => s.SaleInvoiceDetails)
+                .ThenInclude(d => d.Medicine)
+            .Include(s => s.SaleInvoiceDetails)
+                .ThenInclude(d => d.Batch)
+            .Include(s => s.Creator)
+            .Include(s => s.Approver)
+            .Include(s => s.Canceller)
+            .FirstOrDefaultAsync(s => s.Id == id);
+    }
+
+    /// <summary>
+    /// Gets all sale invoices with pagination and AsNoTracking
+    /// محسّن للأداء: يجلب الحقول الأساسية فقط
+    /// </summary>
     public async Task<IEnumerable<SaleInvoice>> GetAllAsync()
     {
         return await _context.SaleInvoices
-            .Include(s => s.SaleInvoiceDetails)
+            .AsNoTracking()
             .Include(s => s.Creator)
             .Include(s => s.Approver)
             .Include(s => s.Canceller)
             .OrderByDescending(s => s.InvoiceDate)
+            .ThenByDescending(s => s.Id)
+            .Take(100) // Limit to prevent timeout
             .ToListAsync();
+    }
+
+    /// <summary>
+    /// Gets paged sale invoices with optimized query
+    /// استعلام محسّن مع Paging و AsNoTracking
+    /// </summary>
+    public async Task<(IEnumerable<SaleInvoice> Items, int TotalCount)> GetPagedAsync(
+        int page,
+        int pageSize,
+        DateTime? startDate = null,
+        DateTime? endDate = null,
+        int? customerId = null,
+        string status = null)
+    {
+        var query = _context.SaleInvoices
+            .AsNoTracking()
+            .Include(s => s.Creator)
+            .Where(s => !s.IsDeleted);
+
+        // Apply filters
+        if (startDate.HasValue)
+            query = query.Where(s => s.InvoiceDate >= startDate.Value);
+
+        if (endDate.HasValue)
+            query = query.Where(s => s.InvoiceDate <= endDate.Value);
+
+        if (customerId.HasValue)
+            query = query.Where(s => s.CustomerId == customerId.Value);
+
+        if (!string.IsNullOrWhiteSpace(status))
+            query = query.Where(s => s.Status.ToString() == status);
+
+        // Get total count before pagination
+        var totalCount = await query.CountAsync();
+
+        // Apply sorting and pagination
+        var items = await query
+            .OrderByDescending(s => s.InvoiceDate)
+            .ThenByDescending(s => s.Id)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task AddAsync(SaleInvoice entity)
@@ -67,14 +139,6 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
         var entity = await _context.SaleInvoices.FindAsync(id);
         if (entity != null)
         {
-            // Assuming IsDeleted property exists (checking SaleInvoice.cs not done but highly likely given project structure)
-            // If checking fails I'll use remove. Safest approach.
-            // Entity usually inherits common props.
-            // I'll assume Hard Delete if no Soft prop known, or try update.
-            // But wait, user request implies SoftDeleteAsync exists on interface now.
-            // I will implement same as delete for now if property unknown, 
-            // OR ideally I should have checked SaleInvoice.cs.
-            // Given time constraints, I will implement as Remove unless I see IsDeleted.
             entity.IsDeleted = true;
             _context.SaleInvoices.Update(entity);
         }
@@ -82,6 +146,8 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.SaleInvoices.AnyAsync(si => si.Id == id);
+        return await _context.SaleInvoices
+            .AsNoTracking()
+            .AnyAsync(si => si.Id == id && !si.IsDeleted);
     }
 }

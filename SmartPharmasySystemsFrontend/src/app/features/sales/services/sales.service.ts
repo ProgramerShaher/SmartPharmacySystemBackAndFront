@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
-import { ApiResponse, SaleInvoice, SaleInvoiceDetail, SalesReturn, SalesReturnDetail, SaleInvoiceCreateDto, SaleInvoiceUpdateDto, SaleInvoiceDetailCreateDto, SaleInvoiceDetailUpdateDto } from '../../../core/models';
+import { ApiResponse, SaleInvoice, SaleInvoiceDetail, SalesReturn, SalesReturnDetail } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })

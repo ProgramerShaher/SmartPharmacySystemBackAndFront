@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { AvatarModule } from 'primeng/avatar';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { CalendarModule } from 'primeng/calendar';
@@ -29,6 +30,7 @@ import { CreateAlertDto, UpdateAlertDto, AlertStatus } from '../../../../core/mo
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
+    AvatarModule,
     InputTextModule,
     InputTextareaModule,
     CalendarModule,
@@ -48,7 +50,7 @@ export class AlertAddEditComponent implements OnInit {
   batches: any[] = [];
 
   // Use values matching ExpiryStatus enum strings
-  alertTypes = [
+  alertTypeOptions = [
     { label: 'أسبوع واحد', value: 'ExpiryOneWeek' },
     { label: 'أسبوعين', value: 'ExpiryTwoWeeks' },
     { label: 'شهر واحد', value: 'ExpiryOneMonth' },
@@ -266,5 +268,20 @@ export class AlertAddEditComponent implements OnInit {
 
   get submitButtonText(): string {
     return this.isEditMode ? 'تحديث التنبيه' : 'إنشاء التنبيه';
+  }
+
+  getAlertTypeIcon(alertType: string): string {
+    if (!alertType) return 'pi-bell';
+    const type = alertType.toLowerCase();
+
+    if (type.includes('oneweek') || type.includes('twoweeks') || type === '2') return 'pi-exclamation-triangle';
+    if (type.includes('expired') || type === '3') return 'pi-times-circle';
+    if (type.includes('month')) return 'pi-calendar';
+
+    return 'pi-info-circle';
+  }
+
+  onCancel(): void {
+    this.router.navigate(['/system-alerts']);
   }
 }

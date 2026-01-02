@@ -8,8 +8,10 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
 import { CalendarModule } from 'primeng/calendar';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessageService } from 'primeng/api';
+import { MessageService, Message } from 'primeng/api'; // Added Message
+import { MessagesModule } from 'primeng/messages'; // Added MessagesModule
 import { InventoryService } from '../../../features/inventory/services/inventory.service';
+import { AlertService } from '../../../core/services/alert.service'; // Added AlertService
 import { Medicine, MedicineBatch } from '../../../core/models';
 
 @Component({
@@ -24,69 +26,11 @@ import { Medicine, MedicineBatch } from '../../../core/models';
         InputNumberModule,
         ButtonModule,
         CalendarModule,
-        InputTextModule
+        InputTextModule,
+        MessagesModule // Added
     ],
-    template: `
-        <p-dialog [(visible)]="visible" [header]="isEdit ? 'تعديل بند توريد' : 'إضافة بند توريد جديد'"
-            [modal]="true" [style]="{width: '500px'}" (onHide)="onClose()">
-            <form [formGroup]="itemForm" class="p-fluid grid mt-2">
-                <div class="col-12 mb-3">
-                    <label class="font-bold block mb-2">اسم الصنف / الدواء</label>
-                    <p-autoComplete [suggestions]="filteredMedicines" (completeMethod)="searchMedicines($event)"
-                        field="name" (onSelect)="onMedicineSelect($event.value)" placeholder="ابحث عن الصنف في القاعدة..."
-                        appendTo="body" [forceSelection]="true" [disabled]="isEdit"></p-autoComplete>
-                </div>
-
-                <div class="col-12 mb-3" *ngIf="invoiceType === 'Sales'">
-                    <label class="font-bold block mb-2">الدفعة المخزنية (Batch)</label>
-                    <p-dropdown [options]="batches" optionLabel="companyBatchNumber" placeholder="اختر الدفعة المتوفرة"
-                        formControlName="batchId" optionValue="id" appendTo="body" (onChange)="onBatchSelect($event.value)">
-                        <ng-template pTemplate="item" let-batch>
-                            <div class="flex justify-content-between align-items-center">
-                                <span>{{batch.companyBatchNumber}}</span>
-                                <span class="text-sm" [class.text-danger]="batch.remainingQuantity === 0">
-                                    {{batch.remainingQuantity}} وحدة متوفرة
-                                </span>
-                            </div>
-                        </ng-template>
-                    </p-dropdown>
-                </div>
-
-                <div class="col-12 mb-3" *ngIf="invoiceType === 'Purchase'">
-                    <label class="font-bold block mb-2">رقم التشغيلة (Batch Number)</label>
-                    <input pInputText formControlName="companyBatchNumber" placeholder="أدخل رقم التشغيلة المطبوع" />
-                </div>
-
-                <div class="col-12 mb-3" *ngIf="invoiceType === 'Purchase'">
-                    <label class="font-bold block mb-2">تاريخ انتهاء الصلاحية</label>
-                    <p-calendar formControlName="expiryDate" view="month" dateFormat="mm/yy" [showIcon]="true"
-                        appendTo="body" placeholder="اختر شهر/سنة الانتهاء"></p-calendar>
-                </div>
-
-                <div class="col-6 mb-3">
-                    <label class="font-bold block mb-2">الكمية الموردة</label>
-                    <p-inputNumber formControlName="quantity" [min]="1" [showButtons]="true" buttonLayout="horizontal"
-                        incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
-                </div>
-
-                <div class="col-6 mb-3">
-                    <label class="font-bold block mb-2">سعر شراء الوحدة</label>
-                    <p-inputNumber formControlName="price" [min]="0" mode="decimal" [minFractionDigits]="2"
-                        suffix=" ريال يمني"></p-inputNumber>
-                </div>
-
-                <div class="col-12 mt-2 bg-indigo-50 p-3 border-round border-1 border-indigo-100 flex justify-content-between align-items-center">
-                    <span class="text-indigo-700 font-bold">إجمالي قيمة البند:</span>
-                    <span class="text-2xl font-extrabold text-indigo-600">{{itemTotal | number:'1.2-2'}} ريال يمني</span>
-                </div>
-            </form>
-            <ng-template pTemplate="footer">
-                <p-button label="إلغاء الأمر" icon="pi pi-times" severity="secondary" outlined (onClick)="visible = false"></p-button>
-                <p-button [label]="isEdit ? 'تعديل البند' : 'إضافة البند'" [icon]="isEdit ? 'pi pi-check' : 'pi pi-plus'"
-                    severity="primary" [disabled]="itemForm.invalid" (onClick)="onSubmit()"></p-button>
-            </ng-template>
-        </p-dialog>
-    `
+    templateUrl: './invoice-item-dialog.component.html',
+    styleUrls: ['./invoice-item-dialog.component.scss']
 })
 export class InvoiceItemDialogComponent implements OnInit {
     @Input() invoiceType: 'Sales' | 'Purchase' = 'Sales';
@@ -100,28 +44,38 @@ export class InvoiceItemDialogComponent implements OnInit {
     maxQuantity = 0;
     itemTotal = 0;
 
+    // UI States for Batch Analysis
+    isLoadingBatches = false;
+    hasExpiredBatches = false;
+    noStockAvailable = false;
+    systemDate = new Date(); // Use actual current date
+
+    isSyncing = false;
+    msgs: Message[] = []; 
+
     constructor(
         private fb: FormBuilder,
         private inventoryService: InventoryService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private alertService: AlertService
     ) {
         this.itemForm = this.fb.group({
             medicineId: [null, Validators.required],
             medicineName: [''],
-            batchId: [null], // For Sales
-            companyBatchNumber: [''], // For Purchase
-            expiryDate: [null], // For Purchase
+            batchId: [null],
+            companyBatchNumber: [''],
+            expiryDate: [null],
             quantity: [1, [Validators.required, Validators.min(1)]],
+            bonusQuantity: [0],
             price: [0, [Validators.required, Validators.min(0)]],
+            salePrice: [0],
             unitCost: [0]
         });
 
-        // Dynamic Calculations with Precision
         this.itemForm.valueChanges.subscribe(val => {
             const qty = Number(val.quantity) || 0;
             const price = Number(val.price) || 0;
             const total = qty * price;
-            // Use Number() and toFixed() to ensure absolute decimal precision
             this.itemTotal = Number(total.toFixed(2));
         });
     }
@@ -146,6 +100,8 @@ export class InvoiceItemDialogComponent implements OnInit {
     }
 
     show(item?: any) {
+        this.resetState();
+
         if (item) {
             this.isEdit = true;
             this.itemForm.patchValue(item);
@@ -161,6 +117,13 @@ export class InvoiceItemDialogComponent implements OnInit {
         this.visible = true;
     }
 
+    resetState() {
+        this.hasExpiredBatches = false;
+        this.noStockAvailable = false;
+        this.msgs = [];
+        this.batches = [];
+    }
+
     onClose() {
         this.visible = false;
         this.isEdit = false;
@@ -173,13 +136,11 @@ export class InvoiceItemDialogComponent implements OnInit {
     }
 
     onMedicineSelect(medicine: Medicine) {
-        // Only patch values that should change on selection
         const patchData: any = {
             medicineId: medicine.id,
             medicineName: medicine.name
         };
 
-        // For new items (not editing), fetch the default price
         if (!this.isEdit) {
             patchData.price = this.invoiceType === 'Sales'
                 ? (medicine.defaultSalePrice || 0)
@@ -194,15 +155,106 @@ export class InvoiceItemDialogComponent implements OnInit {
     }
 
     loadBatches(medicineId: number) {
-        this.inventoryService.getAvailableBatchesByMedicineId(medicineId).subscribe(res => {
-            this.batches = res;
-            if (this.isEdit) {
-                const currentBatchId = this.itemForm.get('batchId')?.value;
-                const batch = this.batches.find(b => b.id === currentBatchId);
-                if (batch) {
-                    this.maxQuantity = batch.remainingQuantity;
-                    this.itemForm.patchValue({ unitCost: batch.unitPurchasePrice });
+        this.isLoadingBatches = true;
+        this.resetState();
+
+        // 1. Get ALL batches to match database state
+        this.inventoryService.getBatchesByMedicineId(medicineId).subscribe({
+            next: (res) => {
+                console.log('📦 All Batches from DB:', res);
+
+                // Show ALL batches, just sort them: Valid & Available first, then others
+                this.batches = res.sort((a, b) => {
+                    // Custom sort logic: 
+                    // 1. Has Quantity?
+                    // 2. Not Expired?
+                    // 3. Newest?
+                    const aValid = a.remainingQuantity > 0 && new Date(a.expiryDate) > this.systemDate;
+                    const bValid = b.remainingQuantity > 0 && new Date(b.expiryDate) > this.systemDate;
+
+                    if (aValid && !bValid) return -1;
+                    if (!aValid && bValid) return 1;
+                    return 0;
+                });
+
+                this.isLoadingBatches = false;
+
+                if (this.batches.length === 0) {
+                    this.diagnoseMissingBatches(medicineId);
+                } else {
+                    // Auto-select if only one VALID batch
+                    const validBatches = this.batches.filter(b => b.remainingQuantity > 0 && new Date(b.expiryDate) > this.systemDate);
+                    if (validBatches.length === 1) {
+                        this.itemForm.patchValue({ batchId: validBatches[0].id });
+                        this.onBatchSelect(validBatches[0].id);
+                    }
                 }
+
+                if (this.isEdit) {
+                    const currentBatchId = this.itemForm.get('batchId')?.value;
+                    const batch = this.batches.find(b => b.id === currentBatchId);
+                    if (batch) {
+                        this.maxQuantity = batch.remainingQuantity;
+                        this.itemForm.patchValue({ unitCost: batch.unitPurchasePrice });
+                    }
+                }
+            },
+            error: () => this.isLoadingBatches = false
+        });
+    }
+
+    diagnoseMissingBatches(medicineId: number) {
+        // Fetch ALL batches to find out why none are available
+        this.inventoryService.getBatchesByMedicineId(medicineId).subscribe(allBatches => {
+            if (!allBatches || allBatches.length === 0) {
+                // CASE: No batches ever created
+                this.msgs = [{ severity: 'info', summary: 'عذراً', detail: 'لم يتم توريد هذا الصنف من قبل (الرصيد الكلي صفر).' }];
+                return;
+            }
+
+            // Check for Expired vs Stock Out
+            const expiredCount = allBatches.filter(b => new Date(b.expiryDate) < this.systemDate).length;
+            const validButNoStock = allBatches.filter(b => new Date(b.expiryDate) >= this.systemDate && b.remainingQuantity <= 0).length;
+
+            if (expiredCount > 0) {
+                this.hasExpiredBatches = true;
+                this.msgs.push({
+                    severity: 'error',
+                    summary: 'تنبيه انتهاء الصلاحية',
+                    detail: `يوجد ${expiredCount} تشغيلة منتهية الصلاحية (أقدم من 2026).`
+                });
+            }
+
+            if (validButNoStock > 0) {
+                this.noStockAvailable = true;
+                this.msgs.push({
+                    severity: 'warn',
+                    summary: 'نفاد مخزون',
+                    detail: 'الدواء متاح ولكن الكمية في المخزن 0. يرجى توريد كميات جديدة.'
+                });
+            }
+
+            if (expiredCount === 0 && validButNoStock === 0) {
+                // Might be "Deleted" or "Quarantine"
+                this.msgs.push({ severity: 'warn', summary: 'غير متاح', detail: 'لا توجد تشغيلات صالحة للبيع حالياً.' });
+            }
+        });
+    }
+
+    forceSync() {
+        const medicineId = this.itemForm.get('medicineId')?.value;
+        if (!medicineId) return;
+
+        this.isSyncing = true;
+        this.alertService.syncMedicineAlerts(medicineId).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', summary: 'تم التحديث', detail: 'تم تحديث البيانات مع السيرفر' });
+                this.loadBatches(medicineId);
+                this.isSyncing = false;
+            },
+            error: () => {
+                this.isSyncing = false;
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل التحديث' });
             }
         });
     }
@@ -212,15 +264,19 @@ export class InvoiceItemDialogComponent implements OnInit {
         if (batch) {
             this.maxQuantity = batch.remainingQuantity;
             this.itemForm.patchValue({
-                price: batch.unitPurchasePrice * 1.2,
+                price: batch.unitPurchasePrice * 1.2, // Default markup if not set
                 unitCost: batch.unitPurchasePrice
-            }); // Example Markup
+            }); 
 
-            if (new Date(batch.expiryDate) < new Date()) {
+            if (new Date(batch.expiryDate) < this.systemDate) {
                 this.messageService.add({ severity: 'error', summary: 'تنبيه', detail: 'هذه الدفعة منتهية الصلاحية ولا يمكن بيعها' });
                 this.itemForm.get('batchId')?.setValue(null);
             }
         }
+    }
+
+    isBatchExpired(batch: MedicineBatch): boolean {
+        return new Date(batch.expiryDate) < this.systemDate;
     }
 
     onSubmit() {

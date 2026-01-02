@@ -1,0 +1,107 @@
+.page-container {
+  padding: 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.page-header {
+  padding: 1.5rem 2.5rem;
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, var(--primary-500) 0%, transparent 70%);
+    opacity: 0.08;
+    pointer-events: none;
+  }
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  &.ledger {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  }
+}
+
+.balance-cell {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(var(--primary-rgb), 0.05);
+  
+  &.negative {
+    background: rgba(239, 68, 68, 0.05);
+    
+    span {
+      color: #dc2626 !important;
+    }
+  }
+}
+
+.fadein {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:host ::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: var(--surface-100);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+    
+    .p-datatable-tbody > tr {
+      &:hover {
+        background: var(--surface-hover) !important;
+      }
+    }
+  }
+  
+  .p-calendar {
+    .p-inputtext {
+      height: 3rem;
+    }
+  }
+}

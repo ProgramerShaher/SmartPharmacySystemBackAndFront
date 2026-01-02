@@ -1,148 +1,156 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { InventoryService } from '../../services/inventory.service';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
-import { MessageService } from 'primeng/api';
-
 import { DropdownModule } from 'primeng/dropdown';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { SidebarModule } from 'primeng/sidebar';
+import { MessageService } from 'primeng/api';
+import { MedicineService } from '../../services/medicine.service';
+import { CategoryService } from '../../services/category.service';
+import { MedicineDto, CreateMedicineDto, UpdateMedicineDto, CategoryDto } from '../../../../core/models';
+import { TagModule } from "primeng/tag";
 
 @Component({
     selector: 'app-medicine-add-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, ButtonModule, InputTextModule, InputTextareaModule, DropdownModule],
-    templateUrl: './medicine-add-edit.component.html'
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        SidebarModule,
+        ButtonModule,
+        InputTextModule,
+        DropdownModule,
+        InputNumberModule,
+        CheckboxModule,
+        InputTextareaModule,
+        TagModule
+    ],
+    templateUrl: './medicine-add-edit.component.html',
+    styleUrls: ['./medicine-add-edit.component.scss']
 })
 export class MedicineAddEditComponent implements OnInit, OnChanges {
-    @Input() medicineId: number | null = null;
+    @Input() visible = false;
+    @Input() medicine: MedicineDto | null = null;
+    @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onSave = new EventEmitter<void>();
-    @Output() onCancel = new EventEmitter<void>();
 
     medicineForm: FormGroup;
-    editMode = false;
-    private originalMedicine: any = null;
+    loading = false;
+    categories: CategoryDto[] = [];
+
+    statusOptions = [
+        { label: 'نشط', value: 'Active' },
+        { label: 'غير نشط', value: 'Inactive' }
+    ];
 
     constructor(
         private fb: FormBuilder,
-        private inventoryService: InventoryService,
+        private medicineService: MedicineService,
+        private categoryService: CategoryService,
         private messageService: MessageService
     ) {
         this.medicineForm = this.fb.group({
-            name: ['', Validators.required],
             internalCode: [''],
+            name: ['', Validators.required],
+            scientificName: [''],
+            activeIngredient: [''],
+            categoryId: [null],
+            manufacturer: [''],
             defaultBarcode: [''],
-            categoryId: [null, Validators.required],
-            minAlertQuantity: [0],
-            defaultPurchasePrice: [0],
-            defaultSalePrice: [0],
+            defaultPurchasePrice: [0, [Validators.required, Validators.min(0)]],
+            defaultSalePrice: [0, [Validators.required, Validators.min(0)]],
+            minAlertQuantity: [5, Validators.min(0)],
+            reorderLevel: [10, Validators.min(0)],
+            soldByUnit: [true],
+            status: ['Active'],
             notes: ['']
-        });
+        }, { validators: this.priceValidator });
     }
-
-    categories: any[] = [];
 
     ngOnInit() {
         this.loadCategories();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes['medicineId']) {
-            if (this.medicineId) {
-                this.editMode = true;
-                this.loadMedicine(this.medicineId);
+        if (changes['visible'] && this.visible) {
+            if (this.medicine) {
+                this.medicineForm.patchValue(this.medicine);
             } else {
-                this.editMode = false;
                 this.medicineForm.reset({
-                    minAlertQuantity: 0,
                     defaultPurchasePrice: 0,
-                    defaultSalePrice: 0
+                    defaultSalePrice: 0,
+                    minAlertQuantity: 5,
+                    reorderLevel: 10,
+                    soldByUnit: true,
+                    status: 'Active'
                 });
             }
         }
     }
 
     loadCategories() {
-        this.inventoryService.getAllCategories().subscribe({
-            next: (data) => {
-                console.log('✅ Categories loaded:', data);
-                // The service now returns PagedResult<Category>, so we need data.items
-                this.categories = data.items || [];
-                if (!Array.isArray(this.categories)) console.error('⚠️ Categories items is NOT an array:', data);
-            },
-            error: (e) => {
-                console.error('Error loading categories', e);
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل قائمة الفئات' });
-            }
+        this.categoryService.getAllForDropdown().subscribe({
+            next: (data) => this.categories = data,
+            error: () => console.error('Error loading categories')
         });
     }
 
-    loadMedicine(id: number) {
-        this.inventoryService.getMedicineById(id).subscribe({
-            next: (data) => {
-                this.originalMedicine = data;
-                this.medicineForm.patchValue(data);
-            },
-            error: (e) => {
-                console.error('Load Medicine Error:', e);
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل بيانات الدواء' });
-            }
-        });
+    priceValidator(group: FormGroup) {
+        const createPrice = group.get('defaultPurchasePrice')?.value;
+        const salePrice = group.get('defaultSalePrice')?.value;
+        return createPrice !== null && salePrice !== null && salePrice < createPrice
+            ? { invalidPrice: true } : null;
     }
 
-    saveMedicine() {
-        if (this.medicineForm.invalid) return;
+    close() {
+        this.visible = false;
+        this.visibleChange.emit(false);
+    }
 
+    save() {
+        if (this.medicineForm.invalid) {
+            this.medicineForm.markAllAsTouched();
+            return;
+        }
+
+        this.loading = true;
         const formValue = this.medicineForm.value;
 
-        if (this.editMode && this.medicineId) {
-            // Merge original data with form values to preserve non-form fields (like manufacturer, status, etc.)
-            // and ensure ID is included in the body
-            const payload = {
-                ...this.originalMedicine,
-                ...formValue,
-                id: this.medicineId
+        if (this.medicine) {
+            const updateDto: UpdateMedicineDto = {
+                id: this.medicine.id,
+                ...formValue
             };
-
-            // Remove navigation properties to avoid backend serialization/cycle issues
-            delete payload.category;
-            delete payload.medicineBatches;
-            delete payload.inventoryMovements;
-
-            console.log('Updating medicine with payload:', payload);
-
-            this.inventoryService.updateMedicine(this.medicineId, payload).subscribe({
+            this.medicineService.update(this.medicine.id, updateDto).subscribe({
                 next: () => {
-                    this.messageService.add({ severity: 'success', summary: 'تم التحديث', detail: 'تم تحديث بيانات الدواء بنجاح' });
+                    this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تحديث الدواء' });
                     this.onSave.emit();
+                    this.close();
+                    this.loading = false;
                 },
-                error: (e) => {
-                    console.error('Update Medicine API Error:', e);
-                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'حدث خطأ أثناء تحديث الدواء' });
+                error: (err) => {
+                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل التحديث' });
+                    this.loading = false;
                 }
             });
         } else {
-            console.log('Creating medicine with payload:', formValue);
-            this.inventoryService.createMedicine(formValue).subscribe({
+            const createDto: CreateMedicineDto = formValue;
+            this.medicineService.create(createDto).subscribe({
                 next: () => {
-                    this.messageService.add({ severity: 'success', summary: 'تم الإضافة', detail: 'تم إضافة الدواء الجديد بنجاح' });
+                    this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم إضافة الدواء' });
                     this.onSave.emit();
+                    this.close();
+                    this.loading = false;
                 },
-                error: (e) => {
-                    console.error('Create Medicine API Error:', e);
-                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'حدث خطأ أثناء إضافة الدواء' });
+                error: (err) => {
+                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل الإضافة' });
+                    this.loading = false;
                 }
             });
         }
-    }
-
-    cancel() {
-        this.onCancel.emit();
-    }
-
-    getCategoryName(id: number): string {
-        const cat = this.categories.find(c => c.id === id);
-        return cat ? cat.name : '';
     }
 }

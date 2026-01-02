@@ -5,6 +5,9 @@ using SmartPharmacySystem.Infrastructure.Data;
 
 namespace SmartPharmacySystem.Infrastructure.Repositories
 {
+    /// <summary>
+    /// Optimized customer repository with AsNoTracking and efficient queries
+    /// </summary>
     public class CustomerRepository : ICustomerRepository
     {
         private readonly ApplicationDbContext _context;
@@ -14,6 +17,9 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             _context = context;
         }
 
+        /// <summary>
+        /// Gets customer with related data for updates
+        /// </summary>
         public async Task<Customer?> GetByIdAsync(int id)
         {
             return await _context.Customers
@@ -22,9 +28,15 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
+        /// <summary>
+        /// Optimized: AsNoTracking for read-only list
+        /// </summary>
         public async Task<IEnumerable<Customer>> GetAllAsync()
         {
-            return await _context.Customers.ToListAsync();
+            return await _context.Customers
+                .AsNoTracking()
+                .OrderBy(c => c.Name)
+                .ToListAsync();
         }
 
         public async Task AddAsync(Customer entity)
@@ -49,29 +61,48 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public async Task<bool> ExistsAsync(int id)
         {
-            return await _context.Customers.AnyAsync(c => c.Id == id);
+            return await _context.Customers
+                .AsNoTracking()
+                .AnyAsync(c => c.Id == id);
         }
 
-        public async Task<(IEnumerable<Customer> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize)
+        /// <summary>
+        /// Optimized: AsNoTracking + StartsWith + explicit OrderBy
+        /// </summary>
+        public async Task<(IEnumerable<Customer> Items, int TotalCount)> GetPagedAsync(
+            string? search, int page, int pageSize)
         {
-            var query = _context.Customers.AsQueryable();
+            var query = _context.Customers
+                .AsNoTracking()
+                .AsQueryable();
 
+            // ✅ Optimized: StartsWith for indexed search
             if (!string.IsNullOrWhiteSpace(search))
             {
-                search = search.ToLower();
-                query = query.Where(c => c.Name.ToLower().Contains(search) ||
-                                         (c.PhoneNumber != null && c.PhoneNumber.Contains(search)));
+                query = query.Where(c =>
+                    c.Name.StartsWith(search) ||
+                    (c.PhoneNumber != null && c.PhoneNumber.StartsWith(search)));
             }
 
             var totalCount = await query.CountAsync();
-            var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+            // ✅ Explicit OrderBy
+            var items = await query
+                .OrderBy(c => c.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
             return (items, totalCount);
         }
 
+        /// <summary>
+        /// Optimized: AsNoTracking for read-only query
+        /// </summary>
         public async Task<IEnumerable<Customer>> GetTopDebtorsAsync(int count)
         {
             return await _context.Customers
+                .AsNoTracking()
                 .Where(c => c.Balance > 0 && c.IsActive)
                 .OrderByDescending(c => c.Balance)
                 .Take(count)

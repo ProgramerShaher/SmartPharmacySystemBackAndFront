@@ -1,140 +1,56 @@
-<div class="category-form-container" dir="rtl">
-    <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="category-form">
-        <!-- Modern Premium Header -->
-        <div class="form-header">
-            <div class="header-icon">
-                <i class="pi" [ngClass]="editMode ? (selectedIcon || 'pi-pencil') : 'pi-plus'"></i>
+<div class="card p-0" dir="rtl">
+    <div class="flex flex-column h-full">
+        <!-- Header -->
+        <div class="flex justify-content-between align-items-center p-3 border-bottom-1 surface-border bg-gray-50">
+            <div class="flex align-items-center gap-2">
+                <div
+                    class="w-3rem h-3rem border-circle bg-primary-50 flex align-items-center justify-content-center text-primary">
+                    <i class="pi pi-briefcase text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold m-0">{{ editMode ? 'تعديل بيانات الفئة' : 'إضافة فئة جديدة' }}</h2>
+                    <p class="text-sm text-500 m-0" *ngIf="editMode">تعديل بيانات: {{ categoryData?.name }}</p>
+                    <p class="text-sm text-500 m-0" *ngIf="!editMode">إدخال بيانات تصنيف دوائي جديد</p>
+                </div>
+                </div>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary"
+                (click)="cancel()"></button>
             </div>
-            <div class="header-content">
-                <h3 class="form-title">
-                    {{editMode ? 'تعديل فئة دوائية' : 'إضافة فئة جديدة'}}
-                </h3>
-                <p class="form-subtitle">
-                    {{editMode ? 'تحديث المعايير والخصائص الفنية للفئة' : 'تأسيس فئة جديدة لتنظيم الدليل الدوائي
-                    للنظام'}}
-                </p>
+
+        <!-- Form Content -->
+        <div class="p-4 overflow-y-auto" style="max-height: 60vh;">
+            <form [formGroup]="categoryForm" class="grid p-fluid">
+                <!-- Basic Info -->
+                <div class="col-12">
+                    <label class="block font-bold mb-2 required-label">اسم الفئة</label>
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-tag"></i>
+                        <input pInputText formControlName="name" placeholder="مثلاً: مضادات حيوية، مسكنات..."
+                            [ngClass]="{'ng-invalid ng-dirty': name.invalid && name.touched}" />
+                        </span>
+                        <small *ngIf="name.invalid && name.touched" class="p-error block mt-1">
+                            <ng-container *ngIf="name.errors?.['required']">اسم الفئة مطلوب</ng-container>
+                            <ng-container *ngIf="name.errors?.['minlength']">يجب أن يحتوي الاسم على حرفين على الأقل</ng-container>
+                        </small>
+                        </div>
+
+                <div class="col-12">
+                    <label class="block font-bold mb-2">الوصف (اختياري)</label>
+                    <textarea pInputTextarea formControlName="description" rows="4" placeholder="اكتب وصفاً مختصراً للفئة..."
+                        [autoResize]="true"></textarea>
+                    <small class="text-500 block text-left mt-1">{{ description.value?.length || 0 }}/500</small>
+                </div>
+
+            </form>
             </div>
+
+        <!-- Footer Actions -->
+        <div class="p-3 border-top-1 surface-border flex justify-content-end gap-2 bg-gray-50">
+            <button pButton label="إلغاء" icon="pi pi-times" class="p-button-outlined p-button-secondary w-auto"
+                (click)="cancel()"></button>
+            <button pButton [label]="saving ? 'جاري الحفظ...' : (editMode ? 'حفظ التعديلات' : 'إضافة الفئة')" icon="pi pi-check"
+                class="p-button-primary w-auto" (click)="saveCategory()" [disabled]="categoryForm.invalid || saving"
+                [loading]="saving"></button>
         </div>
-
-        <div class="form-body">
-            <!-- Main Form Column -->
-            <div class="main-content">
-                <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="pi pi-info-circle"></i>
-                        المعلومات التعريفية
-                    </h4>
-
-                    <div class="form-group" [class.has-error]="name.invalid && name.touched">
-                        <label for="name" class="form-label">
-                            <i class="pi pi-tag"></i>
-                            اسم الفئة (عربي/إنجليزي)
-                        </label>
-                        <input type="text" pInputText id="name" formControlName="name"
-                            placeholder="مثلاً: المضادات الحيوية / Antibiotics" autocomplete="off">
-                        <div class="form-errors" *ngIf="name.invalid && name.touched">
-                            <small class="text-red-500 font-bold">يرجى إدخال اسم فئة صحيح (حرفين على الأقل)</small>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="description" class="form-label">
-                            <i class="pi pi-align-right"></i>
-                            وصف الفئة الطبي والمخزني
-                        </label>
-                        <textarea pInputTextarea id="description" formControlName="description" rows="3"
-                            placeholder="اكتب وصفاً مختصراً لاستخدامات هذه الفئة..." [autoResize]="true"></textarea>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <h4 class="section-title">
-                        <i class="pi pi-palette"></i>
-                        الهوية البصرية والترميز
-                    </h4>
-
-                    <div class="form-group">
-                        <label class="form-label">اختيار اللون المميز</label>
-                        <div class="design-grid">
-                            <div *ngFor="let opt of colorOptions" class="color-swatch" [style.background]="opt.color"
-                                [class.active]="selectedColor === opt.value" (click)="selectColor(opt.value)"
-                                [pTooltip]="opt.name">
-                                <i class="pi pi-check" *ngIf="selectedColor === opt.value"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group mt-4">
-                        <label class="form-label">أيقونة الفئة البرمجية</label>
-                        <div class="icon-designer-grid">
-                            <div *ngFor="let ico of iconOptions" class="icon-btn"
-                                [class.active]="selectedIcon === ico.value" (click)="selectIcon(ico.value)"
-                                [pTooltip]="ico.name">
-                                <i [class]="ico.value"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Side Preview & Stats Column -->
-            <div class="side-preview">
-                <div class="preview-card shadow-4">
-                    <span class="preview-label">المعاينة الحية للبطاقة</span>
-
-                    <div class="category-showcase">
-                        <div class="category-disc" [style.background]="getCategoryColor()"
-                            [style.boxShadow]="'0 20px 40px ' + getCategoryColor() + '33'">
-                            <i [class]="selectedIcon"></i>
-                        </div>
-                        <h4 class="preview-name">{{categoryForm.get('name')?.value || 'اسم الفئة'}}</h4>
-                        <p class="preview-desc">{{categoryForm.get('description')?.value || 'لا يوجد وصف محدد لهذه الفئة
-                            حتى الآن...'}}</p>
-                    </div>
-
-                    <!-- Statistics integration -->
-                    <div class="stats-container" *ngIf="editMode && categoryStats">
-                        <div class="stat-badge">
-                            <div class="stat-icon"><i class="pi pi-box"></i></div>
-                            <div class="stat-info">
-                                <span class="stat-v">{{categoryStats?.totalMedicines || 0}}</span>
-                                <span class="stat-l">صنف دواء</span>
-                            </div>
-                        </div>
-                        <div class="stat-badge">
-                            <div class="stat-icon" style="color: #10b981;"><i class="pi pi-check-circle"></i></div>
-                            <div class="stat-info">
-                                <span class="stat-v">{{categoryStats?.availableMedicines || 0}}</span>
-                                <span class="stat-l">متوفر حالياً</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-section mt-4 bg-transparent border-dashed-1" *ngIf="editMode && categoryData">
-                    <div class="flex flex-column gap-2 text-sm text-secondary">
-                        <div class="flex justify-content-between">
-                            <span>تاريخ الإنشاء:</span>
-                            <span class="font-bold text-700">{{categoryData?.createdAt | date:'dd/MM/yyyy
-                                HH:mm'}}</span>
-                        </div>
-                        <div class="flex justify-content-between">
-                            <span>آخر تحديث:</span>
-                            <span class="font-bold text-700">{{categoryData?.updatedAt | date:'dd/MM/yyyy
-                                HH:mm'}}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Sticky Footer Actions -->
-        <div class="form-footer">
-            <button pButton type="button" label="تراجع وإلغاء" class="p-button-text" (click)="cancel()"></button>
-            <button pButton type="submit" [label]="editMode ? 'حفظ التعديلات الفنية' : 'اعتماد وإضافة الفئة'"
-                [icon]="editMode ? 'pi pi-save' : 'pi pi-plus-circle'" [disabled]="categoryForm.invalid || saving"
-                [loading]="saving">
-            </button>
-        </div>
-    </form>
+    </div>
 </div>

@@ -24,41 +24,8 @@ import { MedicineBatch } from '../../../../core/models';
         DropdownModule,
         InputTextareaModule
     ],
-    template: `
-    <p-dialog [(visible)]="visible" [header]="'تعديل مخزون يدوي - ' + batch?.companyBatchNumber"
-        [modal]="true" [style]="{width: '450px'}" (onHide)="onClose()" [rtl]="true">
-        <form [formGroup]="actionForm" class="flex flex-column gap-4 py-3" dir="rtl">
-            <div class="field">
-                <label class="block font-bold mb-2">نوع الحركة</label>
-                <p-dropdown [options]="actionTypes" formControlName="movementType"
-                    placeholder="اختر النوع" styleClass="w-full" appendTo="body"></p-dropdown>
-            </div>
-
-            <div class="field">
-                <label class="block font-bold mb-2">الكمية</label>
-                <p-inputNumber formControlName="quantity" [min]="1" [max]="batch?.remainingQuantity || 1000"
-                    styleClass="w-full" inputStyleClass="w-full"
-                    [placeholder]="'الكمية المتاحة: ' + (batch?.remainingQuantity || 0)"></p-inputNumber>
-                <small class="text-secondary" *ngIf="actionForm.get('movementType')?.value === 'DAMAGE'">سيتم خصم هذه الكمية كتالف.</small>
-            </div>
-
-            <div class="field">
-                <label class="block font-bold mb-2">السبب / ملاحظات</label>
-                <textarea pInputTextarea formControlName="notes" rows="3" class="w-full"
-                    placeholder="يرجى توضيح سبب الحركة..."></textarea>
-                <small class="p-error block" *ngIf="actionForm.get('notes')?.invalid && actionForm.get('notes')?.touched">
-                    السبب مطلوب للحركات اليدوية.
-                </small>
-            </div>
-        </form>
-
-        <ng-template pTemplate="footer">
-            <p-button label="إلغاء" icon="pi pi-times" severity="secondary" (onClick)="onClose()" outlined></p-button>
-            <p-button label="تفيذ الحركة" icon="pi pi-check" [loading]="submitting"
-                (onClick)="submit()" [disabled]="actionForm.invalid"></p-button>
-        </ng-template>
-    </p-dialog>
-    `
+    templateUrl: './sale-invoice-actions-dialog.component.html',
+    styleUrls: ['./sale-invoice-actions-dialog.component.scss']
 })
 export class SaleInvoiceActionsDialogComponent {
     @Input() visible = false;
@@ -95,15 +62,40 @@ export class SaleInvoiceActionsDialogComponent {
     submit() {
         if (this.actionForm.invalid || !this.batch) return;
 
+        // Validate medicineId exists
+        if (!this.batch.medicineId) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'خطأ في البيانات',
+                detail: 'معرف الدواء (medicineId) غير موجود في بيانات الدفعة. يرجى التحقق من البيانات.'
+            });
+            console.error('❌ Missing medicineId in batch:', this.batch);
+            return;
+        }
+
         this.submitting = true;
         const value = this.actionForm.value;
 
-        this.inventoryService.createManualMovement({
+        // Map movement type string to number
+        const typeMap: { [key: string]: number } = {
+            'ADJUSTMENT': 5,
+            'DAMAGE': 6,
+            'EXPIRY': 7
+        };
+
+        const payload = {
+            medicineId: this.batch.medicineId,
             batchId: this.batch.id,
-            movementType: value.movementType,
             quantity: value.quantity,
-            notes: value.notes
-        }).subscribe({
+            type: typeMap[value.movementType] || 5,
+            reason: value.notes,
+            approvedBy: 0
+        };
+
+        // Log payload for debugging
+        console.log('📤 Sending manual movement:', payload);
+
+        this.inventoryService.createManualMovement(payload).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'تمت العملية', detail: 'تم تسجيل الحركة اليدوية بنجاح' });
                 this.submitting = false;
@@ -111,6 +103,7 @@ export class SaleInvoiceActionsDialogComponent {
                 this.onClose();
             },
             error: (err) => {
+                console.error('❌ Error creating manual movement:', err);
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل في تسجيل الحركة' });
                 this.submitting = false;
             }

@@ -24,12 +24,16 @@ public class FinancialRepository : IFinancialRepository
 
     public async Task<PharmacyAccount?> GetAccountByIdAsync(int id)
     {
-        return await _context.PharmacyAccounts.FirstOrDefaultAsync(a => a.Id == id);
+        // Ensure entity is tracked for updates
+        return await _context.PharmacyAccounts
+            .FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task UpdateAccountAsync(PharmacyAccount account)
     {
-        _context.PharmacyAccounts.Update(account);
+        // Entity is already tracked from GetAccountByIdAsync
+        // Just mark it as modified explicitly to ensure changes are saved
+        _context.Entry(account).State = EntityState.Modified;
         await Task.CompletedTask;
     }
 

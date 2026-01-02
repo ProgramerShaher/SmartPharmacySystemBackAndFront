@@ -1,19 +1,59 @@
-<div class="auth-container">
-    <h2>Register</h2>
-    <form>
-        <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" class="form-control">
+<div class="auth-wrapper">
+    <div class="animated-bg">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+
+    <div class="auth-container glass-panel animate-fade-in">
+        <p-toast></p-toast>
+
+        <div class="auth-header">
+            <div class="icon-box">
+                <i class="pi pi-user-plus"></i>
+            </div>
+            <h1>إنشاء حساب جديد</h1>
+            <p>انضم إلينا لإدارة صيدليتك باحترافية</p>
         </div>
-        <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" class="form-control">
-        </div>
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
-    <p>Already have an account? <a routerLink="/auth/login">Login</a></p>
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form mt-4">
+            <div class="grid">
+                <div class="col-12 md:col-6 field mb-3">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-id-card"></i>
+                        <input pInputText formControlName="fullName" placeholder="الاسم الكامل" class="w-full h-3rem" />
+                    </span>
+                </div>
+                <div class="col-12 md:col-6 field mb-3">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-user"></i>
+                        <input pInputText formControlName="username" placeholder="اسم المستخدم" class="w-full h-3rem" />
+                    </span>
+                </div>
+                <div class="col-12 field mb-3">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-envelope"></i>
+                        <input pInputText formControlName="email" placeholder="البريد الإلكتروني"
+                            class="w-full h-3rem" />
+                    </span>
+                </div>
+                <div class="col-12 field mb-3">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-lock"></i>
+                        <p-password formControlName="password" placeholder="كلمة المرور" [toggleMask]="true"
+                            styleClass="w-full" inputStyleClass="w-full h-3rem"></p-password>
+                    </span>
+                </div>
+            </div>
+<div class="flex align-items-center gap-2 mb-4 mt-2">
+    <p-checkbox formControlName="agreeTerms" [binary]="true" inputId="terms"></p-checkbox>
+    <label for="terms" class="text-sm cursor-pointer opacity-70">أوافق على الشروط والأحكام</label>
+</div>
+<p-button type="submit" label="إنشاء الحساب" icon="pi pi-check" [loading]="loading" [disabled]="registerForm.invalid"
+    styleClass="w-full p-button-raised p-button-lg h-3rem"></p-button>
+</form>
+<div class="auth-footer mt-4 text-center">
+    لديك حساب بالفعل؟ <a routerLink="/auth/login" class="text-primary font-bold">تسجيل الدخول</a>
+</div>
+</div>
 </div>

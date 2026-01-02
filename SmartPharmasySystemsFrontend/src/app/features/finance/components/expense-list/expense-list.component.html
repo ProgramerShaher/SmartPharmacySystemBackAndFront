@@ -1,193 +1,266 @@
-<div class="expense-list-container">
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading-container">
-    <p-progressSpinner></p-progressSpinner>
-    <p class="loading-text">جاري تحميل المصروفات...</p>
-  </div>
-
-  <!-- Main Content -->
-  <div *ngIf="!loading" class="card">
-    <div class="card-header">
-      <h5>إدارة المصروفات</h5>
-      <div class="header-actions">
-        <p-button
-          label="إضافة مصروف جديد"
-          icon="pi pi-plus"
-          [outlined]="true"
-          severity="success"
-          (onClick)="addNewExpense()"
-          pTooltip="إضافة مصروف جديد"
-          tooltipPosition="bottom"
-        ></p-button>
-      </div>
-    </div>
-
-    <!-- Filters Section -->
-    <div class="filters-section">
-      <div class="p-field">
-        <label for="search">البحث في المصروفات</label>
-        <input
-          id="search"
-          pInputText
-          [(ngModel)]="searchTerm"
-          placeholder="ابحث في نوع المصروف أو الملاحظات..."
-          (input)="onSearch()"
-          class="search-input"
-        />
-      </div>
-      <div class="p-field">
-        <label for="expenseTypeFilter">تصفية حسب النوع</label>
-        <p-dropdown
-          id="expenseTypeFilter"
-          [options]="expenseTypeOptions"
-          [(ngModel)]="expenseTypeFilter"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="اختر نوع المصروف"
-          (onChange)="onExpenseTypeFilterChange()"
-          class="expense-type-filter"
-        ></p-dropdown>
-      </div>
-      <div class="p-field date-range-field">
-        <label>الفترة الزمنية</label>
-        <div class="date-range-inputs">
-          <p-calendar
-            [(ngModel)]="startDate"
-            [maxDate]="endDate || undefined"
-            placeholder="من تاريخ"
-            dateFormat="dd/mm/yy"
-            (onSelect)="onDateRangeChange()"
-            class="date-input"
-          ></p-calendar>
-          <span class="date-separator">-</span>
-          <p-calendar
-            [(ngModel)]="endDate"
-            [minDate]="startDate || undefined"
-            placeholder="إلى تاريخ"
-            dateFormat="dd/mm/yy"
-            (onSelect)="onDateRangeChange()"
-            class="date-input"
-          ></p-calendar>
+<div class="expenses-container">
+  <!-- Header Card -->
+  <p-card class="header-card">
+    <div class="header-content">
+      <div class="title-section">
+        <i class="pi pi-money-bill header-icon"></i>
+        <div>
+          <h2 class="page-title">إدارة المصروفات</h2>
+          <p class="page-subtitle">تتبع وإدارة جميع مصروفات الصيدلية</p>
         </div>
       </div>
+      <button pButton type="button" label="إضافة مصروف جديد"
+        icon="pi pi-plus-circle" 
+        class="p-button-success add-btn"
+        (click)="addNewExpense()"
+        pTooltip="إضافة مصروف جديد"
+        tooltipPosition="bottom">
+      </button>
     </div>
+  </p-card>
+  
+  <!-- Summary Cards -->
+  <div class="summary-cards">
+    <p-card class="summary-card total-card">
+      <div class="summary-content">
+        <i class="pi pi-chart-line summary-icon"></i>
+        <div class="summary-details">
+          <span class="summary-label">إجمالي المصروفات</span>
+          <span class="summary-value">{{ formatExpenseAmount(getTotalExpenses()) }}</span>
+        </div>
+      </div>
+      </p-card>
 
-    <!-- Table -->
-    <p-table
-      [value]="expenses"
+    <p-card class="summary-card paid-card">
+      <div class="summary-content">
+        <i class="pi pi-check-circle summary-icon"></i>
+        <div class="summary-details">
+          <span class="summary-label">المدفوع</span>
+          <span class="summary-value">{{ formatExpenseAmount(getPaidExpenses()) }}</span>
+        </div>
+      </div>
+    </p-card>
+    
+    <p-card class="summary-card unpaid-card">
+      <div class="summary-content">
+        <i class="pi pi-clock summary-icon"></i>
+        <div class="summary-details">
+          <span class="summary-label">غير المدفوع</span>
+          <span class="summary-value">{{ formatExpenseAmount(getUnpaidExpenses()) }}</span>
+        </div>
+      </div>
+    </p-card>
+    </div>
+    
+    <!-- Filters Card -->
+    <p-card class="filters-card">
+      <div class="filters-grid">
+        <!-- Search -->
+        <div class="filter-field">
+          <label>
+            <i class="pi pi-search"></i> بحث
+          </label>
+          <input
+          type="text" 
+          pInputText 
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()"
+          placeholder="ابحث في الملاحظات..."
+          class="w-full">
+      </div>
+<!-- Category Filter -->
+<div class="filter-field">
+  <label>
+    <i class="pi pi-tag"></i> الفئة
+  </label>
+  <p-dropdown
+          [options]="categoryOptions" 
+          [(ngModel)]="selectedCategory"
+          (onChange)="onFilterChange()"
+          placeholder="اختر الفئة"
+          [showClear]="true"
+          styleClass="w-full">
+        </p-dropdown>
+      </div>
+<!-- Payment Method Filter -->
+<div class="filter-field">
+  <label>
+    <i class="pi pi-wallet"></i> طريقة الدفع
+  </label>
+  <p-dropdown [options]="paymentMethodOptions" [(ngModel)]="selectedPaymentMethod" (onChange)="onFilterChange()"
+    placeholder="اختر طريقة الدفع" styleClass="w-full">
+  </p-dropdown>
+</div>
+
+<!-- Paid Status Filter -->
+<div class="filter-field">
+  <label>
+    <i class="pi pi-info-circle"></i> حالة الدفع
+  </label>
+  <p-dropdown [options]="paidStatusOptions" [(ngModel)]="selectedPaidStatus" (onChange)="onFilterChange()"
+    placeholder="اختر الحالة" styleClass="w-full">
+  </p-dropdown>
+</div>
+
+<!-- Date From -->
+<div class="filter-field">
+  <label>
+    <i class="pi pi-calendar"></i> من تاريخ
+  </label>
+  <p-calendar [(ngModel)]="startDate"
+          (onSelect)="onFilterChange()"
+          (onClearClick)="onFilterChange()"
+          [showIcon]="true"
+          dateFormat="yy-mm-dd"
+          placeholder="اختر التاريخ"
+          [showClear]="true"
+          styleClass="w-full">
+        </p-calendar>
+      </div>
+
+      <!-- Date To -->
+      <div class="filter-field">
+        <label>
+          <i class="pi pi-calendar"></i> إلى تاريخ
+        </label>
+        <p-calendar 
+          [(ngModel)]="endDate"
+          (onSelect)="onFilterChange()"
+          (onClearClick)="onFilterChange()"
+          [showIcon]="true"
+          dateFormat="yy-mm-dd"
+          placeholder="اختر التاريخ"
+          [showClear]="true"
+          styleClass="w-full">
+        </p-calendar>
+      </div>
+    </div>
+<div class="filter-actions">
+  <button pButton type="button" label="بحث" icon="pi pi-search" class="p-button-primary" (click)="onSearch()">
+  </button>
+  <button pButton type="button" label="مسح الفلاتر" icon="pi pi-filter-slash"
+    class="p-button-outlined p-button-secondary" (click)="clearFilters()">
+  </button>
+    </div>
+  </p-card>
+
+  <!-- Expenses Table -->
+  <p-card class="table-card">
+    <p-table [value]="expenses"
+      [loading]="loading"
       [paginator]="true"
       [rows]="pageSize"
       [totalRecords]="totalRecords"
-      [loading]="loading"
-      [responsive]="true"
+      [lazy]="true"
+      (onLazyLoad)="onPageChange($event)"
+      [rowsPerPageOptions]="[10, 25, 50]"
       [showCurrentPageReport]="true"
-      currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} مصروف"
-      [rowsPerPageOptions]="[5, 10, 25, 50]"
-      sortMode="multiple"
-      class="expenses-table"
-      (onPage)="onPageChange($event)"
-    >
+      currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} مصروف"
+      styleClass="p-datatable-sm p-datatable-striped"
+      responsiveLayout="scroll">
+      
       <ng-template pTemplate="header">
         <tr>
-          <th pSortableColumn="expenseType" class="expense-type-column">
-            نوع المصروف
-            <p-sortIcon field="expenseType"></p-sortIcon>
+          <th style="width: 5%">#</th>
+          <th style="width: 15%">
+            <i class="pi pi-tag"></i> الفئة
           </th>
-          <th pSortableColumn="amount" class="amount-column">
-            المبلغ
-            <p-sortIcon field="amount"></p-sortIcon>
+          <th style="width: 12%">
+            <i class="pi pi-dollar"></i> المبلغ
           </th>
-          <th pSortableColumn="expenseDate" class="date-column">
-            التاريخ
-            <p-sortIcon field="expenseDate"></p-sortIcon>
+          <th style="width: 12%">
+            <i class="pi pi-calendar"></i> التاريخ
           </th>
-          <th pSortableColumn="paymentMethod" class="payment-method-column">
-            طريقة الدفع
-            <p-sortIcon field="paymentMethod"></p-sortIcon>
+          <th style="width: 12%">
+            <i class="pi pi-wallet"></i> طريقة الدفع
           </th>
-          <th class="notes-column">الملاحظات</th>
-          <th class="actions-column">الإجراءات</th>
+          <th style="width: 10%">
+            <i class="pi pi-info-circle"></i> الحالة
+          </th>
+          <th style="width: 24%">
+            <i class="pi pi-align-right"></i> الملاحظات
+          </th>
+          <th style="width: 10%" class="text-center">
+            <i class="pi pi-cog"></i> الإجراءات
+          </th>
         </tr>
       </ng-template>
 
-      <ng-template pTemplate="body" let-expense>
+      <ng-template pTemplate="body" let-expense let-rowIndex="rowIndex">
         <tr>
-          <td class="expense-type-cell">
-            <div class="expense-type-content">
-              <i class="pi pi-money-bill expense-icon"></i>
-              <span class="expense-type-text">{{ expense.expenseType }}</span>
+          <td>{{ (currentPage - 1) * pageSize + rowIndex + 1 }}</td>
+          <td>
+            <div class="category-cell">
+              <i class="pi pi-tag category-icon"></i>
+              <strong>{{ expense.categoryName }}</strong>
             </div>
           </td>
-          <td class="amount-cell">
-            <span class="amount-value">{{ expense.amount | currency:'EGP':'symbol':'1.2-2':'ar' }}</span>
+          <td>
+            <span class="amount-text">{{ formatExpenseAmount(expense.amount) }}</span>
           </td>
           <td>
-            <span class="expense-date">{{ expense.expenseDate | date:'dd/MM/yyyy' }}</span>
+            <span class="date-text">{{ formatDate(expense.expenseDate) }}</span>
           </td>
           <td>
-            <p-tag
-              [value]="getPaymentMethodLabel(expense.paymentMethod)"
-              [severity]="getPaymentMethodSeverity(expense.paymentMethod)"
-              class="payment-method-tag"
-            ></p-tag>
+            <p-tag [value]="getPaymentMethodLabel(expense.paymentMethod)"
+              [severity]="getPaymentMethodSeverity(expense.paymentMethod)">
+            </p-tag>
           </td>
-          <td class="notes-cell">
-            <span class="notes-text" [title]="expense.notes">
-              {{ expense.notes || 'لا توجد ملاحظات' }}
-            </span>
+          <td>
+            <p-tag [value]="getPaidStatusLabel(expense.isPaid)" [severity]="getPaidStatusSeverity(expense.isPaid)"
+              [icon]="'pi ' + (expense.isPaid ? 'pi-check' : 'pi-clock')">
+            </p-tag>
           </td>
-          <td class="actions-cell">
+          <td>
+            <span class="notes-text">{{ expense.notes || 'لا توجد ملاحظات' }}</span>
+          </td>
+          <td class="text-center">
             <div class="action-buttons">
-              <!-- View Details Button -->
-              <p-button
-                icon="pi pi-eye"
-                [outlined]="true"
-                severity="info"
-                size="small"
+              <button pButton type="button" icon="pi pi-eye"
+                class="p-button-rounded p-button-info p-button-sm"
+                (click)="viewDetails(expense)"
                 pTooltip="عرض التفاصيل"
-                tooltipPosition="top"
-                (onClick)="viewDetails(expense)"
-                ariaLabel="عرض تفاصيل المصروف"
-              ></p-button>
-
-              <!-- Edit Button -->
-              <p-button
-                icon="pi pi-pencil"
-                [outlined]="true"
-                severity="warning"
-                size="small"
-                pTooltip="تعديل المصروف"
-                tooltipPosition="top"
-                (onClick)="editExpense(expense)"
-                ariaLabel="تعديل المصروف"
-              ></p-button>
-
-              <!-- Delete Button -->
-              <p-button
-                icon="pi pi-trash"
-                [outlined]="true"
-                severity="danger"
-                size="small"
-                pTooltip="حذف المصروف"
-                tooltipPosition="top"
-                (onClick)="deleteExpense($event, expense)"
-                ariaLabel="حذف المصروف"
-              ></p-button>
+                tooltipPosition="top">
+              </button>
+              <button 
+                pButton 
+                type="button" 
+                icon="pi pi-pencil" 
+                class="p-button-rounded p-button-warning p-button-sm"
+                (click)="editExpense(expense)"
+                pTooltip="تعديل"
+                tooltipPosition="top">
+              </button>
+              <button 
+                pButton 
+                type="button" 
+                icon="pi pi-trash" 
+                class="p-button-rounded p-button-danger p-button-sm"
+                (click)="deleteExpense($event, expense)"
+                pTooltip="حذف"
+                tooltipPosition="top">
+              </button>
             </div>
           </td>
         </tr>
       </ng-template>
 
-      <!-- Empty State Template -->
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="6" class="text-center py-4">
-            <i class="pi pi-money-bill text-4xl text-gray-400 mb-3 block"></i>
-            <span class="text-gray-500 text-lg">لا توجد مصروفات</span>
-            <p class="text-gray-400 mt-2">ابدأ بإضافة مصروف جديد</p>
+          <td colspan="8" class="text-center empty-message">
+            <i class="pi pi-inbox empty-icon"></i>
+            <p>لا توجد مصروفات</p>
+            <button pButton type="button" label="إضافة أول مصروف" icon="pi pi-plus" class="p-button-sm" (click)="addNewExpense()">
+            </button>
           </td>
         </tr>
       </ng-template>
     </p-table>
-  </div>
+  </p-card>
+  
+  <!-- Toast & Confirm Dialog -->
+  <p-toast position="top-center" [life]="3000"></p-toast>
+  <p-confirmDialog [style]="{width: '450px'}" acceptButtonStyleClass="p-button-danger"
+    rejectButtonStyleClass="p-button-text">
+  </p-confirmDialog>
 </div>

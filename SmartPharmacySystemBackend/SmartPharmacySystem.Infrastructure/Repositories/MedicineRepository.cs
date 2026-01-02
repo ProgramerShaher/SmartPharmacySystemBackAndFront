@@ -8,7 +8,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories;
 
 /// <summary>
 /// Implements the medicine repository for data access operations.
-/// This class provides concrete implementations of medicine data operations.
+/// Optimized for performance with AsNoTracking and efficient search patterns.
 /// </summary>
 public class MedicineRepository : IMedicineRepository
 {
@@ -21,13 +21,18 @@ public class MedicineRepository : IMedicineRepository
 
     public async Task<Medicine> GetByIdAsync(int id)
     {
-        return await _context.Medicines.FindAsync(id);
+        return await _context.Medicines
+            .Include(m => m.Category)
+            .FirstOrDefaultAsync(m => m.Id == id);
     }
 
     public async Task<IEnumerable<Medicine>> GetAllAsync()
     {
         return await _context.Medicines
+            .AsNoTracking()
             .Include(m => m.Category)
+            .Where(m => !m.IsDeleted)
+            .OrderBy(m => m.Name)
             .ToListAsync();
     }
 
@@ -63,7 +68,9 @@ public class MedicineRepository : IMedicineRepository
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Medicines.AnyAsync(m => m.Id == id);
+        return await _context.Medicines
+            .AsNoTracking()
+            .AnyAsync(m => m.Id == id && !m.IsDeleted);
     }
 
     public async Task<IEnumerable<Medicine>> GetAlternativesAsync(string activeIngredient, int excludeMedicineId)
@@ -72,7 +79,8 @@ public class MedicineRepository : IMedicineRepository
             return new List<Medicine>();
 
         return await _context.Medicines
-            .Include(m => m.MedicineBatches)
+            .AsNoTracking()
+            .Include(m => m.MedicineBatches.Where(b => !b.IsDeleted && b.RemainingQuantity > 0))
             .Where(m => m.ActiveIngredient == activeIngredient
                      && m.Id != excludeMedicineId
                      && !m.IsDeleted
@@ -82,18 +90,36 @@ public class MedicineRepository : IMedicineRepository
             .ToListAsync();
     }
 
-    public async Task<(IEnumerable<Medicine> Items, int TotalCount)> GetPagedAsync(string search, int page, int pageSize, string sortBy, string sortDirection, int? categoryId, string manufacturer, string status)
+    /// <summary>
+    /// Optimized paged search with AsNoTracking and StartsWith for better performance
+    /// محسّن: استخدام StartsWith بدلاً من Contains + AsNoTracking
+    /// </summary>
+    public async Task<(IEnumerable<Medicine> Items, int TotalCount)> GetPagedAsync(
+        string search,
+        int page,
+        int pageSize,
+        string sortBy,
+        string sortDirection,
+        int? categoryId,
+        string manufacturer,
+        string status)
     {
         var query = _context.Medicines
+            .AsNoTracking()
             .Include(m => m.Category)
-            .Where(m => !m.IsDeleted) // Typically exclude soft deleted items in search
+            .Where(m => !m.IsDeleted)
             .AsQueryable();
 
-        // Filtering
+        // Optimized search: Use StartsWith for indexed search
         if (!string.IsNullOrWhiteSpace(search))
         {
-            var searchLower = search.ToLower();
-            query = query.Where(m => m.Name.Contains(search) || (m.Notes != null && m.Notes.Contains(search)));
+            // Try StartsWith first (faster with index)
+            query = query.Where(m =>
+                m.Name.StartsWith(search) ||
+                m.ScientificName.StartsWith(search) ||
+                m.DefaultBarcode.StartsWith(search) ||
+                // Fallback to Contains for other fields
+                (m.Notes != null && m.Notes.Contains(search)));
         }
 
         if (categoryId.HasValue)
@@ -103,29 +129,37 @@ public class MedicineRepository : IMedicineRepository
 
         if (!string.IsNullOrWhiteSpace(manufacturer))
         {
-            query = query.Where(m => m.Manufacturer.Contains(manufacturer));
+            query = query.Where(m => m.Manufacturer.StartsWith(manufacturer));
         }
 
         if (!string.IsNullOrWhiteSpace(status))
         {
-            query = query.Where(m => m.Status.Contains(status));
+            query = query.Where(m => m.Status == status);
         }
 
-        // Sorting
-        query = query.ApplySorting(sortBy, sortDirection);
-
-        // Count
+        // Count before pagination
         var totalCount = await query.CountAsync();
 
-        // Paging
-        query = query.ApplyPaging(page, pageSize);
+        // Apply sorting with explicit OrderBy
+        query = string.IsNullOrWhiteSpace(sortBy) || sortBy == "Name"
+            ? (sortDirection?.ToLower() == "desc"
+                ? query.OrderByDescending(m => m.Name)
+                : query.OrderBy(m => m.Name))
+            : query.ApplySorting(sortBy, sortDirection);
 
-        return (await query.ToListAsync(), totalCount);
+        // Apply pagination
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
     }
 
     public async Task<IEnumerable<MedicineBatch>> GetBatchesByFEFOAsync(int medicineId)
     {
         return await _context.MedicineBatches
+            .AsNoTracking()
             .Where(b => b.MedicineId == medicineId
                      && b.RemainingQuantity > 0
                      && b.ExpiryDate > DateTime.UtcNow
@@ -138,10 +172,12 @@ public class MedicineRepository : IMedicineRepository
     public async Task<IEnumerable<Medicine>> GetReorderReadyMedicinesAsync()
     {
         return await _context.Medicines
-            .Include(m => m.MedicineBatches)
+            .AsNoTracking()
+            .Include(m => m.MedicineBatches.Where(b => !b.IsDeleted && b.Status == "Active"))
             .Where(m => !m.IsDeleted
                      && m.Status == "Active"
-                     && m.MedicineBatches.Where(b => !b.IsDeleted && b.Status == "Active").Sum(b => b.RemainingQuantity) <= m.ReorderLevel)
+                     && m.MedicineBatches.Sum(b => b.RemainingQuantity) <= m.ReorderLevel)
+            .OrderBy(m => m.Name)
             .ToListAsync();
     }
 }

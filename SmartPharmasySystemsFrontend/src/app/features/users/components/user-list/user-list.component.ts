@@ -93,8 +93,8 @@ export class UserListComponent implements OnInit {
      */
     private calculateStats(): void {
         this.adminCount = this.users.filter(user =>
-            user.role?.toLowerCase() === 'admin' ||
-            user.role?.toLowerCase() === 'administrator'
+            user.roleName?.toLowerCase() === 'admin' ||
+            user.roleName?.toLowerCase() === 'administrator'
         ).length;
 
         this.regularUserCount = this.users.length - this.adminCount;
@@ -187,7 +187,7 @@ export class UserListComponent implements OnInit {
             this.filteredUsers = this.users.filter(user =>
                 (user.username?.toLowerCase().includes(searchLower)) ||
                 (user.fullName?.toLowerCase().includes(searchLower)) ||
-                (user.role?.toLowerCase().includes(searchLower)) ||
+                (user.roleName?.toLowerCase().includes(searchLower)) ||
                 (user.phoneNumber?.includes(value))
             );
         }

@@ -1,0 +1,239 @@
+<!-- Add/Edit Sidebar Drawer -->
+<p-sidebar [(visible)]="displayAddEditSidebar" position="right" [baseZIndex]="10000"
+    styleClass="w-full md:w-5 lg:w-4 p-sidebar-premium" [modal]="true" [showCloseIcon]="true">
+    <ng-template pTemplate="header">
+        <div class="flex align-items-center gap-2">
+            <div
+                class="icon-wrapper bg-indigo-50 text-indigo-600 border-circle w-2rem h-2rem flex align-items-center justify-content-center">
+                <i class="pi" [ngClass]="selectedCustomerId ? 'pi-user-edit' : 'pi-user-plus'"></i>
+            </div>
+            <h3 class="m-0 font-bold text-gray-800">{{ sideBarHeader() }}</h3>
+        </div>
+    </ng-template>
+
+    <app-customer-add-edit *ngIf="displayAddEditSidebar()" [customerId]="selectedCustomerId" (onSave)="onAddEditSave()"
+        (onClose)="onAddEditClose()">
+    </app-customer-add-edit>
+</p-sidebar>
+
+<div class="customer-container p-4 animate-fade-in" dir="rtl">
+    <!-- Header with Stats -->
+    <div class="premium-header mb-5">
+        <div
+            class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-5 gap-4">
+            <div class="header-title">
+                <h1 class="text-3xl font-bold m-0 flex align-items-center gap-3 text-gray-800">
+                    <div
+                        class="icon-wrapper bg-indigo-600 shadow-lg border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
+                        <i class="pi pi-users text-white text-xl"></i>
+                    </div>
+                    <span>إدارة العملاء</span>
+                </h1>
+                <p class="text-gray-500 mt-2 text-sm font-medium mr-6">لوحة تحكم شاملة لإدارة حسابات ومديونيات العملاء
+                </p>
+            </div>
+            <div class="flex gap-3 w-full md:w-auto">
+                <p-button label="سندات القبض" icon="pi pi-money-bill" routerLink="/customers/receipts"
+                    styleClass="p-button-outlined p-button-secondary p-button-rounded h-3rem font-bold hover-scale">
+                </p-button>
+                <p-button label="إضافة عميل" icon="pi pi-plus" (onClick)="openAddCustomer()"
+                    styleClass="p-button-raised p-button-rounded h-3rem font-bold premium-btn-indigo shadow-4 hover-scale">
+                </p-button>
+            </div>
+        </div>
+
+        <div class="grid mt-2 mb-4">
+            <div class="col-12 md:col-4">
+                <div class="stat-card glass-morphism debt h-full">
+                    <div class="flex justify-content-between">
+                        <div>
+                            <span class="block text-gray-500 font-bold mb-3 uppercase text-xs tracking-wider">إجمالي
+                                المديونية</span>
+                            <div class="text-gray-800 font-bold text-4xl">{{ totalDebt() | number }} <small
+                                    class="text-sm text-gray-400">ر.ي</small></div>
+                        </div>
+                        <div
+                            class="stat-icon bg-red-50 text-red-500 border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
+                            <i class="pi pi-chart-line text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <div class="flex justify-content-between mb-2">
+                            <span class="text-xs font-semibold text-gray-500">نسبة التحصيل</span>
+                            <span class="text-xs font-bold text-gray-800">15%</span>
+                        </div>
+                        <p-progressBar [value]="15" [showValue]="false"
+                            styleClass="h-4px border-round-lg"></p-progressBar>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Customers Card -->
+            <div class="col-12 md:col-4">
+                <div class="stat-card glass-morphism active-customers h-full">
+                    <div class="flex justify-content-between">
+                        <div>
+                            <span class="block text-gray-500 font-bold mb-3 uppercase text-xs tracking-wider">العملاء
+                                النشطون</span>
+                            <div class="text-gray-800 font-bold text-4xl">{{ activeCustomersCount() }}</div>
+                        </div>
+                        <div
+                            class="stat-icon bg-indigo-50 text-indigo-500 border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
+                            <i class="pi pi-user-check text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-gray-500">
+                        <span class="text-green-500 font-bold"><i class="pi pi-arrow-up mr-1 text-xs"></i> 12%+</span>
+                        هذا الشهر
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Status Card -->
+            <div class="col-12 md:col-4">
+                <div class="stat-card glass-morphism risk h-full">
+                    <div class="flex justify-content-between">
+                        <div>
+                            <span class="block text-gray-500 font-bold mb-3 uppercase text-xs tracking-wider">ديون
+                                مرتفعة</span>
+                            <div class="text-gray-800 font-bold text-4xl">{{ highDebtCustomersCount() }}</div>
+                        </div>
+                        <div
+                            class="stat-icon bg-orange-50 text-orange-500 border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
+                            <i class="pi pi-exclamation-triangle text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-xs text-gray-500">
+                        عملاء > 5,000 ريال
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row (Integrated) -->
+        <div class="grid mb-4">
+            <div class="col-12 lg:col-8">
+                <div class="glass-panel p-4 h-full border-round-2xl shadow-1 bg-white">
+                    <h3 class="m-0 mb-4 font-bold text-gray-700 flex align-items-center gap-2 text-base">
+                        <i class="pi pi-objects-column text-indigo-500"></i>
+                        توزيع مستويات المديونية
+                    </h3>
+                    <p-chart type="bar" [data]="debtDistributionData" [options]="debtDistributionOptions"
+                        height="250px"></p-chart>
+                </div>
+            </div>
+            <div class="col-12 lg:col-4">
+                <div class="glass-panel p-4 h-full border-round-2xl shadow-1 bg-white">
+                    <h3 class="m-0 mb-4 font-bold text-gray-700 flex align-items-center gap-2 text-base">
+                        <i class="pi pi-check-circle text-green-500"></i>
+                        حالة العملاء
+                    </h3>
+                    <div class="flex justify-content-center">
+                        <p-chart type="doughnut" [data]="activeStatusData" [options]="activeStatusOptions"
+                            height="200px" width="200px"></p-chart>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="glass-panel p-0 overflow-hidden shadow-1 border-round-2xl bg-white">
+        <p-table [value]="customers()" [loading]="loading()" [paginator]="true" [rows]="10"
+            [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
+            styleClass="p-datatable-striped p-datatable-sm header-offset">
+
+            <ng-template pTemplate="caption">
+                <div
+                    class="flex justify-content-between align-items-center p-3 surface-50 border-bottom-1 surface-border">
+                    <span class="p-input-icon-left w-full md:w-20rem">
+                        <i class="pi pi-search text-gray-400"></i>
+                        <input pInputText type="text" placeholder="بحث سريع..."
+                            class="w-full border-round-2xl border-none surface-100 text-sm py-2 px-3 focus:surface-0 focus:shadow-none transition-colors" />
+                    </span>
+                    <button pButton icon="pi pi-filter"
+                        class="p-button-text p-button-secondary border-circle w-2rem h-2rem flex align-items-center justify-content-center"></button>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr class="text-sm uppercase text-gray-500 bg-gray-50">
+                    <th class="font-semibold p-3 border-none">العميل</th>
+                    <th class="font-semibold p-3 border-none">بيانات الاتصال</th>
+                    <th class="font-semibold p-3 border-none" pSortableColumn="balance">الرصيد <p-sortIcon
+                            field="balance"></p-sortIcon></th>
+                    <th class="font-semibold p-3 border-none">الحالة</th>
+                    <th class="text-center font-semibold p-3 border-none">الإجراءات</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-customer>
+                <tr class="hover-row transition-colors border-bottom-1 surface-border">
+                    <td class="p-3">
+                        <div class="flex align-items-center gap-3">
+                            <div class="avatar-circle shadow-1 text-sm font-bold"
+                                [style.background]="getRandomColor(customer.name)"
+                                style="width: 32px; height: 32px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;">
+                                {{ customer.name?.charAt(0) }}
+                            </div>
+                            <div class="flex flex-column">
+                                <span class="font-bold text-gray-800 text-sm">{{ customer.name }}</span>
+                                <small class="text-gray-500 text-xs">{{ customer.address || 'بدون عنوان' }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <span class="text-gray-600 font-mono text-sm">{{ customer.phone }}</span>
+                    </td>
+                    <td class="p-3">
+                        <span class="font-bold font-mono text-sm"
+                            [class]="customer.balance > 0 ? 'text-red-500' : 'text-green-500'">
+                            {{ customer.balance | number }}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        <p-tag [severity]="customer.isActive ? 'success' : 'secondary'"
+                            [value]="customer.isActive ? 'نشط' : 'خامل'" [rounded]="true"
+                            styleClass="text-xs px-2 py-0 border-none bg-opacity-10 text-opacity-80">
+                        </p-tag>
+                    </td>
+                    <td class="text-center p-3">
+                        <div
+                            class="flex justify-content-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button pButton icon="pi pi-eye"
+                                class="p-button-rounded p-button-text p-button-secondary w-2rem h-2rem"
+                                pTooltip="التفاصيل" [routerLink]="['/customers/detail', customer.id]"></button>
+                            <button pButton icon="pi pi-pencil"
+                                class="p-button-rounded p-button-text p-button-primary w-2rem h-2rem" pTooltip="تعديل"
+                                (click)="openEditCustomer(customer.id)"></button>
+                            <button pButton icon="pi pi-trash"
+                                class="p-button-rounded p-button-text p-button-danger w-2rem h-2rem" pTooltip="حذف"
+                                (click)="deleteCustomer($event, customer)"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5" class="text-center p-8">
+                        <div class="flex flex-column align-items-center">
+                            <div
+                                class="bg-gray-50 border-circle w-6rem h-6rem flex align-items-center justify-content-center mb-3">
+                                <i class="pi pi-users text-4xl text-gray-300"></i>
+                            </div>
+                            <h3 class="text-gray-600 m-0 text-lg">لا يوجد عملاء</h3>
+                            <p class="text-gray-400 text-sm mt-2">ابدأ بإضافة عملاء جدد للقائمة</p>
+                            <p-button label="إضافة عميل" icon="pi pi-plus" (onClick)="openAddCustomer()"
+                                styleClass="p-button-rounded p-button-text mt-2"></p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-confirmDialog [style]="{width: '400px'}" styleClass="premium-confirm-dialog"></p-confirmDialog>
+<p-toast position="top-left"></p-toast>

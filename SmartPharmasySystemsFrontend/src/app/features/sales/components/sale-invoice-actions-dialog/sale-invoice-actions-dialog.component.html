@@ -1,0 +1,53 @@
+<p-dialog [(visible)]="visible" [header]="'تعديل مخزون يدوي - ' + batch?.companyBatchNumber" [modal]="true"
+    [style]="{width: '450px'}" (onHide)="onClose()" [rtl]="true">
+    <form [formGroup]="actionForm" class="flex flex-column gap-4 py-3" dir="rtl">
+        <div class="field">
+            <label class="block font-bold mb-2">نوع الحركة</label>
+            <p-dropdown [options]="actionTypes" formControlName="movementType" placeholder="اختر النوع"
+                styleClass="w-full" appendTo="body"></p-dropdown>
+        </div>
+
+        <div class="field">
+            <label class="block font-bold mb-2">الكمية</label>
+            <p-inputNumber formControlName="quantity" [min]="1" [max]="batch?.remainingQuantity || 1000"
+                styleClass="w-full" inputStyleClass="w-full"
+                [placeholder]="'الكمية المتاحة: ' + (batch?.remainingQuantity || 0)"></p-inputNumber>
+            <small class="text-secondary" *ngIf="actionForm.get('movementType')?.value === 'DAMAGE'">سيتم خصم هذه الكمية
+                كتالف.</small>
+        </div>
+
+        <div class="field">
+            <label class="block font-bold mb-2">السبب / ملاحظات</label>
+            <textarea pInputTextarea formControlName="notes" rows="3" class="w-full"
+                placeholder="يرجى توضيح سبب الحركة..."></textarea>
+            <small class="p-error block" *ngIf="actionForm.get('notes')?.invalid && actionForm.get('notes')?.touched">
+                السبب مطلوب للحركات اليدوية.
+            </small>
+        </div>
+
+        <!-- معلومات إضافية للبيانات المرسلة -->
+        <div class="bg-blue-50 border-round p-3 text-sm">
+            <div class="font-bold mb-2 text-blue-900">📋 البيانات التي سيتم إرسالها:</div>
+            <div class="grid">
+                <div class="col-6">
+                    <span class="text-600">معرف الدواء:</span>
+                    <span class="font-bold ml-2">{{batch?.medicineId || '-'}}</span>
+                </div>
+                <div class="col-6">
+                    <span class="text-600">معرف الدفعة:</span>
+                    <span class="font-bold ml-2">{{batch?.id || '-'}}</span>
+                </div>
+                <div class="col-12">
+                    <span class="text-600">الموافق:</span>
+                    <span class="font-bold ml-2">المستخدم الحالي</span>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <p-button label="إلغاء" icon="pi pi-times" severity="secondary" (onClick)="onClose()" outlined></p-button>
+        <p-button label="تفيذ الحركة" icon="pi pi-check" [loading]="submitting" (onClick)="submit()"
+            [disabled]="actionForm.invalid"></p-button>
+    </ng-template>
+</p-dialog>

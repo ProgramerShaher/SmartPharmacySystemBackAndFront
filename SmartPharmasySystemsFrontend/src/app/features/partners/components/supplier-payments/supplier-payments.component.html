@@ -1,0 +1,215 @@
+<div class="payments-container animate-fade-in pb-6" dir="rtl">
+    <!-- Header with Background Decoration -->
+    <div class="header-section mb-6 relative overflow-hidden p-5 border-round-3xl glass-morphism shadow-2">
+        <div
+            class="absolute top-0 right-0 w-20rem h-20rem bg-indigo-500 opacity-5 border-circle blur-3xl pointer-events-none">
+        </div>
+        <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-4 relative z-1">
+            <div class="flex align-items-center gap-4">
+                <div class="icon-square bg-indigo-600 text-white shadow-6">
+                    <i class="pi pi-wallet text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-bold m-0 tracking-tight text-900">سندات الصرف المالي</h1>
+                    <p class="text-600 mt-1 font-medium opacity-80">إدارة التدفقات النقدية والوفاء بالتزامات الموردين
+                    </p>
+                </div>
+            </div>
+            <p-button label="إنشاء سند صرف جديد" icon="pi pi-plus" (onClick)="openNew()"
+                styleClass="p-button-raised p-button-rounded premium-payment-btn h-3rem px-5 shadow-6">
+            </p-button>
+        </div>
+    </div>
+
+    <!-- Main Table Container -->
+    <div
+        class="glass-table-container bg-white-alpha-80 shadow-8 border-round-3xl overflow-hidden border-1 border-white-alpha-30">
+        <p-table [value]="payments()" [loading]="loading()" [paginator]="true" [rows]="10"
+            [showCurrentPageReport]="true" currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords}"
+            styleClass="premium-payments-table">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th class="bg-gray-50 text-600 font-bold uppercase text-xs tracking-wider">المرجع / الرقم</th>
+                    <th class="bg-gray-50 text-600 font-bold uppercase text-xs tracking-wider">المورد</th>
+                    <th class="bg-gray-50 text-600 font-bold uppercase text-xs tracking-wider">المبلغ المصروف</th>
+                    <th class="bg-gray-50 text-600 font-bold uppercase text-xs tracking-wider">تاريخ العمليــة</th>
+                    <th class="bg-gray-50 text-600 font-bold uppercase text-xs tracking-wider">رقم التحويلة</th>
+                    <th class="bg-gray-50 text-600 font-bold uppercase text-xs tracking-wider text-center">الإجراءات
+                    </th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-payment>
+                <tr class="hover-row-effect">
+                    <td>
+                        <div class="flex align-items-center gap-2">
+                            <span class="id-badge">#{{ payment.id }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="flex align-items-center gap-3">
+                            <div class="small-avatar shadow-1"
+                                [style.background]="getRandomColor(payment.supplierName || 'S')">
+                                {{ payment.supplierName?.charAt(0) }}
+                            </div>
+                            <span class="font-bold text-900">{{ payment.supplierName }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="amount-cell">
+                            <span class="text-xl font-black text-red-600">{{ payment.amount | number }}</span>
+                            <small class="text-xs text-500 font-bold ml-1">ر.ي</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="flex align-items-center gap-2 text-700">
+                            <i class="pi pi-clock opacity-60"></i>
+                            <span>{{ payment.paymentDate | date:'yyyy/MM/dd HH:mm' }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <p-tag [value]="payment.referenceNo || 'بدون مرجع'"
+                            [severity]="payment.referenceNo ? 'info' : 'secondary'" [rounded]="true"
+                            styleClass="px-3 text-xs font-bold">
+                        </p-tag>
+                    </td>
+                    <td class="text-center">
+                        <div class="flex justify-content-center gap-2">
+                            <button pButton icon="pi pi-print" class="p-button-rounded p-button-text hover:bg-indigo-50"
+                                pTooltip="طباعة السند"></button>
+                            <button pButton icon="pi pi-trash"
+                                class="p-button-rounded p-button-text p-button-danger hover:bg-red-50"
+                                pTooltip="إلغاء السند" (click)="cancelPayment($event, payment)"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center p-8">
+                        <div class="empty-state-visual py-5">
+                            <i class="pi pi-wallet text-6xl text-200 mb-3"></i>
+                            <h3 class="text-2xl font-bold text-600">لا توجد سندات صرف</h3>
+                            <p class="text-500">قم بإنشاء أول سند صرف مالي للموردين الآن</p>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Premium Creation Dialog -->
+<p-dialog [(visible)]="displayDialog" [header]="'إنشاء سند صرف مالي جديد'" [modal]="true" [style]="{width: '550px'}"
+    styleClass="premium-payment-dialog" [draggable]="false" [breakpoints]="{'960px': '95vw'}">
+
+    <div class="dialog-header-accent"></div>
+
+    <form [formGroup]="paymentForm" class="p-fluid grid mt-4 p-2">
+        <div class="field col-12 mb-4">
+            <label class="font-bold flex align-items-center gap-2 mb-2 text-900">
+                <i class="pi pi-user text-indigo-500"></i> اختيار المورد المستفيد
+            </label>
+            <p-autoComplete formControlName="supplierId" [suggestions]="filteredSuppliers"
+                (completeMethod)="searchSuppliers($event)" field="name" (onSelect)="onSupplierSelect($event)"
+                placeholder="ابحث باسم المورد هنا..."
+                inputStyleClass="h-3rem border-round-xl shadow-2 border-primary-50">
+                <ng-template let-supplier pTemplate="item">
+                    <div class="flex justify-content-between align-items-center w-full p-1">
+                        <div class="flex align-items-center gap-2">
+                            <div class="avatar-tiny" [style.background]="getRandomColor(supplier.name)">{{
+                                supplier.name?.charAt(0) }}</div>
+                            <span class="font-bold text-800">{{ supplier.name }}</span>
+                        </div>
+                        <span class="text-red-500 font-black px-2 py-1 bg-red-50 border-round-lg">{{ supplier.balance |
+                            number }} ر.ي</span>
+                    </div>
+                </ng-template>
+            </p-autoComplete>
+        </div>
+
+        <div class="col-12 animate-fade-in" *ngIf="selectedSupplier">
+            <div
+                class="balance-notification bg-blue-50 p-3 border-round-2xl border-1 border-blue-100 flex justify-content-between align-items-center mb-4">
+                <div class="flex align-items-center gap-2">
+                    <i class="pi pi-info-circle text-blue-600 text-xl"></i>
+                    <span class="text-blue-800 font-bold">الرصيد المستحق للمورد:</span>
+                </div>
+                <div class="text-blue-700 font-black text-2xl">{{ selectedSupplier.balance | number }} <small
+                        class="text-sm">ر.ي</small></div>
+            </div>
+
+            <!-- Invoices Table in Dialog -->
+            <div class="field mb-4" *ngIf="unpaidInvoices().length > 0">
+                <label class="block font-bold mb-2 text-700">تسوية فواتير محددة (اختياري)</label>
+                <div
+                    class="invoice-selection-list glass-morphism border-round-2xl overflow-hidden border-1 border-primary-50">
+                    <p-table [value]="unpaidInvoices()" [(selection)]="selectedInvoices"
+                        (selectionChange)="onInvoiceSelectionChange($event)" dataKey="id" [scrollable]="true"
+                        scrollHeight="180px" styleClass="p-datatable-sm">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 3rem" class="bg-gray-50">
+                                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                                <th class="bg-gray-50 text-xs font-bold">رقم الفاتورة</th>
+                                <th class="bg-gray-50 text-xs font-bold">المبلغ</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-inv>
+                            <tr [class.bg-blue-50]="selectedInvoices && selectedInvoices.includes(inv)">
+                                <td><p-tableCheckbox [value]="inv"></p-tableCheckbox></td>
+                                <td class="font-bold font-mono text-700">#{{ inv.purchaseInvoiceNumber || inv.id }}</td>
+                                <td class="font-black text-blue-700">{{ inv.totalAmount | number }}</td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
+        </div>
+
+        <div class="field col-12 mb-4">
+            <label class="font-bold flex align-items-center gap-2 mb-2 text-900">
+                <i class="pi pi-money-bill text-red-500"></i> المبلغ المراد صرفه نهائياً
+            </label>
+            <div class="amount-input-wrapper">
+                <p-inputNumber formControlName="amount" mode="currency" currency="YER" locale="ar-YE"
+                    inputStyleClass="huge-amount-input h-5rem text-center font-black text-4xl text-red-600 border-round-3xl border-2 border-red-200 bg-red-50 shadow-inner">
+                </p-inputNumber>
+                <div class="amount-glow"></div>
+            </div>
+        </div>
+
+        <div class="grid col-12 p-0 px-2 gap-3">
+            <div class="field col mb-4">
+                <label class="font-bold block mb-2 text-700">تاريخ العملية</label>
+                <p-calendar formControlName="paymentDate" [showIcon]="true" appendTo="body"
+                    inputStyleClass="h-3rem border-round-xl shadow-1"></p-calendar>
+            </div>
+            <div class="field col mb-4">
+                <label class="font-bold block mb-2 text-700">رقم المرجع / الشيك</label>
+                <input type="text" pInputText formControlName="referenceNo" placeholder="مثلاً: 102938"
+                    class="h-3rem border-round-xl shadow-1" />
+            </div>
+        </div>
+
+        <div class="field col-12 mb-4">
+            <label class="font-bold block mb-2 text-700">البيان / ملاحظات</label>
+            <textarea pInputTextarea formControlName="notes" rows="2" class="border-round-2xl shadow-1"
+                placeholder="اكتب أي ملاحظات إضافية هنا..."></textarea>
+        </div>
+
+        <div class="col-12 mt-2 flex justify-content-end align-items-center gap-3">
+            <p-button label="إلغاء الأمر" icon="pi pi-times" (onClick)="displayDialog.set(false)"
+                styleClass="p-button-text p-button-plain font-bold">
+            </p-button>
+            <p-button label="تأكيد وتنفيذ عملية الصرف" icon="pi pi-send" [loading]="saving()" (onClick)="savePayment()"
+                styleClass="p-button-raised h-3rem px-6 font-bold premium-execution-btn shadow-8">
+            </p-button>
+        </div>
+    </form>
+</p-dialog>
+
+<p-confirmDialog [rtl]="true" styleClass="premium-confirm-dialog"></p-confirmDialog>
+<p-toast position="top-left"></p-toast>

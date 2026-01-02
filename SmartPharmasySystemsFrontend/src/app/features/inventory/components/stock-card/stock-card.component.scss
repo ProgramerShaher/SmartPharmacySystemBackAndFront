@@ -1,0 +1,15 @@
+    .stock-card-container {
+      padding: 1.5rem;
+    }
+
+    :host ::ng-deep {
+      .p-datatable .p-datatable-thead > tr > th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 600;
+      }
+
+      .p-datatable .p-datatable-tfoot > tr > td {
+        font-weight: 700;
+      }
+    }

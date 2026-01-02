@@ -5,17 +5,23 @@ import { MedicineBatch } from './medicine-batch.interface';
 export interface SalesReturnDetail {
     id: number;
     salesReturnId: number;
-    returnDate: Date;
     medicineId: number;
-    medicineName: string;
+    medicineName?: string;
     batchId: number;
-    companyBatchNumber: string;
+    companyBatchNumber?: string;
     quantity: number;
     salePrice: number;
     unitCost: number;
-    totalReturn: number;
-    isDeleted: boolean;
+    totalLineAmount: number;
+    totalCost: number;
+    profit: number;
     salesReturn?: SalesReturn;
     medicine?: Medicine;
     batch?: MedicineBatch;
+}
+
+export interface CreateSalesReturnDetailDto {
+    medicineId: number;
+    batchId: number;
+    quantity: number;
 }

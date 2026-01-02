@@ -1,0 +1,135 @@
+<div class="edit-container h-full flex flex-column" dir="rtl">
+    <div *ngIf="loading()" class="flex justify-content-center align-items-center flex-grow-1">
+        <p-progressSpinner></p-progressSpinner>
+    </div>
+
+    <form *ngIf="!loading()" [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="flex flex-column h-full">
+        <div class="flex-grow-1 overflow-y-auto px-1 py-2">
+            <!-- Basic Info -->
+            <div class="flex align-items-center gap-2 mb-3">
+                <div class="icon-circle bg-blue-50 text-blue-600">
+                    <i class="pi pi-info-circle"></i>
+                </div>
+                <h3 class="m-0 text-gray-700 text-lg font-bold">المعلومات الأساسية</h3>
+            </div>
+
+            <div class="grid p-fluid">
+                <div class="field col-12">
+                    <label for="name" class="font-bold text-sm mb-2 text-gray-600">اسم العميل <span
+                            class="text-red-500">*</span></label>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-user text-gray-400"></i>
+                        <input id="name" type="text" pInputText formControlName="name" placeholder="الاسم الكامل"
+                            class="premium-input" />
+                    </span>
+                    <small class="text-red-500 block mt-1"
+                        *ngIf="customerForm.get('name')?.touched && customerForm.get('name')?.invalid">
+                        الاسم مطلوب (3 أحرف على الأقل)
+                    </small>
+                </div>
+
+                <div class="field col-12 md:col-6">
+                    <label for="phone" class="font-bold text-sm mb-2 text-gray-600">رقم الهاتف <span
+                            class="text-red-500">*</span></label>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-phone text-gray-400"></i>
+                        <input id="phone" type="text" pInputText formControlName="phone" placeholder="77xxxxxxx"
+                            class="premium-input" />
+                    </span>
+                    <small class="text-red-500 block mt-1"
+                        *ngIf="customerForm.get('phone')?.touched && customerForm.get('phone')?.invalid">
+                        رقم الهاتف مطلوب
+                    </small>
+                </div>
+
+                <div class="field col-12 md:col-6">
+                    <label for="email" class="font-bold text-sm mb-2 text-gray-600">البريد الإلكتروني</label>
+                    <span class="p-input-icon-left">
+                        <i class="pi pi-envelope text-gray-400"></i>
+                        <input id="email" type="email" pInputText formControlName="email" placeholder="email@domain.com"
+                            class="premium-input" />
+                    </span>
+                </div>
+
+                <div class="field col-12">
+                    <label for="creditLimit" class="font-bold text-sm mb-2 text-gray-600">سقف المديونية (ر.ي)</label>
+                    <p-inputNumber id="creditLimit" formControlName="creditLimit" mode="currency" currency="YER"
+                        locale="ar-YE" placeholder="0.00" styleClass="w-full" inputStyleClass="premium-input text-left"
+                        [min]="0">
+                    </p-inputNumber>
+                    <small class="text-gray-400 text-xs mt-1 block">اترك القيمة 0 ليكون سقف المديونية مفتوحاً</small>
+                </div>
+            </div>
+
+            <div class="separator my-4 border-top-1 surface-border"></div>
+
+            <!-- Address & Notes -->
+            <div class="flex align-items-center gap-2 mb-3">
+                <div class="icon-circle bg-orange-50 text-orange-600">
+                    <i class="pi pi-map-marker"></i>
+                </div>
+                <h3 class="m-0 text-gray-700 text-lg font-bold">العنوان والملاحظات</h3>
+            </div>
+
+            <div class="grid p-fluid">
+                <div class="field col-12">
+                    <label for="address" class="font-bold text-sm mb-2 text-gray-600">العنوان التفصيلي</label>
+                    <textarea id="address" pInputTextarea formControlName="address" rows="2" class="premium-input"
+                        placeholder="المدينة، الشارع، المعلم القريب"></textarea>
+                </div>
+
+                <div class="field col-12">
+                    <label for="notes" class="font-bold text-sm mb-2 text-gray-600">ملاحظات إضافية</label>
+                    <textarea id="notes" pInputTextarea formControlName="notes" rows="3" class="premium-input"
+                        placeholder="أي تفاصيل أخرى..."></textarea>
+                </div>
+
+                <!-- Status Switch -->
+                <div class="field col-12">
+                    <div
+                        class="flex align-items-center justify-content-between p-3 surface-50 border-round-xl border-1 surface-border">
+                        <div class="flex flex-column">
+                            <span class="font-bold text-gray-800">حالة العميل</span>
+                            <span class="text-sm text-gray-500">تفعيل أو تعطيل التعامل مع هذا العميل</span>
+                        </div>
+                        <p-inputSwitch formControlName="isActive"></p-inputSwitch>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-content-between gap-3 mt-auto pt-4 border-top-1 surface-border bg-white sticky-footer">
+            <p-button label="إلغاء" icon="pi pi-times" styleClass="p-button-text p-button-secondary w-full"
+                (onClick)="cancel()"></p-button>
+            <p-button [label]="isEditMode() ? 'حفظ التغييرات' : 'إضافة العميل'"
+                [icon]="isEditMode() ? 'pi pi-check' : 'pi pi-plus'" type="submit" [loading]="saving()"
+                styleClass="premium-btn-indigo w-full shadow-2">
+            </p-button>
+        </div>
+    </form>
+</div>
+<style>
+    .premium-input {
+        border-radius: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
+        background-color: #f9fafb !important;
+        border: 1px solid #e5e7eb !important;
+        transition: all 0.2s;
+    }
+
+    .premium-input:focus {
+        background-color: #ffffff !important;
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1) !important;
+    }
+
+    .icon-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

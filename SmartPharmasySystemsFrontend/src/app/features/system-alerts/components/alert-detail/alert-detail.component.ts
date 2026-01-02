@@ -206,9 +206,20 @@ export class AlertDetailComponent implements OnInit {
     return 'pi-bell';
   }
 
-  isExpired(): boolean {
-    if (!this.alert) return false;
-    const expiryDate = new Date(this.alert.expiryDate);
+  getAlertTypeSeverity(alertType: string): "success" | "info" | "warning" | "danger" | "secondary" | "contrast" | undefined {
+    const color = AlertUtils.getExpiryStatusColor(alertType);
+    if (color === '#ef4444' || alertType === '3') return 'danger';
+    if (color === '#f97316' || color === '#eab308' || alertType === '2') return 'warning';
+    return 'info';
+  }
+
+  getAlertTypeLabel(type: string): string {
+    return AlertUtils.getExpiryStatusLabel(type);
+  }
+
+  isExpired(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const expiryDate = new Date(dateStr);
     const now = new Date();
     return expiryDate < now;
   }

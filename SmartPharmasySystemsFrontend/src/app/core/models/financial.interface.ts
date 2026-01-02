@@ -1,9 +1,4 @@
-import { ReferenceType } from './stock-movement.enums';
-
-export enum FinancialTransactionType {
-    Income = 1,
-    Expense = 2
-}
+import { ReferenceType, FinancialTransactionType } from './enums';
 
 export interface PharmacyAccount {
     id: number;

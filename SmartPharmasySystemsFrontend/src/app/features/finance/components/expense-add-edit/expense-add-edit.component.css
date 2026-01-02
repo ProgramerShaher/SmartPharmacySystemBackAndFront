@@ -1,0 +1,201 @@
+/* ==============================================
+   EXPENSE FORM - FORMAL PROFESSIONAL DESIGN
+   ERP STYLE - MINIMAL & CLEAN
+   ============================================== */
+
+/* Professional CSS Variables */
+:root {
+  --bg-primary: #f8fafc;
+  /* Neutral Light Gray */
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --text-primary: #1e293b;
+  /* Corporate Navy */
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  /* Formal Colors */
+  --primary-color: #1e293b;
+  --accent-color: #3b82f6;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-card: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+}
+
+/* Container */
+.expense-form-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  direction: rtl;
+  background: var(--bg-primary);
+  min-height: 100vh;
+}
+
+/* Formal Header Styling */
+.header-card {
+  margin-bottom: 2rem;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+::ng-deep .header-card.p-card .p-card-body {
+  padding: 1.5rem 2rem !important;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.title-section {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.header-icon {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  background: var(--bg-secondary);
+  padding: 0.75rem;
+  border-radius: 10px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-primary) !important;
+}
+
+.page-subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.95rem;
+  color: var(--text-secondary) !important;
+}
+
+/* Form Card Styling */
+.form-card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+::ng-deep .form-card .p-card-body {
+  padding: 2.5rem !important;
+}
+
+/* Form Grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.75rem;
+}
+
+.form-field label {
+  font-weight: 600;
+  color: var(--text-primary) !important;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Input Styling */
+::ng-deep .p-inputtext,
+::ng-deep .p-inputtextarea,
+::ng-deep .p-dropdown,
+::ng-deep .p-calendar .p-inputtext,
+::ng-deep .p-inputnumber input {
+  border: 1px solid var(--border-color) !important;
+  border-radius: 6px !important;
+  padding: 0.65rem 0.85rem !important;
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+::ng-deep .p-inputtext:focus,
+::ng-deep .p-dropdown.p-focus,
+::ng-deep .p-calendar .p-inputtext:focus,
+::ng-deep .p-inputnumber input:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}
+
+/* Payment Method Cards - Formal Style */
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.payment-method-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.payment-method-card:hover {
+  border-color: var(--accent-color);
+  background: var(--bg-secondary);
+}
+
+.payment-method-card.selected {
+  border-color: var(--accent-color);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.method-label {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary) !important;
+}
+
+.method-description small {
+  color: var(--text-secondary) !important;
+}
+
+/* Actions */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+::ng-deep .p-button-success {
+  background: var(--primary-color) !important;
+  border: none !important;
+  padding: 0.65rem 2rem !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}
+
+::ng-deep .p-button-outlined.p-button-secondary {
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-secondary) !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+}

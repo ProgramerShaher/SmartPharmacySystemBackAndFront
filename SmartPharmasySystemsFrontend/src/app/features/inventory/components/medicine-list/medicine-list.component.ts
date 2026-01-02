@@ -1,18 +1,25 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { InventoryService } from '../../services/inventory.service';
-import { Medicine } from '../../../../core/models';
-import { TableModule } from 'primeng/table';
+import { TableModule, Table } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
+import { ToolbarModule } from 'primeng/toolbar';
+import { SidebarModule } from 'primeng/sidebar';
+import { MenuModule } from 'primeng/menu';
 import { TooltipModule } from 'primeng/tooltip';
+import { ConfirmationService, MessageService, LazyLoadEvent } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
-import { ToastModule } from 'primeng/toast';
+import { MedicineService } from '../../services/medicine.service';
+import { MedicineDto, MedicineQueryDto, MedicineBatchResponseDto } from '../../../../core/models';
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+import { ToastModule } from "primeng/toast";
+
 import { MedicineAddEditComponent } from '../medicine-add-edit/medicine-add-edit.component';
 
 @Component({
@@ -20,161 +27,189 @@ import { MedicineAddEditComponent } from '../medicine-add-edit/medicine-add-edit
     standalone: true,
     imports: [
         CommonModule,
+        FormsModule,
+        ReactiveFormsModule,
         TableModule,
         ButtonModule,
         InputTextModule,
-        ConfirmDialogModule,
+        DropdownModule,
         TagModule,
+        ToolbarModule,
+        SidebarModule,
+        MenuModule,
         TooltipModule,
+        ConfirmDialogModule,
         DialogModule,
         ToastModule,
         MedicineAddEditComponent
     ],
-    templateUrl: './medicine-list.component.html'
+    templateUrl: './medicine-list.component.html',
+    styleUrls: ['./medicine-list.component.scss'],
+    providers: [MessageService, ConfirmationService]
 })
-export class MedicineListComponent implements OnInit, OnDestroy {
-    medicines: Medicine[] = [];
-    displayModal = false;
-    selectedMedicineId: number | null = null;
-    lastUpdate = new Date();
+export class MedicineListComponent implements OnInit {
+    // Data
+    medicines: MedicineDto[] = [];
+    selectedMedicine: MedicineDto | null = null;
+    fefoBatches: MedicineBatchResponseDto[] = [];
 
+    // Pagination & Loading
+    totalRecords = 0;
+    loading = true;
+    pageSize = 10;
+
+    // Search
     private searchSubject = new Subject<string>();
-    private destroy$ = new Subject<void>();
+    searchTerm = '';
+
+    // Filters
+    categoryId: number | undefined;
+    manufacturer: string | undefined;
+    status: string | undefined;
+
+    // UI State
+    showSidebar = false; // For Add/Edit
+    isEditMode = false;
+
+    statusOptions = [
+        { label: 'الكل', value: null },
+        { label: 'نشط', value: 'Active' },
+        { label: 'غير نشط', value: 'Inactive' }
+    ];
 
     constructor(
-        private inventoryService: InventoryService,
-        private router: Router,
+        private medicineService: MedicineService,
+        private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private messageService: MessageService
+        private router: Router
     ) { }
 
     ngOnInit() {
-        this.loadMedicines();
-
+        // Setup Search Debounce
         this.searchSubject.pipe(
-            debounceTime(400),
-            distinctUntilChanged(),
-            takeUntil(this.destroy$)
-        ).subscribe(searchText => {
-            this.inventoryService.searchMedicines({ search: searchText }).subscribe(data => {
-                this.medicines = data.items || [];
-            });
+            debounceTime(500),
+            distinctUntilChanged()
+        ).subscribe(term => {
+            this.searchTerm = term;
+            this.loadMedicines({ first: 0, rows: this.pageSize });
         });
     }
 
-    ngOnDestroy() {
-        this.destroy$.next();
-        this.destroy$.complete();
+    /**
+     * Load medicines with server-side pagination
+     */
+    loadMedicines(event: any) {
+        this.loading = true;
+        const page = (event.first / event.rows) + 1;
+        const pageSize = event.rows;
+
+        // Sorting
+        const sortBy = event.sortField;
+        const sortDescending = event.sortOrder === -1;
+
+        const query: MedicineQueryDto = {
+            page,
+            pageSize,
+            search: this.searchTerm,
+            categoryId: this.categoryId,
+            manufacturer: this.manufacturer,
+            status: this.status,
+            sortBy,
+            sortDescending
+        };
+
+        this.medicineService.search(query).subscribe({
+            next: (result) => {
+                this.medicines = result.items;
+                this.totalRecords = result.totalCount;
+                this.loading = false;
+            },
+            error: (err) => {
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل الأدوية' });
+                this.loading = false;
+            }
+        });
     }
 
-    onSearch(event: Event) {
-        const value = (event.target as HTMLInputElement).value;
+    /**
+     * Trigger search
+     */
+    onSearch(value: string) {
         this.searchSubject.next(value);
     }
 
-    loadMedicines() {
-        this.inventoryService.searchMedicines({}).subscribe({
-            next: (data) => {
-                this.medicines = data.items || [];
-                this.lastUpdate = new Date();
-            },
-            error: (e: any) => {
-                console.error('❌ Error loading medicines:', e);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'خطأ',
-                    detail: 'فشل تحميل قائمة الأدوية'
-                });
-            }
-        });
-    }
-
-    createMedicine() {
-        this.selectedMedicineId = null;
-        this.displayModal = true;
-    }
-
-    editMedicine(medicine: Medicine) {
-        this.selectedMedicineId = medicine.id;
-        this.displayModal = true;
-    }
-
-    viewMedicine(medicine: Medicine) {
+    /**
+     * View details (Navigate to separate page)
+     */
+    viewDetails(medicine: MedicineDto) {
         this.router.navigate(['/inventory/medicines/details', medicine.id]);
     }
 
-    onModalSave() {
-        this.displayModal = false;
-        this.loadMedicines();
-    }
+    /* 
+    // Legacy Side Panel Logic - Removed as per user request
+    loadBatches(id: number) { ... }
+    */
 
-    onModalCancel() {
-        this.displayModal = false;
-    }
-
-    exportExcel() {
-        import('xlsx').then((xlsx) => {
-            const worksheet = xlsx.utils.json_to_sheet(this.medicines);
-            const workbook = { Sheets: { data: worksheet }, SheetNames: ['data'] };
-            const excelBuffer: any = xlsx.write(workbook, {
-                bookType: 'xlsx',
-                type: 'array',
-            });
-            this.saveAsExcelFile(excelBuffer, 'medicines');
+    loadBatches(id: number) {
+        this.medicineService.getFEFOBatches(id).subscribe({
+            next: (batches) => {
+                this.fefoBatches = batches;
+            },
+            error: (err) => {
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل الدفعات' });
+            }
         });
     }
 
-    saveAsExcelFile(buffer: any, fileName: string): void {
-        import('file-saver').then((FileSaver) => {
-            let EXCEL_TYPE =
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
-            let EXCEL_EXTENSION = '.xlsx';
-            const data: Blob = new Blob([buffer], {
-                type: EXCEL_TYPE,
-            });
-            FileSaver.saveAs(
-                data,
-                fileName + '_export_' + new Date().getTime() + EXCEL_EXTENSION
-            );
-        });
+    /**
+     * Add/Edit Actions
+     */
+    addMedicine() {
+        this.selectedMedicine = null;
+        this.isEditMode = false;
+        this.showSidebar = true;
     }
 
-    deleteMedicine(medicine: Medicine) {
+    editMedicine(medicine: MedicineDto) {
+        this.selectedMedicine = medicine;
+        this.isEditMode = true;
+        this.showSidebar = true;
+    }
+
+    onFormSave() {
+        this.showSidebar = false;
+        this.loadMedicines({ first: 0, rows: this.pageSize });
+    }
+
+    deleteMedicine(medicine: MedicineDto) {
         this.confirmationService.confirm({
-            message: 'هل أنت متأكد من حذف ' + medicine.name + '؟',
+            message: `هل أنت متأكد من حذف ${medicine.name}؟`,
             header: 'تأكيد الحذف',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.inventoryService.deleteMedicine(medicine.id).subscribe({
+                this.medicineService.delete(medicine.id).subscribe({
                     next: () => {
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'تم بنجاح',
-                            detail: 'تم حذف الدواء بنجاح',
-                            life: 3000
-                        });
-                        this.loadMedicines();
+                        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حذف الدواء بنجاح' });
+                        this.loadMedicines({ first: 0, rows: this.pageSize });
                     },
-                    error: (e) => this.messageService.add({
-                        severity: 'error',
-                        summary: 'خطأ',
-                        detail: 'لم يتم حذف الدواء'
-                    })
+                    error: (err) => {
+                        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'لا يمكن حذف الدواء لارتباطه بسجلات أخرى' });
+                    }
                 });
             }
         });
     }
 
-    hasExpiredBatch(medicine: Medicine): boolean {
-        if (!medicine.medicineBatches || medicine.medicineBatches.length === 0) return false;
-        const today = new Date();
-        return medicine.medicineBatches.some(batch => new Date(batch.expiryDate) < today);
+    /**
+     * UI Helpers
+     */
+    getStatusSeverity(status: string): 'success' | 'danger' | 'warning' {
+        return status === 'Active' ? 'success' : 'danger';
     }
 
-    getSeverity(medicine: Medicine): 'success' | 'warning' | 'danger' | undefined {
-        const stock = medicine.stock ?? medicine.totalQuantity ?? 0;
-        if (stock > 10) return 'success';
-        if (stock > 0) return 'warning';
-        return 'danger';
+    getBatchExpirySeverity(batch: MedicineBatchResponseDto): 'success' | 'warning' | 'danger' {
+        if (batch.isExpired) return 'danger';
+        if (batch.isExpiringSoon) return 'warning';
+        return 'success';
     }
 }

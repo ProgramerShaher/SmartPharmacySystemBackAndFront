@@ -1,6 +1,134 @@
-<div class="form-container">
-    <h2>Create Purchase Return</h2>
-    <form>
-        <!-- Form placeholder -->
-    </form>
-</div>
+<div class="pos-container animate-fade-in" dir="rtl">
+    <!-- Header -->
+    <header class="pos-header glass-panel border-purple-500 border-right-3">
+        <div class="header-left">
+            <p-button icon="pi pi-arrow-right" rounded text styleClass="back-btn" (onClick)="goBack()"></p-button>
+            <div class="header-title">
+                <h1 class="m-0 font-bold">إضافة مرتجع مشتريات</h1>
+                <p class="m-0 text-sm opacity-60">تسجيل مرتجع لمورد بناءً على فاتورة شراء سابقة</p>
+            </div>
+        </div>
+        <div class="header-right flex gap-2">
+            <p-button label="حفظ مسودة" icon="pi pi-save" severity="secondary" outlined [loading]="saving"
+                (onClick)="saveReturn(false)"></p-button>
+            <p-button label="اعتماد وترحيل" icon="pi pi-check-circle" severity="success" [loading]="saving"
+                [disabled]="totalReturnAmount <= 0" (onClick)="saveReturn(true)"></p-button>
+        </div>
+    </header>
+
+    <div class="pos-content-grid mt-4">
+        <main class="pos-main">
+            <!-- Search & Info -->
+            <section class="glass-panel p-4 mb-4 elevation-hover">
+                <form [formGroup]="returnForm">
+                    <div class="grid p-fluid">
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-2">بحث عن فاتورة التوريد (المعتمدة)</label>
+                            <p-autoComplete formControlName="invoice" [suggestions]="filteredInvoices"
+                                (completeMethod)="searchInvoices($event)" field="purchaseInvoiceNumber"
+                                placeholder="رقم الفاتورة أو المورد..." [dropdown]="true"
+                                (onSelect)="onInvoiceSelect($event)" styleClass="h-3rem"
+                                inputStyleClass="h-3rem"></p-autoComplete>
+                        </div>
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-2">تاريخ المرتجع</label>
+                            <p-calendar formControlName="returnDate" dateFormat="dd/mm/yy" [showIcon]="true"
+                                styleClass="h-3rem"></p-calendar>
+                        </div>
+                        <div class="col-12 field">
+                            <label class="font-bold text-sm block mb-2">سبب الإرجاع</label>
+                            <input pInputText formControlName="reason" class="h-3rem"
+                                placeholder="مثال: منتهي، تألف، خطأ في الصنف..." />
+                        </div>
+                    </div>
+                </form>
+            </section>
+            
+            <!-- Details Table -->
+            <section class="glass-panel p-0 overflow-hidden elevation-hover" *ngIf="selectedInvoice">
+                <div class="p-4 border-bottom-1 border-color flex align-items-center gap-2">
+                    <i class="pi pi-shopping-bag text-purple-500"></i>
+                    <h3 class="m-0">أصناف الفاتورة #{{selectedInvoice.purchaseInvoiceNumber}}</h3>
+                </div>
+            <p-table [value]="details" styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>الصنف</th>
+                        <th class="text-center">الدفعة</th>
+                        <th class="text-center">حالة البيع</th>
+                        <th class="text-center">المتاح للإرجاع</th>
+                        <th class="text-center bg-red-50" style="width: 140px;">الكمية المرتجعة</th>
+                        <th class="text-right">قيمة المرتجع</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr class="item-row" [ngClass]="{'opacity-50 grayscale': item.maxReturnQty === 0}">
+                        <td>
+                            <span class="font-bold text-indigo-900 block">{{item.medicineName}}</span>
+                            <small class="text-500">سعر التوريد: {{item.purchasePrice | number:'1.0-2'}} ر.ي</small>
+                        </td>
+                        <td class="text-center">
+                            <div class="flex flex-column align-items-center">
+                                <span class="batch-tag indigo mb-1">{{item.companyBatchNumber}}</span>
+                                <small class="text-xs"
+                                    [ngClass]="item.expiryStatus === 'Expired' ? 'text-red-500 font-bold' : 'opacity-60'">
+                                    {{item.expiryDate | date:'MM/yy'}}
+                                </small>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span *ngIf="item.loadingBatch"><i class="pi pi-spin pi-spinner opacity-50"></i></span>
+                            <p-tag *ngIf="!item.loadingBatch" [severity]="item.batchSoldQty > 0 ? 'danger' : 'success'"
+                                [value]="item.batchSoldQty > 0 ? (item.batchSoldQty + ' مباع') : 'لم يباع'"
+                                styleClass="shadow-sm"></p-tag>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-lg font-bold" [ngClass]="item.maxReturnQty > 0 ? 'text-blue-600' : 'text-gray-400'">
+                                {{item.maxReturnQty}}
+                            </span>
+                        </td>
+                        <td class="text-center p-2 bg-red-50">
+                            <p-inputNumber [(ngModel)]="item.returnQty" [min]="0" [max]="item.maxReturnQty"
+                                [disabled]="item.maxReturnQty === 0" [showButtons]="true"
+                                inputStyleClass="w-full text-center font-bold text-red-600 h-2rem"
+                                (onInput)="calculateTotal()"></p-inputNumber>
+                        </td>
+                        <td class="text-right font-bold text-red-700">
+                            {{ (item.returnQty * item.purchasePrice) | number:'1.0-2' }}
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+            </section>
+            
+            <section class="glass-panel p-6 text-center opacity-30" *ngIf="!selectedInvoice">
+                <i class="pi pi-search text-7xl mb-3"></i>
+                <p class="text-xl m-0">يرجى البحث عن فاتورة توريد سابقة للبدء</p>
+            </section>
+            </main>
+            
+            <aside class="pos-sidebar">
+                <div class="glass-panel sticky-sidebar p-4 flex flex-column gap-4" *ngIf="selectedInvoice">
+                    <div class="summary-card return-purchase">
+                        <span class="label">قيمة التسويه المطلوب</span>
+                        <span class="value text-red-600">{{totalReturnAmount | number:'1.0-0'}} <small>ر.ي</small></span>
+                    </div>
+            
+                    <div class="summary-details">
+                        <div class="mini-card flex-row justify-content-between p-3 mb-2">
+                            <span class="text-700">المورد:</span>
+                            <span class="font-bold text-sm">{{selectedInvoice.supplierName}}</span>
+                        </div>
+                    </div>
+            
+                    <div class="actions mt-auto">
+                        <p-button label="اعتماد المردود" icon="pi pi-check-circle" severity="success"
+                            [disabled]="totalReturnAmount <= 0" styleClass="w-full py-3 text-xl font-bold rounded-xl"
+                            (onClick)="saveReturn(true)"></p-button>
+                    </div>
+                </div>
+            </aside>
+            </div>
+            </div>
+            <p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
+            <p-toast></p-toast>

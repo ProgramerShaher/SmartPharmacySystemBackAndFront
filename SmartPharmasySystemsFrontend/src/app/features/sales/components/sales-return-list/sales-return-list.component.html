@@ -1,4 +1,120 @@
-<div class="list-container">
-    <h2>Sales Returns</h2>
-    <p>Returns list placeholder</p>
+<div class="page-container animate-fade-in" dir="rtl">
+    <!-- Header Section -->
+    <header class="page-header glass-panel mb-4 return-header">
+        <div class="header-content">
+            <div class="title-section">
+                <div class="icon-wrapper return">
+                    <i class="pi pi-replay"></i>
+                </div>
+                <div class="text-wrapper">
+                    <h1 class="m-0 text-3xl font-bold">مردودات المبيعات</h1>
+                    <p class="m-0 opacity-70">إدارة مرتجعات الأدوية من العملاء</p>
+                </div>
+            </div>
+            <div class="action-section">
+                <p-button label="إضافة مردود" icon="pi pi-plus" styleClass="p-button-raised p-button-danger p-button-lg"
+                    (onClick)="navigateToCreate()"></p-button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Card -->
+    <div class="glass-panel p-0 overflow-hidden">
+        <p-table #dt [value]="returns" [rows]="10" [paginator]="true" [loading]="loading"
+            [globalFilterFields]="['returnNumber', 'customerName', 'saleInvoiceId']" responsiveLayout="scroll"
+            [breakpoint]="'960px'" styleClass="p-datatable-sm" [showCurrentPageReport]="true"
+            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}">
+
+            <ng-template pTemplate="caption">
+                <div class="table-header-box p-3 flex justify-content-between align-items-center flex-wrap gap-3">
+                    <span class="p-input-icon-left w-full md:w-30rem">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                            placeholder="بحث في المردودات..." class="w-full h-3rem no-border" />
+                    </span>
+                    <div class="flex gap-2">
+                        <p-button icon="pi pi-refresh" severity="secondary" rounded outlined text
+                            (onClick)="loadReturns()"></p-button>
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="id">رقم المردود <p-sortIcon field="id"></p-sortIcon></th>
+                    <th pSortableColumn="returnDate">التاريخ <p-sortIcon field="returnDate"></p-sortIcon></th>
+                    <th>الفاتورة الأصل</th>
+                    <th pSortableColumn="customerName">العميل <p-sortIcon field="customerName"></p-sortIcon></th>
+                    <th pSortableColumn="totalAmount" class="text-center">الإجمالي <p-sortIcon
+                            field="totalAmount"></p-sortIcon></th>
+                    <th pSortableColumn="status" class="text-center">الحالة <p-sortIcon field="status"></p-sortIcon>
+                    </th>
+                    <th class="text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-ret>
+                <tr class="fadein">
+                    <td>
+                        <span class="font-bold text-lg text-red-500">#{{ret.id}}</span>
+                    </td>
+                    <td>
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-calendar opacity-50"></i>
+                            {{ret.returnDate | date:'dd/MM/yyyy'}}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-blue-500 font-bold underline cursor-pointer">#{{ret.saleInvoiceId}}</span>
+                    </td>
+                    <td>
+                        <span class="font-medium">{{ret.customerName || 'عميل نقدي'}}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="amount-badge danger">{{ret.totalAmount | number:'1.0-2'}} ر.ي</span>
+                    </td>
+                    <td class="text-center">
+                        <p-tag [severity]="getStatusSeverity(ret.status)" [value]="getStatusLabel(ret.status)"
+                            styleClass="px-3 border-round-lg shadow-1"></p-tag>
+                    </td>
+                    <td class="text-center">
+                        <div class="flex justify-content-center gap-1">
+                            <ng-container [ngSwitch]="ret.status">
+                                <!-- Draft -->
+                                <ng-container *ngSwitchCase="DocumentStatus.Draft">
+                                    <p-button icon="pi pi-check-circle" severity="success" rounded text
+                                        pTooltip="اعتماد" tooltipPosition="top"
+                                        (onClick)="approveReturn(ret.id)"></p-button>
+                                    <p-button icon="pi pi-pencil" severity="secondary" rounded text pTooltip="تعديل/عرض"
+                                        tooltipPosition="top" (onClick)="viewDetails(ret.id)"></p-button>
+                                    <p-button icon="pi pi-trash" severity="danger" rounded text pTooltip="حذف"
+                                        tooltipPosition="top" (onClick)="deleteReturn(ret.id)"></p-button>
+                                </ng-container>
+
+                                <!-- Approved -->
+                                <ng-container *ngSwitchCase="DocumentStatus.Approved">
+                                    <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل"
+                                        tooltipPosition="top" (onClick)="viewDetails(ret.id)"></p-button>
+                                    <p-button icon="pi pi-times-circle" severity="danger" rounded text
+                                        pTooltip="إلغاء المرتجع" tooltipPosition="top"
+                                        (onClick)="cancelReturn(ret.id)"></p-button>
+                                </ng-container>
+
+                                <!-- Cancelled -->
+                                <ng-container *ngSwitchCase="DocumentStatus.Cancelled">
+                                    <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل"
+                                        tooltipPosition="top" (onClick)="viewDetails(ret.id)"></p-button>
+                                </ng-container>
+
+                                <ng-container *ngSwitchDefault>
+                                    <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل"
+                                        tooltipPosition="top" (onClick)="viewDetails(ret.id)"></p-button>
+                                </ng-container>
+                            </ng-container>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
 </div>

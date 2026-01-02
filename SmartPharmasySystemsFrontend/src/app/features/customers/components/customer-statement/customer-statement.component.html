@@ -1,0 +1,263 @@
+<div class="statement-container p-4 animate-fade-in" dir="rtl">
+    <div class="max-w-7xl mx-auto" *ngIf="statement() as s">
+
+        <!-- Action Bar (No Print) -->
+        <div class="flex justify-content-between align-items-center mb-5 no-print">
+            <div class="flex align-items-center gap-3">
+                <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary"
+                    [routerLink]="['/customers/detail', customerId]"></p-button>
+                <div>
+                    <h1 class="text-3xl font-bold m-0 text-gray-800">كشف حساب تفصيلي</h1>
+                    <span class="text-gray-500 text-sm">مراجعة الحركات المالية والمديونية</span>
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <p-button label="طباعة الكشف" icon="pi pi-print" (onClick)="printStatement()"
+                    styleClass="p-button-outlined p-button-secondary p-button-rounded font-bold"></p-button>
+                <p-button label="تصدير PDF" icon="pi pi-file-pdf"
+                    styleClass="p-button-outlined p-button-danger p-button-rounded font-bold"></p-button>
+            </div>
+        </div>
+
+        <!-- Filter Bar (No Print) -->
+        <div
+            class="glass-panel p-3 mb-4 border-round-2xl shadow-1 flex flex-wrap gap-4 align-items-end no-print bg-white">
+            <div class="flex-grow-1 grid m-0">
+                <div class="col-12 md:col-4 p-2">
+                    <label class="block font-bold text-gray-700 text-sm mb-2">من تاريخ</label>
+                    <p-calendar [(ngModel)]="dateFrom" appendTo="body" styleClass="w-full premium-input"
+                        placeholder="البداية" dateFormat="yy/mm/dd" [showIcon]="true"></p-calendar>
+                </div>
+                <div class="col-12 md:col-4 p-2">
+                    <label class="block font-bold text-gray-700 text-sm mb-2">إلى تاريخ</label>
+                    <p-calendar [(ngModel)]="dateTo" appendTo="body" styleClass="w-full premium-input"
+                        placeholder="النهاية" dateFormat="yy/mm/dd" [showIcon]="true"></p-calendar>
+                </div>
+                <div class="col-12 md:col-4 p-2 flex align-items-end">
+                    <p-button label="تحديث البيانات" icon="pi pi-refresh" (onClick)="loadStatement()"
+                        styleClass="w-full premium-btn-indigo shadow-1"></p-button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Printable Area Wrapper -->
+        <div class="printable-content">
+            <!-- Professional Header (Visible in Print & UI) -->
+            <div class="glass-panel p-5 mb-4 border-round-2xl shadow-1 bg-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-full h-1 bg-gradient-customer"></div>
+
+                <div class="grid align-items-center">
+                    <div class="col-12 md:col-6">
+                        <div class="flex align-items-center gap-3">
+                            <div
+                                class="w-4rem h-4rem bg-indigo-50 border-circle flex align-items-center justify-content-center text-indigo-600 font-bold text-2xl">
+                                {{ s.customer.name.charAt(0) }}
+                            </div>
+                            <div>
+                                <h2 class="m-0 text-xl font-bold text-gray-800">{{ s.customer.name }}</h2>
+                                <div class="flex align-items-center gap-2 mt-1 text-gray-500 text-sm">
+                                    <span *ngIf="s.customer.phone"><i class="pi pi-phone text-xs"></i> {{
+                                        s.customer.phone }}</span>
+                                    <span class="mx-2 text-gray-300">|</span>
+                                    <span>الرصيد الحالي: <span class="text-indigo-600 font-bold" dir="ltr">{{
+                                            s.summary.currentBalance | number }}</span> ر.ي</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 md:col-6 text-left md:text-left text-center">
+                        <div class="text-gray-500 text-sm">تاريخ التقرير</div>
+                        <div class="font-bold text-gray-800 text-lg">{{ today | date:'yyyy/MM/dd HH:mm' }}</div>
+                        <div class="text-xs text-gray-400 mt-1">
+                            {{ (dateFrom | date:'yyyy/MM/dd') || 'البداية' }} - {{ (dateTo | date:'yyyy/MM/dd') ||
+                            'الآن' }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Mini Cards -->
+            <div class="grid mb-4">
+                <div class="col-12 md:col-4">
+                    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden">
+                        <div class="absolute right-0 top-0 h-full w-4px bg-blue-500"></div>
+                        <div class="flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-gray-500 font-bold text-xs uppercase">إجمالي المبيعات (مدين)</span>
+                                <h3 class="text-2xl font-bold text-blue-600 m-0 mt-2">{{ s.summary.totalSales |
+                                    number:'1.0-2' }}</h3>
+                                <span class="text-xs text-gray-400">ر.ي</span>
+                            </div>
+                            <div
+                                class="bg-blue-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-blue-500">
+                                <i class="pi pi-shopping-cart text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden">
+                        <div class="absolute right-0 top-0 h-full w-4px bg-green-500"></div>
+                        <div class="flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-gray-500 font-bold text-xs uppercase">إجمالي المقبوضات (دائن)</span>
+                                <h3 class="text-2xl font-bold text-green-600 m-0 mt-2">{{ s.summary.totalReceipts |
+                                    number:'1.0-2' }}</h3>
+                                <span class="text-xs text-gray-400">ر.ي</span>
+                            </div>
+                            <div
+                                class="bg-green-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-green-500">
+                                <i class="pi pi-dollar text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden">
+                        <div class="absolute right-0 top-0 h-full w-4px bg-orange-500"></div>
+                        <div class="flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-gray-500 font-bold text-xs uppercase">الرصيد القائم</span>
+                                <h3 class="text-2xl font-bold text-gray-800 m-0 mt-2">{{ s.summary.currentBalance |
+                                    number:'1.0-2' }}</h3>
+                                <span class="text-xs text-gray-400">ر.ي</span>
+                            </div>
+                            <div
+                                class="bg-orange-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-orange-500">
+                                <i class="pi pi-wallet text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium Table -->
+            <div class="glass-panel border-round-2xl shadow-2 bg-white overflow-hidden">
+                <p-table [value]="s.transactions" [loading]="loading()" styleClass="p-datatable-striped p-datatable-sm"
+                    responsiveLayout="scroll" [tableStyle]="{'min-width': '60rem'}">
+                    <ng-template pTemplate="header">
+                        <tr class="bg-gray-50 text-gray-700 uppercase text-xs">
+                            <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">التاريخ</th>
+                            <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">البيان</th>
+                            <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">رقم المرجع</th>
+                            <th class="py-3 px-4 font-bold text-center border-bottom-1 border-gray-200 text-red-600">
+                                مدين (+)</th>
+                            <th class="py-3 px-4 font-bold text-center border-bottom-1 border-gray-200 text-green-600">
+                                دائن (-)</th>
+                            <th class="py-3 px-4 font-bold text-center border-bottom-1 border-gray-200">الرصيد</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-tx>
+                        <tr class="hover:surface-50 transition-colors">
+                            <td class="px-4 py-3 text-sm text-gray-600 font-medium border-bottom-1 border-gray-100">
+                                {{ tx.transactionDate | date:'yyyy/MM/dd' }}
+                                <div class="text-xs text-gray-400">{{ tx.transactionDate | date:'HH:mm' }}</div>
+                            </td>
+                            <td class="px-4 py-3 border-bottom-1 border-gray-100">
+                                <span class="font-bold text-gray-700 ml-2"
+                                    *ngIf="getTransactionLabel(tx.transactionType) as label">
+                                    {{ label }}
+                                </span>
+                                <span class="text-sm text-gray-500 block">{{ tx.description }}</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-500 font-mono border-bottom-1 border-gray-100">
+                                {{ tx.referenceNumber || '-' }}
+                            </td>
+                            <td class="px-4 py-3 text-center font-bold text-red-500 border-bottom-1 border-gray-100">
+                                {{ tx.debit > 0 ? (tx.debit | number:'1.0-2') : '-' }}
+                            </td>
+                            <td class="px-4 py-3 text-center font-bold text-green-500 border-bottom-1 border-gray-100">
+                                {{ tx.credit > 0 ? (tx.credit | number:'1.0-2') : '-' }}
+                            </td>
+                            <td
+                                class="px-4 py-3 text-center font-bold text-gray-800 border-bottom-1 border-gray-100 bg-gray-50">
+                                {{ tx.runningBalance | number:'1.0-2' }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="6" class="text-center p-5">
+                                <div class="flex flex-column align-items-center">
+                                    <i class="pi pi-inbox text-4xl text-gray-300 mb-3"></i>
+                                    <span class="text-gray-500 font-medium">لا توجد حركات مالية في الفترة المحددة</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="footer">
+                        <tr class="bg-gray-100 border-top-2 border-gray-200">
+                            <td colspan="3" class="text-right font-bold py-3 px-4 text-gray-700">المجاميع النهائية:</td>
+                            <td class="text-center font-bold text-red-600 py-3 px-4 text-lg">
+                                {{ s.summary.totalSales | number:'1.0-2' }}
+                            </td>
+                            <td class="text-center font-bold text-green-600 py-3 px-4 text-lg">
+                                {{ s.summary.totalReceipts | number:'1.0-2' }}
+                            </td>
+                            <td class="text-center font-bold text-indigo-700 py-3 px-4 text-lg bg-indigo-50">
+                                {{ s.summary.currentBalance | number:'1.0-2' }}
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <!-- Print Footer -->
+            <div class="print-footer hidden mt-6 pt-4 border-top-1 border-300">
+                <div class="grid text-center">
+                    <div class="col-4">
+                        <p class="font-bold text-gray-700 mb-4">المحاسب</p>
+                        <div class="h-2rem"></div>
+                    </div>
+                    <div class="col-4">
+                        <p class="text-xs text-gray-500">{{ today | date:'yyyy-MM-dd HH:mm:ss' }}</p>
+                    </div>
+                    <div class="col-4">
+                        <p class="font-bold text-gray-700 mb-4">استلام العميل</p>
+                        <div class="h-2rem"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+
+        .print-footer {
+            display: block !important;
+        }
+
+        .statement-container {
+            padding: 0 !important;
+            background: white !important;
+        }
+
+        .glass-panel {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+        }
+
+        .p-datatable-striped .p-datatable-tbody>tr:nth-child(even) {
+            background-color: #f9fafb !important;
+        }
+
+        .bg-indigo-50 {
+            background-color: #eef2ff !important;
+            -webkit-print-color-adjust: exact;
+        }
+
+        /* Force background colors print */
+        * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+    }
+</style>
+
+<p-toast position="top-left"></p-toast>

@@ -1,0 +1,252 @@
+/* ==============================================
+   EXPENSE LIST - FORMAL PROFESSIONAL DESIGN
+   ERP STYLE - MINIMAL & CLEAN
+   ============================================== */
+
+/* Professional CSS Variables */
+:root {
+    --bg-primary: #f8fafc;
+    /* Neutral Light Gray */
+    --bg-secondary: #f1f5f9;
+    --bg-card: #ffffff;
+    --text-primary: #1e293b;
+    /* Corporate Navy */
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+    /* Formal Colors */
+    --primary-color: #1e293b;
+    --accent-color: #3b82f6;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --info-color: #0ea5e9;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Container */
+.expenses-container {
+    padding: 2rem;
+    max-width: 1600px;
+    margin: 0 auto;
+    direction: rtl;
+    background: var(--bg-primary);
+    min-height: 100vh;
+}
+
+/* Formal Header Styling */
+.header-card {
+    margin-bottom: 2rem;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+::ng-deep .header-card.p-card .p-card-body {
+    padding: 1.5rem 2rem !important;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title-section {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.header-icon {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    background: var(--bg-secondary);
+    padding: 0.75rem;
+    border-radius: 10px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary) !important;
+}
+
+.page-subtitle {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.95rem;
+    color: var(--text-secondary) !important;
+}
+
+/* Formal Add Button */
+.add-btn {
+    background: var(--primary-color) !important;
+    border: none !important;
+    font-weight: 600 !important;
+    padding: 0.65rem 1.75rem !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+}
+
+.add-btn:hover {
+    filter: brightness(1.2);
+    transform: translateY(-1px);
+}
+
+/* Summary Cards Area - Formal Accents */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+::ng-deep .summary-card .p-card-body {
+    padding: 1.5rem !important;
+}
+
+.summary-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.summary-icon {
+    font-size: 2.25rem;
+    opacity: 0.8;
+}
+
+/* Formal Summary Accents */
+.total-card {
+    border-right: 4px solid var(--info-color) !important;
+}
+
+.paid-card {
+    border-right: 4px solid var(--success-color) !important;
+}
+
+.unpaid-card {
+    border-right: 4px solid var(--warning-color) !important;
+}
+
+.total-card .summary-icon {
+    color: var(--info-color);
+}
+
+.paid-card .summary-icon {
+    color: var(--success-color);
+}
+
+.unpaid-card .summary-icon {
+    color: var(--warning-color);
+}
+
+/* Table & Filters Card */
+.filters-card,
+.table-card {
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--shadow-sm) !important;
+    margin-bottom: 2rem;
+}
+
+::ng-deep .p-datatable-thead>tr>th {
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    font-weight: 700 !important;
+    padding: 1rem 1.5rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+[data-theme="dark"] ::ng-deep .p-datatable-thead>tr>th {
+    background: #1e293b !important;
+    color: #cbd5e1 !important;
+}
+
+::ng-deep .p-datatable-tbody>tr {
+    transition: background 0.1s ease !important;
+}
+
+::ng-deep .p-datatable-tbody>tr:hover {
+    background: #f8fafc !important;
+}
+
+[data-theme="dark"] ::ng-deep .p-datatable-tbody>tr:hover {
+    background: #334155 !important;
+}
+
+/* Custom Elements */
+.amount-text {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.category-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.category-icon {
+    color: var(--text-secondary);
+}
+
+/* Professional Inputs */
+::ng-deep .p-inputtext,
+::ng-deep .p-dropdown,
+::ng-deep .p-calendar .p-inputtext {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    padding: 0.6rem 0.85rem !important;
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+::ng-deep .p-inputtext:focus,
+::ng-deep .p-dropdown.p-focus {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+}

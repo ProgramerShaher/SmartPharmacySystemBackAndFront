@@ -1,0 +1,12 @@
+:host ::ng-deep {
+    .surface-card {
+        background-color: var(--surface-card);
+    }
+    .p-tabview .p-tabview-nav {
+        border-bottom: 1px solid var(--surface-border);
+    }
+    .text-green-800 { color: var(--green-800); }
+    .bg-green-50 { background-color: var(--green-50); }
+    .text-red-800 { color: var(--red-800); }
+    .bg-red-50 { background-color: var(--red-50); }
+}

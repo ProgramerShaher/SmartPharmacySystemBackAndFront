@@ -1,13 +1,27 @@
-import { Injectable } from '@angular/core';
-import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthService } from '../../features/auth/services/auth.service';
 
-@Injectable()
-export class AuthInterceptor implements HttpInterceptor {
+/**
+ * JWT Interceptor - Adds Authorization header to all HTTP requests
+ */
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+    const authService = inject(AuthService);
+    const token = authService.getToken();
 
-    constructor() { }
-
-    intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-        return next.handle(request);
+    // Skip adding token for auth endpoints
+    if (req.url.includes('/Auth/login')) {
+        return next(req);
     }
-}
+
+    // Add Authorization header if token exists
+    if (token) {
+        req = req.clone({
+            setHeaders: {
+                Authorization: `Bearer ${token}`
+            }
+    });
+  }
+
+    return next(req);
+};

@@ -34,6 +34,12 @@ public interface IMedicineBatchRepository
     Task<MedicineBatch?> GetByIdAsync(int? id);
 
     /// <summary>
+    /// Gets multiple medicine batches by their IDs (optimized for bulk operations).
+    /// يحصل على عدة دفعات دواء بمعرفاتها (محسّن للعمليات الجماعية).
+    /// </summary>
+    Task<IEnumerable<MedicineBatch>> GetByIdsAsync(IEnumerable<int> ids);
+
+    /// <summary>
     /// Gets a medicine batch by its barcode.
     /// يحصل على دفعة دواء بالباركود.
     /// </summary>

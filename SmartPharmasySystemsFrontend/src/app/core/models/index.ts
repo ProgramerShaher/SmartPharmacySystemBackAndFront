@@ -5,7 +5,7 @@ export * from './sale-invoice.interface';
 export * from './sale-invoice-detail.interface';
 export * from './purchase-invoice.interface';
 export * from './purchase-invoice-detail.interface';
-export * from './supplier.interface';
+export * from './supplier.models';
 export * from './medicine.interface';
 export * from './medicine-batch.interface';
 export * from './auth-response.interface';
@@ -23,6 +23,8 @@ export * from './finance-reports.interface';
 export * from './partner.interface';
 export * from './stock-movement.enums';
 export * from './financial.interface';
+export * from './enums';
+export * from './expense-category.interface';
 
 // Re-export PagedResult for convenience
 export type { PagedResult } from './api-response.interface';

@@ -193,7 +193,7 @@
             <div class="detail-row">
                 <span class="detail-label">الصلاحية:</span>
                 <span
-                    [ngClass]="['role-badge', getRoleClass(viewedUser.role)]">{{getRoleDisplayName(viewedUser.role)}}</span>
+                    [ngClass]="['role-badge', getRoleClass(viewedUser.roleName)]">{{getRoleDisplayName(viewedUser.roleName)}}</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">رقم الهاتف:</span>
@@ -205,8 +205,8 @@
             </div>
             <div class="detail-row">
                 <span class="detail-label">الحالة:</span>
-                <span [class.text-success]="viewedUser.isActive" [class.text-danger]="!viewedUser.isActive">
-                    {{viewedUser.isActive ? 'مفعل' : 'معطل'}}
+                <span [class.text-success]="viewedUser.status === 1" [class.text-danger]="viewedUser.status !== 1">
+                    {{viewedUser.status === 1 ? 'مفعل' : 'معطل'}}
                 </span>
             </div>
             <div class="mt-4 flex justify-content-end gap-2">

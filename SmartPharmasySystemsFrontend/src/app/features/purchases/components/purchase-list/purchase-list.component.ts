@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { PurchaseInvoiceService } from '../../services/purchase-invoice.service';
 import { PurchaseInvoice } from '../../../../core/models';
+
+// PrimeNG
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,150 +14,208 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToolbarModule } from 'primeng/toolbar';
+import { ChartModule } from 'primeng/chart';
+import { DropdownModule } from 'primeng/dropdown';
+import { CalendarModule } from 'primeng/calendar';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
     selector: 'app-purchase-invoice-list',
     standalone: true,
     imports: [
         CommonModule,
+        FormsModule,
         TableModule,
         ButtonModule,
         InputTextModule,
         TagModule,
         TooltipModule,
         ConfirmDialogModule,
-        ToolbarModule
+        ToolbarModule,
+        ChartModule,
+        DropdownModule,
+        CalendarModule,
+        ToastModule
     ],
-    template: `
-        <div class="card p-0 shadow-3 border-round-xl overflow-hidden" dir="rtl">
-            <p-toolbar styleClass="bg-indigo-600 border-none p-4 text-white">
-                <div class="p-toolbar-group-start">
-                    <div class="flex align-items-center gap-3">
-                        <i class="pi pi-briefcase text-4xl"></i>
-                        <div>
-                            <h2 class="m-0 text-2xl font-bold">فواتير المشتريات</h2>
-                            <small class="opacity-80">إدارة توريدات الأدوية من الموردين</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-toolbar-group-end">
-                    <p-button label="تسجيل فاتورة توريد" icon="pi pi-plus" severity="success" 
-                        class="shadow-2" (onClick)="navigateToCreate()"></p-button>
-                </div>
-            </p-toolbar>
-
-            <div class="p-4 bg-gray-50">
-                <p-table #dt [value]="invoices" [rows]="10" [paginator]="true" [loading]="loading"
-                    [globalFilterFields]="['purchaseInvoiceNumber', 'supplierName', 'status']"
-                    responsiveLayout="stack" [breakpoint]="'960px'"
-                    styleClass="p-datatable-gridlines shadow-1 border-round overflow-hidden"
-                    [showCurrentPageReport]="true"
-                    currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}">
-                    
-                    <ng-template pTemplate="caption">
-                        <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3">
-                            <span class="p-input-icon-left w-full md:w-25rem">
-                                <i class="pi pi-search"></i>
-                                <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
-                                    placeholder="بحث (رقم الفاتورة، المورد، الحالة)..." class="w-full" />
-                            </span>
-                            <p-button icon="pi pi-refresh" severity="secondary" outlined (onClick)="loadInvoices()"></p-button>
-                        </div>
-                    </ng-template>
-
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th pSortableColumn="purchaseInvoiceNumber" class="text-right">رقم الفاتورة <p-sortIcon field="purchaseInvoiceNumber"></p-sortIcon></th>
-                            <th pSortableColumn="purchaseDate" class="text-right">تاريخ التوريد <p-sortIcon field="purchaseDate"></p-sortIcon></th>
-                            <th pSortableColumn="supplierName" class="text-right">المورد <p-sortIcon field="supplierName"></p-sortIcon></th>
-                            <th pSortableColumn="totalAmount" class="text-center">الإجمالي <p-sortIcon field="totalAmount"></p-sortIcon></th>
-                            <th pSortableColumn="status" class="text-center">الحالة <p-sortIcon field="status"></p-sortIcon></th>
-                            <th class="text-center">الإجراءات</th>
-                        </tr>
-                    </ng-template>
-
-                    <ng-template pTemplate="body" let-invoice>
-                        <tr>
-                            <td>
-                                <span class="p-column-title font-bold">رقم الفاتورة</span>
-                                <span class="font-bold text-indigo-700">{{invoice.purchaseInvoiceNumber || '#' + invoice.id}}</span>
-                            </td>
-                            <td>
-                                <span class="p-column-title font-bold">تاريخ التوريد</span>
-                                {{invoice.purchaseDate | date:'dd/MM/yyyy'}}
-                            </td>
-                            <td>
-                                <span class="p-column-title font-bold">المورد</span>
-                                <span class="text-700 font-semibold">{{ invoice.supplierName && invoice.supplierName !== 'string' ? invoice.supplierName : 'مورد غير محدد' }}</span>
-                            </td>
-                            <td class="text-center">
-                                <span class="p-column-title font-bold">الإجمالي</span>
-                                <span class="font-bold text-indigo-700 text-lg">
-                                    {{ (invoice.totalAmount > 0 ? invoice.totalAmount : (invoice.total || 0)) | number:'1.2-2' }}
-                                    <small class="text-xs font-normal text-600 mr-1">ر.ي</small>
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <span class="p-column-title font-bold">الحالة</span>
-                                <p-tag [severity]="getStatusSeverity(invoice.status)" [value]="getStatusLabel(invoice.status)"
-                                    styleClass="px-3"></p-tag>
-                            </td>
-                            <td class="text-center">
-                                <div class="flex justify-content-center gap-2">
-                                    <p-button icon="pi pi-eye" severity="info" rounded text 
-                                        pTooltip="عرض التفاصيل" (onClick)="viewDetails(invoice.id)"></p-button>
-                                    <p-button *ngIf="invoice.status === 'Draft' || invoice.status === 'DRAFT'" icon="pi pi-check" severity="success" rounded text 
-                                        pTooltip="اعتماد التوريد" (onClick)="approveInvoice(invoice.id)"></p-button>
-                                    <p-button *ngIf="invoice.status === 'Approved' || invoice.status === 'APPROVED'" icon="pi pi-times" severity="danger" rounded text 
-                                        pTooltip="إلغاء الفاتورة" (onClick)="cancelInvoice(invoice.id)"></p-button>
-                                    <p-button *ngIf="invoice.status === 'Draft' || invoice.status === 'DRAFT'" icon="pi pi-trash" severity="danger" rounded text 
-                                        pTooltip="حذف المسودة" (onClick)="deleteDraft(invoice.id)"></p-button>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-        </div>
-        <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
-    `,
-    providers: [ConfirmationService]
+    templateUrl: './purchase-list.component.html',
+    styleUrls: ['./purchase-list.component.scss'],
+    providers: [ConfirmationService, MessageService]
 })
 export class PurchaseInvoiceListComponent implements OnInit {
-    invoices: PurchaseInvoice[] = [];
-    loading = true;
+    invoices = signal<PurchaseInvoice[]>([]);
+    loading = signal(false);
+    showFilters = signal(false);
+
+    // KPI Stats
+    totalPurchases = signal(0);
+    supplierDebts = signal(0);
+    returnRate = signal(0);
+    monthlyPurchases = signal(0);
+
+    // Charts
+    supplierDistributionData: any;
+    supplierDistributionOptions: any;
+    purchaseTrendData: any;
+    purchaseTrendOptions: any;
+
+    // Filters
+    statusFilter: string | null = null;
+    startDate: Date | null = null;
+    endDate: Date | null = null;
+
+    statusOptions = [
+        { label: 'الكل', value: null },
+        { label: 'مسودة', value: 'Draft' },
+        { label: 'معتمدة', value: 'Approved' },
+        { label: 'ملغاة', value: 'Cancelled' }
+    ];
 
     constructor(
         private purchaseService: PurchaseInvoiceService,
         private router: Router,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) { }
+    ) {
+        this.initCharts();
+    }
 
     ngOnInit() {
         this.loadInvoices();
+        this.loadKPIStats();
+    }
+
+    initCharts() {
+        // Supplier Distribution Donut Chart
+        this.supplierDistributionData = {
+            labels: ['مورد أ', 'مورد ب', 'مورد ج', 'مورد د', 'آخرون'],
+            datasets: [{
+                data: [35, 25, 20, 12, 8],
+                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'],
+                hoverBackgroundColor: ['#059669', '#2563eb', '#d97706', '#7c3aed', '#4b5563']
+            }]
+        };
+
+        this.supplierDistributionOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { family: 'Cairo, sans-serif', size: 11 },
+                        padding: 10,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: { family: 'Cairo, sans-serif' },
+                    bodyFont: { family: 'Cairo, sans-serif' },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: (context: any) => {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            return `${label}: ${value}%`;
+                        }
+                    }
+                }
+            },
+            cutout: '65%'
+        };
+
+        // Purchase Trend Sparkline
+        this.purchaseTrendData = {
+            labels: this.getLast7Days(),
+            datasets: [{
+                label: 'المشتريات اليومية',
+                data: this.generateMockTrendData(7, 5000, 25000),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 3,
+                pointHoverRadius: 5
+            }]
+        };
+
+        this.purchaseTrendOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: { family: 'Cairo, sans-serif' },
+                    bodyFont: { family: 'Cairo, sans-serif' },
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                y: {
+                    display: false,
+                    beginAtZero: true
+                },
+                x: {
+                    display: false
+                }
+            }
+        };
     }
 
     loadInvoices() {
-        this.loading = true;
+        this.loading.set(true);
         this.purchaseService.getAll().subscribe({
             next: (data) => {
-                this.invoices = data;
-                this.loading = false;
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل فواتير المشتريات' });
-                this.loading = false;
-            }
-        });
+              this.invoices.set(data);
+              this.loading.set(false);
+              this.calculateStats(data);
+          },
+          error: () => {
+              this.messageService.add({
+                  severity: 'error',
+                  summary: 'خطأ',
+                  detail: 'فشل في تحميل فواتير المشتريات'
+              });
+              this.loading.set(false);
+          }
+      });
+    }
+
+    loadKPIStats() {
+        // Mock data - replace with real API calls
+        this.totalPurchases.set(1250000);
+        this.supplierDebts.set(350000);
+        this.returnRate.set(2.5);
+        this.monthlyPurchases.set(450000);
+    }
+
+    calculateStats(invoices: PurchaseInvoice[]) {
+        const total = invoices
+            .filter(inv => {
+                const status = inv.status?.toString().toUpperCase();
+                return status === 'APPROVED' || status === '1';
+            })
+            .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
+        this.totalPurchases.set(total);
+    }
+
+    toggleFilters() {
+        this.showFilters.update(v => !v);
     }
 
     navigateToCreate() {
-        this.router.navigate(['/purchase-invoices/create']);
+        this.router.navigate(['/purchases/create']);
     }
 
     viewDetails(id: number) {
-        this.router.navigate(['/purchase-invoices', id]);
+        this.router.navigate(['/purchases', id]);
+    }
+
+    editInvoice(id: number) {
+        this.router.navigate(['/purchases/edit', id]);
     }
 
     approveInvoice(id: number) {
@@ -164,21 +225,26 @@ export class PurchaseInvoiceListComponent implements OnInit {
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'نعم، توريد',
             rejectLabel: 'إلغاء',
+            acceptButtonStyleClass: 'p-button-success',
             accept: () => {
                 this.purchaseService.approve(id).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم اعتماد التوريد بنجاح' });
-                        this.loadInvoices();
-                    },
-                    error: (err) => this.handleError(err)
-                });
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'نجاح',
+                        detail: 'تم اعتماد التوريد بنجاح'
+                    });
+                    this.loadInvoices();
+                },
+                error: (err) => this.handleError(err)
+            });
             }
         });
     }
 
     cancelInvoice(id: number) {
         this.confirmationService.confirm({
-            message: 'هل أنت متأكد من إلغاء فاوترة التوريد؟',
+            message: 'هل أنت متأكد من إلغاء فاتورة التوريد؟',
             header: 'تأكيد الإلغاء',
             icon: 'pi pi-times-circle',
             acceptButtonStyleClass: 'p-button-danger',
@@ -187,11 +253,15 @@ export class PurchaseInvoiceListComponent implements OnInit {
             accept: () => {
                 this.purchaseService.cancel(id).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'info', summary: 'تم الإلغاء', detail: 'تم إلغاء الفاتورة' });
-                        this.loadInvoices();
-                    },
-                    error: (err) => this.handleError(err)
-                });
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: 'تم الإلغاء',
+                        detail: 'تم إلغاء الفاتورة'
+                    });
+                    this.loadInvoices();
+                },
+                error: (err) => this.handleError(err)
+            });
             }
         });
     }
@@ -207,7 +277,11 @@ export class PurchaseInvoiceListComponent implements OnInit {
             accept: () => {
                 this.purchaseService.delete(id).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'تم الحذف', detail: 'تم حذف المسودة بنجاح' });
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'تم الحذف',
+                            detail: 'تم حذف المسودة بنجاح'
+                        });
                         this.loadInvoices();
                     },
                     error: (err) => this.handleError(err)
@@ -216,37 +290,100 @@ export class PurchaseInvoiceListComponent implements OnInit {
         });
     }
 
+    printInvoice(id: number) {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'طباعة',
+            detail: 'جاري تجهيز الفاتورة للطباعة...'
+        });
+        // Implement print logic
+    }
+
+    exportPDF() {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'تصدير PDF',
+            detail: 'جاري تجهيز الملف...'
+        });
+    }
+
+    exportExcel() {
+        this.messageService.add({
+            severity: 'info',
+            summary: 'تصدير Excel',
+            detail: 'جاري تجهيز الملف...'
+        });
+    }
+
     handleError(err: any) {
-        this.messageService.add({ severity: 'error', summary: 'فشل العملية', detail: err.error?.message || 'فشل الاتصال بالخادم' });
+        this.messageService.add({
+            severity: 'error',
+            summary: 'فشل العملية',
+            detail: err.error?.message || 'فشل الاتصال بالخادم'
+        });
     }
 
-    getStatusSeverity(status: any) {
-        if (status === undefined || status === null) return 'info';
-        const s = status.toString().toUpperCase();
-        switch (s) {
-            case 'APPROVED':
-            case '1':
-            case 'TRUE': return 'success';
-            case 'DRAFT':
-            case '0': return 'warning';
-            case 'CANCELLED':
-            case '2': return 'danger';
-            default: return 'info';
+    getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
+        if (!status) return 'info';
+        const statusNum = typeof status === 'number' ? status : parseInt(status.toString());
+        
+        switch (statusNum) {
+            case 2: // Approved
+                return 'success';
+            case 1: // Draft
+                return 'warning';
+            case 3: // Cancelled
+                return 'danger';
+            default:
+                return 'info';
         }
     }
 
-    getStatusLabel(status: any) {
-        if (status === undefined || status === null) return 'غير محدد';
-        const s = status.toString().toUpperCase();
-        switch (s) {
-            case 'APPROVED':
-            case '1':
-            case 'TRUE': return 'تم الاعتماد والتوريد';
-            case 'DRAFT':
-            case '0': return 'مسودة (قيد التحرير)';
-            case 'CANCELLED':
-            case '2': return 'ملغاة';
-            default: return status;
+    getStatusLabel(status: any): string {
+        if (!status) return 'غير محدد';
+        const statusNum = typeof status === 'number' ? status : parseInt(status.toString());
+        
+        switch (statusNum) {
+            case 2: // Approved
+                return 'معتمدة';
+            case 1: // Draft
+                return 'مسودة';
+            case 3: // Cancelled
+                return 'ملغاة';
+            default:
+                return 'غير محدد';
         }
+    }
+
+    isDraft(invoice: PurchaseInvoice): boolean {
+        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
+        return statusNum === 1; // Draft
+    }
+
+    isApproved(invoice: PurchaseInvoice): boolean {
+        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
+        return statusNum === 2; // Approved
+    }
+
+    isCancelled(invoice: PurchaseInvoice): boolean {
+        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
+        return statusNum === 3; // Cancelled
+    }
+
+    // Helper methods
+    private getLast7Days(): string[] {
+        const days = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            days.push(date.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' }));
+        }
+        return days;
+    }
+
+    private generateMockTrendData(count: number, min: number, max: number): number[] {
+        return Array.from({ length: count }, () =>
+            Math.floor(Math.random() * (max - min + 1)) + min
+        );
     }
 }

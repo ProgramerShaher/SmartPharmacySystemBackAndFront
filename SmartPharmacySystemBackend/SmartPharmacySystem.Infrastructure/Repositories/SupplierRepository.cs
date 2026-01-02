@@ -6,8 +6,7 @@ using SmartPharmacySystem.Infrastructure.Data;
 namespace SmartPharmacySystem.Infrastructure.Repositories;
 
 /// <summary>
-/// Implements the supplier repository for data access operations.
-/// This class provides concrete implementations of supplier data operations.
+/// Optimized supplier repository with AsNoTracking and efficient search
 /// </summary>
 public class SupplierRepository : ISupplierRepository
 {
@@ -20,12 +19,17 @@ public class SupplierRepository : ISupplierRepository
 
     public async Task<Supplier> GetByIdAsync(int id)
     {
-        return await _context.Suppliers.FindAsync(id);
+        return await _context.Suppliers
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
     }
 
     public async Task<IEnumerable<Supplier>> GetAllAsync()
     {
-        return await _context.Suppliers.ToListAsync();
+        return await _context.Suppliers
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted)
+            .OrderBy(s => s.Name)
+            .ToListAsync();
     }
 
     public async Task AddAsync(Supplier entity)
@@ -60,21 +64,28 @@ public class SupplierRepository : ISupplierRepository
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Suppliers.AnyAsync(s => s.Id == id);
+        return await _context.Suppliers
+            .AsNoTracking()
+            .AnyAsync(s => s.Id == id && !s.IsDeleted);
     }
 
+    /// <summary>
+    /// Optimized: AsNoTracking + StartsWith for indexed search
+    /// </summary>
     public async Task<(IEnumerable<Supplier> Items, int TotalCount)> GetPagedAsync(
         string? search, int page, int pageSize, string sortBy, string sortDir, bool? hasBalance)
     {
-        var query = _context.Suppliers.Where(s => !s.IsDeleted);
+        var query = _context.Suppliers
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted);
 
-        // Apply search filter
+        // ✅ Optimized: StartsWith for indexed search
         if (!string.IsNullOrWhiteSpace(search))
         {
-            search = search.ToLower();
-            query = query.Where(s => s.Name.ToLower().Contains(search) ||
-                                     (s.PhoneNumber != null && s.PhoneNumber.Contains(search)) ||
-                                     (s.Email != null && s.Email.ToLower().Contains(search)));
+            query = query.Where(s =>
+                s.Name.StartsWith(search) ||
+                (s.PhoneNumber != null && s.PhoneNumber.StartsWith(search)) ||
+                (s.Email != null && s.Email.StartsWith(search)));
         }
 
         // Apply balance filter
@@ -88,13 +99,20 @@ public class SupplierRepository : ISupplierRepository
         // Get total count before pagination
         var totalCount = await query.CountAsync();
 
-        // Apply sorting
-        query = sortDir.ToLower() == "desc"
-            ? query.OrderByDescending(s => EF.Property<object>(s, sortBy))
-            : query.OrderBy(s => EF.Property<object>(s, sortBy));
+        // ✅ Explicit OrderBy with default
+        query = string.IsNullOrWhiteSpace(sortBy) || sortBy == "Name"
+            ? (sortDir?.ToLower() == "desc"
+                ? query.OrderByDescending(s => s.Name)
+                : query.OrderBy(s => s.Name))
+            : (sortDir?.ToLower() == "desc"
+                ? query.OrderByDescending(s => EF.Property<object>(s, sortBy))
+                : query.OrderBy(s => EF.Property<object>(s, sortBy)));
 
         // Apply pagination
-        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        var items = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
         return (items, totalCount);
     }

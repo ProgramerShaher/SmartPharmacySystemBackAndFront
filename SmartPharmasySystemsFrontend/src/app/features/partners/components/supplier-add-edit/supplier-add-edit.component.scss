@@ -1,583 +1,127 @@
-/* ==========================================================================
-   إضافة/تعديل مورد - أنماط مخصصة
-   ========================================================================== */
-
-/* =========================================== */
-/* أنماط مكون إضافة/تعديل المورد */
-/* =========================================== */
-
-:host {
-  display: block;
-  --section-bg: rgba(var(--primary-rgb), 0.03);
-  --input-hover-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.1);
+.add-edit-container {
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  min-height: 100vh;
+  padding: 2.5rem;
 }
 
-.supplier-form-container {
-  padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
-
-  .card {
-    background: var(--card-bg);
-    border-radius: 24px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
+.glass-panel-form {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
-/* =========================================== */
-/* شريط العنوان */
-/* =========================================== */
-.form-header {
-  background: linear-gradient(135deg, var(--primary-700), var(--primary-900));
-  color: white;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2rem;
+.form-header-premium {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  min-height: 180px;
+}
 
-  .header-content {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-
-    .header-icon-box {
-      width: 64px;
-      height: 64px;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.75rem;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+.header-wave-decoration {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+    height: 30px;
+      background: white;
+      clip-path: ellipse(70% 100% at 50% 100%);
     }
 
-    .header-text {
-      h2 {
-        color: white !important;
-        letter-spacing: -0.5px;
-        margin: 0;
-        font-size: 1.75rem;
-        font-weight: 700;
-      }
-
-      p {
-        color: rgba(255, 255, 255, 0.7) !important;
-        margin: 0.25rem 0 0;
-        font-size: 0.95rem;
-        font-weight: 400;
-      }
-    }
-  }
-
-  .status-badge {
-    background: rgba(var(--primary-rgb), 0.2);
-    color: var(--primary-200);
-    padding: 0.5rem 1rem;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border: 1px solid rgba(var(--primary-rgb), 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
+.section-number {
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
 }
 
-/* =========================================== */
-/* أقسام النموذج */
-/* =========================================== */
-.section-title {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 0.75rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 2px solid var(--surface-100);
-  color: var(--text-color);
-  font-size: 1.15rem;
-  font-weight: 700;
-
-  i {
-    color: var(--primary-color);
-    background: var(--section-bg);
-    padding: 0.5rem;
-    border-radius: 10px;
-    font-size: 1.25rem;
-  }
-}
-
-/* =========================================== */
-/* حقول النموذج */
-/* =========================================== */
-.field {
-  margin-bottom: 1.5rem;
-
-  label {
-    color: var(--text-color-secondary);
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    display: block;
-    transition: color 0.3s ease;
-  }
-
-  .p-inputtext,
-  .p-inputtextarea,
-  .p-inputnumber-input {
-    border-radius: 14px;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    background: var(--surface-0);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 0.95rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-
-    &:hover {
-      border-color: var(--primary-400);
-      box-shadow: var(--input-hover-shadow);
-    }
+.premium-input {
+  border-radius: 16px !important;
+  padding: 1rem 1.25rem !important;
+  border: 1.5px solid #e2e8f0 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  font-size: 1rem !important;
+  background: white !important;
 
     &:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.15);
-      transform: translateY(-1px);
-      outline: none;
-    }
-
-    &.ng-invalid.ng-dirty {
-      border-color: #ef4444;
-      box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
-    }
-  }
-
-  .p-input-icon-left i {
-    color: var(--primary-300);
-    right: 1rem;
-    font-size: 1.1rem;
-  }
-
-  .p-input-icon-left .p-inputtext {
-    padding-right: 2.75rem;
-  }
-
-  .p-inputtextarea {
-    resize: vertical;
-    min-height: 120px;
-  }
-
-  /* أخطاء التحقق */
-  .p-error {
-    color: #ef4444;
-    font-size: 0.8rem;
-    margin-top: 0.25rem;
-    display: block;
-    font-weight: 500;
-  }
-
-  /* حقل الرصيد الخاص */
-  .balance-field {
-    .p-inputnumber {
-      width: 100%;
-
-      input {
-        border-radius: 14px 0 0 14px;
-        border-right: none;
-      }
-    }
-  }
-
-  /* مجموعة الإدخال */
-  .p-inputgroup {
-    .p-inputgroup-addon {
-      background: var(--surface-100);
-      color: var(--text-color-secondary);
-      font-weight: 700;
-      border-radius: 0 14px 14px 0;
-      padding: 0 1.25rem;
-      border: 1px solid var(--border-color);
-      border-left: none;
-      font-size: 0.9rem;
-    }
-
-    input {
-      border-radius: 14px 0 0 14px !important;
-      border-right: none !important;
-    }
-  }
-}
-
-/* =========================================== */
-/* شبكة التسعير */
-/* =========================================== */
-.pricing-grid {
-  background: var(--surface-50);
-  border: 1px dashed var(--primary-200);
-  border-radius: 16px;
-  position: relative;
-  overflow: hidden;
-  padding: 1.5rem;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--primary-color);
-    border-radius: 2px 0 0 2px;
-  }
-
-  .field {
-    margin-bottom: 1rem;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-}
-
-/* =========================================== */
-/* أزرار النموذج */
-/* =========================================== */
-.form-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--surface-200);
-
-  .p-button {
-    font-weight: 600;
-    letter-spacing: 0.2px;
-    transition: all 0.3s ease;
-    border-radius: 12px;
-    padding: 0.875rem 2rem;
-    font-size: 1rem;
-
-    &.p-button-outlined {
-      border: 2px solid var(--border-color);
-      color: var(--text-color-secondary);
-      background: transparent;
-
-      &:hover {
-        background: var(--surface-100);
-        border-color: var(--surface-300);
+        border-color: #2563eb !important;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
+    
 
-      &:not(:disabled):hover {
-        color: var(--text-color);
-      }
-    }
+        &::placeholder {
+          color: #94a3b8;
+          opacity: 0.7;
+        }
+        }
 
-    &.p-button-success {
-      background: var(--primary-color);
-      border-color: var(--primary-color);
-      box-shadow: 0 4px 16px rgba(var(--primary-rgb), 0.2);
+.premium-save-btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+  border: none !important;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 
-      &:hover:not(:disabled) {
-        background: var(--primary-700);
-        transform: scale(1.02);
-        box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.3);
-      }
+  &:hover:not(:disabled) {
+        transform: translateY(-5px) scale(1.02) !important;
+          box-shadow: 0 20px 40px rgba(37, 99, 235, 0.4) !important;
     }
 
     &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-  }
+        opacity: 0.6;
+        background: #94a3b8 !important;
+        }
 }
 
-/* =========================================== */
-/* حالات خاصة */
-/* =========================================== */
-
-/* حالة التحميل */
-.loading-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4rem 2rem;
-  min-height: 300px;
-
-  .loading-content {
-    text-align: center;
-
-    .loading-spinner {
-      width: 3rem;
-      height: 3rem;
-      border: 4px solid var(--surface-200);
-      border-top: 4px solid var(--primary-color);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    .loading-text {
-      color: var(--text-color-secondary);
-      font-size: 1rem;
-      font-weight: 500;
-    }
-  }
+.premium-form-loader {
+  width: 50px;
+  height: 50px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-/* =========================================== */
-/* دعم RTL */
-/* =========================================== */
-[dir="rtl"] {
-  .p-input-icon-left i {
-    right: auto;
-    left: 1rem;
-  }
-
-  .p-input-icon-left .p-inputtext {
-    padding-right: 1rem;
-    padding-left: 2.75rem;
-  }
-
-  .pricing-grid::before {
-    right: auto;
-    left: 0;
-  }
-
-  .p-inputgroup {
-    .p-inputgroup-addon {
-      border-radius: 14px 0 0 14px;
-      border-left: 1px solid var(--border-color);
-      border-right: none;
-    }
-
-    input {
-      border-radius: 0 14px 14px 0 !important;
-      border-left: none !important;
-      border-right: 1px solid var(--border-color) !important;
-    }
-  }
-
-  .form-footer {
-    justify-content: flex-start;
-  }
-}
-
-/* =========================================== */
-/* إعدادات PrimeNG المخصصة */
-/* =========================================== */
-::ng-deep {
-  .p-dropdown-panel {
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    border: none;
-    overflow: hidden;
-    margin-top: 0.25rem;
-
-    .p-dropdown-items .p-dropdown-item {
-      padding: 1rem;
-      transition: background 0.2s ease;
-
-      &.p-highlight {
-        background: var(--primary-50);
-        color: var(--primary-700);
-      }
-
-      &:hover:not(.p-highlight) {
-        background: var(--surface-100);
-      }
-    }
-  }
-
-  .p-inputnumber {
-    .p-inputnumber-input {
-      border-radius: 14px;
-    }
-  }
-
-  .p-calendar-panel {
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    border: none;
-  }
-}
-
-/* =========================================== */
-/* الاستجابة للأجهزة المحمولة */
-/* =========================================== */
-@media screen and (max-width: 768px) {
-  .supplier-form-container {
-    padding: 0.5rem;
-  }
-
-  .form-header {
-    padding: 1.5rem !important;
-
-    .header-content {
-      flex-direction: column;
-      text-align: center;
-      gap: 1rem;
-
-      .header-icon-box {
-        margin: 0 auto;
-      }
-
-      .status-badge {
-        align-self: center;
-      }
-    }
-  }
-
-  .section-title {
-    font-size: 1rem;
-    padding-bottom: 0.5rem;
-    margin-bottom: 1rem;
-
-    i {
-      font-size: 1.1rem;
-      padding: 0.4rem;
-    }
-  }
-
-  .field {
-    margin-bottom: 1.25rem;
-
-    label {
-      font-size: 0.85rem;
-    }
-
-    .p-inputtext,
-    .p-inputtextarea,
-    .p-inputnumber-input {
-      padding: 0.625rem 0.875rem;
-      font-size: 0.9rem;
-    }
-  }
-
-  .pricing-grid {
-    padding: 1rem;
-
-    .grid {
-      gap: 1rem;
-    }
-  }
-
-  .form-footer {
-    flex-direction: column-reverse;
-    gap: 0.75rem;
-
-    .p-button {
-      width: 100%;
-      justify-content: center;
-      padding: 0.75rem 1.5rem;
-    }
-  }
-}
-
-/* =========================================== */
-/* تأثيرات الرسوم المتحركة */
-/* =========================================== */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+      }
+    
+      100% {
+        transform: rotate(360deg);
+      }
 }
 
-.fade-in {
-  animation: fadeIn 0.4s ease-in-out;
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.slide-up {
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* =========================================== */
-/* تحسينات للوضع الداكن */
-/* =========================================== */
-:host-context(.dark-theme) {
-  ::ng-deep {
-    .p-inputtext,
-    .p-inputtextarea,
+::ng-deep {
     .p-inputnumber-input {
-      background: var(--input-bg) !important;
-      border-color: var(--border-color) !important;
-      color: var(--text-color) !important;
-
-      &:focus {
-        background: var(--input-bg) !important;
-      }
-    }
-
-    .p-inputgroup-addon {
-      background: var(--surface-100) !important;
-      border-color: var(--border-color) !important;
-      color: var(--text-color-secondary) !important;
-    }
-
-    .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
-      &:hover:not(.p-highlight) {
-        background: var(--surface-hover) !important;
-      }
-    }
-  }
+        @extend .premium-input;
+        }
+        .p-inputtext:enabled:hover {
+          border-color: #2563eb !important;
+        }
 }
-
-/* =========================================== */
-/* تحسينات إضافية للمظهر */
-/* =========================================== */
-.supplier-form-container {
-  .card {
-    position: relative;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, var(--primary-color), var(--primary-300));
-      border-radius: 24px 24px 0 0;
-    }
-  }
-}
-
-/* تأثير التركيز للحقول */
-.field:focus-within label {
-  color: var(--primary-color);
-  font-weight: 700;
-}
-
-/* تحسين مظهر الأخطاء */
-.field .p-error {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-
-  &::before {
-    content: '⚠️';
-    font-size: 0.75rem;
-  }
 }

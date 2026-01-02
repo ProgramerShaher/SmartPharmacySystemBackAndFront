@@ -28,6 +28,13 @@ public class CreateSaleInvoiceDto
     public int? CustomerId { get; set; }
 
     /// <summary>
+    /// اسم العميل (مطلوب للزبون الطيار)
+    /// Customer name (required for walk-in customers)
+    /// </summary>
+    [StringLength(200)]
+    public string? CustomerName { get; set; }
+
+    /// <summary>
     /// تفاصيل الفاتورة
     /// </summary>
     public List<SalesInvoiceDetails.CreateSaleInvoiceDetailDto> Details { get; set; } = new();

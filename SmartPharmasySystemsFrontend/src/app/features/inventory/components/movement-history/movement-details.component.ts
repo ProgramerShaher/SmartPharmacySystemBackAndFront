@@ -16,8 +16,9 @@ export class MovementDetailsComponent {
     @Output() close = new EventEmitter<void>();
     today = new Date();
 
-    getMovementTypeSeverity(type: string | undefined): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
-        switch (type) {
+    getMovementTypeSeverity(type: any): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
+        const typeStr = type?.toString().toUpperCase();
+        switch (typeStr) {
             case 'IN': return 'success';
             case 'OUT': return 'info';
             case 'RETURN': return 'warning';
@@ -27,14 +28,15 @@ export class MovementDetailsComponent {
         }
     }
 
-    getMovementTypeLabel(type: string | undefined): string {
-        switch (type) {
+    getMovementTypeLabel(type: any): string {
+        const typeStr = type?.toString().toUpperCase();
+        switch (typeStr) {
             case 'IN': return 'دخول (توريد)';
             case 'OUT': return 'خروج (صرف)';
             case 'RETURN': return 'مرتجع';
             case 'DAMAGE': return 'تالف';
             case 'ADJUSTMENT': return 'تعديل';
-            default: return type || '';
+            default: return type?.toString() || '';
         }
     }
 

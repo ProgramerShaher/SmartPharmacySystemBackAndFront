@@ -1,1 +1,240 @@
-/* alert-add-edit.component.scss */
+/* ======================================
+   ALERT ADD/EDIT - NO-SCROLL COMPACT SQUARE
+   ====================================== */
+
+:host {
+    display: flex;
+    align-items: center;
+    /* Center vertically */
+    justify-content: center;
+    padding: 1rem;
+    background-color: #f3f4f6;
+    height: 100vh;
+    /* Fixed height to viewport */
+    overflow: hidden;
+    /* Prevent body scroll if possible */
+}
+
+/* --- MAIN SQUARED CARD --- */
+.compact-square-card {
+    background: #ffffff;
+    width: 850px;
+    max-width: 95vw;
+    border-radius: 20px;
+    /* "Sweet" rounded corners */
+    box-shadow:
+        0 10px 25px -5px rgba(0, 0, 0, 0.05),
+        0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    max-height: 90vh;
+    /* Ensure it fits in viewport */
+}
+
+/* --- COMPACT HEADER --- */
+.card-header {
+    background: #fff;
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.header-title h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.header-title i {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+/* --- DENSE BODY --- */
+.card-body {
+    padding: 1.5rem 2rem;
+    overflow-y: auto;
+    /* Scroll ONLY inside if screen is tiny */
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 Columns */
+    gap: 1rem 1.25rem;
+}
+
+/* --- INPUT STYLING --- */
+.field-wrapper {
+    position: relative;
+    margin-bottom: 0.2rem;
+}
+
+.field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 0.35rem;
+}
+
+::ng-deep .p-inputtext,
+::ng-deep .p-dropdown,
+::ng-deep .p-calendar {
+    width: 100%;
+    height: 38px;
+    /* Compact Fixed Height */
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+    padding: 0 0.75rem;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+::ng-deep .p-dropdown {
+    padding: 0;
+    align-items: center;
+}
+
+::ng-deep .p-dropdown-label {
+    padding: 0 0.75rem;
+    line-height: 36px;
+}
+
+::ng-deep .p-inputtext:enabled:focus,
+::ng-deep .p-dropdown.p-focus {
+    background: #fff;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+/* --- TEXTAREA --- */
+::ng-deep .p-inputtextarea {
+    height: auto;
+    min-height: 80px;
+    /* Short but usable */
+    padding: 0.75rem;
+    line-height: 1.4;
+    resize: none;
+    /* No resize to keep layout fixed */
+}
+
+/* Row Spans */
+.col-12 {
+    grid-column: span 3;
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+.col-span-1 {
+    grid-column: span 1;
+}
+
+/* --- FOOTER --- */
+.card-footer {
+    padding: 1rem 2rem;
+    background: #fcfcfc;
+    border-top: 1px solid #f3f4f6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+::ng-deep .p-button {
+    height: 38px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0 1.5rem;
+}
+
+::ng-deep .p-button.p-button-secondary {
+    background: white;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+}
+
+::ng-deep .p-button.p-button-secondary:hover {
+    background: #f9fafb;
+}
+
+/* --- ANIMATION --- */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.compact-square-card {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* --- DARK MODE --- */
+[data-theme="dark"] {
+    background-color: #111827;
+}
+
+[data-theme="dark"] .compact-square-card {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .card-footer {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .header-title h3 {
+    color: #f3f4f6;
+}
+
+[data-theme="dark"] ::ng-deep .p-inputtext,
+[data-theme="dark"] ::ng-deep .p-dropdown,
+[data-theme="dark"] ::ng-deep .p-calendar {
+    background: #374151;
+    border-color: #4b5563;
+    color: white;
+}
+
+[data-theme="dark"] .field-label {
+    color: #d1d5db;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+        /* Stack on mobile */
+    }
+
+    .col-12,
+    .col-span-2,
+    .col-span-1 {
+        grid-column: span 1;
+    }
+
+    .compact-square-card {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+        border-radius: 0;
+    }
+}

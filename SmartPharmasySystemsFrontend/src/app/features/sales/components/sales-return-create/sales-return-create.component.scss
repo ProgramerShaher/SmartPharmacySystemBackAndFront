@@ -1,3 +1,405 @@
-.form-container {
-    padding: 20px;
+/**
+ * 🔄 IMPERIAL SALES RETURNS - MIRROR VIEW DESIGN
+ * ===============================================
+ * تصميم فخم لمديول المرتجعات مع عرض الفاتورة الأصلية جنباً إلى جنب
+ * الألوان: الأحمر الفاخر للمرتجعات، الأخضر للفاتورة الأصلية
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
+:host {
+    font-family: 'Cairo', sans-serif !important;
+}
+
+/* 🎨 Imperial Return Colors */
+:root {
+    --return-crimson: #dc2626;
+    --return-crimson-dark: #b91c1c;
+    --return-crimson-light: rgba(220, 38, 38, 0.1);
+
+    --original-emerald: #10b981;
+    --original-emerald-dark: #059669;
+    --original-emerald-light: rgba(16, 185, 129, 0.1);
+
+    --imperial-gold: #f59e0b;
+    --imperial-navy: #1e293b;
+    --imperial-slate: #475569;
+
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --shadow-imperial: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+/* 🏛️ Container */
+.return-container {
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    padding: 2rem;
+    direction: rtl;
+}
+
+/* 👑 Imperial Header */
+.return-header {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-imperial);
+    border: var(--glass-border);
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 4px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--return-crimson), var(--return-crimson-dark));
+    }
+}
+
+/* 🎭 Mirror View Layout */
+.mirror-view-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+
+    @media (max-width: 992px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 📋 Original Invoice Panel */
+.original-invoice-panel {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-imperial);
+    border: 2px solid var(--original-emerald);
+    position: relative;
+
+    &::before {
+        content: 'الفاتورة الأصلية';
+        position: absolute;
+        top: -12px;
+        right: 20px;
+        background: var(--original-emerald);
+        color: white;
+        padding: 0.25rem 1rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+}
+
+/* 🔄 Return Form Panel */
+.return-form-panel {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-imperial);
+    border: 2px solid var(--return-crimson);
+    position: relative;
+
+    &::before {
+        content: 'نموذج المرتجع';
+        position: absolute;
+        top: -12px;
+        right: 20px;
+        background: var(--return-crimson);
+        color: white;
+        padding: 0.25rem 1rem;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+}
+
+/* 📊 Invoice Summary Card */
+.invoice-summary-card {
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--original-emerald-light);
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(16, 185, 129, 0.1);
+
+        &:last-child {
+            border-bottom: none;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+            border-top: 2px solid var(--original-emerald);
+        }
+
+        .label {
+            font-size: 0.875rem;
+            color: var(--imperial-slate);
+            font-weight: 600;
+        }
+
+        .value {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--original-emerald);
+
+            &.total {
+                font-size: 1.5rem;
+                color: var(--original-emerald-dark);
+            }
+        }
+    }
+}
+
+/* 🎯 Return Items Table */
+.return-items-table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    ::ng-deep {
+        .p-datatable-thead>tr>th {
+            background: linear-gradient(135deg, #fee2e2, #fecaca) !important;
+            color: var(--return-crimson-dark) !important;
+            font-weight: 700 !important;
+            font-size: 0.75rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            padding: 1rem !important;
+            border-bottom: 2px solid var(--return-crimson) !important;
+        }
+
+        .p-datatable-tbody>tr {
+            transition: all 0.3s ease;
+
+            &:hover {
+                background: var(--return-crimson-light) !important;
+            }
+        }
+
+        .p-datatable-tbody>tr>td {
+            padding: 1rem !important;
+            font-size: 0.95rem !important;
+            border-bottom: 1px solid #fee2e2 !important;
+        }
+    }
+}
+
+/* 🔢 Quantity Input with Validation */
+.quantity-input-wrapper {
+    position: relative;
+
+    .remaining-indicator {
+        position: absolute;
+        top: -8px;
+        left: 0;
+        background: var(--imperial-gold);
+        color: white;
+        font-size: 0.65rem;
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    ::ng-deep {
+        .p-inputnumber-input {
+            border: 2px solid #e5e7eb !important;
+            border-radius: 8px !important;
+            transition: all 0.3s ease !important;
+
+            &:focus {
+                border-color: var(--return-crimson) !important;
+                box-shadow: 0 0 0 4px var(--return-crimson-light) !important;
+            }
+
+            &.exceeded {
+                border-color: var(--return-crimson) !important;
+                background: var(--return-crimson-light) !important;
+            }
+        }
+    }
+}
+
+/* ⚠️ Validation Warning */
+.validation-warning {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 2px solid var(--imperial-gold);
+    border-radius: 12px;
+    padding: 1rem;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    animation: warningPulse 2s ease-in-out infinite;
+
+    i {
+        font-size: 2rem;
+        color: var(--imperial-gold);
+    }
+
+    .warning-text {
+        flex: 1;
+
+        .title {
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 0.25rem;
+        }
+
+        .message {
+            font-size: 0.875rem;
+            color: #78350f;
+        }
+    }
+}
+
+@keyframes warningPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
+    }
+}
+
+/* 💰 Return Total Summary */
+.return-total-summary {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border: 2px solid var(--return-crimson);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 8px 24px rgba(220, 38, 38, 0.2);
+
+    .total-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--imperial-slate);
+        margin-bottom: 0.5rem;
+    }
+
+    .total-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--return-crimson-dark);
+        letter-spacing: -1px;
+    }
+
+    .total-currency {
+        font-size: 1rem;
+        color: var(--imperial-slate);
+        margin-right: 0.5rem;
+    }
+}
+
+/* 🎬 Action Buttons */
+.action-buttons-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 2rem;
+
+    ::ng-deep {
+        .p-button {
+            padding: 0.75rem 2rem !important;
+            font-size: 1rem !important;
+            font-weight: 700 !important;
+            border-radius: 12px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+            &.p-button-success {
+                background: var(--original-emerald) !important;
+                border-color: var(--original-emerald) !important;
+
+                &:hover {
+                    background: var(--original-emerald-dark) !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4) !important;
+                }
+            }
+
+            &.p-button-danger {
+                background: var(--return-crimson) !important;
+                border-color: var(--return-crimson) !important;
+
+                &:hover {
+                    background: var(--return-crimson-dark) !important;
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.4) !important;
+                }
+            }
+
+            &.p-button-secondary {
+                &:hover {
+                    transform: translateY(-2px);
+                }
+            }
+        }
+    }
+}
+
+/* 🎨 Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.875rem;
+
+    &.original {
+        background: var(--original-emerald-light);
+        color: var(--original-emerald-dark);
+        border: 1px solid var(--original-emerald);
+    }
+
+    &.returned {
+        background: var(--return-crimson-light);
+        color: var(--return-crimson-dark);
+        border: 1px solid var(--return-crimson);
+    }
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 768px) {
+    .return-container {
+        padding: 1rem;
+    }
+
+    .mirror-view-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .action-buttons-container {
+        flex-direction: column;
+
+        ::ng-deep .p-button {
+            width: 100%;
+        }
+    }
 }

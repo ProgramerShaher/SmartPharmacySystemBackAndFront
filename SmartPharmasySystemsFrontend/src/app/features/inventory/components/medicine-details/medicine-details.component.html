@@ -1,154 +1,220 @@
-<div class="medicine-details__container">
-    <!-- شريط العنوان -->
-    <header class="medicine-details__header">
-        <p-button 
-            class="medicine-details__header-back-btn"
-            icon="pi pi-arrow-right" 
-            [text]="true" 
-            [rounded]="true" 
-            severity="secondary" 
-            (onClick)="goBack()"
-            pTooltip="العودة للقائمة">
-        </p-button>
-        <h1 class="medicine-details__header-title">تفاصيل الدواء</h1>
-    </header>
-
-    <!-- حالة التحميل -->
-    <div *ngIf="loading" class="medicine-details__loading">
-        <p-progressSpinner 
-            styleClass="w-4rem h-4rem" 
-            strokeWidth="4"
-            animationDuration=".5s">
-        </p-progressSpinner>
-    </div>
-
-    <!-- محتوى التفاصيل -->
-    <div *ngIf="!loading && medicine" class="grid-container">
-        <!-- البطاقة الرئيسية -->
-        <div>
-            <div class="medicine-details__main-card">
-                <div class="medicine-details__main-card-header">
-                    <div class="medicine-details__main-card-title-section">
-                        <div class="medicine-details__main-card-icon">
-                            <i class="pi pi-briefcase"></i>
+<div class="min-h-screen bg-gray-50 pb-8" dir="rtl" *ngIf="!loading && medicine; else loader">
+    <!-- Hero Header with Gradient -->
+    <div class="bg-white shadow-1 border-bottom-1 border-200 relative overflow-hidden">
+        <div class="surface-overlay px-4 py-5 md:px-6 lg:px-8 relative z-2">
+            <div
+                class="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between gap-4">
+                <div class="flex align-items-start gap-4">
+                    <div
+                        class="w-6rem h-6rem border-circle bg-teal-50 flex align-items-center justify-content-center border-2 border-white shadow-2">
+                        <i class="pi pi-box text-5xl text-teal-600"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap align-items-center gap-3 mb-2">
+                            <h1 class="m-0 text-4xl font-bold text-900">{{medicine.name}}</h1>
+                            <p-tag [value]="medicine.status === 'Active' ? 'نشط' : 'متوقف'" [severity]="getStatusSeverity(medicine.status)"
+                                [rounded]="true" class="text-lg"></p-tag>
                         </div>
+                        <div class="flex flex-wrap align-items-center gap-4 text-700">
+                            <span class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-2xl">
+                                <i class="pi pi-tag text-teal-600"></i>
+                                <span class="font-medium">{{medicine.categoryName}}</span>
+                            </span>
+                            <span class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-2xl">
+                                <i class="pi pi-building text-teal-600"></i>
+                                <span class="font-medium">{{medicine.manufacturer || 'غير محدد'}}</span>
+                            </span>
+                            <span class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-2xl font-mono">
+                                <i class="pi pi-barcode text-teal-600"></i>
+                                <span class="font-bold">{{medicine.internalCode}}</span>
+                            </span>
+                        </div>
+                        </div>
+                        </div>
+                <div class="flex gap-3">
+                    <button pButton label="عودة" icon="pi pi-arrow-left"
+                        class="p-button-outlined p-button-secondary p-button-rounded px-4" (click)="goBack()"></button>
+                    <button pButton label="تعديل" icon="pi pi-pencil" class="p-button-rounded p-button-info px-4"
+                        (click)="editMedicine()"></button>
+                </div>
+                </div>
+                </div>
+                <!-- Decorative Background Element -->
+                <div
+                    class="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-teal-50 to-white opacity-50 z-1 pointer-events-none">
+                </div>
+                </div>
+
+    <div class="px-4 py-6 md:px-6 lg:px-8 max-w-8xl mx-auto">
+        <!-- KPI Cards Section -->
+        <div class="grid mb-6">
+            <div class="col-12 md:col-4">
+                <div class="card mb-0 bg-white border-round-2xl shadow-1 p-4 border-right-3 border-teal-500 h-full">
+                    <div class="flex justify-content-between mb-3">
                         <div>
-                            <h2 class="medicine-details__main-card-name">{{medicine.name}}</h2>
-                            <p class="medicine-details__main-card-code">{{medicine.internalCode}}</p>
+                            <span class="block text-500 font-medium mb-3">إجمالي المخزون</span>
+                            <div class="text-900 font-bold text-3xl">{{medicine.totalQuantity}} <small
+                                    class="text-500 text-lg">وحدة</small></div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-teal-100 border-round-xl"
+                            style="width: 3.5rem; height: 3.5rem">
+                            <i class="pi pi-box text-teal-600 text-xl"></i>
                         </div>
                     </div>
-                    
-                    <p-tag 
-                        class="medicine-details__main-card-status-tag"
-                        [value]="getStockStatus()"
-                        [severity]="getStockSeverity()">
-                    </p-tag>
-                </div>
-
-                <p-divider></p-divider>
-
-                <!-- معلومات الدواء -->
-                <div class="medicine-details__info-grid">
-                    <div class="grid">
-                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
-                            <span class="medicine-details__info-grid-label">الباركود</span>
-                            <span class="medicine-details__info-grid-value">
-                                <i class="pi pi-barcode"></i>
-                                {{medicine.defaultBarcode || 'غير محدد'}}
-                            </span>
+                    <!-- Stock Level Indicator -->
+                    <div class="w-full bg-gray-100 border-round-2xl h-1rem mt-3 overflow-hidden">
+                        <div class="bg-teal-500 h-full border-round-2xl"
+                            [style.width.%]="(getCurrentStock() / medicine.reorderLevel) * 100"></div>
+                        <!-- Simplified progress logic -->
+                    </div>
+                    <div class="mt-2 text-sm text-500 flex justify-content-between">
+                        <span>حد الطلب: {{medicine.reorderLevel}}</span>
+                        <span>{{getStatusSeverity(medicine.status) === 'success' ? 'مخزون جيد' : 'مخزون حرج'}}</span>
+                        </div>
+                        </div>
                         </div>
 
-                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
-                            <span class="medicine-details__info-grid-label">الفئة</span>
-                            <span class="medicine-details__info-grid-value">
-                                <i class="pi pi-tag"></i>
-                                {{medicine.categoryName || 'بدون فئة'}}
-                            </span>
+            <div class="col-12 md:col-4">
+                <div class="card mb-0 bg-white border-round-2xl shadow-1 p-4 border-right-3 border-blue-500 h-full">
+                    <div class="flex justify-content-between mb-3">
+                        <div>
+                            <span class="block text-500 font-medium mb-3">سعر البيع</span>
+                            <div class="text-900 font-bold text-3xl">{{medicine.defaultSalePrice | currency:'YER'}}</div>
                         </div>
-
-                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
-                            <span class="medicine-details__info-grid-label">الجهة المصنعة</span>
-                            <span class="medicine-details__info-grid-value">
-                                <i class="pi pi-building"></i>
-                                {{medicine.manufacturer || '-'}}
-                            </span>
-                        </div>
-
-                        <div class="col-12 md:col-6 medicine-details__info-grid-item">
-                            <span class="medicine-details__info-grid-label">تاريخ الإضافة</span>
-                            <span class="medicine-details__info-grid-value">
-                                <i class="pi pi-calendar"></i>
-                                {{medicine.createdAt | date:'mediumDate'}}
-                            </span>
+                        <div class="flex align-items-center justify-content-center bg-blue-100 border-round-xl"
+                            style="width: 3.5rem; height: 3.5rem">
+                            <i class="pi pi-tag text-blue-600 text-xl"></i>
                         </div>
                     </div>
-                </div>
-
-                <!-- الملاحظات -->
-                <div class="medicine-details__notes">
-                    <span class="medicine-details__notes-label">ملاحظات</span>
-                    <p class="medicine-details__notes-content" [class.no-notes]="!medicine.notes">
-                        {{medicine.notes || 'لا توجد ملاحظات'}}
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- بطاقة الإحصائيات -->
-        <div>
-            <div class="medicine-details__stats-card">
-                <div class="medicine-details__stats-card-header">
-                    <h3>الوضع المالي والمخزون</h3>
-                </div>
-                
-                <div class="medicine-details__stats-card-body">
-                    <!-- المخزون -->
-                    <div class="medicine-details__stat-item medicine-details__stat-item--stock"
-                         [class.medicine-details__low-stock]="getCurrentStock() === 0"
-                         [class.medicine-details__available-stock]="getCurrentStock() > 0">
-                        <div class="medicine-details__stat-item-content">
-                            <i class="pi pi-box medicine-details__stat-item-icon"></i>
-                            <span class="medicine-details__stat-item-label">المخزون الحالي</span>
-                        </div>
-                        <span class="medicine-details__stat-item-value">
-                            {{getCurrentStock()}}
-                        </span>
-                    </div>
-
-                    <!-- سعر الشراء -->
-                    <div class="medicine-details__stat-item medicine-details__stat-item--purchase">
-                        <div class="medicine-details__stat-item-content">
-                            <i class="pi pi-shopping-cart medicine-details__stat-item-icon"></i>
-                            <span class="medicine-details__stat-item-label">سعر الشراء</span>
-                        </div>
-                        <span class="medicine-details__stat-item-value">
-                            {{medicine.defaultPurchasePrice | currency:'USD':'symbol-narrow'}}
-                        </span>
-                    </div>
-
-                    <!-- سعر البيع -->
-                    <div class="medicine-details__stat-item medicine-details__stat-item--sale">
-                        <div class="medicine-details__stat-item-content">
-                            <i class="pi pi-money-bill medicine-details__stat-item-icon"></i>
-                            <span class="medicine-details__stat-item-label">سعر البيع</span>
-                        </div>
-                        <span class="medicine-details__stat-item-value">
-                            {{medicine.defaultSalePrice | currency:'USD':'symbol-narrow'}}
-                        </span>
-                    </div>
-
-                    <!-- حد التنبيه -->
-                    <div class="medicine-details__stat-item medicine-details__stat-item--alert">
-                        <div class="medicine-details__stat-item-content">
-                            <i class="pi pi-bell medicine-details__stat-item-icon"></i>
-                            <span class="medicine-details__stat-item-label">حد التنبيه</span>
-                        </div>
-                        <span class="medicine-details__stat-item-value">
-                            {{medicine.minAlertQuantity || 0}}
-                        </span>
+                    <div class="surface-100 p-2 border-round flex justify-content-between align-items-center mt-3">
+                        <span class="text-600">سعر الشراء:</span>
+                        <span class="font-bold text-700">{{medicine.defaultPurchasePrice | currency:'YER'}}</span>
                     </div>
                 </div>
             </div>
+
+            <div class="col-12 md:col-4">
+                <div class="card mb-0 bg-white border-round-2xl shadow-1 p-4 border-right-3 border-purple-500 h-full">
+                    <div class="flex justify-content-between mb-3">
+                        <div>
+                            <span class="block text-500 font-medium mb-3">عدد الدفعات</span>
+                            <div class="text-900 font-bold text-3xl">{{batches.length}} <small class="text-500 text-lg">دفعة</small>
+                            </div>
+                            </div>
+                            <div class="flex align-items-center justify-content-center bg-purple-100 border-round-xl"
+                                style="width: 3.5rem; height: 3.5rem">
+                                <i class="pi pi-list text-purple-600 text-xl"></i>
+                            </div>
+                            </div>
+                            <div class="flex gap-2 mt-3">
+                                <p-tag severity="danger" value="منتهية: {{ getExpiredCount() }}" [rounded]="true"></p-tag>
+                                <p-tag severity="warning" value="قريبة: {{ getExpiringSoonCount() }}" [rounded]="true"></p-tag>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
+
+        <!-- Content Grid -->
+        <div class="grid">
+        
+            <!-- Details Column -->
+            <div class="col-12 xl:col-5">
+                <div class="card shadow-2 border-round-2xl p-0 overflow-hidden bg-white h-full mb-4 xl:mb-0">
+                    <div class="p-4 border-bottom-1 border-100 bg-gray-50 flex justify-content-between align-items-center">
+                        <h3 class="text-xl font-bold text-800 m-0 flex align-items-center gap-2">
+                            <i class="pi pi-info-circle text-teal-600"></i> المعلومات الأساسية
+                        </h3>
+                    </div>
+                    <div class="p-4">
+                        <ul class="list-none p-0 m-0">
+                            <li class="flex align-items-center justify-content-between py-3 border-bottom-1 border-100">
+                                <span class="text-500 font-medium">الاسم العلمي</span>
+                                <span class="text-900 font-bold text-lg">{{medicine.scientificName || '-'}}</span>
+                            </li>
+                            <li class="flex align-items-center justify-content-between py-3 border-bottom-1 border-100">
+                                <span class="text-500 font-medium">المادة الفعالة</span>
+                                <span class="text-900">{{medicine.activeIngredient || '-'}}</span>
+                            </li>
+                            <li class="flex align-items-center justify-content-between py-3 border-bottom-1 border-100">
+                                <span class="text-500 font-medium">الباركود</span>
+                                <span class="text-900 font-mono text-lg bg-gray-100 px-2 border-round">{{medicine.defaultBarcode
+                                    ||
+                                    '-'}}</span>
+                            </li>
+                            <li class="py-3 border-bottom-1 border-100">
+                                <span class="block text-500 font-medium mb-2">الوصف</span>
+                                <p class="m-0 text-700 line-height-3">{{medicine.description || 'لا يوجد وصف'}}</p>
+                            </li>
+                            <li class="py-3">
+                                <span class="block text-500 font-medium mb-2">ملاحظات</span>
+                                <p class="m-0 text-700 line-height-3 text-sm surface-100 p-3 border-round">{{medicine.notes ||
+                                    'لا توجد
+                                    ملاحظات'}}</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batches Table Column -->
+            <div class="col-12 xl:col-7">
+                <div class="card shadow-2 border-round-2xl p-0 overflow-hidden bg-white h-full">
+                    <div class="p-4 border-bottom-1 border-100 bg-gray-50 flex justify-content-between align-items-center">
+                        <h3 class="text-xl font-bold text-800 m-0 flex align-items-center gap-2">
+                            <i class="pi pi-table text-purple-600"></i> سجل الدفعات (FEFO)
+                        </h3>
+                        <p-tag severity="info" value="مرتب حسب الأقرب للانتهاء"></p-tag>
+                    </div>
+
+                    <div class="p-3">
+                        <p-table [value]="batches" [rowHover]="true" styleClass="p-datatable-gridlines p-datatable-sm"
+                            responsiveLayout="scroll">
+                            <ng-template pTemplate="header">
+                                <tr class="bg-gray-50">
+                                    <th>رقم التشغيلة</th>
+                                    <th>تاريخ الانتهاء</th>
+                                    <th>الكمية</th>
+                                    <th>الموقع المتبقي</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-batch>
+                                <tr [ngClass]="{'bg-red-50': batch.isExpired, 'bg-orange-50': batch.isExpiringSoon}">
+                                    <td class="font-bold">{{batch.companyBatchNumber}}</td>
+                                    <td class="font-mono">
+                                        <div class="flex flex-column">
+                                            <span [class.text-red-600]="batch.isExpired">{{batch.expiryDate | date:'dd/MM/yyyy'}}</span>
+                                            <span class="text-xs text-500">{{batch.daysUntilExpiry}} يوم</span>
+                                        </div>
+                                    </td>
+                                    <td class="font-bold text-teal-700">{{batch.remainingQuantity}}</td>
+                                    <td class="text-sm text-600">{{batch.storageLocation || '-'}}</td>
+                                    <td>
+                                        <p-tag [severity]="getBatchStatusSeverity(batch)"
+                                            [value]="batch.isExpired ? 'منتهية' : (batch.isExpiringSoon ? 'قريبة' : 'صالحة')"></p-tag>
+                                    </td>
+                                    </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr>
+                                            <td colspan="5" class="text-center p-4">
+                                                <div class="flex flex-column align-items-center">
+                                                    <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
+                                                    <span class="text-gray-500">لا توجد دفعات مخزنية متاحة</span>
+                                                </div>
+                                    </td>
+                                    </tr>
+                                    </ng-template>
+                                    </p-table>
+                                    </div>
+                </div>
+                </div>
+
         </div>
+        </div>
+        </div>
+<ng-template #loader>
+    <div class="flex align-items-center justify-content-center min-h-screen">
+        <p-progressSpinner strokeWidth="4"></p-progressSpinner>
     </div>
-</div>
+</ng-template>

@@ -1,19 +1,20 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule, ActivatedRoute } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { SupplierService } from '../../services/supplier.service';
+import { Supplier } from '../../../../core/models/supplier.models';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
+// PrimeNG
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { ToastModule } from 'primeng/toast';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { ConfirmationService, MessageService } from 'primeng/api';
-import { SupplierService } from '../../services/supplier.service';
-import { Supplier } from '../../../../core/models/supplier.interface';
-import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { ProgressBarModule } from 'primeng/progressbar';
 
 @Component({
   selector: 'app-supplier-list',
@@ -21,178 +22,100 @@ import { of } from 'rxjs';
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule,
     TableModule,
     ButtonModule,
     InputTextModule,
-    ToastModule,
-    ConfirmDialogModule,
     TagModule,
     TooltipModule,
+    ConfirmDialogModule,
+    ToastModule,
+    InputSwitchModule,
+    ProgressBarModule
   ],
-  templateUrl: './supplier-list.component.html',
-  styleUrl: './supplier-list.component.scss',
   providers: [MessageService, ConfirmationService],
+  templateUrl: './supplier-list.component.html',
+  styleUrls: ['./supplier-list.component.scss']
 })
 export class SupplierListComponent implements OnInit {
-  suppliers: Supplier[] = [];
-  loading: boolean = true;
-  searchTerm: string = '';
-  today = new Date();
+  suppliers = signal<Supplier[]>([]);
+  loading = signal(false);
+
+  // Calculated stats
+  totalDebt = computed(() => this.suppliers().reduce((sum, s) => sum + (s.balance || 0), 0));
+  highDebtCount = computed(() => this.suppliers().filter(s => (s.balance || 0) > 10000).length);
 
   constructor(
     private supplierService: SupplierService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService,
-    public router: Router,
-    private route: ActivatedRoute
-  ) {}
+    private confirmationService: ConfirmationService
+  ) { }
 
-  ngOnInit(): void {
-    console.log('🚀 Supplier List Component Initialized');
+  ngOnInit() {
     this.loadSuppliers();
   }
 
-  loadSuppliers(): void {
-    this.loading = true;
-    console.log('⏳ Loading suppliers list...');
-    console.log(`🔍 Search term: "${this.searchTerm}"`);
-
-    // إنشاء query object
-    const query: any = {};
-    if (this.searchTerm && this.searchTerm.trim() !== '') {
-      query.search = this.searchTerm.trim();
-    }
-
-    console.log('📤 Query being sent:', query);
-
-    this.supplierService
-      .getAllSuppliers(query)
-      .pipe(
-        catchError((error) => {
-          console.error('❌ Failed to load suppliers:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'خطأ',
-            detail: error.error?.message || 'فشل في تحميل بيانات الموردين',
-          });
-          this.suppliers = [];
-          return of({ items: [], totalCount: 0, pageNumber: 1, pageSize: 10 });
-        }),
-        finalize(() => {
-          this.loading = false;
-          console.log(
-            `✅ Suppliers list loaded: ${this.suppliers.length} suppliers found`
-          );
-        })
-      )
-      .subscribe({
-        next: (result) => {
-          console.log('📥 Received result:', result);
-          if (result && result.items) {
-            this.suppliers = result.items;
-            console.log(
-              `📊 Loaded ${result.items.length} suppliers out of ${result.totalCount} total`
-            );
-          } else {
-            console.warn('⚠️ No items in result, setting empty array');
-            this.suppliers = [];
-          }
-        }
-      });
-  }
-
-  onSearch(): void {
-    console.log(`🔍 Performing search with term: "${this.searchTerm}"`);
-    this.loadSuppliers();
-  }
-
-  deleteSupplier(event: Event, supplier: Supplier): void {
-    console.log(
-      `🗑️ Delete requested for supplier: ${supplier.name} (ID: ${supplier.id})`
-    );
-
-    this.confirmationService.confirm({
-      target: event.target as EventTarget,
-      message: `هل أنت متأكد من حذف المورد "${supplier.name}"؟`,
-      header: 'تأكيد الحذف',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'نعم',
-      rejectLabel: 'لا',
-      acceptButtonStyleClass: 'p-button-danger',
-      rejectButtonStyleClass: 'p-button-text',
-      accept: () => {
-        console.log(
-          `✅ User confirmed deletion of supplier ID: ${supplier.id}`
-        );
-        this.supplierService.delete(supplier.id).subscribe({
-          next: () => {
-            console.log(`🎉 Supplier ID ${supplier.id} deleted successfully`);
-            this.messageService.add({
-              severity: 'success',
-              summary: 'تم بنجاح',
-              detail: 'تم حذف المورد بنجاح',
-            });
-            console.log('🔄 Reloading suppliers list after deletion');
-            this.loadSuppliers();
-          },
-          error: (err) => {
-            console.error(
-              `❌ Failed to delete supplier ID ${supplier.id}:`,
-              err
-            );
-            this.messageService.add({
-              severity: 'error',
-              summary: 'خطأ',
-              detail: 'فشل في عملية الحذف',
-            });
-          },
-        });
+  loadSuppliers() {
+    this.loading.set(true);
+    this.supplierService.getAll({ pageSize: 1000 }).subscribe({
+      next: (res) => {
+        this.suppliers.set(res.items);
+        this.loading.set(false);
       },
-      reject: () => {
-        console.log('❌ User cancelled deletion');
-      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل قائمة الموردين' });
+        this.loading.set(false);
+      }
     });
   }
 
-  viewDetails(id: number): void {
-    console.log(`👁️ Viewing details for supplier ID: ${id}`);
-    this.router.navigate(['detail', id], { relativeTo: this.route.parent });
+  deleteSupplier(event: Event, supplier: Supplier) {
+    this.confirmationService.confirm({
+      target: event.target as EventTarget,
+      message: `هل أنت متأكد من حذف المورد ${supplier.name}؟`,
+      header: 'تأكيد الحذف',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'نعم، حذف',
+      rejectLabel: 'إلغاء',
+      acceptButtonStyleClass: 'p-button-danger p-button-text',
+      rejectButtonStyleClass: 'p-button-text',
+      accept: () => {
+        this.supplierService.delete(supplier.id).subscribe({
+          next: () => {
+                this.messageService.add({ severity: 'success', summary: 'تم الحذف', detail: 'تم حذف المورد بنجاح' });
+                this.loadSuppliers();
+              },
+              error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في الحذف' })
+            });
+      }
+    });
   }
 
-  editSupplier(id: number): void {
-    console.log(`✏️ Editing supplier ID: ${id}`);
-    this.router.navigate(['edit', id], { relativeTo: this.route.parent });
+  getSeverity(balance: number): 'danger' | 'warning' | 'success' | undefined {
+    if (balance > 10000) return 'danger';
+    if (balance > 0) return 'warning';
+    return 'success';
   }
 
-  addNewSupplier(): void {
-    console.log('➕ Navigating to add new supplier');
-    this.router.navigate(['create'], { relativeTo: this.route.parent });
+  getStatusLabel(balance: number): string {
+    if (balance > 10000) return 'مديونية عالية';
+    if (balance > 0) return 'مدين';
+    return 'خالص';
   }
 
-  // إحصائيات إضافية
-  getSuppliersWithBalance(): number {
-    return this.suppliers.filter((s) => (s.balance || 0) > 0).length;
-  }
-
-  getTotalBalance(): number {
-    return this.suppliers.reduce((sum, s) => sum + (s.balance || 0), 0);
-  }
-
-  getSuppliersWithInvoices(): number {
-    return this.suppliers.filter(
-      (s) => s.purchaseInvoices && s.purchaseInvoices.length > 0
-    ).length;
-  }
-
-  getTotalPurchases(): number {
-    return this.suppliers.reduce((sum, s) => {
-      const invoicesTotal =
-        s.purchaseInvoices?.reduce(
-          (invSum, inv) => invSum + (inv.totalAmount || 0),
-          0
-        ) || 0;
-      return sum + invoicesTotal;
-    }, 0);
+  getRandomColor(name: string): string {
+    const colors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
   }
 }

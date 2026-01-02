@@ -22,39 +22,10 @@ import { MedicineBatch, StockMovementType } from '../../../../core/models';
         InputTextareaModule,
         DropdownModule
     ],
-    template: `
-    <p-dialog [header]="'تسجيل حركة يدوية - ' + batch?.companyBatchNumber" [(visible)]="visible" [modal]="true" 
-        [style]="{width: '500px'}" [dir]="'rtl'" (onHide)="close()">
-        <form [formGroup]="actionForm" (ngSubmit)="submit()" class="p-fluid mt-3">
-            <div class="field mb-4">
-                <label for="type" class="block mb-2 font-bold">نوع الحركة</label>
-                <p-dropdown id="type" [options]="actionTypes" formControlName="movementType" placeholder="اختر النوع" styleClass="border-round-xl"></p-dropdown>
-                <small class="text-red-500" *ngIf="actionForm.get('movementType')?.touched && actionForm.get('movementType')?.invalid">يرجى تحديد النوع</small>
-            </div>
-
-            <div class="field mb-4">
-                <label for="quantity" class="block mb-2 font-bold">الكمية</label>
-                <p-inputNumber id="quantity" formControlName="quantity" [min]="1" [max]="batch?.remainingQuantity || 0" 
-                    placeholder="الكمية المراد تعديلها" styleClass="border-round-xl">
-                </p-inputNumber>
-                <small class="text-secondary block mt-1">الرصيد المتاح: {{ batch?.remainingQuantity }}</small>
-                <small class="text-red-500" *ngIf="actionForm.get('quantity')?.touched && actionForm.get('quantity')?.invalid">الكمية غير صحيحة أو تتجاوز المتاح</small>
-            </div>
-
-            <div class="field mb-4">
-                <label for="notes" class="block mb-2 font-bold">السبب / ملاحظات</label>
-                <textarea id="notes" pInputTextarea formControlName="notes" rows="3" placeholder="اكتب سبب الحركة هنا..." class="border-round-xl"></textarea>
-                <small class="text-red-500" *ngIf="actionForm.get('notes')?.touched && actionForm.get('notes')?.invalid">السبب مطلوب للحركات اليدوية</small>
-            </div>
-
-            <div class="flex justify-content-end gap-2 mt-4">
-                <button pButton type="button" label="إلغاء" class="p-button-text border-round-xl" (click)="close()"></button>
-                <button pButton type="submit" label="حفظ الحركة" icon="pi pi-check" class="p-button-primary border-round-xl shadow-1" [disabled]="actionForm.invalid || loading"></button>
-            </div>
-        </form>
-    </p-dialog>
-  `
+    templateUrl: './batch-actions-dialog.component.html',
+    styleUrls: ['./batch-actions-dialog.component.scss']
 })
+
 export class BatchActionsDialogComponent implements OnInit {
     @Input() visible = false;
     @Input() batch: MedicineBatch | null = null;
@@ -65,8 +36,8 @@ export class BatchActionsDialogComponent implements OnInit {
     loading = false;
 
     actionTypes = [
-        { label: 'تالف (Damage)', value: StockMovementType.DAMAGE },
-        { label: 'تسوية (Adjustment)', value: StockMovementType.ADJUSTMENT }
+        { label: 'تالف (Damage)', value: StockMovementType.Damage },
+        { label: 'تسوية (Adjustment)', value: StockMovementType.Adjustment }
     ];
 
     constructor(
@@ -95,15 +66,37 @@ export class BatchActionsDialogComponent implements OnInit {
     submit() {
         if (this.actionForm.invalid || !this.batch) return;
 
+        // Validate medicineId exists
+        if (!this.batch.medicineId) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'خطأ في البيانات',
+                detail: 'معرف الدواء (medicineId) غير موجود في بيانات الدفعة.'
+            });
+            console.error('❌ Missing medicineId in batch:', this.batch);
+            return;
+        }
+
         this.loading = true;
-        const payload = {
-            batchId: this.batch.id,
-            ...this.actionForm.value
+        const value = this.actionForm.value;
+
+        // Map movement type to number
+        const typeMap: { [key: number]: number } = {
+            [StockMovementType.Adjustment]: 5,
+            [StockMovementType.Damage]: 6,
+            [StockMovementType.Expiry]: 7
         };
 
-        // Ensure quantity is negative for damage/adjustment if backend expects it to be subtracted
-        // Usually backend handles this based on type, but we should align.
-        // Assuming backend takes positive quantity and subtracts based on type 'DAMAGE'.
+        const payload = {
+            medicineId: this.batch.medicineId,
+            batchId: this.batch.id,
+            quantity: value.quantity,
+            type: typeMap[value.movementType] || 5,
+            reason: value.notes,
+            approvedBy: 0
+        };
+
+        console.log('📤 Sending manual movement:', payload);
 
         this.inventoryService.createManualMovement(payload).subscribe({
             next: () => {
@@ -111,8 +104,9 @@ export class BatchActionsDialogComponent implements OnInit {
                 this.onSuccess.emit();
                 this.loading = false;
             },
-            error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في حفظ الحركة اليدوية' });
+            error: (err: any) => {
+                console.error('❌ Error creating manual movement:', err);
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل في حفظ الحركة اليدوية' });
                 this.loading = false;
             }
         });

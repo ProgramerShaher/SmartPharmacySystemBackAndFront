@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.API", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.Application", "SmartPharmacySystem.Application\SmartPharmacySystem.Application.csproj", "{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.Core", "SmartPharmacySystem.Core\SmartPharmacySystem.Core.csproj", "{A5F6F954-4F79-1973-2BFF-3770A27F3229}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartPharmacySystem.Infrastructure", "SmartPharmacySystem.Infrastructure\SmartPharmacySystem.Infrastructure.csproj", "{35595FCE-3251-40CB-D6E7-67992C355EB6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3663CA9C-DED6-47B5-9F77-D10492D1DA7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5F6F954-4F79-1973-2BFF-3770A27F3229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5F6F954-4F79-1973-2BFF-3770A27F3229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5F6F954-4F79-1973-2BFF-3770A27F3229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5F6F954-4F79-1973-2BFF-3770A27F3229}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35595FCE-3251-40CB-D6E7-67992C355EB6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

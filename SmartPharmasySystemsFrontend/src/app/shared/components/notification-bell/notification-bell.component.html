@@ -1,0 +1,89 @@
+<div class="notification-bell-container">
+  <p-button 
+    icon="pi pi-bell" 
+    [badge]="unreadCount > 0 ? unreadCount.toString() : ''"
+    badgeClass="p-badge-danger"
+    [rounded]="true"
+    [text]="true"
+    severity="secondary"
+    (onClick)="op.toggle($event)"
+    styleClass="notification-bell-btn"
+    pTooltip="التنبيهات"
+    tooltipPosition="bottom">
+  </p-button>
+
+  <p-overlayPanel #op styleClass="notification-overlay" [showCloseIcon]="false">
+    <ng-template pTemplate="content">
+      <div class="notification-panel" dir="rtl">
+        <!-- Header -->
+        <div class="notification-header">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-bell text-xl text-primary"></i>
+            <h3 class="m-0 font-bold">التنبيهات</h3>
+            <span class="badge-count" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+          </div>
+          <p-button 
+            *ngIf="unreadCount > 0"
+            label="تعليم الكل كمقروء" 
+            icon="pi pi-check" 
+            [text]="true"
+            size="small"
+            (onClick)="markAllAsRead()">
+          </p-button>
+        </div>
+
+        <!-- Alerts List -->
+        <div class="notification-list">
+          <div 
+            *ngFor="let alert of unreadAlerts" 
+            class="notification-item"
+            (click)="viewAlert(alert)">
+            <div class="notification-icon" [style.background]="AlertUtils.getExpiryStatusColor(alert.alertType)">
+              <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div class="notification-content">
+              <div class="notification-title">{{ alert.medicineName }}</div>
+              <div class="notification-message">{{ alert.message }}</div>
+              <div class="notification-meta">
+                <span class="time">{{ getTimeAgo(alert.createdAt) }}</span>
+                <span class="separator">•</span>
+                <span class="batch">{{ alert.batchNumber }}</span>
+              </div>
+            </div>
+            <div class="notification-actions">
+              <p-button 
+                icon="pi pi-check" 
+                [rounded]="true"
+                [text]="true"
+                size="small"
+                severity="success"
+                (onClick)="markAsRead(alert, $event)"
+                pTooltip="تعليم كمقروء">
+              </p-button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="unreadAlerts.length === 0" class="notification-empty">
+            <i class="pi pi-check-circle text-6xl text-green-500 mb-3"></i>
+            <p class="m-0 text-lg font-bold">لا توجد تنبيهات جديدة</p>
+            <p class="m-0 text-sm opacity-60">جميع التنبيهات تم قراءتها</p>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="notification-footer">
+          <p-button 
+            label="عرض جميع التنبيهات" 
+            icon="pi pi-arrow-left" 
+            [text]="true"
+            styleClass="w-full"
+            (onClick)="viewAllAlerts(); op.hide()">
+          </p-button>
+        </div>
+      </div>
+    </ng-template>
+  </p-overlayPanel>
+</div>
+
+<p-toast position="top-left" [dir]="'rtl'"></p-toast>

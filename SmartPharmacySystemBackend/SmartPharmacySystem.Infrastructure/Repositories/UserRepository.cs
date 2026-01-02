@@ -20,12 +20,16 @@ public class UserRepository : IUserRepository
 
     public async Task<User> GetByIdAsync(int id)
     {
-        return await _context.Users.FindAsync(id);
+        return await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Id == id);
     }
 
     public async Task<IEnumerable<User>> GetAllAsync()
     {
-        return await _context.Users.ToListAsync();
+        return await _context.Users
+            .Include(u => u.Role)
+            .ToListAsync();
     }
 
     public async Task AddAsync(User entity)
@@ -65,13 +69,17 @@ public class UserRepository : IUserRepository
 
     public async Task<User> GetByUsernameAsync(string username)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        return await _context.Users
+            .Include(u => u.Role)
+            .FirstOrDefaultAsync(u => u.Username == username);
     }
 
     public async Task<(IEnumerable<User> Items, int TotalCount)> GetPagedAsync(
         string? search, int page, int pageSize, string sortBy, string sortDir, string? role, bool? isDeleted)
     {
-        var query = _context.Users.AsQueryable();
+        var query = _context.Users
+            .Include(u => u.Role)
+            .AsQueryable();
 
         // Apply search filter
         if (!string.IsNullOrWhiteSpace(search))
@@ -84,8 +92,7 @@ public class UserRepository : IUserRepository
         // Apply role filter
         if (!string.IsNullOrWhiteSpace(role))
         {
-            query = query.Include(u => u.Role)
-                         .Where(u => u.Role.Name == role);
+            query = query.Where(u => u.Role.Name == role);
         }
 
         // Apply isDeleted filter

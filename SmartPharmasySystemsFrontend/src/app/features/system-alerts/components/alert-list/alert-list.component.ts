@@ -231,6 +231,26 @@ export class AlertListComponent implements OnInit {
     });
   }
 
+  generateLowStockAlerts(): void {
+    this.systemAlertsService.generateLowStockAlerts().subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'تم بنجاح',
+          detail: 'تم إنشاء تنبيهات نقص المخزون',
+        });
+        this.loadAlerts();
+      },
+      error: (err) => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'خطأ',
+          detail: 'فشل في إنشاء تنبيهات المخزون',
+        });
+      },
+    });
+  }
+
   // UI Helpers using AlertUtils
   getStatusLabel(status: string | number): string {
     return AlertUtils.getAlertStatusLabel(status);
@@ -242,7 +262,11 @@ export class AlertListComponent implements OnInit {
 
   getAlertTypeIcon(alertType: string): string {
     if (!alertType) return 'pi-bell';
-    if (alertType.includes('OneWeek') || alertType.includes('TwoWeeks')) return 'pi-exclamation-triangle';
+
+    // Handle specific mappings
+    if (alertType.includes('OneWeek') || alertType.includes('TwoWeeks') || alertType === '2') return 'pi-exclamation-triangle';
+    if (alertType.includes('Expired') || alertType === '3') return 'pi-times-circle';
+
     return 'pi-info-circle';
   }
 
@@ -257,10 +281,21 @@ export class AlertListComponent implements OnInit {
   getAlertTypeSeverity(alertType: string): "success" | "info" | "warning" | "danger" | "secondary" | "contrast" | undefined {
     // Map color to severity approximately
     const color = AlertUtils.getExpiryStatusColor(alertType);
-    if (color === '#ef4444') return 'danger';
-    if (color === '#f97316') return 'warning';
-    if (color === '#eab308') return 'warning';
+    if (color === '#ef4444' || alertType === '3') return 'danger';
+    if (color === '#f97316' || color === '#eab308' || alertType === '2') return 'warning';
     return 'info';
+  }
+
+  getAlertTypeLabel(type: string): string {
+    return AlertUtils.getExpiryStatusLabel(type);
+  }
+
+  isExpired(dateStr?: string): boolean {
+    if (!dateStr) return false;
+    const expiryDate = new Date(dateStr);
+    const now = new Date();
+    // Reset time part for accurate date comparison if needed, or just compare roughly
+    return expiryDate < now;
   }
 
   showErrorDetails(): void {

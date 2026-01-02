@@ -1,0 +1,155 @@
+    <div class="stock-card-container" dir="rtl">
+      <!-- Header -->
+      <p-toolbar styleClass="mb-4 border-round-xl shadow-2">
+        <div class="p-toolbar-group-start">
+          <div class="flex align-items-center gap-3">
+            <p-button
+              icon="pi pi-arrow-right"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              (onClick)="goBack()">
+            </p-button>
+            <div>
+              <h2 class="m-0 text-2xl font-bold text-primary">كرت الصنف</h2>
+              <small class="text-600">سجل حركات الصنف التفصيلي</small>
+            </div>
+          </div>
+        </div>
+        <div class="p-toolbar-group-end flex gap-2">
+          <p-button
+            label="طباعة"
+            icon="pi pi-print"
+            severity="secondary"
+            [outlined]="true">
+          </p-button>
+          <p-button
+            label="تصدير Excel"
+            icon="pi pi-file-excel"
+            severity="success"
+            [outlined]="true">
+          </p-button>
+        </div>
+      </p-toolbar>
+
+      <!-- Stock Card Info -->
+      <p-card styleClass="mb-4 shadow-1" *ngIf="medicineId">
+        <div class="grid">
+          <div class="col-12 md:col-6">
+            <div class="flex flex-column gap-2">
+              <div class="flex justify-content-between">
+                <span class="text-600 font-semibold">كود الصنف:</span>
+                <span class="font-bold">{{ medicineId }}</span>
+              </div>
+              <div class="flex justify-content-between" *ngIf="batchId">
+                <span class="text-600 font-semibold">رقم التشغيلة:</span>
+                <span class="font-bold font-mono">{{ batchId }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 md:col-6">
+            <div class="flex flex-column gap-2">
+              <div class="flex justify-content-between">
+                <span class="text-600 font-semibold">الرصيد الحالي:</span>
+                <span class="font-bold text-2xl text-primary">{{ currentBalance }}</span>
+              </div>
+              <div class="flex justify-content-between">
+                <span class="text-600 font-semibold">عدد الحركات:</span>
+                <span class="font-bold">{{ stockCard.length }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Stock Card Table -->
+      <p-card>
+        <p-table
+          [value]="stockCard"
+          [loading]="loading"
+          styleClass="p-datatable-gridlines p-datatable-sm"
+          responsiveLayout="scroll">
+          
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 120px">التاريخ</th>
+              <th style="width: 150px">نوع الحركة</th>
+              <th>المرجع</th>
+              <th style="width: 100px" class="text-center">وارد</th>
+              <th style="width: 100px" class="text-center">صادر</th>
+              <th style="width: 100px" class="text-center">الرصيد</th>
+              <th>ملاحظات</th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-card>
+            <tr>
+              <td>
+                <span class="font-mono text-sm">
+                  {{ card.date | date:'dd/MM/yyyy' }}<br>
+                  <small class="text-500">{{ card.date | date:'HH:mm' }}</small>
+                </span>
+              </td>
+              <td>
+                <p-tag
+                  [value]="card.movementTypeLabel"
+                  [severity]="getMovementTypeSeverity(card.movementType)">
+                </p-tag>
+              </td>
+              <td>
+                <span class="font-semibold">{{ card.referenceNumber }}</span>
+              </td>
+              <td class="text-center">
+                <span 
+                  *ngIf="card.quantityIn > 0"
+                  class="font-bold text-green-600 text-lg">
+                  +{{ card.quantityIn }}
+                </span>
+                <span *ngIf="card.quantityIn === 0" class="text-400">---</span>
+              </td>
+              <td class="text-center">
+                <span 
+                  *ngIf="card.quantityOut > 0"
+                  class="font-bold text-red-600 text-lg">
+                  -{{ card.quantityOut }}
+                </span>
+                <span *ngIf="card.quantityOut === 0" class="text-400">---</span>
+              </td>
+              <td class="text-center">
+                <span class="font-bold text-primary text-xl">{{ card.balance }}</span>
+              </td>
+              <td>
+                <span class="text-sm text-600">{{ card.notes || '---' }}</span>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="text-center p-6">
+                <div class="flex flex-column align-items-center gap-3">
+                  <i class="pi pi-inbox text-5xl text-400"></i>
+                  <span class="text-xl text-600">لا توجد حركات لهذا الصنف</span>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="footer" *ngIf="stockCard.length > 0">
+            <tr>
+              <td colspan="3" class="text-left font-bold bg-surface-100">الرصيد النهائي:</td>
+              <td class="text-center font-bold bg-surface-100 text-green-600 text-lg">
+                {{ getTotalIn() }}
+              </td>
+              <td class="text-center font-bold bg-surface-100 text-red-600 text-lg">
+                {{ getTotalOut() }}
+              </td>
+              <td class="text-center font-bold bg-surface-100 text-primary text-2xl">
+                {{ currentBalance }}
+              </td>
+              <td class="bg-surface-100"></td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>

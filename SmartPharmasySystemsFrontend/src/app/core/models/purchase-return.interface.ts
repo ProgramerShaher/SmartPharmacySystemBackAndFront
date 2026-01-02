@@ -1,5 +1,5 @@
 import { PurchaseInvoice } from './purchase-invoice.interface';
-import { Supplier } from './supplier.interface';
+import { Supplier } from './supplier.models';
 import { PurchaseReturnDetail } from './purchase-return-detail.interface';
 
 export interface PurchaseReturn {

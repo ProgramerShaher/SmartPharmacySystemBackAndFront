@@ -12,9 +12,20 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
+import { CardModule } from 'primeng/card';
+import { SelectButtonModule } from 'primeng/selectbutton';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { FinanceService } from '../../services/finance.service';
-import { Expense, ExpenseQueryDto, PagedResult } from '../../../../core/models';
+import { ExpenseService } from '../../services/expense.service';
+import { ExpenseCategoryService } from '../../services/expense-category.service';
+import { ExpenseDto, ExpenseQueryDto, PagedResult, ExpenseCategoryDto, PaymentType } from '../../../../core/models';
+import {
+  getPaymentMethodLabel,
+  getPaymentMethodSeverity,
+  getPaidStatusLabel,
+  getPaidStatusSeverity,
+  formatExpenseAmount,
+  formatDate
+} from '../../utils/expense.utils';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -35,153 +46,154 @@ import { of } from 'rxjs';
     ProgressSpinnerModule,
     TooltipModule,
     TagModule,
+    CardModule,
+    SelectButtonModule
   ],
   templateUrl: './expense-list.component.html',
-  styleUrl: './expense-list.component.scss',
-  providers: [MessageService, ConfirmationService],
+  styleUrl: './expense-list.component.css',
+  providers: [MessageService, ConfirmationService]
 })
 export class ExpenseListComponent implements OnInit {
-  expenses: Expense[] = [];
+  expenses: ExpenseDto[] = [];
+  categories: ExpenseCategoryDto[] = [];
   loading: boolean = true;
+
+  // Filters
   searchTerm: string = '';
-  expenseTypeFilter: string = '';
+  selectedCategory: number | null = null;
+  selectedPaymentMethod: PaymentType | null = null;
+  selectedPaidStatus: boolean | null = null;
   startDate: Date | null = null;
   endDate: Date | null = null;
 
-  expenseTypeOptions = [
-    { label: 'الكل', value: '' },
-    { label: 'إيجار المحل', value: 'إيجار المحل' },
-    { label: 'مرتبات', value: 'مرتبات' },
-    { label: 'فواتير', value: 'فواتير' },
-    { label: 'مصاريف تشغيلية', value: 'مصاريف تشغيلية' },
-    { label: 'أخرى', value: 'أخرى' },
+  // Dropdown options
+  categoryOptions: any[] = [];
+  paymentMethodOptions = [
+    { label: 'الكل', value: null },
+    { label: 'نقدي', value: PaymentType.Cash },
+    { label: 'آجل', value: PaymentType.Credit }
+  ];
+  paidStatusOptions = [
+    { label: 'الكل', value: null },
+    { label: 'مدفوع', value: true },
+    { label: 'غير مدفوع', value: false }
   ];
 
+  // Pagination
   totalRecords: number = 0;
   pageSize: number = 10;
   currentPage: number = 1;
 
+  // Utility functions
+  getPaymentMethodLabel = getPaymentMethodLabel;
+  getPaymentMethodSeverity = getPaymentMethodSeverity;
+  getPaidStatusLabel = getPaidStatusLabel;
+  getPaidStatusSeverity = getPaidStatusSeverity;
+  formatExpenseAmount = formatExpenseAmount;
+  formatDate = formatDate;
+
   constructor(
-    private financeService: FinanceService,
+    private expenseService: ExpenseService,
+    private categoryService: ExpenseCategoryService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private router: Router
   ) { }
 
   ngOnInit(): void {
-    console.log('🚀 Expense List Component Initialized');
+    this.loadCategories();
     this.loadExpenses();
+  }
+
+  loadCategories(): void {
+    this.categoryService.getAll()
+      .pipe(
+        catchError(() => {
+          console.error('Failed to load categories');
+          return of([]);
+        })
+      )
+      .subscribe(categories => {
+        this.categories = categories;
+        this.categoryOptions = [
+          { label: 'كل الفئات', value: null },
+          ...categories.map(c => ({ label: c.name, value: c.id }))
+        ];
+      });
   }
 
   loadExpenses(page: number = 1): void {
     this.loading = true;
     this.currentPage = page;
-    console.log('⏳ Loading expenses list...');
-    console.log(`🔍 Search term: "${this.searchTerm}"`);
-    console.log(`📋 Expense type filter: "${this.expenseTypeFilter}"`);
-    console.log(`📅 Date range: ${this.startDate} - ${this.endDate}`);
 
     const query: ExpenseQueryDto = {
       page: page,
       pageSize: this.pageSize,
+      search: this.searchTerm || undefined,
+      categoryId: this.selectedCategory || undefined,
+      paymentMethod: this.selectedPaymentMethod !== null ? this.selectedPaymentMethod : undefined,
+      isPaid: this.selectedPaidStatus !== null ? this.selectedPaidStatus : undefined,
+      fromDate: this.startDate ? this.startDate.toISOString().split('T')[0] : undefined,
+      toDate: this.endDate ? this.endDate.toISOString().split('T')[0] : undefined
     };
 
-    if (this.searchTerm && this.searchTerm.trim() !== '') {
-      query.search = this.searchTerm.trim();
-    }
-    if (this.expenseTypeFilter && this.expenseTypeFilter.trim() !== '') {
-      query.expenseType = this.expenseTypeFilter.trim();
-    }
-    if (this.startDate) {
-      query.startDate = this.startDate.toISOString().split('T')[0];
-    }
-    if (this.endDate) {
-      query.endDate = this.endDate.toISOString().split('T')[0];
-    }
-
-    console.log('📤 Query being sent:', query);
-
-    this.financeService
-      .search(query)
+    this.expenseService.search(query)
       .pipe(
         catchError((error) => {
-          console.error('❌ Failed to load expenses:', error);
+          console.error('Failed to load expenses:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'خطأ',
-            detail: error.error?.message || 'فشل في تحميل بيانات المصروفات',
+            detail: 'فشل في تحميل بيانات المصروفات'
           });
-          this.expenses = [];
-          return of({ items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 0 });
+          return of({ items: [], totalCount: 0, pageNumber: 1, pageSize: 10, totalPages: 0 } as PagedResult<ExpenseDto>);
         }),
-        finalize(() => {
-          this.loading = false;
-          console.log(
-            `✅ Expenses list loaded: ${this.expenses.length} expenses found`
-          );
-        })
+        finalize(() => this.loading = false)
       )
-      .subscribe({
-        next: (result: PagedResult<Expense>) => {
-          console.log('📥 Received result:', result);
-          if (result && result.items) {
-            this.expenses = result.items;
-            this.totalRecords = result.totalCount;
-            console.log(
-              `📊 Loaded ${result.items.length} expenses out of ${result.totalCount} total`
-            );
-          } else {
-            console.warn('⚠️ No items in result, setting empty array');
-            this.expenses = [];
-            this.totalRecords = 0;
-          }
-        }
+      .subscribe((result: PagedResult<ExpenseDto>) => {
+        this.expenses = result.items;
+        this.totalRecords = result.totalCount;
       });
   }
 
   onSearch(): void {
-    console.log(`🔍 Performing search with term: "${this.searchTerm}"`);
-    this.loadExpenses(1); // Reset to first page
+    this.loadExpenses(1);
   }
 
-  onExpenseTypeFilterChange(): void {
-    console.log(`📋 Expense type filter changed to: "${this.expenseTypeFilter}"`);
-    this.loadExpenses(1); // Reset to first page
-  }
-
-  onDateRangeChange(): void {
-    console.log(`📅 Date range changed: ${this.startDate} - ${this.endDate}`);
-    this.loadExpenses(1); // Reset to first page
+  onFilterChange(): void {
+    this.loadExpenses(1);
   }
 
   onPageChange(event: any): void {
-    console.log(`📄 Page changed to: ${event.page + 1}`);
     this.loadExpenses(event.page + 1);
   }
 
-  viewDetails(expense: Expense): void {
-    console.log(`👁️ Viewing details for expense ID: ${expense.id}`);
-    // Could navigate to detail view if implemented
-    this.messageService.add({
-      severity: 'info',
-      summary: 'معلومات',
-      detail: `عرض تفاصيل المصروف: ${expense.expenseType}`,
-    });
+  clearFilters(): void {
+    this.searchTerm = '';
+    this.selectedCategory = null;
+    this.selectedPaymentMethod = null;
+    this.selectedPaidStatus = null;
+    this.startDate = null;
+    this.endDate = null;
+    this.loadExpenses(1);
   }
 
-  editExpense(expense: Expense): void {
-    console.log(`✏️ Editing expense ID: ${expense.id}`);
-    this.router.navigate(['finance', 'edit', expense.id]);
+  addNewExpense(): void {
+    this.router.navigate(['/finance/expenses/add']);
   }
 
-  deleteExpense(event: Event, expense: Expense): void {
-    console.log(
-      `🗑️ Delete requested for expense: ${expense.expenseType} (ID: ${expense.id})`
-    );
+  editExpense(expense: ExpenseDto): void {
+    this.router.navigate(['/finance/expenses/edit', expense.id]);
+  }
 
+  viewDetails(expense: ExpenseDto): void {
+    this.router.navigate(['/finance/expenses', expense.id]);
+  }
+
+  deleteExpense(event: Event, expense: ExpenseDto): void {
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: `هل أنت متأكد من حذف المصروف "${expense.expenseType}"؟`,
+      message: `هل أنت متأكد من حذف المصروف "${expense.categoryName}"؟`,
       header: 'تأكيد الحذف',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'نعم',
@@ -189,66 +201,37 @@ export class ExpenseListComponent implements OnInit {
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-text',
       accept: () => {
-        console.log(`✅ User confirmed deletion of expense ID: ${expense.id}`);
-        this.financeService.delete(expense.id).subscribe({
+        this.expenseService.delete(expense.id).subscribe({
           next: () => {
-            console.log(`🎉 Expense ID ${expense.id} deleted successfully`);
             this.messageService.add({
               severity: 'success',
               summary: 'تم بنجاح',
-              detail: 'تم حذف المصروف بنجاح',
+              detail: 'تم حذف المصروف بنجاح'
             });
-            console.log('🔄 Reloading expenses list after deletion');
             this.loadExpenses(this.currentPage);
           },
           error: (err) => {
-            console.error(`❌ Failed to delete expense ID ${expense.id}:`, err);
+            console.error('Failed to delete expense:', err);
             this.messageService.add({
               severity: 'error',
               summary: 'خطأ',
-              detail: 'فشل في عملية الحذف',
+              detail: 'فشل في عملية الحذف'
             });
-          },
+          }
         });
-      },
-      reject: () => {
-        console.log('❌ User cancelled deletion');
-      },
+      }
     });
   }
 
-  addNewExpense(): void {
-    console.log('➕ Adding new expense');
-    this.router.navigate(['finance', 'add']);
+  getTotalExpenses(): number {
+    return this.expenses.reduce((sum, exp) => sum + exp.amount, 0);
   }
 
-  getPaymentMethodLabel(paymentMethod: string): string {
-    switch (paymentMethod) {
-      case 'نقدا':
-        return 'نقدي';
-      case 'شيك':
-        return 'شيك';
-      case 'تحويل مصرفي':
-        return 'تحويل مصرفي';
-      case 'بطاقة ائتمان':
-        return 'بطاقة ائتمان';
-      default:
-        return paymentMethod;
-    }
+  getPaidExpenses(): number {
+    return this.expenses.filter(exp => exp.isPaid).reduce((sum, exp) => sum + exp.amount, 0);
   }
 
-  getPaymentMethodSeverity(paymentMethod: string): 'success' | 'info' | 'warning' | 'danger' {
-    switch (paymentMethod) {
-      case 'نقدا':
-        return 'success';
-      case 'شيك':
-        return 'warning';
-      case 'تحويل مصرفي':
-        return 'info';
-      case 'بطاقة ائتمان':
-        return 'danger';
-      default:
-        return 'info';
-    }
+  getUnpaidExpenses(): number {
+    return this.expenses.filter(exp => !exp.isPaid).reduce((sum, exp) => sum + exp.amount, 0);
   }
 }

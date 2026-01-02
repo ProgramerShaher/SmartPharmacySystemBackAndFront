@@ -1,0 +1,213 @@
+.movement-container {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+  color: #1e293b;
+}
+
+// Icon Circle
+.icon-circle {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+}
+
+// Glass Panel
+.glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+// Hover Scale Effect
+.hover-scale {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+  }
+}
+
+// Premium Inputs
+.premium-input {
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1rem !important;
+  border: 2px solid #e5e7eb !important;
+  transition: all 0.2s ease !important;
+  font-family: 'Cairo', sans-serif;
+
+  &:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+  }
+}
+
+.premium-dropdown {
+  border-radius: 0.75rem !important;
+
+  ::ng-deep .p-dropdown {
+    border: 2px solid #e5e7eb !important;
+    border-radius: 0.75rem !important;
+
+    &:focus {
+      border-color: #6366f1 !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    }
+  }
+}
+
+// Table Enhancements
+::ng-deep {
+  .p-datatable {
+    .p-datatable-thead>tr>th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 700;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .p-datatable-tbody>tr {
+      background: white;
+      color: #334155;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #f8fafc !important;
+      }
+
+      >td {
+        padding: 1rem 1.5rem;
+        border-color: #f1f5f9;
+        color: #334155;
+      }
+    }
+
+    .p-paginator {
+      background: #f8fafc;
+      border: none;
+      padding: 1rem;
+      border-radius: 0 0 1rem 1rem;
+    }
+  }
+
+  // Chart Styling
+  .p-chart {
+    font-family: 'Cairo', sans-serif;
+  }
+
+  // Button Styling
+  .p-button {
+    font-family: 'Cairo', sans-serif;
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
+
+  .p-button-text {
+    color: #64748b;
+
+    &.p-button-danger {
+      color: #ef4444;
+    }
+
+    &.p-button-info {
+      color: #3b82f6;
+    }
+
+    &.p-button-secondary {
+      color: #475569;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04) !important;
+    }
+  }
+
+  // Tag Styling
+  .p-tag {
+    font-family: 'Cairo', sans-serif;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.5rem;
+  }
+
+  // Calendar Styling
+  .p-calendar {
+    .p-inputtext {
+      border-radius: 0.75rem !important;
+      border: 2px solid #e5e7eb !important;
+
+      &:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+      }
+    }
+  }
+
+  // Row Expansion Styling
+  .p-datatable-row-expansion {
+    background: #f9fafb;
+  }
+}
+
+// Fade In Animation
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 768px) {
+  .movement-container {
+    padding: 1rem !important;
+  }
+
+  .icon-circle {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  h1 {
+    font-size: 1.75rem !important;
+  }
+}
+
+// Print Styles
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .glass-panel {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+
+  .movement-container {
+    background: white !important;
+    padding: 0 !important;
+  }
+}

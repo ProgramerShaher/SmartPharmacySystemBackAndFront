@@ -1,78 +1,121 @@
-<!-- topbar.component.html -->
-<div class="topbar-content">
-
-    <!-- Mobile Menu Button -->
-    <button class="mobile-menu-btn" (click)="toggleSidebar()" pTooltip="القائمة" tooltipPosition="bottom">
-        <i class="pi pi-bars text-lg"></i>
-    </button>
-
-    <!-- Search -->
-    <div class="search-container">
-        <div class="search-wrapper">
-            <i class="pi pi-search search-icon mr-2"></i>
-            <input type="text" placeholder="ابحث عن دواء، فاتورة، عميل..." [(ngModel)]="searchQuery"
-                (keyup.enter)="onSearch()">
+<div class="topbar-container">
+    <!-- Brand/Mobile Menu -->
+    <div class="topbar-left">
+        <button class="mobile-menu-btn" (click)="toggleSidebar()" pRipple pTooltip="القائمة" tooltipPosition="bottom">
+            <i class="pi pi-bars"></i>
+        </button>
+        <div class="brand-display" *ngIf="false">
+            <!-- Optional: Logo or System Title for Mobile -->
         </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="quick-actions-menu">
-        <button class="quick-action-btn" (click)="navigateTo('/inventory/medicines/add')">
-            <i class="pi pi-plus"></i>
-            <span>دواء جديد</span>
-        </button>
-        <button class="quick-action-btn" (click)="navigateTo('/sales/create')">
-            <i class="pi pi-receipt"></i>
-            <span>فاتورة جديدة</span>
-        </button>
-    </div>
-
-    <!-- Actions -->
-    <div class="actions-section">
-        <!-- Theme Switcher -->
-        <button class="action-btn" pTooltip="تغيير الوضع" tooltipPosition="bottom" (click)="themeService.toggleTheme()">
-            <i class="pi" [ngClass]="themeService.currentThemeValue === 'dark' ? 'pi-sun' : 'pi-moon'"></i>
-        </button>
-
-        <!-- Notifications -->
-        <button class="action-btn" pTooltip="الإشعارات" tooltipPosition="bottom" (click)="toggleNotifications()">
-            <i class="pi pi-bell"></i>
-            <span class="notification-badge" *ngIf="hasNotifications"></span>
-        </button>
-
-        <!-- User Profile -->
-        <div class="user-profile" (click)="toggleUserMenu($event, userMenu)">
-            <div class="user-avatar">
-                <img [src]="userAvatar" alt="المستخدم">
-            </div>
-            <div class="user-info">
-                <span class="user-name">{{userName}}</span>
-                <span class="user-role">{{userRole}}</span>
-            </div>
         </div>
 
-        <!-- Logout -->
-        <button class="action-btn logout-btn" pTooltip="تسجيل الخروج" tooltipPosition="bottom"
-            (click)="confirmLogout()">
-            <i class="pi pi-power-off"></i>
-        </button>
+    <!-- Center Search Section (Omnibox style) -->
+    <div class="topbar-center">
+        <div class="search-omnibox">
+            <i class="pi pi-search search-icon"></i>
+            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                placeholder="بحث عن أدوية أو فواتير... (Ctrl + K)">
+            <div class="search-shortcut">
+                <span>Ctrl</span>+<span>K</span>
+            </div>
+        </div>
     </div>
 
+    <!-- Actions Section -->
+    <div class="topbar-right">
+        <!-- Theme Toggle -->
+        <button class="action-icon-btn theme-toggle" (click)="themeService.toggleTheme()"
+            [pTooltip]="themeService.currentThemeValue === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'"
+            tooltipPosition="bottom" pRipple>
+            <i [class]="themeService.currentThemeValue === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"></i>
+        </button>
+<!-- Notifications Bell -->
+<div class="notification-trigger" (click)="notificationsPanel.toggle($event)" pRipple [pTooltip]="'الإشعارات'"
+    tooltipPosition="bottom">
+    <div class="bell-wrapper" [class.pulse-active]="hasCriticalAlerts()">
+        <i class="pi pi-bell"></i>
+        <span class="badge" *ngIf="alertService.unreadCount() > 0">
+            {{ alertService.unreadCount() > 99 ? '99+' : alertService.unreadCount() }}
+        </span>
+    </div>
 </div>
 
-<!-- Notifications Panel -->
-<p-overlayPanel #notificationsPanel>
-    <div class="notifications-panel p-3" style="width: 320px">
-        <div class="flex align-items-center justify-content-between mb-3">
-            <h4 class="m-0">الإشعارات</h4>
-            <button class="p-link text-sm">تحديد الكل كمقروء</button>
+        <!-- Vertical Divider -->
+        <div class="v-divider"></div>
+        <!-- User Profile Section -->
+        <div class="user-control" (click)="userMenu.toggle($event)" pRipple>
+            <div class="user-meta">
+                <span class="u-name">{{userName}}</span>
+                <span class="u-role">{{userRole}}</span>
+            </div>
+            <div class="u-avatar-wrapper">
+                <img [src]="userAvatar" [alt]="userName">
+                <div class="online-indicator"></div>
+            </div>
+            <i class="pi pi-chevron-down u-chevron"></i>
         </div>
-        <!-- Notifications List -->
+        </div>
+        </div>
+
+<!-- Notification Overlay Panel (Professional Design) -->
+<p-overlayPanel #notificationsPanel styleClass="premium-notifications-overlay" [showCloseIcon]="false">
+    <div class="overlay-container">
+        <div class="overlay-header">
+            <div class="title-group">
+                <h3>الإشعارات</h3>
+                <span class="count-pill" *ngIf="alertService.unreadCount() > 0">
+                    {{alertService.unreadCount()}} جديد
+                </span>
+            </div>
+            <button class="mark-all-btn" (click)="viewAllAlerts(); notificationsPanel.hide()">عرض الكل</button>
+        </div>
+        <div class="notifications-viewport custom-scrollbar">
+            <ng-container *ngIf="(alertService.unreadAlerts$ | async) as alerts; else loading">
+                <div *ngIf="alerts.length === 0" class="empty-state">
+                    <i class="pi pi-bell-slash"></i>
+                    <p>لا توجد إشعارات جديدة حالياً</p>
+                </div>
+
+        <div *ngFor="let alert of alerts.slice(0, 3)" class="notification-card"
+            [class.is-critical]="getAlertSeverity(alert.alertType) === 'danger'"
+            (click)="viewAlertDetails(alert.id); notificationsPanel.hide()">
+            <div class="card-icon" [ngClass]="'severity-' + getAlertSeverity(alert.alertType)">
+                <i class="pi" [ngClass]="getAlertIcon(alert.alertType)"></i>
+            </div>
+            <div class="card-body">
+                <div class="card-header">
+                    <span class="medicine-name">{{alert.medicineName || 'تنبيه النظام'}}</span>
+                    <span class="time-stamp">{{getTimeAgo(alert.createdAt)}}</span>
+                </div>
+                <p class="card-msg">{{alert.message}}</p>
+                </div>
+                <div class="critical-indicator" *ngIf="getAlertSeverity(alert.alertType) === 'danger'"></div>
+        </div>
+
+        <div *ngIf="alerts.length > 3" class="view-more-card" (click)="viewAllAlerts(); notificationsPanel.hide()">
+            <i class="pi pi-arrow-left"></i>
+            <span>عرض {{ alerts.length - 3 }} إشعار آخر</span>
+        </div>
+    </ng-container>
+
+    <ng-template #loading>
+        <div class="empty-state">
+            <i class="pi pi-spin pi-spinner"></i>
+            <p>جاري تحميل الإشعارات...</p>
+        </div>
+    </ng-template>
+</div>
+
+        <div class="overlay-footer">
+            <button class="footer-btn" (click)="viewAllAlerts(); notificationsPanel.hide()">
+                مركز التنبيهات <i class="pi pi-arrow-left"></i>
+            </button>
+        </div>
     </div>
 </p-overlayPanel>
 
-<!-- User Menu -->
-<p-menu #userMenu [model]="userMenuItems" [popup]="true"></p-menu>
+<!-- User Context Menu -->
+<p-menu #userMenu [model]="userMenuItems" [popup]="true" styleClass="premium-user-menu"></p-menu>
 
-<!-- Logout Confirmation -->
-<p-confirmDialog></p-confirmDialog>
+<!-- Confirmation Dialog -->
+<p-confirmDialog [style]="{width: '400px'}" [baseZIndex]="10000"></p-confirmDialog>

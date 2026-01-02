@@ -7,23 +7,8 @@ import { ButtonModule } from 'primeng/button';
     selector: 'app-confirmation-dialog',
     standalone: true,
     imports: [CommonModule, DialogModule, ButtonModule],
-    template: `
-        <p-dialog [(visible)]="visible" [header]="header" [modal]="true" 
-            [style]="{width: '400px'}" [closable]="false" [draggable]="false" [resizable]="false">
-            <div class="flex flex-column align-items-center p-4 text-center">
-                <i [class]="icon" [style.color]="iconColor" class="text-6xl mb-4"></i>
-                <p class="text-xl font-bold m-0 mb-2">{{message}}</p>
-                <p class="text-secondary m-0">{{subMessage}}</p>
-            </div>
-            <ng-template pTemplate="footer">
-                <div class="flex justify-content-center gap-2 pb-3">
-                    <p-button label="تراجع" icon="pi pi-times" severity="secondary" text (onClick)="onReject()"></p-button>
-                    <p-button [label]="confirmLabel" [icon]="confirmIcon" [severity]="severity" 
-                        class="shadow-2" (onClick)="onAccept()"></p-button>
-                </div>
-            </ng-template>
-        </p-dialog>
-    `
+    templateUrl: './confirmation-dialog.component.html',
+    styleUrls: ['./confirmation-dialog.component.scss']
 })
 export class ConfirmationDialogComponent {
     @Input() header = 'تأقيق العملية';

@@ -1,8 +1,7 @@
-// medicine-add-edit.component.ts
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { InventoryService } from '../../services/inventory.service';
+import { CategoryService } from '../../services/category.service';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -10,13 +9,7 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { Category } from '../../../../core/models';
-
-interface CategoryStats {
-    totalMedicines: number;
-    availableMedicines: number;
-    totalSales: number;
-}
+import { CategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../../../../core/models';
 
 @Component({
     selector: 'app-category-add-edit',
@@ -42,44 +35,13 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
     categoryForm: FormGroup;
     editMode = false;
     saving = false;
-    selectedColor = 'primary';
-    selectedIcon = 'pi pi-folder';
 
     // بيانات الفئة
-    categoryData: Category | null = null;
-    categoryStats: CategoryStats | null = null;
-
-    // خيارات الألوان
-    colorOptions = [
-        { value: 'primary', name: 'أزرق أساسي', color: '#667eea' },
-        { value: 'success', name: 'أخضر', color: '#10b981' },
-        { value: 'danger', name: 'أحمر', color: '#ef4444' },
-        { value: 'warning', name: 'برتقالي', color: '#f59e0b' },
-        { value: 'info', name: 'سماوي', color: '#3b82f6' },
-        { value: 'purple', name: 'بنفسجي', color: '#8b5cf6' },
-        { value: 'pink', name: 'وردي', color: '#ec4899' },
-        { value: 'teal', name: 'تركواز', color: '#14b8a6' }
-    ];
-
-    // خيارات الأيقونات
-    iconOptions = [
-        { value: 'pi pi-folder', name: 'مجلد' },
-        { value: 'pi pi-capsule', name: 'كبسولة' },
-        { value: 'pi pi-heart', name: 'قلب' },
-        { value: 'pi pi-star', name: 'نجمة' },
-        { value: 'pi pi-shield', name: 'درع' },
-        { value: 'pi pi-box', name: 'صندوق' },
-        { value: 'pi pi-tag', name: 'علامة' },
-        { value: 'pi pi-bolt', name: 'برق' },
-        { value: 'pi pi-pill', name: 'حبة دواء' },
-        { value: 'pi pi-flask', name: 'قارورة' },
-        { value: 'pi pi-plus-circle', name: 'إضافة' },
-        { value: 'pi pi-check-circle', name: 'تحقق' }
-    ];
+    categoryData: CategoryDto | null = null;
 
     constructor(
         private fb: FormBuilder,
-        private inventoryService: InventoryService,
+        private categoryService: CategoryService,
         private messageService: MessageService
     ) {
         this.categoryForm = this.createForm();
@@ -107,20 +69,17 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
                 Validators.minLength(2),
                 Validators.maxLength(100)
             ]],
-            description: ['', Validators.maxLength(500)],
-            color: ['primary'],
-            icon: ['pi pi-folder']
+            description: ['', Validators.maxLength(500)]
         });
     }
 
     private loadCategoryData(): void {
         if (!this.categoryId) return;
 
-        this.inventoryService.getCategoryById(this.categoryId).subscribe({
+        this.categoryService.getById(this.categoryId).subscribe({
             next: (data) => {
                 this.categoryData = data;
                 this.patchFormValues(data);
-                this.loadCategoryStats();
             },
             error: (err) => {
                 console.error('Error loading category:', err);
@@ -133,53 +92,19 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
         });
     }
 
-    private loadCategoryStats(): void {
-        if (!this.categoryId) return;
-
-        this.inventoryService.getCategoryStats(this.categoryId).subscribe({
-            next: (stats) => {
-                this.categoryStats = stats;
-            },
-            error: (err) => {
-                console.error('Error loading category stats:', err);
-            }
-        });
-    }
-
-    private patchFormValues(data: Category): void {
+    private patchFormValues(data: CategoryDto): void {
         this.categoryForm.patchValue({
             name: data.name,
-            description: data.description || '',
-            color: data.color || 'primary',
-            icon: data.icon || 'pi pi-folder'
+            description: data.description || ''
         });
-
-        this.selectedColor = data.color || 'primary';
-        this.selectedIcon = data.icon || 'pi pi-folder';
     }
 
     private resetForm(): void {
         this.categoryForm.reset({
             name: '',
-            description: '',
-            color: 'primary',
-            icon: 'pi pi-folder'
+            description: ''
         });
-
-        this.selectedColor = 'primary';
-        this.selectedIcon = 'pi pi-folder';
         this.categoryData = null;
-        this.categoryStats = null;
-    }
-
-    selectColor(color: string): void {
-        this.selectedColor = color;
-        this.categoryForm.patchValue({ color });
-    }
-
-    selectIcon(icon: string): void {
-        this.selectedIcon = icon;
-        this.categoryForm.patchValue({ icon });
     }
 
     saveCategory(): void {
@@ -192,12 +117,13 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
         const formValue = this.categoryForm.value;
 
         if (this.editMode && this.categoryId) {
-            const payload = {
-                ...formValue,
-                id: this.categoryId
+            const updateDto: UpdateCategoryDto = {
+                id: this.categoryId,
+                name: formValue.name,
+                description: formValue.description
             };
 
-            this.inventoryService.updateCategory(this.categoryId, payload).subscribe({
+            this.categoryService.update(this.categoryId, updateDto).subscribe({
                 next: () => {
                     this.messageService.add({ severity: 'success', summary: 'تم بنجاح', detail: 'تم تحديث الفئة بنجاح' });
                     this.onSave.emit();
@@ -211,7 +137,12 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
                 }
             });
         } else {
-            this.inventoryService.createCategory(formValue).subscribe({
+            const createDto: CreateCategoryDto = {
+                name: formValue.name,
+                description: formValue.description
+            };
+
+            this.categoryService.create(createDto).subscribe({
                 next: () => {
                     this.messageService.add({ severity: 'success', summary: 'تم بنجاح', detail: 'تم إضافة الفئة بنجاح' });
                     this.onSave.emit();
@@ -231,12 +162,6 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
         this.onCancel.emit();
     }
 
-    getCategoryColor(): string {
-        const value = this.selectedColor;
-        const option = this.colorOptions.find(o => o.value === value);
-        return option ? option.color : '#667eea';
-    }
-
     private markFormGroupTouched(formGroup: FormGroup): void {
         Object.values(formGroup.controls).forEach(control => {
             control.markAsDirty();
@@ -246,6 +171,4 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
 
     get name() { return this.categoryForm.get('name')!; }
     get description() { return this.categoryForm.get('description')!; }
-    get color() { return this.categoryForm.get('color')!; }
-    get icon() { return this.categoryForm.get('icon')!; }
 }

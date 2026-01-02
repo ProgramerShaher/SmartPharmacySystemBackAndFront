@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartPharmacySystem.Application\SmartPharmacySystem.Application.csproj" />
+    <ProjectReference Include="..\SmartPharmacySystem.Infrastructure\SmartPharmacySystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

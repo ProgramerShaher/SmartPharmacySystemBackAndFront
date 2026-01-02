@@ -50,6 +50,25 @@ export class BatchDetailsComponent implements OnInit {
         this.loading = true;
         this.inventoryService.getBatchById(id).subscribe({
             next: (data) => {
+                console.log('📦 Batch data from backend:', data);
+                console.log('🔍 medicineId present?', data.medicineId);
+
+                // Fix: If medicineId is missing, try to get it from medicine navigation property
+                if (!data.medicineId && data.medicine?.id) {
+                    console.log('⚠️ medicineId missing, using medicine.id');
+                    data.medicineId = data.medicine.id;
+                }
+
+                // If still missing, we need to fetch batch list to find medicineId
+                if (!data.medicineId) {
+                    console.error('❌ medicineId is still missing! Backend needs to include it.');
+                    this.messageService.add({
+                        severity: 'warn',
+                        summary: 'تحذير',
+                        detail: 'بعض البيانات ناقصة. قد لا تعمل التسوية اليدوية بشكل صحيح.'
+                    });
+                }
+
                 this.batch = data;
                 this.loadStockCard(id);
             },
@@ -74,7 +93,25 @@ export class BatchDetailsComponent implements OnInit {
     }
 
     showActionDialog() {
-        this.displayActionDialog = true;
+        // Reload batch to ensure we have all data including medicineId
+        if (this.batch?.id) {
+            this.inventoryService.getBatchById(this.batch.id).subscribe({
+                next: (refreshedBatch) => {
+                    console.log('🔄 Refreshed batch for dialog:', refreshedBatch);
+                    this.batch = refreshedBatch;
+                    this.displayActionDialog = true;
+                },
+                error: (err) => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'خطأ',
+                        detail: 'فشل في تحميل بيانات الدفعة'
+                    });
+                }
+            });
+        } else {
+            this.displayActionDialog = true;
+        }
     }
 
     onActionSuccess() {

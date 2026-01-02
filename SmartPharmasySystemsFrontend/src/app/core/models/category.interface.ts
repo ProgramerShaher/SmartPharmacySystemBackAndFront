@@ -1,21 +1,37 @@
-import { Medicine } from './medicine.interface';
-
+/**
+ * Category Interface and DTOs - Matching Backend
+ */
 export interface Category {
     id: number;
     name: string;
-    description: string;
-    color?: string;
-    icon?: string;
-    createdAt: Date;
-    updatedAt?: Date;
-    createdBy?: string;
-    isDeleted: boolean;
-    medicines?: Medicine[];
+    description?: string;
+    createdAt?: string;
+    isDeleted?: boolean;
+}
+
+export interface CategoryDto {
+    id: number;
+    name: string;
+    description?: string;
+    createdAt: string;
+    medicinesCount?: number;
+}
+
+export interface CreateCategoryDto {
+    name: string;
+    description?: string;
+}
+
+export interface UpdateCategoryDto {
+    id: number;
+    name: string;
+    description?: string;
 }
 
 export interface CategoryQueryDto {
     search?: string;
-    isActive?: boolean;
     page?: number;
     pageSize?: number;
+    sortBy?: string;
+    sortDescending?: boolean;
 }

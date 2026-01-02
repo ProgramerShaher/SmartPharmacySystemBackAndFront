@@ -1,0 +1,133 @@
+.receipts-container {
+    background: linear-gradient(135deg, #ecfdf5 0%, #f1f5f9 100%);
+    min-height: 100vh;
+    color: #1e293b;
+    /* Force dark text for light background */
+}
+
+.premium-btn-emerald {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+    border: none !important;
+    border-radius: 12px !important;
+    transition: all 0.3s ease;
+    color: white !important;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.4);
+    }
+
+    i {
+        color: white !important;
+    }
+}
+
+.icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.premium-table {
+    border: none !important;
+
+    ::ng-deep {
+        .p-datatable-thead>tr>th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .p-datatable-tbody>tr {
+            background: white;
+            color: #334155;
+            /* Force dark text */
+
+            &:hover {
+                background: #f0fdf4 !important;
+            }
+
+            >td {
+                padding: 1.25rem 1.5rem;
+                border-color: #f1f5f9;
+                color: #334155;
+                /* Ensure cells inherit dark text */
+            }
+        }
+
+        /* Fix button icons in table */
+        .p-button-text {
+            color: #64748b;
+
+            &.p-button-danger {
+                color: #ef4444;
+            }
+
+            &.p-button-secondary {
+                color: #475569;
+            }
+
+            &:hover {
+                background: rgba(0, 0, 0, 0.05) !important;
+            }
+        }
+    }
+}
+
+::ng-deep {
+    .premium-dialog {
+        .p-dialog-header {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem;
+
+            .p-dialog-header-icon {
+                color: white;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+            }
+        }
+
+        .p-dialog-content {
+            padding: 1.5rem;
+            border-radius: 0 0 20px 20px;
+        }
+    }
+
+    .p-inputtext,
+    .p-inputtextarea,
+    .p-autocomplete-input,
+    .p-inputnumber-input {
+        border: 2px solid #e2e8f0 !important;
+        transition: all 0.3s ease;
+
+        &:focus {
+            border-color: #059669 !important;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1) !important;
+        }
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

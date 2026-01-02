@@ -1,229 +1,228 @@
-<div
-  class="layout-sidebar p-0 flex flex-column h-full border-left-1 border-color"
-  [style]="{ background: 'var(--card-bg)' }"
-  dir="rtl"
->
+<div class="layout-sidebar" dir="rtl" [@slideIn]>
   <!-- Header / Logo Area -->
-  <div
-    class="flex flex-column align-items-center justify-content-center py-5 relative overflow-hidden shrink-0"
-    style="
-      background: linear-gradient(
-        135deg,
-        var(--primary-600),
-        var(--primary-800)
-      );
-      border-bottom-left-radius: 24px;
-      border-bottom-right-radius: 0px;
-    "
-  >
-    <div class="text-center text-white z-1 px-4">
-      <div
-        class="w-4rem h-4rem bg-white-alpha-20 border-round-2xl flex align-items-center justify-content-center mx-auto mb-3 shadow-1 backdrop-blur-sm"
-      >
-        <i class="pi pi-briefcase text-3xl text-white"></i>
+  <div class="sidebar-header">
+    <div class="header-content">
+      <div class="logo-box">
+        <i class="pi pi-bolt"></i>
       </div>
-      <h2 class="text-xl font-bold m-0 tracking-wide">الصيدلية الذكية</h2>
-      <span class="text-xs text-white-alpha-80 font-medium"
-        >نظام الإدارة الطبي</span
-      >
+      <h2 class="app-title">الصيدلية الذكية</h2>
+      <span class="app-subtitle">نظام الإدارة الطبي المتكامل</span>
     </div>
-    <!-- Decorative Elements -->
-    <div
-      class="absolute w-12rem h-12rem bg-white-alpha-5 border-circle"
-      style="top: -50%; right: -20%"
-    ></div>
-    <div
-      class="absolute w-8rem h-8rem bg-white-alpha-5 border-circle"
-      style="bottom: -20%; left: -10%"
-    ></div>
   </div>
 
   <!-- Navigation Menu -->
-  <div
-    class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 custom-scrollbar"
-  >
+  <div class="sidebar-content custom-scrollbar">
     <!-- Dashboard -->
-    <a
-      routerLink="/dashboard"
-      routerLinkActive="active-menu"
-      class="flex align-items-center p-3 mb-2 border-round-xl text-color hover:bg-surface-hover transition-all duration-200 cursor-pointer no-underline group"
-    >
-      <i class="pi pi-th-large text-xl ml-3"></i>
-      <span class="font-bold">لوحة التحكم</span>
-    </a>
+    <div class="menu-group">
+      <div class="menu-items">
+        <a routerLink="/dashboard" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
+          class="menu-item">
+          <div class="item-icon icon-dashboard">
+            <i class="pi pi-chart-pie"></i>
+          </div>
+          <span class="item-label">لوحة التحكم</span>
+          <div class="item-glow"></div>
+        </a>
+      </div>
+      </div>
 
-    <div class="my-4 border-bottom-1 border-color"></div>
+    <div class="menu-separator"></div>
 
     <!-- Inventory Group -->
-    <div
-      class="mb-2 px-3 text-xs font-bold text-color-secondary uppercase tracking-widest"
-    >
-      إدارة المخزون
-    </div>
-    <div class="flex flex-column gap-1 mb-3">
-      <a
-        routerLink="/inventory/medicines"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-sliders-h"></i>
+    <div class="menu-group">
+      <div class="group-title">
+        <i class="pi pi-box"></i>
+        <span>المخزون والمنتجات</span>
+      </div>
+      <div class="menu-items">
+        <a routerLink="/inventory/medicines" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-inventory">
+            <i class="pi pi-box"></i>
+          </div>
+          <span class="item-label">الأدوية والمنتجات</span>
+          <div class="item-glow"></div>
+          </a>
+        <a routerLink="/inventory/categories" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-categories">
+            <i class="pi pi-tags"></i>
+          </div>
+          <span class="item-label">التصنيفات</span>
+          <div class="item-glow"></div>
+          </a>
+        <a routerLink="/inventory/movements" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-movements">
+            <i class="pi pi-history"></i>
+          </div>
+          <span class="item-label">حركات المخزون</span>
+          <div class="item-glow"></div>
+          </a>
+        <a routerLink="/inventory/batches" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-batches">
+            <i class="pi pi-list"></i>
+          </div>
+          <span class="item-label">الدفعات</span>
+          <div class="item-glow"></div>
+        </a>
         </div>
-        <span>الأدوية</span>
-      </a>
-      <a
-        routerLink="/inventory/categories"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-tags"></i>
-        </div>
-        <span>الفئات</span>
-      </a>
-      <a
-        routerLink="/inventory/movements"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-sort-alt"></i>
-        </div>
-        <span>حركات المخزون</span>
-      </a>
     </div>
 
     <!-- Sales Group -->
-    <div
-      class="mb-2 px-3 text-xs font-bold text-color-secondary uppercase tracking-widest"
-    >
-      المبيعات
-    </div>
-    <div class="flex flex-column gap-1 mb-3">
-      <a
-        routerLink="/sales"
-        routerLinkActive="active-menu"
-        [routerLinkActiveOptions]="{ exact: true }"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-receipt"></i>
-        </div>
-        <span>فواتير المبيعات</span>
-      </a>
-      <a
-        routerLink="/sales/returns"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-refresh"></i>
-        </div>
-        <span>المرتجعات</span>
-      </a>
+    <div class="menu-group">
+      <div class="group-title">
+        <i class="pi pi-shopping-cart"></i>
+        <span>المبيعات</span>
+      </div>
+      <div class="menu-items">
+        <a routerLink="/sales" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }" class="menu-item">
+          <div class="item-icon icon-sales">
+            <i class="pi pi-shopping-cart"></i>
+          </div>
+          <span class="item-label">فواتير المبيعات</span>
+          <div class="item-glow"></div>
+          </a>
+        <a routerLink="/sales/returns" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-returns">
+            <i class="pi pi-replay"></i>
+          </div>
+          <span class="item-label">مرتجع المبيعات</span>
+          <div class="item-glow"></div>
+          </a>
+          </div>
     </div>
 
     <!-- Purchases Group -->
-    <div
-      class="mb-2 px-3 text-xs font-bold text-color-secondary uppercase tracking-widest"
-    >
-      المشتروات
+    <div class="menu-group">
+      <div class="group-title">
+        <i class="pi pi-truck"></i>
+        <span>المشتريات</span>
+      </div>
+      <div class="menu-items">
+        <a routerLink="/purchases" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-purchases">
+            <i class="pi pi-truck"></i>
+          </div>
+          <span class="item-label">فواتير الشراء</span>
+          <div class="item-glow"></div>
+          </a>
+          <a routerLink="/purchases/returns" routerLinkActive="active-route" class="menu-item">
+            <div class="item-icon icon-purchase-returns">
+              <i class="pi pi-refresh"></i>
+            </div>
+            <span class="item-label">مرتجع المشتريات</span>
+            <div class="item-glow"></div>
+            </a>
+            </div>
+          </div>
+          <!-- Partners Group -->
+          <div class="menu-group">
+            <div class="group-title">
+              <i class="pi pi-users"></i>
+              <span>الشركاء</span>
+            </div>
+            <div class="menu-items">
+              <a routerLink="/partners" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
+                class="menu-item">
+                <div class="item-icon icon-partners">
+                  <i class="pi pi-users"></i>
+                </div>
+                <span class="item-label">الموردين</span>
+                <div class="item-glow"></div>
+                </a>
+              <a routerLink="/customers" routerLinkActive="active-route" class="menu-item">
+                <div class="item-icon icon-customers">
+                  <i class="pi pi-user-plus"></i>
+                </div>
+                <span class="item-label">العملاء</span>
+                <div class="item-glow"></div>
+                </a>
+      </div>
     </div>
-    <div class="flex flex-column gap-1 mb-3">
-      <a
-        routerLink="/purchases"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-truck"></i>
+    
+    <!-- Financial Group -->
+    <div class="menu-group">
+      <div class="group-title">
+        <i class="pi pi-wallet"></i>
+        <span>المالية</span>
+      </div>
+      <div class="menu-items">
+        <a routerLink="/financial/dashboard" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-financial">
+            <i class="pi pi-wallet"></i>
+          </div>
+          <span class="item-label">الخزينة والأرصدة</span>
+          <div class="item-glow"></div>
+        </a>
+          <a routerLink="/financial/ledger" routerLinkActive="active-route" class="menu-item">
+            <div class="item-icon icon-ledger">
+              <i class="pi pi-book"></i>
+            </div>
+            <span class="item-label">دفتر الأستاذ</span>
+            <div class="item-glow"></div>
+            </a>
+            
+            <!-- Expenses Submenu -->
+            <div class="submenu-wrapper">
+              <a (click)="toggleExpenseMenu()" class="menu-item submenu-trigger"
+                [class.active]="expenseMenuOpen || currentRoute.includes('/finance/expense')">
+                <div class="item-icon icon-expenses">
+                  <i class="pi pi-money-bill"></i>
+              </div>
+              <span class="item-label">المصروفات</span>
+              <i class="pi submenu-arrow" [class.pi-chevron-down]="!expenseMenuOpen" [class.pi-chevron-up]="expenseMenuOpen"></i>
+              <div class="item-glow"></div>
+              </a>
+            
+            <div class="submenu-items" [class.open]="expenseMenuOpen">
+              <a routerLink="/finance/expenses" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
+                class="submenu-item">
+                <i class="pi pi-list"></i>
+                <span>قائمة المصروفات</span>
+              </a>
+              <a routerLink="/finance/expenses/add" routerLinkActive="active-route" class="submenu-item">
+                <i class="pi pi-plus-circle"></i>
+                <span>إضافة مصروف</span>
+              </a>
+              <a routerLink="/finance/expense-categories" routerLinkActive="active-route" class="submenu-item">
+                <i class="pi pi-tag"></i>
+                <span>فئات المصروفات</span>
+              </a>
+            </div>
+            </div>
+            </div>
+            </div>
+    <!-- Admin Group -->
+    <div class="menu-group">
+      <div class="group-title">
+        <i class="pi pi-cog"></i>
+        <span>الإدارة</span>
         </div>
-        <span>فواتير الشراء</span>
-      </a>
-    </div>
-
-    <!-- Administration Group -->
-    <div
-      class="mb-2 px-3 text-xs font-bold text-color-secondary uppercase tracking-widest"
-    >
-      الإدارة
-    </div>
-    <div class="flex flex-column gap-1 mb-3">
-      <a
-        routerLink="/partners"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-briefcase"></i>
+        <div class="menu-items">
+          <a routerLink="/users" routerLinkActive="active-route" class="menu-item">
+            <div class="item-icon icon-users">
+              <i class="pi pi-id-card"></i>
+            </div>
+            <span class="item-label">المستخدمين والصلاحيات</span>
+            <div class="item-glow"></div>
+          </a>
+          <a routerLink="/system-alerts" routerLinkActive="active-route" class="menu-item alerts-menu-item">
+            <div class="item-icon icon-alerts">
+              <i class="pi pi-bell"></i>
+            </div>
+            <span class="item-label">التنبيهات</span>
+            <span class="alert-pill" *ngIf="unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
+            <div class="item-glow"></div>
+          </a>
         </div>
-        <span>الشركاء</span>
-      </a>
-      <a
-        routerLink="/users"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-users"></i>
         </div>
-        <span>المستخدمين</span>
-      </a>
-      <a
-        routerLink="/system-alerts"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-bell"></i>
         </div>
-        <span>التنبيهات</span>
-      </a>
-      <a
-        routerLink="/finance"
-        routerLinkActive="active-menu"
-        class="flex align-items-center p-3 border-round-xl text-color-secondary hover:bg-surface-hover hover:text-color transition-all cursor-pointer no-underline"
-      >
-        <div class="w-2rem flex justify-content-center ml-2">
-          <i class="pi pi-chart-pie"></i>
-        </div>
-        <span>التقارير المالية</span>
-      </a>
-    </div>
-  </div>
 
   <!-- Footer -->
-  <div
-    class="mt-auto p-4 border-top-1 border-color"
-    [style]="{ background: 'var(--bg-color)' }"
-  >
-    <div class="flex align-items-center gap-3">
-      <img
-        src="https://ui-avatars.com/api/?name=Admin&background=10b981&color=fff"
-        class="w-3rem h-3rem border-circle shadow-1"
-      />
-      <div class="flex flex-column">
-        <span class="font-bold text-color text-sm">المسؤول</span>
-        <span class="text-color-secondary text-xs">متصل الآن</span>
+  <div class="sidebar-footer">
+    <div class="footer-stats">
+      <div class="stat-item">
+        <i class="pi pi-clock"></i>
+        <span>{{ 'الآن' }}</span>
       </div>
-      <button
-        class="p-link mr-auto w-2rem h-2rem flex align-items-center justify-content-center text-500 hover:text-primary transition-colors"
-      >
-        <i class="pi pi-cog"></i>
-      </button>
     </div>
   </div>
-</div>
-
-<style>
-  .active-menu {
-    background-color: var(--surface-hover) !important;
-    color: var(--primary-500) !important;
-    font-weight: 700 !important;
-    border-right: 4px solid var(--primary-500);
-  }
-
-  .active-menu i {
-    color: var(--primary-600) !important;
-  }
-</style>
+  </div>

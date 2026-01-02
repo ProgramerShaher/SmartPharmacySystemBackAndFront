@@ -5,33 +5,26 @@ import { MedicineBatch } from './medicine-batch.interface';
 export interface SaleInvoiceDetail {
     id: number;
     saleInvoiceId: number;
-    saleInvoiceDate: string;
     medicineId: number;
-    medicineName: string;
+    medicineName?: string; // DTO populate
     batchId: number;
-    companyBatchNumber: string;
+    companyBatchNumber?: string; // DTO populate
     quantity: number;
     salePrice: number;
     unitCost: number;
     totalLineAmount: number;
     totalCost: number;
     profit: number;
-    isDeleted: boolean;
+    remainingQtyToReturn: number; // Critical for Returns
     saleInvoice?: SaleInvoice;
     medicine?: Medicine;
     batch?: MedicineBatch;
 }
 
-export interface SaleInvoiceDetailCreateDto {
-    saleInvoiceId: number;
+export interface CreateSaleInvoiceDetailDto {
     medicineId: number;
-    batchId?: number;
+    batchId?: number; // Optional, 0/null means FEFO auto-pick
     quantity: number;
-    salePrice: number;
-    unitCost: number;
-}
-
-export interface SaleInvoiceDetailUpdateDto {
-    quantity?: number;
-    salePrice?: number;
+    salePrice: number; 
+    // UnitCost not sent from frontend, determined by backend
 }

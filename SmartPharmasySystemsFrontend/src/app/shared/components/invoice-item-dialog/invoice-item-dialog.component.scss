@@ -1,0 +1,38 @@
+/* Pulse Animation for Critical Alerts */
+.pulse-animation {
+    animation: pulse-shadow 2s infinite;
+}
+
+@keyframes pulse-shadow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 166, 0, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 166, 0, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 166, 0, 0);
+    }
+}
+
+:host ::ng-deep {
+    .p-dropdown-panel {
+        .p-dropdown-items {
+            .p-dropdown-item {
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid #f3f4f6;
+                transition: background-color 0.2s;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+            }
+        }
+
+        .p-dropdown-empty-message {
+            padding: 0; // Removing padding to let our custom template handle it
+        }
+    }
+}

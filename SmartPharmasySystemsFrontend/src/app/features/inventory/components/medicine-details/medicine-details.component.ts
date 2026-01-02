@@ -1,14 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { InventoryService } from '../../services/inventory.service';
-import { Medicine } from '../../../../core/models';
+import { MedicineService } from '../../services/medicine.service';
+import { MedicineDto, MedicineBatchResponseDto } from '../../../../core/models';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
+import { TableModule } from 'primeng/table';
+import { ChartModule } from 'primeng/chart';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 
 @Component({
     selector: 'app-medicine-details',
@@ -21,93 +25,139 @@ import { TooltipModule } from 'primeng/tooltip';
         TagModule,
         DividerModule,
         ProgressSpinnerModule,
-        TooltipModule
+        TooltipModule,
+        TableModule,
+        ChartModule,
+        MenuModule
     ],
     templateUrl: './medicine-details.component.html',
-    styleUrls: ['./medicine-details.component.scss'] // إضافة ملف SCSS
+    styleUrls: ['./medicine-details.component.scss']
 })
 export class MedicineDetailsComponent implements OnInit {
-    medicine: Medicine | null = null;
+    medicine: MedicineDto | null = null;
+    batches: MedicineBatchResponseDto[] = [];
     loading = true;
+
+    // Quick Actions Menu
+    actions: MenuItem[] = [];
+
+    // Chart Data
+    chartData: any;
+    chartOptions: any;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private inventoryService: InventoryService
+        private medicineService: MedicineService
     ) { }
 
     ngOnInit() {
-        this.loadMedicineDetails();
+        this.loadData();
+        this.setupActions();
     }
 
-    /**
-     * تحميل تفاصيل الدواء
-     */
-    private loadMedicineDetails(): void {
+    private loadData(): void {
         const id = Number(this.route.snapshot.paramMap.get('id'));
 
         if (!id || isNaN(id)) {
-            this.navigateToMedicinesList();
+            this.goBack();
             return;
         }
 
         this.loading = true;
-        this.inventoryService.getMedicineById(id).subscribe({
+
+        // Fetch Medicine and Batches in parallel
+        this.medicineService.getById(id).subscribe({
             next: (data) => {
                 this.medicine = data;
-                this.loading = false;
+                this.checkLoadComplete();
             },
             error: (err) => {
-                console.error('Error loading medicine details:', err);
+                console.error('Error loading medicine:', err);
                 this.loading = false;
-                this.navigateToMedicinesList();
+            }
+        });
+
+        this.medicineService.getFEFOBatches(id).subscribe({
+            next: (data) => {
+                this.batches = data;
+                this.checkLoadComplete();
+            },
+            error: (err) => {
+                console.error('Error loading batches:', err);
             }
         });
     }
 
-    /**
-     * الحصول على حالة المخزون كنص
-     */
-    getStockStatus(): string {
-        const stock = this.getCurrentStock();
-        return stock > 0 ? 'متوفر' : 'نفذ';
+    private checkLoadComplete() {
+        if (this.medicine) {
+            this.loading = false;
+            this.setupChart();
+        }
     }
 
-    /**
-     * الحصول على مستوى الشدة لحالة المخزون
-     */
-    getStockSeverity(): 'success' | 'danger' {
-        return this.getCurrentStock() > 0 ? 'success' : 'danger';
+    setupActions() {
+        this.actions = [
+            { label: 'تعديل البيانات', icon: 'pi pi-pencil', command: () => this.editMedicine() },
+            { label: 'طباعة باركود', icon: 'pi pi-print' },
+            { separator: true },
+            { label: 'حذف الدواء', icon: 'pi pi-trash', styleClass: 'text-red-500' }
+        ];
     }
 
-    /**
-     * حساب المخزون الحالي
-     */
-    getCurrentStock(): number {
-        if (!this.medicine) return 0;
-        return this.medicine.stock ?? this.medicine.totalQuantity ?? 0;
+    setupChart() {
+        // Simple stock distribution donut (Batches quantity)
+        if (!this.batches.length) return;
+
+        this.chartData = {
+            labels: this.batches.map(b => b.companyBatchNumber),
+            datasets: [
+                {
+                    data: this.batches.map(b => b.remainingQuantity),
+                    backgroundColor: [
+                        '#14b8a6', '#0f766e', '#2dd4bf', '#99f6e4', '#ccfbf1'
+                    ]
+                }
+            ]
+        };
+
+        this.chartOptions = {
+            plugins: {
+                legend: { display: false }
+            },
+            cutout: '70%'
+        };
     }
 
-    /**
-     * التحقق من وجود مخزون منخفض
-     */
-    isLowStock(): boolean {
-        const currentStock = this.getCurrentStock();
-        const minAlert = this.medicine?.minAlertQuantity ?? 0;
-        return currentStock > 0 && currentStock <= minAlert;
-    }
-
-    /**
-     * العودة إلى قائمة الأدوية
-     */
     goBack(): void {
         this.router.navigate(['/inventory/medicines']);
     }
 
-    /**
-     * التنقل إلى قائمة الأدوية
-     */
-    private navigateToMedicinesList(): void {
-        this.router.navigate(['/inventory/medicines']);
+    editMedicine() {
+        // Here we could open the sidebar or navigate to edit page
+        // For now just log
+        console.log('Edit clicked');
+    }
+
+    getStatusSeverity(status: string): 'success' | 'danger' {
+        return status === 'Active' ? 'success' : 'danger';
+    }
+
+    getBatchStatusSeverity(batch: MedicineBatchResponseDto): 'success' | 'danger' | 'warning' {
+        if (batch.isExpired) return 'danger';
+        if (batch.isExpiringSoon) return 'warning';
+        return 'success';
+    }
+
+    getExpiredCount(): number {
+        return this.batches.filter(b => b.isExpired).length;
+    }
+
+    getExpiringSoonCount(): number {
+        return this.batches.filter(b => b.isExpiringSoon).length;
+    }
+
+    getCurrentStock(): number {
+        return this.medicine?.totalQuantity || 0;
     }
 }

@@ -1,142 +1,160 @@
-<div class="card p-0 shadow-3 border-round-xl overflow-hidden" [class.opacity-80]="loading" dir="rtl">
-    <!-- Header Section -->
-    <div class="bg-indigo-600 p-4 text-white flex justify-content-between align-items-center">
-        <div class="flex align-items-center gap-3">
-            <i class="pi pi-cart-plus text-3xl"></i>
-            <div>
-                <h2 class="m-0 text-xl font-bold">فاتورة مشتريات</h2>
-                <small class="opacity-80">تسجيل وتوريد الأدوية للمستودع</small>
-            </div>
-        </div>
-        <div class="flex align-items-center gap-3">
-            <p-tag [severity]="getStatusSeverity(purchaseForm.get('status')?.value)"
-                [value]="getStatusLabel(purchaseForm.get('status')?.value)" styleClass="text-lg px-3 py-2"></p-tag>
-            <div class="flex gap-2">
-                <p-button *ngIf="purchaseForm.get('status')?.value === 'Draft'" label="حفظ كمسودة" icon="pi pi-save"
-                    severity="info" (onClick)="saveDraft()" [loading]="loading"></p-button>
-                <p-button *ngIf="purchaseForm.get('status')?.value === 'Draft'" label="اعتماد المشتريات"
-                    icon="pi pi-check" severity="success" (onClick)="approveInvoice()" [loading]="loading"
-                    [disabled]="purchaseForm.invalid || !currentInvoice"></p-button>
-                <p-button *ngIf="purchaseForm.get('status')?.value === 'Approved'" label="إلغاء المشتريات"
-                    icon="pi pi-times" severity="danger" (onClick)="cancelInvoice()" [loading]="loading"></p-button>
-                <p-button label="رجوع" icon="pi pi-arrow-left" severity="secondary" outlined
-                    (onClick)="cancel()"></p-button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <form [formGroup]="purchaseForm" class="p-4 bg-gray-50">
-        <!-- Purchase Header Row -->
-        <div class="grid p-fluid">
-            <div class="col-12 md:col-2">
-                <label class="block font-bold mb-2 text-secondary">رقم الفاتورة</label>
-                <input pInputText formControlName="invoiceNumber" placeholder="تلقائي..."
-                    class="bg-gray-100 font-bold" />
-            </div>
-            <div class="col-12 md:col-3">
-                <label class="block font-bold mb-2 text-secondary">المورد</label>
-                <p-autoComplete *ngIf="!isReadOnly; else supplierNameRead" [suggestions]="filteredSuppliers"
-                    (completeMethod)="searchSuppliers($event)" field="name" formControlName="supplierId"
-                    placeholder="ابحث عن مورد..." appendTo="body" [dropdown]="true"></p-autoComplete>
-                <ng-template #supplierNameRead>
-                    <input pInputText formControlName="supplierName" class="bg-gray-100" />
-                </ng-template>
-            </div>
-            <div class="col-12 md:col-3">
-                <label class="block font-bold mb-2 text-secondary">تاريخ الشراء</label>
-                <p-calendar formControlName="purchaseInvoiceDate" [showIcon]="true" dateFormat="dd/mm/yy"
-                    appendTo="body"></p-calendar>
-            </div>
-            <div class="col-12 md:col-2">
-                <label class="block font-bold mb-2 text-secondary">طريقة الدفع</label>
-                <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" appendTo="body"></p-dropdown>
-            </div>
-            <div class="col-12 md:col-2">
-                <label class="block font-bold mb-2 text-secondary">ملاحظات</label>
-                <input pInputText formControlName="notes" placeholder="..." />
-            </div>
-        </div>
-
-        <p-divider align="right" styleClass="my-5">
-            <span class="flex align-items-center gap-2 text-indigo-600 font-bold">
-                <i class="pi pi-database"></i> بنود التوريد
-            </span>
-        </p-divider>
-
-        <!-- Details Grid -->
-        <p-table [value]="items.controls" responsiveLayout="scroll"
-            styleClass="p-datatable-gridlines p-datatable-sm shadow-1">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th class="bg-white text-right p-3" style="min-width: 250px">الصنف</th>
-                    <th class="bg-white text-center p-3" style="width: 150px">رقم الدفعة</th>
-                    <th class="bg-white text-center p-3" style="width: 180px">تاريخ الانتهاء</th>
-                    <th class="bg-white text-center p-3" style="width: 120px">الكمية</th>
-                    <th class="bg-white text-center p-3" style="width: 150px">سعر الشراء</th>
-                    <th class="bg-white text-center p-3" style="width: 150px">الإجمالي</th>
-                    <th *ngIf="!isReadOnly" class="bg-white text-center p-3" style="width: 50px"></th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item let-i="rowIndex">
-                <tr [formGroup]="$any(item)" class="bg-white">
-                    <td class="p-2">
-                        <p-autoComplete *ngIf="!isReadOnly; else medicineNameRead" [suggestions]="filteredMedicines"
-                            (completeMethod)="searchMedicines($event)" field="name"
-                            (onSelect)="onMedicineSelect($event.value, i)" placeholder="ابحث..." styleClass="w-full"
-                            appendTo="body" [forceSelection]="true"></p-autoComplete>
-                        <ng-template #medicineNameRead>
-                            <span class="font-bold">{{item.get('medicineName')?.value}}</span>
-                        </ng-template>
-                    </td>
-                    <td class="p-2">
-                        <input pInputText formControlName="companyBatchNumber" placeholder="Batch #"
-                            class="text-center font-mono" [disabled]="isReadOnly" />
-                    </td>
-                    <td class="p-2">
-                        <p-calendar formControlName="expiryDate" view="month" dateFormat="mm/yy" [showIcon]="true"
-                            appendTo="body" placeholder="شهر/سنة" [disabled]="isReadOnly"></p-calendar>
-                    </td>
-                    <td class="p-2">
-                        <p-inputNumber formControlName="quantity" [min]="1" styleClass="w-full"
-                            inputStyleClass="text-center font-bold" [disabled]="isReadOnly"></p-inputNumber>
-                    </td>
-                    <td class="p-2">
-                        <p-inputNumber formControlName="purchasePrice" mode="currency" currency="EGP"
-                            styleClass="w-full" inputStyleClass="text-center" [disabled]="isReadOnly"></p-inputNumber>
-                    </td>
-                    <td class="p-2 text-center font-bold text-indigo-600">
-                        {{item.get('total')?.value | currency:'EGP'}}
-                    </td>
-                    <td *ngIf="!isReadOnly" class="p-2 text-center">
-                        <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
-                            (click)="removeItem(i)"></button>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="footer" *ngIf="!isReadOnly">
-                <tr>
-                    <td colspan="7" class="p-3 text-right">
-                        <p-button label="إضافة صنف" icon="pi pi-plus" severity="secondary" outlined size="small"
-                            (onClick)="addItem()"></p-button>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-
-        <!-- Summary Panel -->
-        <div class="grid mt-5 justify-content-end">
-            <div class="col-12 md:col-4">
-                <div class="bg-white border-round-xl shadow-1 p-4 border-1 border-indigo-100">
-                    <div class="flex justify-content-between py-2 border-bottom-1 border-gray-100">
-                        <span class="text-secondary font-bold">إجمالي الفاتورة:</span>
-                        <span class="text-2xl font-extrabold text-indigo-600">{{currentInvoice?.totalAmount || 0 |
-                            currency:'EGP'}}</span>
-                    </div>
+<div class="pos-container animate-fade-in" dir="rtl">
+    <!-- Header with Glassmorphism -->
+    <header class="pos-header glass-panel purchase-accent">
+        <div class="header-left">
+            <p-button icon="pi pi-arrow-right" rounded text styleClass="back-btn" (onClick)="backToList()"></p-button>
+            <div class="header-title">
+                <h1 class="m-0 font-bold">تسجيل فاتورة توريد</h1>
+                <div class="header-subtitle flex align-items-center gap-2">
+                    <span class="status-dot" [ngClass]="getStatusClass()"></span>
+                    <span class="opacity-70">{{ getStatusLabel() }}</span>
+                    <span class="mx-2 opacity-30">|</span>
+                    <span class="opacity-70 text-xs">إدارة المشتريات والمخازن</span>
                 </div>
             </div>
         </div>
-    </form>
+        <div class="header-right flex gap-2">
+            <p-button *ngIf="!isReadOnly" label="حفظ مسودة" icon="pi pi-save" severity="warning" [loading]="saving"
+                (onClick)="saveDraft()" styleClass="p-button-outlined"></p-button>
+            <p-button *ngIf="!isReadOnly" label="اعتماد التوريد" icon="pi pi-check-circle" severity="success" [loading]="saving"
+                (onClick)="approveInvoice()"></p-button>
+            <p-button *ngIf="isReadOnly" label="طباعة" icon="pi pi-print" severity="secondary" outlined></p-button>
+        </div>
+    </header>
+    
+    <div class="pos-content-grid mt-4">
+        <!-- Main Form Area -->
+        <main class="pos-main">
+            <form [formGroup]="purchaseForm">
+                <!-- Supplier & Info Card -->
+                <section class="glass-panel p-4 mb-4 elevation-hover">
+                    <div class="section-header mb-4">
+                        <i class="pi pi-briefcase text-primary"></i>
+                        <h3 class="m-0">بيانات المورد والمستند</h3>
+                    </div>
+                    <div class="grid p-fluid">
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-2 text-primary">المورد المعتمد</label>
+                            <p-dropdown [options]="suppliers" formControlName="supplierId" optionLabel="name" optionValue="id"
+                                placeholder="اختر المورد..." [filter]="true" filterBy="name" [disabled]="isReadOnly"
+                                styleClass="h-3rem"></p-dropdown>
+                        </div>
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-2">رقم فاتورة المورد</label>
+                            <span class="p-input-icon-left">
+                                <i class="pi pi-file"></i>
+                                <input pInputText formControlName="supplierInvoiceNumber" placeholder="الرقم المسجل على الفاتورة..."
+                                    [readonly]="isReadOnly" class="h-3rem" />
+                            </span>
+                        </div>
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-2">تاريخ التوريد</label>
+                            <p-calendar formControlName="purchaseDate" [showIcon]="true" appendTo="body" [disabled]="isReadOnly"
+                                dateFormat="dd/mm/yy" styleClass="h-3rem"></p-calendar>
+                        </div>
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-2">طريقة السداد</label>
+                            <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" optionLabel="label" optionValue="value"
+                                [disabled]="isReadOnly" styleClass="h-3rem"></p-dropdown>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Items Table Card -->
+                <section class="glass-panel p-0 overflow-hidden elevation-hover">
+                    <div class="p-4 flex justify-content-between align-items-center border-bottom-1 border-color">
+                        <div class="section-header">
+                            <i class="pi pi-list text-primary"></i>
+                            <h3 class="m-0">أصناف التوريد</h3>
+                        </div>
+                        <p-button label="إضافة صنف" icon="pi pi-plus" severity="primary" size="small" (onClick)="openItemDialog()"
+                            [disabled]="isReadOnly" [outlined]="true"></p-button>
+                    </div>
+
+                    <p-table [value]="details.value" responsiveLayout="scroll" styleClass="p-datatable-sm">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>الصنف</th>
+                                <th class="text-center">التشغيلة</th>
+                                <th class="text-center">الكمية</th>
+                                <th class="text-right">سعر الشراء</th>
+                                <th class="text-right">الإجمالي</th>
+                                <th class="text-center" *ngIf="!isReadOnly"></th>
+                                </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                            <tr class="item-row" (click)="!isReadOnly && openItemDialog(item, i)">
+                                <td class="font-bold text-indigo-900">{{ item.medicineName }}</td>
+                                <td class="text-center">
+                                    <span class="batch-tag indigo">{{ item.companyBatchNumber }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex flex-column align-items-center">
+                                        <span class="font-bold text-lg">{{ item.quantity }}</span>
+                                        <span *ngIf="item.bonusQuantity > 0" class="text-xs text-green-600 font-bold">+ {{item.bonusQuantity}}
+                                            مجاني</span>
+                                    </div>
+                                </td>
+                                <td class="text-right text-sm opacity-80">{{ item.purchasePrice | number : '1.0-0' }}</td>
+                                <td class="text-right font-bold text-indigo-600">{{ item.total | number : '1.0-2' }}</td>
+                                <td class="text-center" *ngIf="!isReadOnly">
+                                    <p-button icon="pi pi-trash" severity="danger" rounded text
+                                        (onClick)="$event.stopPropagation(); removeItem(i)"></p-button>
+                                </td>
+                                </tr>
+                                </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="6" class="text-center p-6 opacity-40">
+                                    <i class="pi pi-inbox text-6xl mb-3"></i>
+                                    <p class="m-0 text-xl">يرجى تسجيل أصناف الفاتورة</p>
+                                </td>
+                                </tr>
+                                </ng-template>
+                                </p-table>
+                </section>
+                </form>
+                </main>
+                
+                <!-- Sidebar Summary -->
+                <aside class="pos-sidebar">
+                    <div class="glass-panel sticky-sidebar p-4 flex flex-column gap-4">
+                        <div class="summary-card purchase">
+                            <span class="label">إجمالي الفاتورة النهائية</span>
+                            <span class="value">{{ calculateTotal() | number : '1.0-0' }} <small>ر.ي</small></span>
+                        </div>
+
+                <div class="summary-details grid p-0 m-0">
+                    <div class="col-6 p-2">
+                        <div class="mini-card">
+                            <span class="label">البنود</span>
+                            <span class="value">{{ details.length }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 p-2">
+                        <div class="mini-card">
+                            <span class="label">القطع</span>
+                            <span class="value">{{ calculateTotalQuantity() }}</span>
+                        </div>
+                    </div>
+                    <div class="col-12 p-2">
+                        <div class="mini-card">
+                            <span class="label">صافي الضريبة</span>
+                            <span class="value">0.00 ر.ي</span>
+                        </div>
+                    </div>
+                </div>
+<div class="actions mt-auto" *ngIf="!isReadOnly">
+    <p-button label="اعتماد وترحيل المخزون" icon="pi pi-verified" severity="success" [disabled]="details.length === 0"
+        styleClass="w-full py-3 text-xl font-bold rounded-xl" (onClick)="approveInvoice()"></p-button>
+    <p-button label="تفريغ القائمة" icon="pi pi-trash" severity="danger" text styleClass="w-full mt-2"
+        (onClick)="details.clear()"></p-button>
+                </div>
+            </div>
+        </aside>
+    </div>
 </div>
 
-<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<app-invoice-item-dialog #itemDialog invoiceType="Purchase" (onSave)="onItemSaved($event)"></app-invoice-item-dialog>
+<app-confirmation-dialog #confirmDialog [header]="'تأكيد المراجعة والترحيل'"
+    (accept)="onConfirmApprove()"></app-confirmation-dialog>

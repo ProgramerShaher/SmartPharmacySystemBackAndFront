@@ -1,0 +1,73 @@
+/* Force dark text color for all elements in expense pages */
+.expenses-container * {
+  color: #1e293b !important;
+}
+
+/* Restore white text for colored backgrounds */
+.header-card,
+.header-card *,
+.summary-card,
+.summary-card *,
+.add-btn,
+.add-btn *,
+.p-button,
+.p-button *,
+::ng-deep .p-tag,
+::ng-deep .p-tag * {
+  color: inherit !important;
+}
+
+/* Ensure form labels and inputs are dark */
+::ng-deep .p-dropdown-label,
+::ng-deep .p-dropdown-trigger,
+::ng-deep .p-calendar input,
+::ng-deep .p-inputtext,
+::ng-deep .p-inputnumber input {
+  color: #1e293b !important;
+}
+
+/* Dropdown panel items */
+::ng-deep .p-dropdown-panel .p-dropdown-item {
+  color: #1e293b !important;
+}
+
+::ng-deep .p-dropdown-panel .p-dropdown-item.p-highlight {
+  color: #fff !important;
+  background: #4f46e5 !important;
+}
+
+/* Category list specific */
+.expense-categories-container * {
+  color: #1e293b !important;
+}
+
+.expense-categories-container .header-card *,
+.expense-categories-container .p-button * {
+  color: inherit !important;
+}
+
+/* Form container specific */
+.expense-form-container * {
+  color: #1e293b !important;
+}
+
+.expense-form-container .header-card *,
+.expense-form-container .p-button * {
+  color: inherit !important;
+}
+
+/* Payment method cards */
+.method-label,
+.method-description {
+  color: #1e293b !important;
+}
+
+/* Table cells */
+::ng-deep .p-datatable .p-datatable-tbody>tr>td {
+  color: #1e293b !important;
+}
+
+/* Input textarea */
+::ng-deep .p-inputtextarea {
+  color: #1e293b !important;
+}

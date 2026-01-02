@@ -1,0 +1,39 @@
+/* Global styles for PrimeNG components in finance module */
+
+/* Dropdown items */
+::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+    color: #1e293b !important;
+}
+
+::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item:hover {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+}
+
+::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+    background: #4f46e5 !important;
+    color: #fff !important;
+}
+
+/* Calendar */
+::ng-deep .p-datepicker {
+    color: #1e293b !important;
+}
+
+::ng-deep .p-datepicker .p-datepicker-header {
+    color: #1e293b !important;
+}
+
+::ng-deep .p-datepicker table td {
+    color: #1e293b !important;
+}
+
+/* Input number */
+::ng-deep .p-inputnumber-input {
+    color: #1e293b !important;
+}
+
+/* Textarea */
+::ng-deep .p-inputtextarea {
+    color: #1e293b !important;
+}

@@ -15,7 +15,15 @@ export const INVENTORY_ROUTES: Routes = [
     },
     {
         path: 'movements',
-        loadComponent: () => import('./components/movement-history/movement-history.component').then(m => m.MovementHistoryComponent)
+        loadComponent: () => import('./components/movement-list/movement-list.component').then(m => m.MovementListComponent)
+    },
+    {
+        path: 'movements/:id',
+        loadComponent: () => import('./components/movement-history/movement-details.component').then(m => m.MovementDetailsComponent)
+    },
+    {
+        path: 'stock-card',
+        loadComponent: () => import('./components/stock-card/stock-card.component').then(m => m.StockCardComponent)
     },
     {
         path: 'batches',

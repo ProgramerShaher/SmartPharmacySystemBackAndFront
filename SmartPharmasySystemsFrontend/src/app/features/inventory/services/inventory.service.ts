@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ApiResponse, Category, InventoryMovement, Medicine, MedicineBatch, PagedResult, CategoryQueryDto, MedicineQueryDto, InventoryMovementQueryDto } from '../../../core/models';
+import { ApiResponse, Category, InventoryMovement, Medicine, MedicineBatch, PagedResult, CategoryQueryDto, MedicineQueryDto, StockMovementQueryDto } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -101,7 +101,7 @@ export class InventoryService {
     }
 
     // --- StockMovement Service Spec ---
-    getAllMovements(query?: InventoryMovementQueryDto): Observable<PagedResult<InventoryMovement>> {
+    getAllMovements(query?: StockMovementQueryDto): Observable<PagedResult<InventoryMovement>> {
         return this.http.get<ApiResponse<PagedResult<InventoryMovement>>>(`${environment.apiUrl}/StockMovements`, { params: query as any }).pipe(map(res => res.data));
     }
     getMovementById(id: number): Observable<InventoryMovement> {
@@ -121,7 +121,18 @@ export class InventoryService {
         return this.http.get<ApiResponse<InventoryMovement[]>>(`${environment.apiUrl}/StockMovements/stock-card/${batchId}`).pipe(map(res => res.data));
     }
 
-    createManualMovement(movement: { batchId: number, movementType: 'DAMAGE' | 'ADJUSTMENT', quantity: number, notes: string }): Observable<InventoryMovement> {
-        return this.http.post<ApiResponse<InventoryMovement>>(`${environment.apiUrl}/StockMovements/manual`, movement).pipe(map(res => res.data));
+    /**
+     * Create manual stock movement (matches backend DTO)
+     * @param movement - Manual movement DTO matching backend structure
+     */
+    createManualMovement(movement: {
+        medicineId: number;
+        batchId: number;
+        quantity: number;
+        type: number; // 5=Adjustment, 6=Damage, 7=Expiry
+        reason: string;
+        approvedBy: number;
+    }): Observable<InventoryMovement> {
+        return this.http.post<ApiResponse<InventoryMovement>>(`${environment.apiUrl}/Movements/manual`, movement).pipe(map(res => res.data));
     }
 }

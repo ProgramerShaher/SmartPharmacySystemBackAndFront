@@ -29,8 +29,8 @@
             </div>
             <div class="detail-item">
                 <label>الكمية:</label>
-                <span class="qty" [ngClass]="movement.movementType === 'IN' ? 'text-success' : 'text-danger'">
-                    {{ movement.movementType === 'IN' ? '+' : '-' }}{{ movement.quantity }}
+                <span class="qty" [ngClass]="movement.movementType.toString().toUpperCase() === 'IN' ? 'text-success' : 'text-danger'">
+                    {{ movement.movementType.toString().toUpperCase() === 'IN' ? '+' : '-' }}{{ movement.quantity }}
                 </span>
             </div>
             <div class="detail-item">

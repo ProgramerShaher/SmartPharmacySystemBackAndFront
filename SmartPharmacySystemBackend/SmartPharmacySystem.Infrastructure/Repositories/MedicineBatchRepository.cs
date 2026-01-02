@@ -7,7 +7,8 @@ namespace SmartPharmacySystem.Infrastructure.Repositories;
 
 /// <summary>
 /// Repository implementation for MedicineBatch entity operations.
-/// تنفيذ المستودع لعمليات كيان دفعة الدواء.
+/// Optimized: Uses RemainingQuantity instead of Sum(InventoryMovements)
+/// تنفيذ المستودع لعمليات كيان دفعة الدواء - محسّن للأداء
 /// </summary>
 public class MedicineBatchRepository : IMedicineBatchRepository
 {
@@ -35,7 +36,6 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     public async Task DeleteAsync(MedicineBatch batch)
     {
         batch.IsDeleted = true;
-        // batch.DeletedAt = DateTime.UtcNow; // No DeletedAt in entity
         _db.MedicineBatches.Update(batch);
         await Task.CompletedTask;
     }
@@ -46,8 +46,21 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         return await _db.MedicineBatches
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
-            .Include(b => b.InventoryMovements)
+            // Removed: .Include(b => b.InventoryMovements) - not needed, use RemainingQuantity
             .FirstOrDefaultAsync(b => b.Id == id && !b.IsDeleted);
+    }
+
+    /// <summary>
+    /// Optimized: Gets multiple batches in one query
+    /// </summary>
+    public async Task<IEnumerable<MedicineBatch>> GetByIdsAsync(IEnumerable<int> ids)
+    {
+        var idList = ids.ToList();
+        return await _db.MedicineBatches
+            .Include(b => b.Medicine)
+            .Include(b => b.CreatedByUser)
+            .Where(b => idList.Contains(b.Id) && !b.IsDeleted)
+            .ToListAsync();
     }
 
     /// <inheritdoc/>
@@ -57,6 +70,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             return null;
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .FirstOrDefaultAsync(b => b.BatchBarcode == barcode && !b.IsDeleted);
@@ -70,6 +84,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
 
         var dateOnly = expiryDate.Date;
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .FirstOrDefaultAsync(b => b.BatchBarcode == barcode
                                       && b.ExpiryDate.Date == dateOnly
@@ -83,6 +98,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             return null;
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .FirstOrDefaultAsync(b => b.MedicineId == medicineId
@@ -94,6 +110,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     public async Task<IEnumerable<MedicineBatch>> GetBatchesByMedicineIdAsync(int medicineId, bool includeDeleted = false)
     {
         var query = _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => b.MedicineId == medicineId);
@@ -102,40 +119,45 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             query = query.Where(b => !b.IsDeleted);
 
         return await query
-            .OrderBy(b => b.ExpiryDate) // FIFO by expiry date
+            .OrderBy(b => b.ExpiryDate)
             .ToListAsync();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Optimized: Uses RemainingQuantity instead of Sum(InventoryMovements)
+    /// </summary>
     public async Task<IEnumerable<MedicineBatch>> GetAvailableBatchesAsync()
     {
         var now = DateTime.UtcNow.Date;
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => !b.IsDeleted
                         && b.Status == "Active"
-                        && b.InventoryMovements.Sum(m => m.Quantity) > 0
+                        && b.RemainingQuantity > 0  // ✅ Optimized: Direct field instead of Sum
                         && b.ExpiryDate.Date > now)
-            .OrderBy(b => b.ExpiryDate) // FIFO
+            .OrderBy(b => b.ExpiryDate)
             .ToListAsync();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Optimized: Uses RemainingQuantity for FEFO logic
+    /// </summary>
     public async Task<IEnumerable<MedicineBatch>> GetAvailableBatchesByMedicineIdAsync(int medicineId)
     {
         var now = DateTime.UtcNow.Date;
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
-            .Include(b => b.CreatedByUser)
             .Where(b => !b.IsDeleted
                         && b.MedicineId == medicineId
                         && b.Status == "Active"
-                        && b.InventoryMovements.Sum(m => m.Quantity) > 0
+                        && b.RemainingQuantity > 0  // ✅ Optimized
                         && b.ExpiryDate.Date > now)
-            .OrderBy(b => b.ExpiryDate) // FIFO - nearest expiry first
+            .OrderBy(b => b.ExpiryDate)
             .ToListAsync();
     }
 
@@ -146,12 +168,13 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         var thresholdDate = now.AddDays(daysThreshold);
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => !b.IsDeleted
                         && b.ExpiryDate.Date > now
                         && b.ExpiryDate.Date <= thresholdDate
-                        && b.InventoryMovements.Sum(m => m.Quantity) > 0)
+                        && b.RemainingQuantity > 0)  // ✅ Optimized
             .OrderBy(b => b.ExpiryDate)
             .ToListAsync();
     }
@@ -162,6 +185,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         var now = DateTime.UtcNow.Date;
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => !b.IsDeleted && b.ExpiryDate.Date <= now)
@@ -173,6 +197,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     public async Task<IEnumerable<MedicineBatch>> GetBatchesByStatusAsync(string status)
     {
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => !b.IsDeleted && b.Status == status)
@@ -180,13 +205,15 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             .ToListAsync();
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Optimized search with StartsWith and AsNoTracking
+    /// </summary>
     public async Task<IEnumerable<MedicineBatch>> GetAllAsync(string? searchFilter = null, bool includeDeleted = false)
     {
         var query = _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
-            .Include(b => b.InventoryMovements)
             .AsQueryable();
 
         if (!includeDeleted)
@@ -194,16 +221,17 @@ public class MedicineBatchRepository : IMedicineBatchRepository
 
         if (!string.IsNullOrWhiteSpace(searchFilter))
         {
-            var filter = searchFilter.ToLower();
+            // ✅ Optimized: Use StartsWith for better index usage
             query = query.Where(b =>
-                b.CompanyBatchNumber.ToLower().Contains(filter) ||
-                (b.BatchBarcode != null && b.BatchBarcode.ToLower().Contains(filter)) ||
-                (b.Medicine != null && b.Medicine.Name.ToLower().Contains(filter)) ||
-                (b.StorageLocation != null && b.StorageLocation.ToLower().Contains(filter)));
+                b.CompanyBatchNumber.StartsWith(searchFilter) ||
+                (b.BatchBarcode != null && b.BatchBarcode.StartsWith(searchFilter)) ||
+                (b.Medicine != null && b.Medicine.Name.StartsWith(searchFilter)) ||
+                // Fallback to Contains for location
+                (b.StorageLocation != null && b.StorageLocation.Contains(searchFilter)));
         }
 
         return await query
-            .OrderByDescending(b => b.EntryDate) // Use EntryDate instead of CreatedAt
+            .OrderByDescending(b => b.EntryDate)
             .ToListAsync();
     }
 
@@ -214,6 +242,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             return false;
 
         var query = _db.MedicineBatches
+            .AsNoTracking()
             .Where(b => b.MedicineId == medicineId
                         && b.CompanyBatchNumber == batchNumber
                         && !b.IsDeleted);
@@ -231,6 +260,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             return false;
 
         var query = _db.MedicineBatches
+            .AsNoTracking()
             .Where(b => b.BatchBarcode == barcode && !b.IsDeleted);
 
         if (excludeBatchId.HasValue)
@@ -245,13 +275,14 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         var now = DateTime.UtcNow.Date;
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Where(b => !b.IsDeleted
                         && b.MedicineId == medicineId
                         && b.Status == "Active"
-                        && b.InventoryMovements.Sum(m => m.Quantity) > 0
+                        && b.RemainingQuantity > 0  // ✅ Optimized
                         && b.ExpiryDate.Date > now)
-            .OrderBy(b => b.ExpiryDate) // Get the one expiring soonest
+            .OrderBy(b => b.ExpiryDate)
             .FirstOrDefaultAsync();
     }
 
@@ -282,22 +313,27 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         return batchesToUpdate.Count;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Optimized: Direct sum of RemainingQuantity
+    /// </summary>
     public async Task<int> GetTotalAvailableQuantityAsync(int medicineId)
     {
         var now = DateTime.UtcNow.Date;
 
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Where(b => !b.IsDeleted
                         && b.MedicineId == medicineId
                         && b.Status == "Active"
                         && b.ExpiryDate.Date > now)
-            .SumAsync(b => b.InventoryMovements.Sum(m => m.Quantity));
+            .SumAsync(b => b.RemainingQuantity);  // ✅ Optimized: Direct field
     }
+
     /// <inheritdoc/>
     public async Task<int> GetTotalQuantityAsync(int medicineId)
     {
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Where(b => !b.IsDeleted && b.MedicineId == medicineId)
             .SumAsync(b => b.RemainingQuantity);
     }
@@ -306,6 +342,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     public async Task<IEnumerable<MedicineBatch>> GetAllWithMedicineAsync()
     {
         return await _db.MedicineBatches
+            .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => !b.IsDeleted)

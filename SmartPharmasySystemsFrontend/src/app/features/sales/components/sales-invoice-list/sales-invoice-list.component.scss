@@ -1,0 +1,517 @@
+/**
+ * 👑 IMPERIAL SALES MODULE - PREMIUM DESIGN
+ * ==========================================
+ * تصميم فخم وملكي لمديول المبيعات مع Glassmorphism
+ * الألوان السيادية: الأخضر الملكي #28a745، الكحلي العميق، الأحمر الفاخر
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
+
+:host {
+    font-family: 'Cairo', sans-serif !important;
+}
+
+/* 🎨 Imperial Color Palette */
+:root {
+    --imperial-success: #28a745;
+    --imperial-success-dark: #218838;
+    --imperial-success-light: rgba(40, 167, 69, 0.1);
+
+    --imperial-emerald: #10b981;
+    --imperial-emerald-dark: #059669;
+    --imperial-emerald-light: rgba(16, 185, 129, 0.1);
+
+    --imperial-royal: #1e40af;
+    --imperial-royal-dark: #1e3a8a;
+    --imperial-royal-light: rgba(30, 64, 175, 0.1);
+
+    --imperial-crimson: #dc2626;
+    --imperial-crimson-dark: #b91c1c;
+    --imperial-crimson-light: rgba(220, 38, 38, 0.1);
+
+    --imperial-gold: #f59e0b;
+    --imperial-navy: #1e293b;
+    --imperial-slate: #475569;
+
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --shadow-imperial: 0 20px 60px rgba(0, 0, 0, 0.12);
+}
+
+/* 🏛️ Container */
+.sales-container {
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    padding: 2rem;
+    direction: rtl;
+}
+
+/* 👑 Imperial KPI Cards */
+.imperial-kpi-card {
+    position: relative;
+    padding: 1.5rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-imperial);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.18);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, currentColor, transparent);
+        opacity: 0.6;
+    }
+}
+
+/* 🎯 KPI Accent Bar */
+.kpi-accent {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+
+    &.accent-success {
+        background: linear-gradient(180deg, var(--imperial-success), var(--imperial-success-dark));
+    }
+
+    &.accent-emerald {
+        background: linear-gradient(180deg, var(--imperial-emerald), var(--imperial-emerald-dark));
+    }
+
+    &.accent-royal {
+        background: linear-gradient(180deg, var(--imperial-royal), var(--imperial-royal-dark));
+    }
+
+    &.accent-crimson {
+        background: linear-gradient(180deg, var(--imperial-crimson), var(--imperial-crimson-dark));
+    }
+}
+
+/* 📊 KPI Typography */
+.kpi-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--imperial-slate);
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+
+.kpi-currency {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+/* 🎨 Color Variants */
+.text-success {
+    color: var(--imperial-success) !important;
+}
+
+.text-emerald {
+    color: var(--imperial-emerald) !important;
+}
+
+.text-royal {
+    color: var(--imperial-royal) !important;
+}
+
+.text-crimson {
+    color: var(--imperial-crimson) !important;
+}
+
+.bg-success-light {
+    background: var(--imperial-success-light) !important;
+}
+
+.bg-emerald-light {
+    background: var(--imperial-emerald-light) !important;
+}
+
+.bg-royal-light {
+    background: var(--imperial-royal-light) !important;
+}
+
+.bg-crimson-light {
+    background: var(--imperial-crimson-light) !important;
+}
+
+/* 🏷️ KPI Icon Wrapper */
+.kpi-icon-wrapper {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        font-size: 2rem;
+    }
+}
+
+/* 🎖️ KPI Badge */
+.kpi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+
+    &.badge-emerald {
+        background: var(--imperial-emerald-light);
+        color: var(--imperial-emerald);
+    }
+
+    &.badge-royal {
+        background: var(--imperial-royal-light);
+        color: var(--imperial-royal);
+    }
+}
+
+/* 🎭 Header Icon Circle */
+.icon-circle {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+}
+
+.bg-gradient-sales {
+    background: linear-gradient(135deg, var(--imperial-success), var(--imperial-emerald));
+}
+
+/* 📋 Premium Table Styling */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: var(--glass-border);
+}
+
+::ng-deep {
+
+    /* Table Header */
+    .p-datatable .p-datatable-thead>tr>th {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+        color: var(--imperial-navy) !important;
+        font-weight: 700 !important;
+        font-size: 0.75rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        padding: 1rem !important;
+        border-bottom: 2px solid var(--imperial-success) !important;
+    }
+
+    /* Table Body */
+    .p-datatable .p-datatable-tbody>tr {
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: rgba(40, 167, 69, 0.05) !important;
+            transform: scale(1.01);
+        }
+    }
+
+    .p-datatable .p-datatable-tbody>tr>td {
+        padding: 1rem !important;
+        font-size: 0.95rem !important;
+        border-bottom: 1px solid #e5e7eb !important;
+    }
+
+    /* Status Tags */
+    .p-tag {
+        font-weight: 700 !important;
+        padding: 0.5rem 1rem !important;
+        border-radius: 8px !important;
+        font-size: 0.75rem !important;
+        letter-spacing: 0.3px !important;
+
+        &.p-tag-success {
+            background: var(--imperial-success) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
+        }
+
+        &.p-tag-warning {
+            background: var(--imperial-gold) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+        }
+
+        &.p-tag-danger {
+            background: var(--imperial-crimson) !important;
+            color: white !important;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3) !important;
+        }
+    }
+
+    /* Action Buttons */
+    .p-button {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+        &.p-button-rounded {
+            &:hover {
+                transform: scale(1.15) rotate(5deg);
+            }
+        }
+
+        &.p-button-success {
+            background: var(--imperial-success) !important;
+            border-color: var(--imperial-success) !important;
+
+            &:hover {
+                background: var(--imperial-success-dark) !important;
+                box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4) !important;
+            }
+        }
+    }
+
+    /* Chart Styling */
+    .p-chart {
+        canvas {
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+        }
+    }
+
+    /* Paginator */
+    .p-paginator {
+        background: transparent !important;
+        border: none !important;
+        padding: 1.5rem 1rem !important;
+
+        .p-paginator-current {
+            color: var(--imperial-slate) !important;
+            font-weight: 600 !important;
+        }
+
+        .p-paginator-pages .p-paginator-page {
+            &.p-highlight {
+                background: var(--imperial-success) !important;
+                border-color: var(--imperial-success) !important;
+                color: white !important;
+                box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
+            }
+        }
+    }
+
+    /* Dropdown & Calendar */
+    .p-dropdown,
+    .p-calendar {
+        border-radius: 12px !important;
+        border: 2px solid #e5e7eb !important;
+        transition: all 0.3s ease !important;
+
+        &:hover {
+            border-color: var(--imperial-success) !important;
+        }
+
+        &:focus,
+        &.p-focus {
+            border-color: var(--imperial-success) !important;
+            box-shadow: 0 0 0 4px var(--imperial-success-light) !important;
+        }
+    }
+}
+
+/* 🎬 Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 768px) {
+    .sales-container {
+        padding: 1rem;
+    }
+
+    .imperial-kpi-card {
+        margin-bottom: 1rem;
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+    }
+
+    .kpi-icon-wrapper {
+        width: 3rem;
+        height: 3rem;
+
+        i {
+            font-size: 1.5rem;
+        }
+    }
+}
+
+
+/* 🎯 Print Styles */
+@media print {
+    .sales-container {
+        background: white;
+    }
+
+    .imperial-kpi-card {
+        box-shadow: none;
+        border: 1px solid #e5e7eb;
+    }
+
+    .p-button,
+    .p-paginator {
+        display: none !important;
+    }
+}
+
+/* 🎯 Dynamic Action Buttons & Status Badges */
+.action-buttons-container {
+    gap: 0.5rem;
+}
+
+/* ✅ Approved Badge - Green Check */
+.approved-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: approvedPulse 2s ease-in-out infinite;
+
+    i {
+        filter: drop-shadow(0 4px 12px rgba(40, 167, 69, 0.5));
+    }
+}
+
+@keyframes approvedPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* 🔒 Cancelled Badge - Red Lock */
+.cancelled-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+
+    i {
+        filter: drop-shadow(0 4px 12px rgba(220, 38, 38, 0.5));
+    }
+}
+
+/* 🎬 Imperial Pulse Animation (for Approve button) */
+::ng-deep .imperial-pulse {
+    animation: imperialPulse 1.5s ease-in-out infinite !important;
+}
+
+@keyframes imperialPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(40, 167, 69, 0);
+    }
+}
+
+/* ✨ Imperial Glow Animation (for Return button) */
+::ng-deep .imperial-glow {
+    animation: imperialGlow 2s ease-in-out infinite !important;
+}
+
+@keyframes imperialGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+    }
+}
+
+/* 🎨 Action Button Specific Styles */
+::ng-deep {
+    .action-btn-view:hover {
+        background: rgba(59, 130, 246, 0.1) !important;
+    }
+
+    .action-btn-approve:hover {
+        background: var(--imperial-success-light) !important;
+        transform: scale(1.2) !important;
+    }
+
+    .action-btn-edit:hover {
+        background: rgba(59, 130, 246, 0.1) !important;
+    }
+
+    .action-btn-delete:hover {
+        background: var(--imperial-crimson-light) !important;
+    }
+
+    .action-btn-print:hover {
+        background: rgba(107, 114, 128, 0.1) !important;
+    }
+
+    .action-btn-return:hover {
+        background: rgba(245, 158, 11, 0.1) !important;
+        transform: scale(1.2) rotate(-10deg) !important;
+    }
+
+    .action-btn-cancel:hover {
+        background: var(--imperial-crimson-light) !important;
+    }
+
+    .action-btn-disabled {
+        opacity: 0.4 !important;
+        cursor: not-allowed !important;
+    }
+}

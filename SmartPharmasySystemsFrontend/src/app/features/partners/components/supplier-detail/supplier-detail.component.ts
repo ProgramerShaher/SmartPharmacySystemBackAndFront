@@ -12,7 +12,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { SupplierService } from '../../services/supplier.service';
-import { Supplier } from '../../../../core/models/supplier.interface';
+import { Supplier } from '../../../../core/models/supplier.models';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -199,5 +199,42 @@ export class SupplierDetailComponent implements OnInit {
   goBack(): void {
     console.log('↩️ Going back to suppliers list');
     this.router.navigate(['/partners/suppliers']);
+  }
+
+  getRandomColor(name: string): string {
+    if (!name) return 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    const colors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+      'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)'
+    ];
+    const index = name.charCodeAt(0) % colors.length;
+    return colors[index];
+  }
+
+  getInvoiceStatusSeverity(status: string): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
+    switch (status?.toLowerCase()) {
+      case 'paid': return 'success';
+      case 'pending': return 'warning';
+      case 'cancelled': return 'danger';
+      default: return 'info';
+    }
+  }
+
+  getInvoiceStatusLabel(status: string): string {
+    switch (status?.toLowerCase()) {
+      case 'paid': return 'مدفوعة';
+      case 'pending': return 'قيد الانتظار';
+      case 'cancelled': return 'ملغاة';
+      case 'approved': return 'معتمد';
+      default: return status || 'غير معروف';
+    }
   }
 }

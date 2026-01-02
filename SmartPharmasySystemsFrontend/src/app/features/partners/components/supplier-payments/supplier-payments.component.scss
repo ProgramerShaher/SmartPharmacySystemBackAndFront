@@ -1,0 +1,147 @@
+.payments-container {
+    background: radial-gradient(circle at bottom left, #f1f5f9 0%, #ffffff 100%);
+    min-height: 100vh;
+}
+
+.icon-square {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.premium-payment-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+    border: none !important;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+
+    &:hover {
+        transform: translateY(-4px) scale(1.02) !important;
+        box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4) !important;
+    }
+}
+
+.premium-execution-btn {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border: none !important;
+    border-radius: 16px !important;
+}
+
+.glass-morphism {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.premium-payments-table {
+    ::ng-deep {
+        .p-datatable-header {
+            background: transparent;
+            border: none;
+        }
+
+        .p-datatable-thead>tr>th {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .p-datatable-tbody>tr {
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: #f5f8ff !important;
+                transform: scale(1.002);
+            }
+        }
+
+        .p-paginator {
+            background: transparent;
+            border-top: 1px solid #f1f5f9;
+            padding: 1.25rem;
+        }
+    }
+}
+
+.id-badge {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+    font-family: monospace;
+    font-weight: 800;
+}
+
+.small-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 0.85rem;
+}
+
+.huge-amount-input {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+}
+
+.amount-glow {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 20px;
+    background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.premium-payment-dialog {
+    ::ng-deep {
+        .p-dialog-content {
+            border-bottom-left-radius: 28px !important;
+            border-bottom-right-radius: 28px !important;
+        }
+
+        .p-dialog-header {
+            background: #f8fafc;
+            border-top-left-radius: 28px !important;
+            border-top-right-radius: 28px !important;
+            padding: 1.5rem;
+        }
+    }
+}
+
+.avatar-tiny {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}

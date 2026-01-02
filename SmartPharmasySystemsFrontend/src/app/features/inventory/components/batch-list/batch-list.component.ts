@@ -73,7 +73,8 @@ export class BatchListComponent implements OnInit {
         this.loading = true;
         this.inventoryService.getAllBatches().subscribe({
             next: (data) => {
-                this.batches = data.map(batch => this.calculateBatchFields(batch));
+                // استخدام البيانات من Backend مباشرة (Backend يحسب كل شيء)
+                this.batches = data;
                 this.applyFilters();
                 this.loading = false;
             },
@@ -84,29 +85,20 @@ export class BatchListComponent implements OnInit {
         });
     }
 
-    calculateBatchFields(batch: MedicineBatch): MedicineBatch {
-        const today = new Date();
-        const expiry = new Date(batch.expiryDate);
-
-        batch.soldQuantity = batch.quantity - batch.remainingQuantity;
-        batch.daysUntilExpiry = differenceInDays(expiry, today);
-        batch.isSellable = isBefore(today, expiry) && batch.remainingQuantity > 0 && batch.status === 'Active';
-
-        return batch;
-    }
+    // تم إزالة calculateBatchFields - Backend يحسب كل الحقول
 
     applyFilters() {
         this.filteredBatches = this.batches.filter(batch => {
             const matchesSearch = !this.searchTerm ||
-                batch.medicineName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                batch.companyBatchNumber.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                batch.batchBarcode.toLowerCase().includes(this.searchTerm.toLowerCase());
+                batch.medicineName?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                batch.companyBatchNumber?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                batch.batchBarcode?.toLowerCase().includes(this.searchTerm.toLowerCase());
 
             const matchesSellable = this.sellableFilter === null || batch.isSellable === this.sellableFilter;
 
             const matchesExpiry = this.expiryFilter === 'all' ||
-                (this.expiryFilter === 'expiring' && batch.daysUntilExpiry > 0 && batch.daysUntilExpiry <= 30) ||
-                (this.expiryFilter === 'expired' && batch.daysUntilExpiry <= 0);
+                (this.expiryFilter === 'expiring' && batch.daysUntilExpiry! > 0 && batch.daysUntilExpiry! <= 30) ||
+                (this.expiryFilter === 'expired' && batch.daysUntilExpiry! <= 0);
 
             return matchesSearch && matchesSellable && matchesExpiry;
         });

@@ -1,0 +1,188 @@
+<div class="expense-categories-container">
+  <!-- Header Card -->
+  <p-card class="header-card">
+    <div class="header-content">
+      <div class="title-section">
+        <i class="pi pi-tag header-icon"></i>
+        <div>
+          <h2 class="page-title">فئات المصروفات</h2>
+          <p class="page-subtitle">إدارة وتصنيف أنواع المصروفات</p>
+        </div>
+      </div>
+      <button 
+        pButton 
+        type="button" 
+        label="إضافة فئة جديدة" 
+        icon="pi pi-plus-circle" 
+        class="p-button-success add-btn"
+        (click)="openNewDialog()"
+        pTooltip="إضافة فئة مصروف جديدة"
+        tooltipPosition="bottom">
+      </button>
+    </div>
+  </p-card>
+
+  <!-- Categories Table -->
+  <p-card class="table-card">
+    <p-table 
+      [value]="categories" 
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="10"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} فئة"
+      styleClass="p-datatable-sm p-datatable-striped"
+      responsiveLayout="scroll">
+      
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 5%">#</th>
+          <th style="width: 25%">
+            <i class="pi pi-tag"></i> اسم الفئة
+          </th>
+          <th style="width: 40%">
+            <i class="pi pi-align-right"></i> الوصف
+          </th>
+          <th style="width: 15%">
+            <i class="pi pi-calendar"></i> تاريخ الإنشاء
+          </th>
+          <th style="width: 15%" class="text-center">
+            <i class="pi pi-cog"></i> الإجراءات
+          </th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-category let-rowIndex="rowIndex">
+        <tr>
+          <td>{{ rowIndex + 1 }}</td>
+          <td>
+            <div class="category-name">
+              <i class="pi pi-tag category-icon"></i>
+              <strong>{{ category.name }}</strong>
+            </div>
+          </td>
+          <td>
+            <span class="description-text">
+              {{ category.description || 'لا يوجد وصف' }}
+            </span>
+          </td>
+          <td>
+            <span class="date-text">
+              {{ formatDate(category.createdAt) }}
+            </span>
+          </td>
+          <td class="text-center">
+            <div class="action-buttons">
+              <button 
+                pButton 
+                type="button" 
+                icon="pi pi-pencil" 
+                class="p-button-rounded p-button-warning p-button-sm"
+                (click)="openEditDialog(category)"
+                pTooltip="تعديل"
+                tooltipPosition="top">
+              </button>
+              <button 
+                pButton 
+                type="button" 
+                icon="pi pi-trash" 
+                class="p-button-rounded p-button-danger p-button-sm"
+                (click)="deleteCategory($event, category)"
+                pTooltip="حذف"
+                tooltipPosition="top">
+              </button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5" class="text-center empty-message">
+            <i class="pi pi-inbox empty-icon"></i>
+            <p>لا توجد فئات مصروفات</p>
+            <button 
+              pButton 
+              type="button" 
+              label="إضافة أول فئة" 
+              icon="pi pi-plus" 
+              class="p-button-sm"
+              (click)="openNewDialog()">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Add/Edit Dialog -->
+  <p-dialog 
+    [(visible)]="displayDialog" 
+    [header]="isEditMode ? 'تعديل الفئة' : 'إضافة فئة جديدة'"
+    [modal]="true"
+    [style]="{width: '500px'}"
+    [draggable]="false"
+    [resizable]="false"
+    styleClass="category-dialog">
+    
+    <div class="dialog-content">
+      <div class="form-field">
+        <label for="categoryName" class="required">
+          <i class="pi pi-tag"></i> اسم الفئة
+        </label>
+        <input 
+          id="categoryName"
+          type="text" 
+          pInputText 
+          [(ngModel)]="categoryForm.name"
+          placeholder="مثال: رواتب، إيجار، فواتير..."
+          class="w-full"
+          [autofocus]="true">
+      </div>
+
+      <div class="form-field">
+        <label for="categoryDescription">
+          <i class="pi pi-align-right"></i> الوصف
+        </label>
+        <textarea 
+          id="categoryDescription"
+          pInputTextarea 
+          [(ngModel)]="categoryForm.description"
+          placeholder="وصف اختياري للفئة..."
+          rows="4"
+          class="w-full">
+        </textarea>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-footer">
+        <button 
+          pButton 
+          type="button" 
+          label="إلغاء" 
+          icon="pi pi-times" 
+          class="p-button-text p-button-secondary"
+          (click)="hideDialog()">
+        </button>
+        <button 
+          pButton 
+          type="button" 
+          [label]="isEditMode ? 'تحديث' : 'حفظ'" 
+          icon="pi pi-check" 
+          class="p-button-success"
+          (click)="saveCategory()">
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Toast & Confirm Dialog -->
+  <p-toast position="top-center" [life]="3000"></p-toast>
+  <p-confirmDialog 
+    [style]="{width: '450px'}"
+    acceptButtonStyleClass="p-button-danger"
+    rejectButtonStyleClass="p-button-text">
+  </p-confirmDialog>
+</div>

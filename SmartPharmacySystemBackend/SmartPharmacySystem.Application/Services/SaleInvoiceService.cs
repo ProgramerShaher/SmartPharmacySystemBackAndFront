@@ -32,6 +32,16 @@ namespace SmartPharmacySystem.Application.Services
             if (dto.Details == null || !dto.Details.Any())
                 throw new InvalidOperationException("لا يمكن إنشاء فاتورة بدون أصناف. يرجى إضافة صنف واحد على الأقل.");
 
+            // التحقق من وجود اسم العميل (مطلوب للزبون الطيار)
+            // Validate customer name is provided (required for walk-in customers)
+            if (!dto.CustomerId.HasValue && string.IsNullOrWhiteSpace(dto.CustomerName))
+                throw new InvalidOperationException("يجب إدخال اسم العميل للزبون الطيار.");
+
+            // قاعدة عمل: الزبون الطيار يجب أن يدفع نقداً فقط
+            // Business Rule: Walk-in customers can only pay cash
+            if (!dto.CustomerId.HasValue && dto.PaymentMethod == PaymentType.Credit)
+                throw new InvalidOperationException("لا يمكن البيع بالآجل إلا لعميل مسجل في النظام.");
+
             var entity = _mapper.Map<SaleInvoice>(dto);
             entity.CreatedAt = DateTime.UtcNow;
             entity.CreatedBy = userId;
@@ -120,6 +130,16 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                // قاعدة عمل: الزبون الطيار يجب أن يدفع نقداً فقط
+                // Business Rule: Walk-in customers can only pay cash
+                if (!invoice.CustomerId.HasValue && invoice.PaymentMethod == PaymentType.Credit)
+                    throw new InvalidOperationException("لا يمكن البيع بالآجل إلا لعميل مسجل في النظام.");
+
+                // التحقق من وجود اسم العميل للزبون الطيار
+                // Validate customer name for walk-in customers
+                if (!invoice.CustomerId.HasValue && string.IsNullOrWhiteSpace(invoice.CustomerName))
+                    throw new InvalidOperationException("يجب إدخال اسم العميل للزبون الطيار.");
+
                 invoice.Status = DocumentStatus.Approved;
                 invoice.ApprovedBy = userId;
                 invoice.ApprovedAt = DateTime.UtcNow;
@@ -146,10 +166,16 @@ namespace SmartPharmacySystem.Application.Services
                     throw new InvalidOperationException("لا يمكن حفظ فاتورة آجلة بدون ربطها بعميل.");
                 }
 
+                // ✅ Optimized: Fetch all batches at once instead of one by one
+                var batchIds = invoice.SaleInvoiceDetails.Select(d => d.BatchId).Distinct().ToList();
+                var batches = await _unitOfWork.MedicineBatches.GetByIdsAsync(batchIds);
+                var batchDict = batches.ToDictionary(b => b.Id);
+
+                // Validate all batches first
                 foreach (var detail in invoice.SaleInvoiceDetails)
                 {
-                    var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId)
-                        ?? throw new KeyNotFoundException($"التشغيلة برقم {detail.BatchId} غير موجودة");
+                    if (!batchDict.TryGetValue(detail.BatchId, out var batch))
+                        throw new KeyNotFoundException($"التشغيلة برقم {detail.BatchId} غير موجودة");
 
                     if (detail.SalePrice < detail.UnitCost)
                     {
@@ -171,7 +197,12 @@ namespace SmartPharmacySystem.Application.Services
                     {
                         throw new InvalidOperationException($"الرصيد المتاح غير كافٍ للصنف {batch.CompanyBatchNumber}. المطلوب: {detail.Quantity}، المتاح: {batch.RemainingQuantity}");
                     }
+                }
 
+                // ✅ Optimized: Update all batches in memory, then save once
+                foreach (var detail in invoice.SaleInvoiceDetails)
+                {
+                    var batch = batchDict[detail.BatchId];
                     batch.RemainingQuantity -= detail.Quantity;
                     batch.SoldQuantity += detail.Quantity;
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
@@ -202,15 +233,27 @@ namespace SmartPharmacySystem.Application.Services
                 }
 
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
-                await _unitOfWork.SaveChangesAsync();
-
-                foreach (var detail in invoice.SaleInvoiceDetails.Select(d => d.MedicineId).Distinct())
-                {
-                    await _alertService.SyncMedicineAlertsAsync(detail);
-                }
                 await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.SaleInvoice);
-
+                await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
+
+                // ✅ Optimized: Move alerts to background (fire and forget)
+                // This prevents blocking the main transaction
+                var medicineIds = invoice.SaleInvoiceDetails.Select(d => d.MedicineId).Distinct().ToList();
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        foreach (var medicineId in medicineIds)
+                        {
+                            await _alertService.SyncMedicineAlertsAsync(medicineId);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error syncing alerts for invoice {InvoiceId}", id);
+                    }
+                });
             }
             catch (Exception ex)
             {

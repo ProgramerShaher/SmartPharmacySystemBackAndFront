@@ -1,165 +1,139 @@
-.form-container {
-    padding: 24px;
-    background-color: var(--surface-ground);
-    min-height: 100vh;
+.pos-container {
+    padding: 1.5rem;
+    max-width: 1600px;
+    margin: 0 auto;
 }
 
-:host ::ng-deep {
-
-    /* Premium Card overrides for ERP look */
-    .p-card {
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03) !important;
-        border: 1px solid var(--surface-border);
-        transition: transform 0.2s, box-shadow 0.2s;
-
-        .p-card-header {
-            border-bottom: 1px solid var(--surface-border);
-            padding: 1rem 1.25rem;
-            background: var(--surface-section);
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
+.pos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    &.purchase-accent {
+            border-right: 4px solid #6366f1;
         }
 
-        .p-card-content {
-            padding: 1.25rem;
-        }
-    }
-
-    /* Professional Table Styling */
-    .p-datatable {
-        &.p-datatable-gridlines {
-            .p-datatable-header {
-                background: white;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
-            }
-
-            .p-datatable-thead>tr>th {
-                background: var(--surface-section);
-                color: var(--text-color-secondary);
-                font-size: 0.875rem;
-                text-transform: uppercase;
-                letter-spacing: 0.025em;
-                font-weight: 600;
-                padding: 0.75rem 1rem;
-            }
-
-            .p-datatable-tbody>tr {
-                background: white;
-                transition: background-color 0.2s;
-
-                &:hover {
-                    background-color: var(--surface-hover) !important;
-                }
-
-                >td {
-                    padding: 0.75rem 1rem;
-                    border: 1px solid var(--surface-border);
-                }
-            }
-
-            .p-datatable-tfoot>tr>td {
-                background: var(--surface-section);
-                font-weight: 700;
-                color: var(--text-color);
-            }
-        }
-    }
-
-    /* Custom Toolbar for ERP actions */
-    .erp-toolbar {
-        background: var(--primary-color);
-        border: none;
-        padding: 1rem 2rem;
-        border-radius: 0;
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-
-        .p-toolbar-group-start {
-            color: white;
-        }
-    }
-
-    /* Summary Card Styling */
-    .financial-summary {
-        .summary-item {
+        .header-left {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px dashed var(--surface-border);
+            gap: 1.5rem;
+    }
 
-            &:last-child {
-                border-bottom: none;
-                padding-top: 1rem;
-                margin-top: 0.5rem;
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        &.bg-orange-500 {
+                background: #f59e0b;
+                box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
             }
-
-            .label {
-                color: var(--text-color-secondary);
-                font-weight: 500;
+        
+            &.bg-green-500 {
+                background: #10b981;
+                box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
             }
+        }
+}
 
+.pos-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    align-items: start;
+
+    @media (max-width: 1200px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+.section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+    }
+
+.item-row {
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(99, 102, 241, 0.05) !important;
+    }
+}
+
+.batch-tag {
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    
+    &.indigo {
+            background: rgba(99, 102, 241, 0.1);
+            color: #4f46e5;
+        }
+    }
+.pos-sidebar {
+    .sticky-sidebar {
+        position: sticky;
+        top: 2rem;
+        min-height: calc(100vh - 12rem);
+    }
+
+.summary-card {
+    padding: 2rem 1.5rem;
+    border-radius: 1.25rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    &.purchase {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3);
+        .label {
+                opacity: 0.9;
+                font-size: 1rem;
+            }
+        
             .value {
-                font-weight: 700;
-                font-family: var(--font-mono, monospace);
+                font-size: 2.5rem;
+                font-weight: 900;
             }
+        }
+        }
 
-            &.total {
-
-                .label,
-                .value {
-                    color: var(--primary-color);
-                    font-size: 1.5rem;
-                    font-weight: 800;
-                }
-            }
+.mini-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .label {
+            font-size: 0.8rem;
+            color: var(--text-color-secondary);
+            margin-bottom: 0.25rem;
+        }
+    
+        .value {
+            font-size: 1.2rem;
+            font-weight: 700;
         }
     }
 
-    /* Fixed squashed calendar and month picker */
-    .expiry-calendar-panel {
-        min-width: 320px !important;
-        border-radius: 12px !important;
+.elevation-hover {
+    transition: all 0.3s ease;
 
-        .p-datepicker-header {
-            padding: 1rem !important;
-        }
-
-        .p-monthpicker {
-            .p-monthpicker-month {
-                padding: 1.5rem 1rem !important;
-                font-weight: 500 !important;
-
-                &:hover {
-                    background: var(--surface-hover) !important;
-                    border-radius: 8px !important;
-                }
-            }
-        }
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
     }
-
-    /* Status Badges */
-    .status-badge {
-        font-weight: 700;
-        padding: 0.35rem 0.85rem;
-        border-radius: 6px;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-
-        &.draft {
-            background: #e0e7ff;
-            color: #4338ca;
-        }
-
-        &.approved {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        &.cancelled {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-    }
+}
 }

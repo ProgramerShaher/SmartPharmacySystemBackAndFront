@@ -13,7 +13,7 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { SupplierService } from '../../services/supplier.service';
-import { Supplier } from '../../../../core/models/supplier.interface';
+import { Supplier } from '../../../../core/models/supplier.models';
 import { finalize } from 'rxjs/operators';
 
 @Component({

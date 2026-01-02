@@ -1,0 +1,523 @@
+/**
+ * لوحة التحكم التحليلية الشاملة - Ultimate Analytical Dashboard
+ * Professional Styling with Glassmorphism & Modern Clinic Theme
+ */
+
+.ultimate-dashboard {
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg,
+      rgba(16, 185, 129, 0.03) 0%,
+      rgba(14, 165, 233, 0.05) 50%,
+      rgba(168, 85, 247, 0.03) 100%);
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* ============================================
+   رأس الصفحة / Dashboard Header
+   ============================================ */
+
+.dashboard-header {
+  animation: slideDown 0.5s ease-out;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================
+   بطاقات التحليلات / Analytics Cards
+   ============================================ */
+
+.analytics-card {
+  padding: 2rem;
+  border-radius: 20px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  box-shadow:
+    0 10px 40px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #0ea5e9, #a855f7);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 20px 60px rgba(0, 0, 0, 0.12),
+      0 4px 16px rgba(0, 0, 0, 0.06);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  h3 {
+    color: var(--text-color);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* ============================================
+   جدول أفضل الأدوية / Top Medicines Table
+   ============================================ */
+
+::ng-deep .p-datatable {
+  .p-datatable-thead>tr>th {
+    background: linear-gradient(135deg,
+        rgba(16, 185, 129, 0.05) 0%,
+        rgba(14, 165, 233, 0.05) 100%);
+    color: var(--text-color);
+    font-weight: 700;
+    border: none;
+    padding: 1rem;
+    font-family: 'Cairo', sans-serif;
+  }
+
+  .p-datatable-tbody>tr {
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: var(--surface-hover);
+      transform: translateX(-4px);
+    }
+
+    >td {
+      border: none;
+      border-bottom: 1px solid var(--surface-border);
+      padding: 1rem;
+    }
+  }
+}
+
+.rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #0ea5e9);
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.batch-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  background: rgba(14, 165, 233, 0.1);
+  color: #0ea5e9;
+  font-size: 0.875rem;
+  font-weight: 600;
+
+  &.low-batches {
+    background: rgba(249, 115, 22, 0.1);
+    color: #f97316;
+  }
+}
+
+.revenue-text {
+  font-weight: 700;
+  color: #10b981;
+  font-size: 1rem;
+}
+
+/* ============================================
+   مخطط زمني للتنبيهات / Alert Timeline
+   ============================================ */
+
+.alerts-timeline {
+  max-height: 450px;
+  overflow-y: auto;
+  padding-left: 0.5rem;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--surface-ground);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--surface-border);
+    border-radius: 10px;
+
+    &:hover {
+      background: var(--primary-color);
+    }
+  }
+}
+
+.alert-timeline-item {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 12px;
+  background: var(--surface-ground);
+  border-right: 4px solid transparent;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--surface-hover);
+    transform: translateX(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  &.alert-warning {
+    border-right-color: #f97316;
+  }
+
+  &.alert-danger {
+    border-right-color: #ef4444;
+  }
+
+  &.alert-success {
+    border-right-color: #10b981;
+  }
+
+  &.alert-info {
+    border-right-color: #0ea5e9;
+  }
+}
+
+.alert-icon-container {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i {
+    font-size: 1.25rem;
+  }
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-title {
+  font-size: 0.938rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0 0 0.25rem 0;
+}
+
+.alert-message {
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
+  margin: 0 0 0.5rem 0;
+}
+
+.alert-time {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  font-weight: 500;
+}
+
+/* ============================================
+   لوحة الإجراءات السريعة / Quick Actions Panel
+   ============================================ */
+
+.quick-actions-panel {
+  padding: 2rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg,
+      rgba(16, 185, 129, 0.08) 0%,
+      rgba(14, 165, 233, 0.08) 100%);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+
+  h3 {
+    color: var(--text-color);
+    font-weight: 700;
+
+    i {
+      color: #10b981;
+    }
+  }
+}
+
+.quick-action-btn {
+  height: 3.5rem;
+  font-weight: 600;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  &:active {
+    transform: translateY(-1px);
+  }
+}
+
+/* ============================================
+   تأثيرات الحركة / Animations
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* تأخير متدرج للبطاقات / Staggered Animation */
+.grid>div:nth-child(1) .analytics-card,
+.grid>div:nth-child(1) app-stat-card {
+  animation: slideUp 0.5s ease-out 0.1s both;
+}
+
+.grid>div:nth-child(2) .analytics-card,
+.grid>div:nth-child(2) app-stat-card {
+  animation: slideUp 0.5s ease-out 0.2s both;
+}
+
+.grid>div:nth-child(3) .analytics-card,
+.grid>div:nth-child(3) app-stat-card {
+  animation: slideUp 0.5s ease-out 0.3s both;
+}
+
+.grid>div:nth-child(4) .analytics-card,
+.grid>div:nth-child(4) app-stat-card {
+  animation: slideUp 0.5s ease-out 0.4s both;
+}
+
+/* ============================================
+   استجابة الشاشات الصغيرة / Responsive Design
+   ============================================ */
+
+@media (max-width: 992px) {
+  .ultimate-dashboard {
+    padding: 1rem;
+  }
+
+  .analytics-card {
+    padding: 1.5rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 2rem !important;
+  }
+
+  .quick-action-btn {
+    height: 3rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 1rem;
+  }
+
+  .analytics-card {
+    padding: 1rem;
+  }
+
+  .alerts-timeline {
+    max-height: 300px;
+  }
+}
+
+/* ============================================
+   الوضع الداكن / Dark Mode Support
+   ============================================ */
+
+:host-context(.dark-mode) {
+  .ultimate-dashboard {
+    background: linear-gradient(135deg,
+        rgba(16, 185, 129, 0.05) 0%,
+        rgba(14, 165, 233, 0.08) 50%,
+        rgba(168, 85, 247, 0.05) 100%);
+  }
+
+  .analytics-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 10px 40px rgba(0, 0, 0, 0.3),
+      0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .quick-actions-panel {
+    background: linear-gradient(135deg,
+        rgba(16, 185, 129, 0.12) 0%,
+        rgba(14, 165, 233, 0.12) 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .alert-timeline-item {
+    background: rgba(255, 255, 255, 0.03);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  .batch-indicator {
+    background: rgba(14, 165, 233, 0.2);
+  }
+}
+
+/* ============================================
+   تحسينات الطباعة / Print Optimizations
+   ============================================ */
+
+@media print {
+  .ultimate-dashboard {
+    background: white;
+    padding: 0;
+  }
+
+  .quick-actions-panel,
+  .dashboard-header button,
+  .alert-timeline-item {
+    display: none !important;
+  }
+
+  .analytics-card {
+    box-shadow: none;
+    border: 1px solid #ccc;
+    page-break-inside: avoid;
+  }
+}
+
+/* ============================================
+   تأثيرات إضافية / Additional Effects
+   ============================================ */
+
+/* تأثير النبض للتحديث المباشر / Pulse Effect for Live Updates */
+@keyframes pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+::ng-deep .p-tag.p-tag-success {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* تأثير التوهج للأزرار / Glow Effect for Buttons */
+.quick-action-btn:hover {
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+/* تحسين الجداول / Table Enhancements */
+::ng-deep .p-datatable .p-datatable-tbody>tr:nth-child(odd) {
+  background: rgba(16, 185, 129, 0.02);
+}
+
+/* تأثير التمرير السلس / Smooth Scrolling */
+* {
+  scroll-behavior: smooth;
+}
+
+/* شريط التمرير المخصص / Custom Scrollbar */
+.ultimate-dashboard {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--surface-ground);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #10b981, #0ea5e9);
+    border-radius: 10px;
+
+    &:hover {
+      background: linear-gradient(135deg, #059669, #0284c7);
+    }
+  }
+}

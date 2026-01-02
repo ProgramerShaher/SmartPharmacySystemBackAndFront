@@ -1,0 +1,126 @@
+<p-dialog [(visible)]="visible" [header]="isEdit ? 'تعديل بند توريد' : 'إضافة بند توريد جديد'" [modal]="true"
+    [style]="{width: '500px'}" (onHide)="onClose()">
+    <form [formGroup]="itemForm" class="p-fluid grid mt-2">
+        <div class="col-12 mb-3">
+            <label class="font-bold block mb-2">اسم الصنف / الدواء</label>
+            <p-autoComplete [suggestions]="filteredMedicines" (completeMethod)="searchMedicines($event)" field="name"
+                (onSelect)="onMedicineSelect($event.value)" placeholder="ابحث عن الصنف في القاعدة..." appendTo="body"
+                [forceSelection]="true" [disabled]="isEdit"></p-autoComplete>
+        </div>
+
+        <div class="col-12 mb-3" *ngIf="invoiceType === 'Sales'">
+            <label class="font-bold block mb-2">الدفعة المخزنية (Batch)</label>
+            <div class="flex gap-2">
+                <p-dropdown [options]="batches" optionLabel="companyBatchNumber" placeholder="اختر الدفعة المتوفرة"
+                    formControlName="batchId" optionValue="id" appendTo="body" (onChange)="onBatchSelect($event.value)"
+                    [loading]="isLoadingBatches" class="w-full" styleClass="w-full" emptyMessage="لا توجد دفعات متاحة"
+                    emptyFilterMessage="لم يتم العثور على نتائج">
+
+                    <ng-template pTemplate="selectedItem" let-selectedOption>
+                        <div class="flex align-items-center gap-2" *ngIf="selectedOption">
+                            <span class="font-bold">{{ selectedOption.companyBatchNumber }}</span>
+                            <span class="text-sm text-gray-500">| ينتهي: {{ selectedOption.expiryDate | date:'MM/yyyy'
+                                }}</span>
+                        </div>
+                    </ng-template>
+
+                    <ng-template pTemplate="item" let-batch>
+                        <div class="flex justify-content-between align-items-center w-full"
+                            [class.opacity-50]="batch.remainingQuantity <= 0 || isBatchExpired(batch)">
+                            <div class="flex flex-column">
+                                <span class="font-bold flex align-items-center gap-2">
+                                    {{batch.companyBatchNumber}}
+                                    <span *ngIf="isBatchExpired(batch)"
+                                        class="text-xs bg-red-100 text-red-700 px-2 py-1 border-round">منتهية</span>
+                                    <span *ngIf="batch.remainingQuantity <= 0"
+                                        class="text-xs bg-gray-100 text-gray-700 px-2 py-1 border-round">نفدت</span>
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    ينتهي: <span [class.text-red-500]="isBatchExpired(batch)">{{batch.expiryDate |
+                                        date:'MM/yyyy'}}</span>
+                                </span>
+                            </div>
+                            <span class="text-sm px-2 py-1 border-round"
+                                [class.bg-green-100]="batch.remainingQuantity > 10"
+                                [class.text-green-700]="batch.remainingQuantity > 10"
+                                [class.bg-orange-100]="batch.remainingQuantity > 0 && batch.remainingQuantity <= 10"
+                                [class.text-orange-700]="batch.remainingQuantity > 0 && batch.remainingQuantity <= 10"
+                                [class.bg-gray-200]="batch.remainingQuantity <= 0"
+                                [class.text-gray-600]="batch.remainingQuantity <= 0">
+                                {{batch.remainingQuantity}} وحدة
+                            </span>
+                        </div>
+                    </ng-template>
+
+                    <ng-template pTemplate="empty">
+                        <div class="flex flex-column align-items-center p-3 text-center">
+                            <span class="text-orange-500 font-bold block mb-2" *ngIf="hasExpiredBatches">⚠️ توجد تشغيلات
+                                منتهية</span>
+                            <span class="text-orange-500 font-bold block mb-2" *ngIf="noStockAvailable">⚠️ الكمية نفدت
+                                من المخزن</span>
+                            <span class="text-gray-500 block" *ngIf="!hasExpiredBatches && !noStockAvailable">لا توجد
+                                تشغيلات متاحة للبيع</span>
+
+                            <button pButton label="تحديث البيانات (Sync)" icon="pi pi-refresh"
+                                class="p-button-sm p-button-text mt-2" [loading]="isSyncing"
+                                (click)="forceSync()"></button>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+
+            <!-- Pulse Messages -->
+            <div class="mt-2" *ngIf="msgs.length > 0">
+                <p-messages [(value)]="msgs" [enableService]="false" [closable]="false"
+                    styleClass="pulse-animation"></p-messages>
+            </div>
+        </div>
+
+        <div class="col-12 mb-3" *ngIf="invoiceType === 'Purchase'">
+            <label class="font-bold block mb-2">رقم التشغيلة (Batch Number)</label>
+            <input pInputText formControlName="companyBatchNumber" placeholder="أدخل رقم التشغيلة المطبوع" />
+        </div>
+
+        <div class="col-12 mb-3" *ngIf="invoiceType === 'Purchase'">
+            <label class="font-bold block mb-2">تاريخ انتهاء الصلاحية</label>
+            <p-calendar formControlName="expiryDate" view="month" dateFormat="mm/yy" [showIcon]="true" appendTo="body"
+                placeholder="اختر شهر/سنة الانتهاء"></p-calendar>
+        </div>
+
+        <div class="col-6 mb-3">
+            <label class="font-bold block mb-2">الكمية الموردة</label>
+            <p-inputNumber formControlName="quantity" [min]="1" [showButtons]="true" buttonLayout="horizontal"
+                incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
+        </div>
+
+        <div class="col-6 mb-3" *ngIf="invoiceType === 'Purchase'">
+            <label class="font-bold block mb-2">كمية بونص (مجاني)</label>
+            <p-inputNumber formControlName="bonusQuantity" [min]="0" [showButtons]="true" buttonLayout="horizontal"
+                incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
+        </div>
+
+        <div class="col-6 mb-3">
+            <label class="font-bold block mb-2">{{invoiceType === 'Sales' ? 'سعر البيع' : 'سعر الشراء للوحدة'}}</label>
+            <p-inputNumber formControlName="price" [min]="0" mode="decimal" [minFractionDigits]="2"
+                suffix=" ريال يمني"></p-inputNumber>
+        </div>
+
+        <div class="col-6 mb-3" *ngIf="invoiceType === 'Purchase'">
+            <label class="font-bold block mb-2">سعر البيع للجمهور (جديد)</label>
+            <p-inputNumber formControlName="salePrice" [min]="0" mode="decimal" [minFractionDigits]="2"
+                suffix=" ريال يمني"></p-inputNumber>
+        </div>
+
+        <div
+            class="col-12 mt-2 bg-indigo-50 p-3 border-round border-1 border-indigo-100 flex justify-content-between align-items-center">
+            <span class="text-indigo-700 font-bold">إجمالي قيمة البند:</span>
+            <span class="text-2xl font-extrabold text-indigo-600">{{itemTotal | number:'1.2-2'}} ريال يمني</span>
+        </div>
+    </form>
+    <ng-template pTemplate="footer">
+        <p-button label="إلغاء الأمر" icon="pi pi-times" severity="secondary" outlined
+            (onClick)="visible = false"></p-button>
+        <p-button [label]="isEdit ? 'تعديل البند' : 'إضافة البند'" [icon]="isEdit ? 'pi pi-check' : 'pi pi-plus'"
+            severity="primary" [disabled]="itemForm.invalid" (onClick)="onSubmit()"></p-button>
+    </ng-template>
+</p-dialog>

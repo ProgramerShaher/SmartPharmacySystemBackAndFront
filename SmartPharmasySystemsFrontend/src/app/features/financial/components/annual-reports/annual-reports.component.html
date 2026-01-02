@@ -1,0 +1,165 @@
+<div class="page-container animate-fade-in" dir="rtl">
+  <!-- Header -->
+  <header class="page-header glass-panel mb-4">
+    <div class="header-content">
+      <div class="title-section">
+        <div class="icon-wrapper reports">
+          <i class="pi pi-chart-bar"></i>
+        </div>
+        <div class="text-wrapper">
+          <h1 class="m-0 text-3xl font-bold">التقارير المالية السنوية</h1>
+          <p class="m-0 opacity-70">تحليل شامل للأداء المالي السنوي</p>
+        </div>
+      </div>
+      <div class="action-section flex gap-2">
+        <p-dropdown 
+          [options]="years()" 
+          [(ngModel)]="selectedYear" 
+          (onChange)="onYearChange()"
+          placeholder="اختر السنة"
+          styleClass="year-dropdown">
+        </p-dropdown>
+        <p-button 
+          label="طباعة" 
+          icon="pi pi-print" 
+          severity="secondary" 
+          outlined
+          (onClick)="printReport()">
+        </p-button>
+        <p-button 
+          label="تصدير" 
+          icon="pi pi-download" 
+          severity="success" 
+          outlined
+          (onClick)="exportReport()">
+        </p-button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="glass-panel p-6 text-center">
+    <p-progressSpinner strokeWidth="3"></p-progressSpinner>
+    <p class="mt-3 text-lg">جاري تحميل التقارير...</p>
+  </div>
+
+  <!-- Content -->
+  <div *ngIf="!loading()">
+    <!-- Summary Cards -->
+    <div class="grid mb-4">
+      <div class="col-12 md:col-4">
+        <div class="stat-card income">
+          <div class="stat-icon">
+            <i class="pi pi-arrow-up"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">إجمالي الإيرادات</span>
+            <span class="stat-value">{{ totalIncome() | number:'1.0-0' }} <small>ر.ي</small></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 md:col-4">
+        <div class="stat-card expense">
+          <div class="stat-icon">
+            <i class="pi pi-arrow-down"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">إجمالي المصروفات</span>
+            <span class="stat-value">{{ totalExpense() | number:'1.0-0' }} <small>ر.ي</small></span>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 md:col-4">
+        <div class="stat-card profit" [ngClass]="{'loss': netProfit() < 0}">
+          <div class="stat-icon">
+            <i [class]="netProfit() >= 0 ? 'pi pi-check-circle' : 'pi pi-times-circle'"></i>
+          </div>
+          <div class="stat-content">
+            <span class="stat-label">{{ netProfit() >= 0 ? 'صافي الربح' : 'صافي الخسارة' }}</span>
+            <span class="stat-value">{{ Math.abs(netProfit()) | number:'1.0-0' }} <small>ر.ي</small></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="glass-panel p-4 mb-4">
+      <h3 class="mb-4 flex align-items-center gap-2">
+        <i class="pi pi-chart-pie text-primary"></i>
+        <span>التوزيع المالي للسنة {{ selectedYear() }}</span>
+      </h3>
+      <div class="chart-container" *ngIf="chartData()">
+        <p-chart 
+          type="doughnut" 
+          [data]="chartData()" 
+          [options]="chartOptions"
+          [style]="{'height': '400px'}">
+        </p-chart>
+      </div>
+      <div *ngIf="!chartData()" class="text-center p-6 opacity-40">
+        <i class="pi pi-chart-pie text-6xl mb-3"></i>
+        <p class="m-0 text-xl">لا توجد بيانات لعرضها</p>
+      </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="glass-panel p-0 overflow-hidden">
+      <div class="p-4 border-bottom-1 border-color">
+        <h3 class="m-0 flex align-items-center gap-2">
+          <i class="pi pi-table text-primary"></i>
+          <span>تفاصيل الفئات المالية</span>
+        </h3>
+      </div>
+      <p-table 
+        [value]="annualSummary()" 
+        responsiveLayout="scroll"
+        styleClass="p-datatable-sm">
+        
+        <ng-template pTemplate="header">
+          <tr>
+            <th>الفئة</th>
+            <th class="text-center">عدد العمليات</th>
+            <th class="text-right">المبلغ الإجمالي</th>
+            <th class="text-center">النسبة المئوية</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr class="fadein">
+            <td>
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-tag text-primary"></i>
+                <span class="font-bold">{{ item.categoryName }}</span>
+              </div>
+            </td>
+            <td class="text-center">
+              <p-tag [value]="item.transactionCount" severity="info"></p-tag>
+            </td>
+            <td class="text-right">
+              <span class="font-bold text-lg text-primary">
+                {{ item.totalAmount | number:'1.0-2' }} ر.ي
+              </span>
+            </td>
+            <td class="text-center">
+              <div class="percentage-bar">
+                <div class="percentage-fill" [style.width.%]="item.percentage"></div>
+                <span class="percentage-text">{{ item.percentage | number:'1.1-1' }}%</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center p-6 opacity-40">
+              <i class="pi pi-inbox text-6xl mb-3"></i>
+              <p class="m-0 text-xl">لا توجد بيانات للسنة المحددة</p>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+
+<p-toast></p-toast>

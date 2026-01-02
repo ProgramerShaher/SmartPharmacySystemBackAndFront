@@ -37,9 +37,10 @@ public class UpdateUserDto
     public string Email { get; set; } = string.Empty;
 
     /// <summary>
-    /// الدور (e.g., Admin, Pharmacist, Cashier)
+    /// معرف الدور
+    /// Role ID
     /// </summary>
-    public string Role { get; set; } = string.Empty;
+    public int RoleId { get; set; }
 
     /// <summary>
     /// رقم الهاتف

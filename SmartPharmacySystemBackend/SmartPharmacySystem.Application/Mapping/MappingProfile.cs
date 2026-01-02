@@ -50,9 +50,12 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ReverseMap();
 
             // User Mappings
-            // سيعمل التوفيق تلقائياً لأن الأسماء والأنواع أصبحت متطابقة
             CreateMap<CreateUserDto, User>();
-            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserDto>()
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))
+                .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : string.Empty))
+                .ForMember(dest => dest.RoleDescription, opt => opt.MapFrom(src => src.Role != null ? src.Role.Description : null))
+                .ReverseMap();
 
             // SupplierPayment Mappings
             CreateMap<CreateSupplierPaymentDto, SupplierPayment>();
@@ -276,8 +279,10 @@ namespace SmartPharmacySystem.Application.Mapping
 
             // PurchaseReturn Mappings
             CreateMap<CreatePurchaseReturnDto, PurchaseReturn>()
+                .ForMember(dest => dest.PurchaseReturnDetails, opt => opt.MapFrom(src => src.Details))  // ✅ Map Details to PurchaseReturnDetails
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalAmount, opt => opt.Ignore());
+
             CreateMap<UpdatePurchaseReturnDto, PurchaseReturn>();
             CreateMap<PurchaseReturn, PurchaseReturnDto>()
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : string.Empty))

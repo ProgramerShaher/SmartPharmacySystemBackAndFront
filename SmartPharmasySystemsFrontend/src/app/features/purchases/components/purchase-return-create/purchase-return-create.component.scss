@@ -1,3 +1,106 @@
-.form-container {
-    padding: 20px;
+.pos-container {
+    padding: 1.5rem;
+    max-width: 1600px;
+    margin: 0 auto;
+}
+
+.pos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+}
+
+.pos-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 1.5rem;
+    align-items: start;
+
+    @media (max-width: 1200px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.item-row {
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(139, 92, 246, 0.05) !important;
+    }
+
+    &.grayscale {
+        filter: grayscale(1);
+    }
+}
+
+.batch-tag {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &.indigo {
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+    }
+}
+
+.summary-card {
+    padding: 2rem 1.5rem;
+    border-radius: 1.25rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    &.return-purchase {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+        box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
+
+        .label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .value {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: rgba(255, 255, 255, 0.9);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+    }
+}
+
+.mini-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    border-radius: 1rem;
+    display: flex;
+}
+
+.elevation-hover {
+    transition: all 0.3s ease;
+
+    &:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+:host ::ng-deep {
+    .p-inputnumber-buttons-horizontal .p-inputnumber-input {
+        order: 2;
+    }
 }

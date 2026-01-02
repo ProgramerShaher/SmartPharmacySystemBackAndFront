@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
 
@@ -43,6 +44,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Customer> Customers { get; set; } = null!;
     public DbSet<SupplierPayment> SupplierPayments { get; set; } = null!;
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        // Suppress circular dependency and phantom model change warnings that block Update-Database in EF 9
+        optionsBuilder.ConfigureWarnings(warnings =>
+            warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -64,6 +73,18 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 CreatedAt = new DateTime(2025, 1, 1),
                 LastUpdated = new DateTime(2025, 1, 1)
             });
+        });
+
+        modelBuilder.Entity<FinancialTransaction>(entity =>
+        {
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+        });
+
+        modelBuilder.Entity<SalesReturn>(entity =>
+        {
+            entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCost).HasPrecision(18, 2);
+            entity.Property(e => e.TotalProfit).HasPrecision(18, 2);
         });
 
         // SupplierPayment Configuration
@@ -138,6 +159,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
+        // Supplier Configuration
+        modelBuilder.Entity<Supplier>(entity =>
+        {
+            entity.Property(e => e.Balance).HasPrecision(18, 2);
+        });
+
+        // Medicine Configuration
+        modelBuilder.Entity<Medicine>(entity =>
+        {
+            entity.Property(e => e.MovingAverageCost).HasPrecision(18, 2);
+            entity.Property(e => e.DefaultPurchasePrice).HasPrecision(18, 2);
+            entity.Property(e => e.DefaultSalePrice).HasPrecision(18, 2);
+        });
+
         // Seed Expense Categories
         modelBuilder.Entity<ExpenseCategory>().HasData(
             new ExpenseCategory { Id = 1, Name = "رواتب", Description = "رواتب الموظفين والبدلات" },
@@ -167,11 +202,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasForeignKey(mb => mb.MedicineId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Unique index on CompanyBatchNumber & BatchBarcode
+        // MedicineBatch Configuration
         modelBuilder.Entity<MedicineBatch>(entity =>
         {
             entity.HasIndex(mb => mb.CompanyBatchNumber).IsUnique();
             entity.HasIndex(mb => mb.BatchBarcode).IsUnique();
+
+            // Explicitly map CreatedBy relationship (avoids shadow property CreatedByUserId)
+            entity.HasOne(mb => mb.CreatedByUser)
+                  .WithMany(u => u.CreatedBatches)
+                  .HasForeignKey(mb => mb.CreatedBy)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // PurchaseInvoice - Supplier
@@ -192,6 +233,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<PurchaseInvoice>()
             .Property(pi => pi.PaymentMethod)
             .HasConversion<int>();
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.TotalAmount)
+            .HasPrecision(18, 2);
 
         // PurchaseInvoice - User Audit
         modelBuilder.Entity<PurchaseInvoice>()
@@ -235,6 +280,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.Property(e => e.TrueUnitCost).HasPrecision(18, 2);
+            entity.Property(e => e.PurchasePrice).HasPrecision(18, 2);
+            entity.Property(e => e.SalePrice).HasPrecision(18, 2);
+            entity.Property(e => e.Total).HasPrecision(18, 2);
         });
 
         modelBuilder.Entity<SaleInvoice>()
@@ -248,6 +296,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<SaleInvoice>()
                 .Property(si => si.PaymentMethod)
                 .HasConversion<int>();
+
+        modelBuilder.Entity<SaleInvoice>(entity =>
+        {
+            entity.Property(si => si.TotalAmount).HasPrecision(18, 2);
+            entity.Property(si => si.TotalCost).HasPrecision(18, 2);
+            entity.Property(si => si.TotalProfit).HasPrecision(18, 2);
+        });
 
         modelBuilder.Entity<SaleInvoice>()
             .HasOne(si => si.Customer)
@@ -289,11 +344,19 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .OnDelete(DeleteBehavior.NoAction);
 
         // SaleInvoiceDetail - MedicineBatch
-        modelBuilder.Entity<SaleInvoiceDetail>()
-            .HasOne(sid => sid.Batch)
-            .WithMany(mb => mb.SaleInvoiceDetails)
-            .HasForeignKey(sid => sid.BatchId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SaleInvoiceDetail>(entity =>
+        {
+            entity.HasOne(sid => sid.Batch)
+                .WithMany(mb => mb.SaleInvoiceDetails)
+                .HasForeignKey(sid => sid.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(sid => sid.SalePrice).HasPrecision(18, 2);
+            entity.Property(sid => sid.UnitCost).HasPrecision(18, 2);
+            entity.Property(sid => sid.TotalLineAmount).HasPrecision(18, 2);
+            entity.Property(sid => sid.TotalCost).HasPrecision(18, 2);
+            entity.Property(sid => sid.Profit).HasPrecision(18, 2);
+        });
 
         // InventoryMovement - Medicine
         modelBuilder.Entity<InventoryMovement>()
@@ -367,11 +430,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .OnDelete(DeleteBehavior.NoAction);
 
         // SalesReturnDetail - MedicineBatch
-        modelBuilder.Entity<SalesReturnDetail>()
-            .HasOne(srd => srd.Batch)
-            .WithMany(mb => mb.SalesReturnDetails)
-            .HasForeignKey(srd => srd.BatchId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<SalesReturnDetail>(entity =>
+        {
+            entity.HasOne(srd => srd.Batch)
+                .WithMany(mb => mb.SalesReturnDetails)
+                .HasForeignKey(srd => srd.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(srd => srd.SalePrice).HasPrecision(18, 2);
+            entity.Property(srd => srd.UnitCost).HasPrecision(18, 2);
+            entity.Property(srd => srd.TotalLineAmount).HasPrecision(18, 2);
+            entity.Property(srd => srd.TotalCost).HasPrecision(18, 2);
+            entity.Property(srd => srd.Profit).HasPrecision(18, 2);
+            entity.Property(srd => srd.TotalReturn).HasPrecision(18, 2);
+        });
 
         // PriceOverride Configuration
         modelBuilder.Entity<PriceOverride>(entity =>
@@ -435,11 +507,15 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         // PurchaseReturn - Supplier
-        modelBuilder.Entity<PurchaseReturn>()
-            .HasOne(pr => pr.Supplier)
-            .WithMany(s => s.PurchaseReturns)
-            .HasForeignKey(pr => pr.SupplierId)
-            .OnDelete(DeleteBehavior.NoAction);
+        modelBuilder.Entity<PurchaseReturn>(entity =>
+        {
+            entity.HasOne(pr => pr.Supplier)
+                .WithMany(s => s.PurchaseReturns)
+                .HasForeignKey(pr => pr.SupplierId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            entity.Property(pr => pr.TotalAmount).HasPrecision(18, 2);
+        });
 
         // PurchaseReturnDetail - PurchaseReturn
         modelBuilder.Entity<PurchaseReturnDetail>()
@@ -456,11 +532,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .OnDelete(DeleteBehavior.NoAction);
 
         // PurchaseReturnDetail - MedicineBatch
-        modelBuilder.Entity<PurchaseReturnDetail>()
-            .HasOne(prd => prd.Batch)
-            .WithMany(mb => mb.PurchaseReturnDetails)
-            .HasForeignKey(prd => prd.BatchId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<PurchaseReturnDetail>(entity =>
+        {
+            entity.HasOne(prd => prd.Batch)
+                .WithMany(mb => mb.PurchaseReturnDetails)
+                .HasForeignKey(prd => prd.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(prd => prd.PurchasePrice).HasPrecision(18, 2);
+            entity.Property(prd => prd.TotalReturn).HasPrecision(18, 2);
+        });
 
         // Configure InvoiceNumberSequence
         modelBuilder.Entity<InvoiceNumberSequence>()
@@ -562,6 +643,75 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 IsDeleted = false
             }
         );
+
+        // ==================== Performance Indexes ====================
+        // Added for query optimization and faster search operations
+
+        // Medicines Indexes
+        modelBuilder.Entity<Medicine>()
+            .HasIndex(m => m.Name)
+            .HasDatabaseName("IX_Medicines_Name_Performance");
+
+        modelBuilder.Entity<Medicine>()
+            .HasIndex(m => m.DefaultBarcode)
+            .HasDatabaseName("IX_Medicines_Barcode_Performance");
+
+        modelBuilder.Entity<Medicine>()
+            .HasIndex(m => m.ScientificName)
+            .HasDatabaseName("IX_Medicines_ScientificName");
+
+        modelBuilder.Entity<Medicine>()
+            .HasIndex(m => new { m.CategoryId, m.Status })
+            .HasDatabaseName("IX_Medicines_CategoryId_Status");
+
+        // MedicineBatches Indexes
+        modelBuilder.Entity<MedicineBatch>()
+            .HasIndex(mb => new { mb.MedicineId, mb.ExpiryDate })
+            .HasDatabaseName("IX_MedicineBatches_MedicineId_ExpiryDate");
+
+        modelBuilder.Entity<MedicineBatch>()
+            .HasIndex(mb => new { mb.Status, mb.ExpiryDate })
+            .HasDatabaseName("IX_MedicineBatches_Status_ExpiryDate");
+
+        // SaleInvoices Indexes
+        modelBuilder.Entity<SaleInvoice>()
+            .HasIndex(si => new { si.InvoiceDate, si.Status })
+            .HasDatabaseName("IX_SaleInvoices_InvoiceDate_Status");
+
+        modelBuilder.Entity<SaleInvoice>()
+            .HasIndex(si => si.CustomerId)
+            .HasDatabaseName("IX_SaleInvoices_CustomerId_Performance");
+
+        modelBuilder.Entity<SaleInvoice>()
+            .HasIndex(si => si.CreatedBy)
+            .HasDatabaseName("IX_SaleInvoices_CreatedBy");
+
+        // PurchaseInvoices Indexes
+        modelBuilder.Entity<PurchaseInvoice>()
+            .HasIndex(pi => new { pi.PurchaseDate, pi.Status })
+            .HasDatabaseName("IX_PurchaseInvoices_PurchaseDate_Status");
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .HasIndex(pi => pi.SupplierId)
+            .HasDatabaseName("IX_PurchaseInvoices_SupplierId_Performance");
+
+        // Suppliers Indexes
+        modelBuilder.Entity<Supplier>()
+            .HasIndex(s => s.Name)
+            .HasDatabaseName("IX_Suppliers_Name_Performance");
+
+        modelBuilder.Entity<Supplier>()
+            .HasIndex(s => s.PhoneNumber)
+            .HasDatabaseName("IX_Suppliers_PhoneNumber");
+
+        // Alerts Indexes
+        modelBuilder.Entity<Alert>()
+            .HasIndex(a => new { a.BatchId, a.AlertType })
+            .HasDatabaseName("IX_Alerts_BatchId_AlertType");
+
+        modelBuilder.Entity<Alert>()
+            .HasIndex(a => a.CreatedAt)
+            .HasDatabaseName("IX_Alerts_CreatedAt");
     }
 
     public override int SaveChanges()

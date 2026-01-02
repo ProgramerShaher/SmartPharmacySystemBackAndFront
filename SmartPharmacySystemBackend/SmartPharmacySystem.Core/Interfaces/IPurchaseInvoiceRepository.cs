@@ -16,4 +16,12 @@ public interface IPurchaseInvoiceRepository
     Task SoftDeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
     Task<PurchaseInvoice?> GetByIdWithDetailsAsync(int id);
+
+    /// <summary>
+    /// Gets a purchase invoice by ID with full details including Supplier, PurchaseInvoiceDetails, Medicine, and Batch.
+    /// This method is optimized for purchase return operations.
+    /// </summary>
+    /// <param name="id">The purchase invoice ID</param>
+    /// <returns>The purchase invoice with all related entities, or null if not found</returns>
+    Task<PurchaseInvoice?> GetByIdWithFullDetailsAsync(int id);
 }

@@ -1,0 +1,197 @@
+<div class="statement-container animate-fade-in" dir="rtl">
+    <!-- Dynamic Selection Header (Elevated Glass) -->
+    <div
+        class="no-print selection-header mb-6 glass-morphism p-4 border-round-3xl shadow-4 flex flex-column md:flex-row justify-content-between align-items-center gap-4">
+        <div class="flex align-items-center gap-4 w-full md:w-auto">
+            <div
+                class="search-icon-box bg-primary-600 text-white shadow-3 border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
+                <i class="pi pi-search text-xl"></i>
+            </div>
+            <div class="flex-1">
+                <p-autoComplete [(ngModel)]="searchQuery" [suggestions]="filteredSuppliers"
+                    (completeMethod)="searchSuppliers($event)" field="name" (onSelect)="onSupplierSelect($event)"
+                    placeholder="ابحث عن المورد لعرض كشف الحساب..."
+                    inputStyleClass="h-3rem border-round-2xl w-full md:w-30rem shadow-inner bg-gray-50 border-primary-50">
+                </p-autoComplete>
+            </div>
+        </div>
+        <div class="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0" *ngIf="statement()">
+            <p-button label="طباعة التقرير" icon="pi pi-print" (onClick)="print()"
+                styleClass="p-button-outlined p-button-secondary h-3rem px-4 border-round-xl"></p-button>
+            <p-button label="تصدير PDF" icon="pi pi-file-pdf"
+                styleClass="p-button-danger h-3rem px-4 border-round-xl shadow-2"></p-button>
+        </div>
+    </div>
+
+    <!-- Professional Print Header (Only visible when printing) -->
+    <div class="print-only-header hidden">
+        <div class="flex justify-content-between align-items-center mb-6 border-bottom-3 border-900 pb-5">
+            <div class="text-right">
+                <h1 class="text-5xl font-black m-0 mb-2">الصيدلية الذكية</h1>
+                <p class="text-xl font-bold m-0 text-700">نظام الإدارة المالية المتكامل</p>
+                <div class="mt-4 text-sm text-600 uppercase tracking-widest">
+                    <i class="pi pi-calendar ml-2"></i>تاريخ استخراج التقرير: {{ today | date:'fullDate' }}
+                </div>
+            </div>
+            <div class="text-left bg-gray-100 p-4 border-round-2xl border-1 border-300">
+                <h2 class="text-3xl font-bold m-0 text-900">تقرير كشف حساب</h2>
+                <div class="mt-2 text-indigo-600 font-bold">رقم المرجع المالي: #ST-{{ statement()?.supplierId }}-{{
+                    today | date:'MM' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading()" class="premium-loading-overlay">
+        <div class="loader-wave"></div>
+        <p class="mt-4 font-black text-2xl text-indigo-700 tracking-tight animate-pulse">جاري جمع البيانات المالية...
+        </p>
+    </div>
+
+    <!-- Main Statement Content -->
+    <div *ngIf="statement() && !loading()" class="statement-report-card">
+        <!-- Summary Dashboard (Glass Style) -->
+        <div class="grid summary-grid mb-5 px-3">
+            <div class="col-12 md:col-4">
+                <div
+                    class="summary-box glass-morphism p-4 border-round-3xl shadow-2 h-full border-bottom-3 border-primary-500">
+                    <div class="flex align-items-center gap-3 mb-3">
+                        <div
+                            class="w-2rem h-2rem bg-primary-100 text-primary-600 border-round-lg flex align-items-center justify-content-center">
+                            <i class="pi pi-user"></i>
+                        </div>
+                        <span class="font-bold text-600">اسم الشريك التجاري</span>
+                    </div>
+                    <div class="text-3xl font-black text-900">{{ statement()?.supplierName }}</div>
+                </div>
+            </div>
+            <div class="col-12 md:col-4">
+                <div class="summary-box glass-morphism p-4 border-round-3xl shadow-2 h-full border-bottom-3"
+                    [class.border-red-500]="statement()?.totalBalance! > 0"
+                    [class.border-green-500]="statement()?.totalBalance! <= 0">
+                    <div class="flex align-items-center gap-3 mb-3">
+                        <div
+                            class="w-2rem h-2rem bg-gray-100 text-gray-600 border-round-lg flex align-items-center justify-content-center">
+                            <i class="pi pi-info-circle"></i>
+                        </div>
+                        <span class="font-bold text-600">حالة المديونية</span>
+                    </div>
+                    <p-tag [severity]="statement()?.totalBalance! > 0 ? 'danger' : 'success'"
+                        [value]="statement()?.status" styleClass="px-4 py-2 text-lg font-black shadow-1">
+                    </p-tag>
+                </div>
+            </div>
+            <div class="col-12 md:col-4">
+                <div
+                    class="summary-box glass-morphism p-4 border-round-3xl shadow-2 h-full border-bottom-3 border-indigo-600">
+                    <div class="flex align-items-center gap-3 mb-3">
+                        <div
+                            class="w-2rem h-2rem bg-indigo-100 text-indigo-600 border-round-lg flex align-items-center justify-content-center">
+                            <i class="pi pi-money-bill"></i>
+                        </div>
+                        <span class="font-bold text-600">صافي الرصيد المستحق</span>
+                    </div>
+                    <div class="text-4xl font-black" [class.text-red-600]="statement()?.totalBalance! > 0"
+                        [class.text-green-600]="statement()?.totalBalance! <= 0">
+                        {{ statement()?.totalBalance | number }} <small class="text-lg">ر.ي</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ledger Table (High Definition) -->
+        <div
+            class="ledger-container glass-morphism border-round-3xl overflow-hidden shadow-8 border-1 border-white-alpha-30">
+            <p-table [value]="statement()?.transactions!" styleClass="premium-ledger-table">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="bg-gray-100 text-900 font-black">التاريخ</th>
+                        <th class="bg-gray-100 text-900 font-black">البيان / نوع الحركة</th>
+                        <th class="bg-gray-100 text-900 font-black">المرجع المالي</th>
+                        <th class="bg-gray-100 text-red-700 font-black text-center">أرصدة مدينة (شراء)</th>
+                        <th class="bg-gray-100 text-green-700 font-black text-center">أرصدة دائنة (سداد)</th>
+                        <th class="bg-indigo-600 text-white font-black text-center">الرصيد التراكمي</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr class="ledger-row" [class.bg-highlight]="item.runningBalance === 0">
+                        <td>
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-calendar opacity-40"></i>
+                                <span class="font-bold">{{ item.date | date:'yyyy/MM/dd' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="flex flex-column gap-1">
+                                <span class="font-bold text-lg text-800">{{ item.type }}</span>
+                                <span class="text-500 text-xs italic">{{ item.notes || 'لايوجد بيان إضافي' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="ref-badge">#{{ item.reference }}</div>
+                        </td>
+                        <td class="text-center">
+                            <span class="font-black text-red-600 text-lg" *ngIf="item.credit > 0">
+                                {{ item.credit | number }}
+                            </span>
+                            <span class="opacity-10" *ngIf="item.credit <= 0">-</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="font-black text-green-600 text-lg" *ngIf="item.debit > 0">
+                                {{ item.debit | number }}
+                            </span>
+                            <span class="opacity-10" *ngIf="item.debit <= 0">-</span>
+                        </td>
+                        <td class="text-center bg-gray-50">
+                            <div class="running-balance-cell font-black text-xl"
+                                [class.text-red-700]="item.runningBalance > 0">
+                                {{ item.runningBalance | number }}
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr class="ledger-footer-row">
+                        <td colspan="3" class="text-left py-4 text-2xl font-black">إجمالي رصيد التقرير النهائي:</td>
+                        <td colspan="2" class="bg-gray-900 text-white text-center font-bold">نظام الحسابات الآلي</td>
+                        <td class="text-center bg-indigo-700 text-white font-black text-3xl shadow-8">
+                            {{ statement()?.totalBalance | number }} <small>ر.ي</small>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- Report Footer (Stamps & Signatures for Print) -->
+        <div class="print-footer mt-8 hidden">
+            <div class="grid pt-8 border-top-1 border-300">
+                <div class="col-4 text-center">
+                    <h4 class="m-0 mb-4">توقيع المحاسب</h4>
+                    <div class="signature-line w-10rem h-1px bg-900 mx-auto mt-8"></div>
+                </div>
+                <div class="col-4 text-center">
+                    <h4 class="m-0 mb-4 font-bold text-gray-300">ختم الصيدلية</h4>
+                    <div class="stamp-box w-8rem h-8rem border-2 border-dashed border-200 border-circle mx-auto mt-4">
+                    </div>
+                </div>
+                <div class="col-4 text-center">
+                    <h4 class="m-0 mb-4">اعتماد الإدارة</h4>
+                    <div class="signature-line w-10rem h-1px bg-900 mx-auto mt-8"></div>
+                </div>
+            </div>
+            <div class="text-center mt-8 text-xs text-500">تم استخراج هذا التقرير آلياً من نظام الصيدلية الذكية - لا
+                يتطلب توقيع إلا عند الاستخدام الرسمي الرسمي</div>
+        </div>
+    </div>
+
+    <!-- Empty/Search Invitation -->
+    <div *ngIf="!statement() && !loading()" class="empty-invitation py-8 text-center animate-fade-in">
+        <div
+            class="big-search-box glass-morphism w-15rem h-15rem border-circle flex align-items-center justify-content-center mx-auto mb-6 shadow-8 scale-in flex-column gap-3">
+            <i class="pi pi-search-plus text-7xl text-indigo-400"></i>
+            <div class="loader-wave-small"></div>
+        </div>
+        <h3 class="text-3xl font-bold text-600 mb-2">تقرير كشف حساب المورد</h3>
+        <p class="text-lg text-500 mb-6">يرجى اختيار اسم المورد من القائمة أعلاه لعرض التفاصيل المالية والحركات</p>
+    </div>
+</div>

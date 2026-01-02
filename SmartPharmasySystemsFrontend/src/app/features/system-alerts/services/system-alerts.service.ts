@@ -67,14 +67,25 @@ export class SystemAlertsService {
     ).pipe(
       map(res => {
         console.log('✅ Raw API Response:', res);
-        console.log('✅ Data from response:', res.data);
-        // Handle both array and paged result scenarios just in case
+
+        let items: any[] = [];
         if (Array.isArray(res.data)) {
-          return res.data;
+          items = res.data;
         } else {
           // If it sends paged result structure
-          return (res.data as any)?.items || [];
+          items = (res.data as any)?.items || [];
         }
+
+        // Transform API DTO to Frontend Model
+        return items.map(item => ({
+          ...item,
+          // Map expiryDateSnapshot to expiryDate if missing
+          expiryDate: item.expiryDateSnapshot || item.expiryDate,
+          // Map isRead to status (1=Read, 0=Pending) if status is missing
+          status: item.status !== undefined ? item.status : (item.isRead ? 1 : 0),
+          // Ensure alertType is string if needed or handle it
+          alertType: item.alertType?.toString() || ''
+        }));
       }),
       catchError(error => {
         console.error('❌ Error in getAllAlerts:', error);
@@ -90,7 +101,18 @@ export class SystemAlertsService {
     return this.http.get<ApiResponse<Alert>>(
       `${environment.apiUrl}/Alerts/${id}`
     ).pipe(
-      map(res => res.data),
+      map(res => {
+        const item: any = res.data;
+        if (!item) return item;
+
+        // Transform DTO to Frontend Model
+        return {
+          ...item,
+          expiryDate: item.expiryDateSnapshot || item.expiryDate,
+          status: item.status !== undefined ? item.status : (item.isRead ? 1 : 0),
+          alertType: item.alertType?.toString() || ''
+        };
+      }),
       catchError(error => {
         console.error(`❌ Error getting alert ${id}:`, error);
         this.logError(`جلب التنبيه ${id}`, error);
@@ -205,6 +227,22 @@ export class SystemAlertsService {
       catchError(error => {
         console.error('❌ Error generating expiry alerts:', error);
         this.logError('إنشاء تنبيهات انتهاء الصلاحية', error);
+        throw error;
+      })
+    );
+  }
+
+  // Generate low stock alerts
+  generateLowStockAlerts(): Observable<void> {
+    console.log('🔄 إنشاء تنبيهات نقص المخزون');
+    return this.http.post<ApiResponse<void>>(
+      `${environment.apiUrl}/Alerts/generate-low-stock`,
+      {}
+    ).pipe(
+      map(res => res.data),
+      catchError(error => {
+        console.error('❌ Error generating low stock alerts:', error);
+        this.logError('إنشاء تنبيهات نقص المخزون', error);
         throw error;
       })
     );

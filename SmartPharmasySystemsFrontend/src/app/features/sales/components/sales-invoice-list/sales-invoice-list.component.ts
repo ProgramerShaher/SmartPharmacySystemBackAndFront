@@ -215,10 +215,36 @@ export class SalesInvoiceListComponent implements OnInit {
                 this.creditAmount.set(data.creditSalesAmount);
             },
             error: (err) => {
-                console.error('Failed to load KPI stats:', err);
-                // Fallback to zero values - no mock data
+                console.warn('KPI stats endpoint not available, calculating from local data:', err);
+                // Calculate from loaded invoices
+                this.calculateLocalKPIs();
             }
         });
+    }
+
+    /**
+     * 📊 Calculate KPIs from loaded invoices (Fallback)
+     */
+    private calculateLocalKPIs() {
+        const allInvoices = this.invoices();
+        const today = new Date().toDateString();
+
+        const todayInvoices = allInvoices.filter(i => new Date(i.invoiceDate).toDateString() === today);
+        const approvedToday = todayInvoices.filter((i: any) => i.status === 1 || i.status === 'Approved');
+
+        const totalSalesAmount = approvedToday.reduce((sum: number, i: any) => sum + (i.totalAmount || 0), 0);
+        const cashInvoices = approvedToday.filter((i: any) => i.paymentMethod === 1 || i.paymentMethod === 'Cash');
+        const creditInvoices = approvedToday.filter((i: any) => i.paymentMethod === 2 || i.paymentMethod === 'Credit');
+
+        const cashAmount = cashInvoices.reduce((sum, i) => sum + (i.totalAmount || 0), 0);
+        const creditAmount = creditInvoices.reduce((sum, i) => sum + (i.totalAmount || 0), 0);
+        const total = cashAmount + creditAmount || 1;
+
+        this.totalSales.set(totalSalesAmount);
+        this.cashAmount.set(cashAmount);
+        this.creditAmount.set(creditAmount);
+        this.cashPercentage.set(Math.round(cashAmount / total * 100));
+        this.creditPercentage.set(Math.round(creditAmount / total * 100));
     }
 
     /**
@@ -252,7 +278,25 @@ export class SalesInvoiceListComponent implements OnInit {
                 };
             },
             error: (err) => {
-                console.error('Failed to load sales flow:', err);
+                console.warn('Sales flow endpoint not available, using empty chart:', err);
+                // Show empty chart with last 7 days labels
+                const labels = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    labels.push(d.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' }));
+                }
+                this.salesTrendData = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'المبيعات اليومية',
+                        data: [0, 0, 0, 0, 0, 0, 0],
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                };
             }
         });
     }
@@ -279,7 +323,22 @@ export class SalesInvoiceListComponent implements OnInit {
                 };
             },
             error: (err) => {
-                console.error('Failed to load payment distribution:', err);
+                console.warn('Payment distribution endpoint not available, using fallback:', err);
+                // Fallback: Calculate from loaded invoices
+                const allInvoices = this.invoices();
+                const cashCount = allInvoices.filter((i: any) => i.paymentMethod === 1 || i.paymentMethod === 'Cash').length;
+                const creditCount = allInvoices.filter((i: any) => i.paymentMethod === 2 || i.paymentMethod === 'Credit').length;
+                const total = cashCount + creditCount || 1;
+
+                this.customerDistributionData = {
+                    labels: ['نقدي', 'آجل'],
+                    datasets: [{
+                        data: [Math.round(cashCount / total * 100), Math.round(creditCount / total * 100)],
+                        backgroundColor: ['#10b981', '#3b82f6'],
+                        hoverBackgroundColor: ['#059669', '#2563eb'],
+                        borderWidth: 0
+                    }]
+                };
             }
         });
     }
@@ -421,15 +480,15 @@ export class SalesInvoiceListComponent implements OnInit {
     }
 
     getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
-        if (!status) return 'info';
-        const statusNum = typeof status === 'number' ? status : parseInt(status.toString());
+        if (status === undefined || status === null) return 'info';
+        const statusNum = Number(status);
 
         switch (statusNum) {
-            case 2: // Approved
+            case DocumentStatus.Approved:
                 return 'success';
-            case 1: // Draft
+            case DocumentStatus.Draft:
                 return 'warning';
-            case 3: // Cancelled
+            case DocumentStatus.Cancelled:
                 return 'danger';
             default:
                 return 'info';
@@ -437,15 +496,15 @@ export class SalesInvoiceListComponent implements OnInit {
     }
 
     getStatusLabel(status: any): string {
-        if (!status) return 'غير محدد';
-        const statusNum = typeof status === 'number' ? status : parseInt(status.toString());
+        if (status === undefined || status === null) return 'غير محدد';
+        const statusNum = Number(status);
 
         switch (statusNum) {
-            case 2: // Approved
+            case DocumentStatus.Approved:
                 return 'معتمدة';
-            case 1: // Draft
+            case DocumentStatus.Draft:
                 return 'مسودة';
-            case 3: // Cancelled
+            case DocumentStatus.Cancelled:
                 return 'ملغاة';
             default:
                 return 'غير محدد';
@@ -453,18 +512,18 @@ export class SalesInvoiceListComponent implements OnInit {
     }
 
     isDraft(invoice: SaleInvoice): boolean {
-        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
-        return statusNum === 1; // Draft
+        const statusNum = Number(invoice.status);
+        return statusNum === DocumentStatus.Draft;
     }
 
     isApproved(invoice: SaleInvoice): boolean {
-        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
-        return statusNum === 2; // Approved
+        const statusNum = Number(invoice.status);
+        return statusNum === DocumentStatus.Approved;
     }
 
     isCancelled(invoice: SaleInvoice): boolean {
-        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
-        return statusNum === 3; // Cancelled
+        const statusNum = Number(invoice.status);
+        return statusNum === DocumentStatus.Cancelled;
     }
 
     // Helper methods

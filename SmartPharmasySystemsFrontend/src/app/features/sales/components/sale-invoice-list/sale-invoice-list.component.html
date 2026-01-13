@@ -1,77 +1,191 @@
-<div class="card p-4 shadow-2 border-round-xl" dir="rtl">
-    <div class="flex align-items-center justify-content-between mb-5">
+<div class="purchase-container p-4 animate-fade-in" dir="rtl">
+    <!-- Premium Header -->
+    <div class="flex justify-content-between align-items-center mb-5">
         <div class="flex align-items-center gap-3">
-            <div
-                class="w-3rem h-3rem border-circle bg-primary-reverse flex align-items-center justify-content-center shadow-1">
-                <i class="pi pi-file-export text-primary text-xl"></i>
+            <div class="icon-circle bg-gradient-sales"
+                style="width: 4rem; height: 4rem; border-radius: 50%; background: linear-gradient(135deg, #10b981, #3b82f6); display: flex; align-items: center; justify-content: center;">
+                <i class="pi pi-dollar text-3xl text-white"></i>
             </div>
             <div>
-                <h2 class="text-2xl font-bold m-0 text-primary">فواتير المبيعات</h2>
-                <small class="text-secondary font-medium">عرض وإدارة فواتير بيع الأدوية للعملاء</small>
+                <h1 class="text-4xl font-bold m-0 text-gray-800">فواتير المبيعات</h1>
+                <p class="text-gray-500 text-sm mt-1">إدارة متكاملة لمبيعات الصيدلية والعملاء</p>
             </div>
         </div>
-        <p-button label="فاتورة بيع جديدة" icon="pi pi-plus" severity="success" class="shadow-1"
-            (onClick)="createSale()"></p-button>
+        <div class="flex gap-2">
+            <span class="p-input-icon-left">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                    placeholder="بحث سريع..." class="p-inputtext-sm" />
+            </span>
+            <p-button label="فاتورة جديدة" icon="pi pi-plus" severity="success" (onClick)="createSale()"></p-button>
+        </div>
     </div>
 
-    <p-table #dt [value]="sales" [rows]="10" [paginator]="true" [globalFilterFields]="['invoiceNumber', 'customerName']"
-        [rowHover]="true" dataKey="id" [loading]="loading"
-        currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}" [showCurrentPageReport]="true"
-        styleClass="p-datatable-gridlines p-datatable-sm shadow-1 border-round-xl overflow-hidden">
-
-        <ng-template pTemplate="caption">
-            <div class="flex align-items-center justify-content-end gap-2">
-                <span class="p-input-icon-left w-full md:w-20rem">
-                    <i class="pi pi-search"></i>
-                    <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
-                        placeholder="ابحث برقم الفاتورة أو اسم العميل..." class="w-full border-round-xl" />
-                </span>
+    <!-- KPI Cards -->
+    <div class="grid mb-4">
+        <!-- Total Sales (Today) -->
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-emerald-500"></div>
+                <div class="flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">إجمالي المبيعات (اليوم)</span>
+                        <h3 class="text-3xl font-bold text-emerald-600 m-0">{{ totalSales() | number:'1.0-0' }}</h3>
+                        <span class="text-xs text-gray-400">ر.ي</span>
+                    </div>
+                    <div class="bg-emerald-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-dollar text-emerald-500 text-2xl"></i>
+                    </div>
+                </div>
+                <div style="height: 60px;">
+                    <p-chart type="line" [data]="salesTrendData"
+                        [options]="{responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}, scales: {y: {display: false}, x: {display: false}}}"
+                        height="60px"></p-chart>
+                </div>
             </div>
-        </ng-template>
+        </div>
+    
+        <!-- Net Profit (Today) -->
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-blue-500"></div>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">صافي الأرباح (اليوم)</span>
+                        <h3 class="text-3xl font-bold text-blue-600 m-0">{{ netProfit() | number:'1.0-0' }}</h3>
+                        <span class="text-xs text-gray-400">ر.ي</span>
+                        <div class="mt-2">
+                            <span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 border-round font-bold">
+                                <i class="pi pi-chart-bar"></i> {{ cashPercentage() | number:'1.0-0' }}% نقدي
+                            </span>
+                        </div>
+                    </div>
+                    <div class="bg-blue-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-chart-line text-blue-500 text-2xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Debts -->
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-orange-500"></div>
+                <div class="flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">ديون العملاء</span>
+                        <h3 class="text-3xl font-bold text-orange-600 m-0">{{ customersDebt() | number:'1.0-0' }}</h3>
+                        <span class="text-xs text-gray-400">ر.ي</span>
+                        <div class="mt-2">
+                            <span class="text-xs bg-orange-50 text-orange-600 px-2 py-1 border-round font-bold">
+                                <i class="pi pi-users"></i> متابعة دقيقة
+                            </span>
+                        </div>
+                    </div>
+                    <div class="bg-orange-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-wallet text-orange-500 text-2xl"></i>
+                    </div>
+                    </div>
+                    </div>
+                    </div>
+                    
+                    <!-- Returns (Today) -->
+                    <div class="col-12 md:col-3">
+                        <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                            <div class="absolute right-0 top-0 h-full w-4px bg-red-500"></div>
+                            <div class="flex justify-content-between align-items-start">
+                                <div>
+                                    <span class="text-gray-500 font-bold text-xs uppercase block mb-2">المرتجعات (اليوم)</span>
+                                    <h3 class="text-3xl font-bold text-red-600 m-0">{{ totalReturnsAmount() | number:'1.0-0' }}</h3>
+                                    <span class="text-xs text-gray-400">ر.ي</span>
+                                </div>
+                                <div class="bg-red-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center">
+                                    <i class="pi pi-replay text-red-500 text-2xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-3" style="height: 60px;">
+                                <p-chart type="doughnut" [data]="returnRateData"
+                                    [options]="{responsive: true, maintainAspectRatio: false, plugins: {legend: {position: 'bottom', labels: {font: {size: 10}}}}}"
+                                    height="60px"></p-chart>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                    
+                    <!-- Table -->
+                    <p-table #dt [value]="sales" [rows]="10" [paginator]="true"
+                        [globalFilterFields]="['saleInvoiceNumber', 'customerName', 'invoiceNumber']" [rowHover]="true" dataKey="id"
+                        [loading]="loading" currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
+                        [showCurrentPageReport]="true" [tableStyle]="{'min-width': '60rem'}"
+                        styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped">
 
         <ng-template pTemplate="header">
             <tr>
-                <th pSortableColumn="invoiceNumber" class="bg-gray-50 p-3">رقم الفاتورة <p-sortIcon
-                        field="invoiceNumber"></p-sortIcon></th>
-                <th pSortableColumn="saleInvoiceDate" class="bg-gray-50 p-3">التاريخ <p-sortIcon
-                        field="saleInvoiceDate"></p-sortIcon></th>
-                <th pSortableColumn="customerName" class="bg-gray-50 p-3">العميل <p-sortIcon
-                        field="customerName"></p-sortIcon></th>
-                <th pSortableColumn="totalAmount" class="bg-gray-50 p-3 text-center">الإجمالي <p-sortIcon
-                        field="totalAmount"></p-sortIcon></th>
-                <th pSortableColumn="status" class="bg-gray-50 p-3 text-center">الحالة <p-sortIcon
-                        field="status"></p-sortIcon></th>
-                <th class="bg-gray-50 p-3 text-center">الإجراءات</th>
+                <th pSortableColumn="saleInvoiceNumber" class="white-space-nowrap"
+                    style="position: sticky; top: 0; z-index: 100; background: #f8f9fa;">
+                    رقم الفاتورة <p-sortIcon field="saleInvoiceNumber"></p-sortIcon>
+                </th>
+                <th pSortableColumn="invoiceDate" class="white-space-nowrap"
+                    style="position: sticky; top: 0; z-index: 100; background: #f8f9fa;">
+                    التاريخ <p-sortIcon field="invoiceDate"></p-sortIcon>
+                </th>
+                <th pSortableColumn="customerName" class="white-space-nowrap"
+                    style="position: sticky; top: 0; z-index: 100; background: #f8f9fa;">
+                    العميل <p-sortIcon field="customerName"></p-sortIcon>
+                </th>
+                <th pSortableColumn="totalAmount" class="white-space-nowrap text-center"
+                    style="position: sticky; top: 0; z-index: 100; background: #f8f9fa;">
+                    الإجمالي <p-sortIcon field="totalAmount"></p-sortIcon>
+                </th>
+                <th pSortableColumn="status" class="white-space-nowrap text-center"
+                    style="position: sticky; top: 0; z-index: 100; background: #f8f9fa;">
+                    الحالة <p-sortIcon field="status"></p-sortIcon>
+                </th>
+                <th class="white-space-nowrap text-center" style="position: sticky; top: 0; z-index: 100; background: #f8f9fa;">
+                    الإجراءات
+                </th>
             </tr>
         </ng-template>
 
         <ng-template pTemplate="body" let-sale>
-            <tr class="hover:bg-gray-50 transition-colors">
-                <td class="font-bold text-primary">{{sale.invoiceNumber || '#' + sale.id}}</td>
-                <td>{{sale.saleInvoiceDate | date:'dd/MM/yyyy HH:mm'}}</td>
+            <tr>
+                <td class="font-bold text-primary">{{sale.saleInvoiceNumber || '#' + sale.id}}</td>
+                <td>{{sale.invoiceDate | date:'dd/MM/yyyy HH:mm'}}</td>
                 <td>
                     <div class="flex align-items-center gap-2">
-                        <i class="pi pi-user text-secondary"></i>
-                        <span>{{sale.customerName || 'عميل نقدي'}}</span>
+                        <i class="pi pi-user text-500"></i>
+                        <span class="font-medium">{{sale.customerName || 'عميل نقدي'}}</span>
                     </div>
                 </td>
-                <td class="text-center font-bold">{{sale.totalAmount | number:'1.2-2'}} ريال يمني</td>
                 <td class="text-center">
-                    <p-tag [severity]="getStatusSeverity(sale.status)" [value]="getStatusLabel(sale.status)"
-                        [rounded]="true"></p-tag>
+                    <span class="font-bold text-900">{{sale.totalAmount | number:'1.2-2'}}</span>
+                    <span class="text-500 text-xs mr-1">ر.ي</span>
+                    </td>
+                    <td class="text-center">
+                        <!-- Backend provides pre-formatted status, color/severity, and icon -->
+                        <p-tag [severity]="sale.statusColor" [value]="sale.statusName" [icon]="sale.statusIcon" [rounded]="true">
+                        </p-tag>
                 </td>
                 <td class="text-center">
                     <div class="flex justify-content-center gap-1">
-                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-info"
-                            pTooltip="عرض التفاصيل" (click)="viewSale(sale)"></button>
+                        <!-- View (Always Visible) -->
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-info p-button-sm"
+                            pTooltip="عرض التفاصيل" tooltipPosition="top" (click)="viewSale(sale)"></button>
+                        <!-- Actions for DRAFT -->
+                        <ng-container *ngIf="sale.status == 'Draft' || sale.status == 1">
+                            <button pButton icon="pi pi-check" class="p-button-rounded p-button-text p-button-success p-button-sm"
+                                pTooltip="اعتماد" tooltipPosition="top" (click)="approveSale(sale)"></button>
+                        </ng-container>
+                        <!-- Actions for APPROVED -->
+                        <ng-container *ngIf="sale.status == 'Approved' || sale.status == 2">
+                            <button pButton icon="pi pi-print" class="p-button-rounded p-button-text p-button-secondary p-button-sm"
+                                pTooltip="طباعة" tooltipPosition="top"></button>
+                            <button pButton icon="pi pi-ban" class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                                pTooltip="إلغاء الاعتماد" tooltipPosition="top" (click)="cancelSale(sale)"></button>
+                        </ng-container>
 
-                        <button *ngIf="sale.status === 'Draft'" pButton icon="pi pi-check-circle"
-                            class="p-button-rounded p-button-text p-button-success" pTooltip="اعتماد الفاتورة"
-                            (click)="approveSale(sale)"></button>
-
-                        <button *ngIf="sale.status === 'Approved'" pButton icon="pi pi-times-circle"
-                            class="p-button-rounded p-button-text p-button-danger" pTooltip="إلغاء الفاتورة"
-                            (click)="cancelSale(sale)"></button>
+                        <!-- Actions for CANCELLED -->
+                        <!-- None special, just View -->
                     </div>
                 </td>
             </tr>
@@ -79,10 +193,15 @@
 
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="6" class="text-center p-5">لا توجد فواتير مبيعات حالياً.</td>
+                <td colspan="6" class="text-center p-5 text-500">
+                    <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                    لا توجد فواتير مبيعات حالياً.
+                </td>
             </tr>
         </ng-template>
     </p-table>
 </div>
 
-<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<p-confirmDialog [style]="{width: '450px'}" acceptButtonStyleClass="p-button-success"
+    rejectButtonStyleClass="p-button-text">
+</p-confirmDialog>

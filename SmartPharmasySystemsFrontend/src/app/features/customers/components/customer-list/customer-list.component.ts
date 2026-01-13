@@ -2,11 +2,11 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
-import { Customer } from '../../../../core/models/customer.models';
+import { Customer, CustomerStatistics } from '../../../../core/models/customer.models';
 import { MessageService, ConfirmationService } from 'primeng/api';
 
 // PrimeNG Modules
-import { TableModule } from 'primeng/table';
+import { TableModule, TableLazyLoadEvent } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
@@ -71,6 +71,16 @@ export class CustomerListComponent implements OnInit {
   ngOnInit() {
     this.initChartOptions();
     this.loadCustomers();
+    this.loadStatistics();
+  }
+
+  loadStatistics() {
+    this.customerService.getStatistics().subscribe({
+      next: (stats) => {
+        this.updateCharts(stats);
+        // Verify stats are loading
+      }
+    });
   }
 
   initChartOptions() {
@@ -89,41 +99,46 @@ export class CustomerListComponent implements OnInit {
     };
 
     this.debtDistributionOptions = {
+      cutout: '60%', // Make it a doughnut
       plugins: {
         legend: {
+          position: 'left', // Evaluate side legend for elegance
           labels: {
-            color: textColor
-          }
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: textColor
-          },
-          grid: {
-            color: 'rgba(255, 255, 255, 0.1)'
-          }
-        },
-        x: {
-          ticks: {
-            color: textColor
-          },
-          grid: {
-            color: 'rgba(255, 255, 255, 0.1)'
+            color: textColor,
+            usePointStyle: true, // Elegant dots
+            font: {
+              family: 'Cairo, sans-serif'
+            }
           }
         }
       }
     };
   }
 
-  loadCustomers() {
+  totalRecords = signal(0);
+  // loading is already defined at line 47, do not redefine it.
+
+  // Keep track of last lazy load event for reloading
+  // Note: TableLazyLoadEvent import should be at the top of the file, not here.
+  lastTableEvent: any | null = null; // Using any temporarily if import is hard to move with replace, but best to use proper type if possible. 
+  // actually, let's fix the import properly in a separate step or just use 'any' to stop the bleeding if the import is tricky, 
+  // but wait, I can just use the type and assume I'll fix the import at the top.
+
+  loadCustomers(event?: any) { // using any for TableLazyLoadEvent to avoid import issues for now, or I should have added the import at top.
     this.loading.set(true);
-    this.customerService.getAll({ pageSize: 1000 }).subscribe({
+    this.lastTableEvent = event || this.lastTableEvent;
+
+    // Default values if no event (initial load)
+    const page = event ? (event.first! / event.rows!) + 1 : 1;
+    const pageSize = event ? event.rows! : 10;
+    const search = event?.globalFilter ? event.globalFilter.toString() : '';
+
+    this.customerService.getAll({ page, pageSize, search }).subscribe({
       next: (res) => {
         this.customers.set(res.items);
-        this.updateCharts(res.items);
+        this.totalRecords.set(res.totalCount);
+        this.loading.set(false);
+        this.totalRecords.set(res.totalCount);
         this.loading.set(false);
       },
       error: () => {
@@ -133,34 +148,26 @@ export class CustomerListComponent implements OnInit {
     });
   }
 
-  updateCharts(customers: Customer[]) {
-    const activeCount = customers.filter(c => c.isActive).length;
-    const inactiveCount = customers.length - activeCount;
-
+  updateCharts(stats: CustomerStatistics) {
     this.activeStatusData = {
       labels: ['نشط', 'خامل'],
       datasets: [
         {
-          data: [activeCount, inactiveCount],
+          data: [stats.activeCustomersCount, stats.inactiveCustomersCount],
           backgroundColor: ['#10b981', '#ef4444'],
           hoverBackgroundColor: ['#059669', '#dc2626']
         }
       ]
     };
 
-    const lowDebt = customers.filter(c => c.balance <= 1000).length;
-    const midDebt = customers.filter(c => c.balance > 1000 && c.balance <= 5000).length;
-    const highDebt = customers.filter(c => c.balance > 5000).length;
-
     this.debtDistributionData = {
-      labels: ['منخفضة', 'متوسطة', 'مرتفعة'],
+      labels: ['منخفضة (<1000)', 'متوسطة (<5000)', 'مرتفعة (>5000)'],
       datasets: [
         {
-          label: 'توزيع المديونية',
-          data: [lowDebt, midDebt, highDebt],
+          data: [stats.lowDebtCount, stats.mediumDebtCount, stats.highDebtCustomersCount],
           backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
-          borderColor: ['#2563eb', '#d97706', '#dc2626'],
-          borderWidth: 1
+          hoverBackgroundColor: ['#2563eb', '#d97706', '#dc2626'],
+          borderWidth: 0 // Cleaner look without borders for doughnut
         }
       ]
     };
@@ -190,7 +197,7 @@ export class CustomerListComponent implements OnInit {
 
   onAddEditSave() {
     this.displayAddEditSidebar.set(false);
-    this.loadCustomers(); // Reload list
+    this.loadCustomers(this.lastTableEvent || undefined); // Reload list with current state
   }
 
   onAddEditClose() {

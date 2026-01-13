@@ -46,4 +46,14 @@ public class UpdatePurchaseInvoiceDto
     /// </summary>
     [StringLength(500, ErrorMessage = "الملاحظات يجب أن تكون أقل من 500 حرف")]
     public string Notes { get; set; } = string.Empty;
+
+    /// <summary>
+    /// تفاصيل الفاتورة (الأصناف)
+    /// </summary>
+    public List<SmartPharmacySystem.Application.DTOs.PurchaseInvoiceDetails.CreatePurchaseInvoiceDetailDto> Items { get; set; } = new();
+    
+    /// <summary>
+    /// إجمالي الفاتورة (اختياري، يتم حسابه في الباك إند)
+    /// </summary>
+    public decimal TotalAmount { get; set; }
 }

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -13,22 +13,24 @@ import { MedicineService } from '../../services/medicine.service';
 import { CategoryService } from '../../services/category.service';
 import { MedicineDto, CreateMedicineDto, UpdateMedicineDto, CategoryDto } from '../../../../core/models';
 import { TagModule } from "primeng/tag";
+import { DialogModule } from "primeng/dialog";
 
 @Component({
     selector: 'app-medicine-add-edit',
     standalone: true,
     imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        SidebarModule,
-        ButtonModule,
-        InputTextModule,
-        DropdownModule,
-        InputNumberModule,
-        CheckboxModule,
-        InputTextareaModule,
-        TagModule
-    ],
+    CommonModule,
+    ReactiveFormsModule,
+    SidebarModule,
+    ButtonModule,
+    InputTextModule,
+    DropdownModule,
+    InputNumberModule,
+    CheckboxModule,
+    InputTextareaModule,
+    TagModule,
+    DialogModule
+],
     templateUrl: './medicine-add-edit.component.html',
     styleUrls: ['./medicine-add-edit.component.scss']
 })
@@ -39,8 +41,8 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
     @Output() onSave = new EventEmitter<void>();
 
     medicineForm: FormGroup;
-    loading = false;
-    categories: CategoryDto[] = [];
+    loading = signal(false);
+    categories = signal<CategoryDto[]>([]);
 
     statusOptions = [
         { label: 'نشط', value: 'Active' },
@@ -94,7 +96,7 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
 
     loadCategories() {
         this.categoryService.getAllForDropdown().subscribe({
-            next: (data) => this.categories = data,
+            next: (data) => this.categories.set(data),
             error: () => console.error('Error loading categories')
         });
     }
@@ -117,7 +119,7 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
             return;
         }
 
-        this.loading = true;
+        this.loading.set(true);
         const formValue = this.medicineForm.value;
 
         if (this.medicine) {
@@ -130,11 +132,11 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
                     this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تحديث الدواء' });
                     this.onSave.emit();
                     this.close();
-                    this.loading = false;
+                    this.loading.set(false);
                 },
                 error: (err) => {
                     this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل التحديث' });
-                    this.loading = false;
+                    this.loading.set(false);
                 }
             });
         } else {
@@ -144,11 +146,11 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
                     this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم إضافة الدواء' });
                     this.onSave.emit();
                     this.close();
-                    this.loading = false;
+                    this.loading.set(false);
                 },
                 error: (err) => {
                     this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل الإضافة' });
-                    this.loading = false;
+                    this.loading.set(false);
                 }
             });
         }

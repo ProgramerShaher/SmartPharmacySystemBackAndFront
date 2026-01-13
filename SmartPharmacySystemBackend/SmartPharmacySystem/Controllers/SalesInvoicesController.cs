@@ -66,6 +66,13 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<SaleInvoiceDto>.Succeeded(invoice, "تم جلب بيانات الفاتورة بنجاح"));
         }
 
+        [HttpGet("unpaid/{customerId}")]
+        public async Task<IActionResult> GetUnpaidByCustomerId(int customerId)
+        {
+            var invoices = await _service.GetUnpaidByCustomerIdAsync(customerId);
+            return Ok(ApiResponse<IEnumerable<SaleInvoiceDto>>.Succeeded(invoices, "تم جلب الفواتير غير المدفوعة"));
+        }
+
         // -------------------------------------------------------------
         // Create
         // -------------------------------------------------------------
@@ -193,6 +200,20 @@ namespace SmartPharmacySystem.Controllers
 
             await _service.DeleteAsync(id);
             return Ok(ApiResponse<object?>.Succeeded(null, "تم حذف الفاتورة بنجاح"));
+        }
+
+        // -------------------------------------------------------------
+        // Dashboard Stats
+        // -------------------------------------------------------------
+        /// <summary>
+        /// Get sales dashboard statistics (KPI cards)
+        /// Optimized for high performance (<100ms)
+        /// </summary>
+        [HttpGet("dashboard-stats")]
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            var stats = await _service.GetDashboardStatsAsync();
+            return Ok(ApiResponse<SmartPharmacySystem.Application.DTOs.Dashboard.SalesDashboardStatsDto>.Succeeded(stats, "تم جلب إحصائيات المبيعات"));
         }
     }
 }

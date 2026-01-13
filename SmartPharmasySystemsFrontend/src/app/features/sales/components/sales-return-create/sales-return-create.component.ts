@@ -1,15 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SaleInvoiceService } from '../../services/sales-invoice.service';
 import { SalesReturnService } from '../../services/sales-return.service';
-import { SaleInvoice, SaleInvoiceDetail } from '../../../../core/models';
-import { CreateSalesReturnDto } from '../../../../core/models/sales-return.interface';
-import { PrintService } from '../../../../core/services/print.service';
-import { MessageService, ConfirmationService } from 'primeng/api';
-
-// PrimeNG imports
+import { SaleInvoice, SalesReturn, DocumentStatus } from '../../../../core/models';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -17,17 +13,29 @@ import { TableModule } from 'primeng/table';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { CardModule } from 'primeng/card';
 import { CalendarModule } from 'primeng/calendar';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+
+interface ReturnItem {
+    id: number; // SaleInvoiceDetailId
+    medicineName: string;
+    batchNumber: string;
+    originalQuantity: number;
+    returnedQuantity: number;
+    remainingQtyToReturn: number;
+    returnQuantity: number;
+    salePrice: number;
+    totalReturnAmount: number;
+}
 
 @Component({
     selector: 'app-sales-return-create',
     standalone: true,
     imports: [
         CommonModule,
-        ReactiveFormsModule,
         FormsModule,
         ButtonModule,
         InputTextModule,
@@ -36,255 +44,270 @@ import { TagModule } from 'primeng/tag';
         AutoCompleteModule,
         CardModule,
         CalendarModule,
-        ConfirmDialogModule,
         ToastModule,
         DividerModule,
-        TagModule
+        TagModule,
+        TooltipModule,
+        InputTextareaModule
     ],
-    providers: [ConfirmationService, MessageService],
     templateUrl: './sales-return-create.component.html',
-    styleUrls: ['./sales-return-create.component.scss']
+    styleUrls: ['./sales-return-create.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [MessageService]
 })
 export class SalesReturnCreateComponent implements OnInit {
+    // 🎯 Signals
+    returnItems = signal<ReturnItem[]>([]);
+
+    // 💰 Computed total
+    totalReturnAmount = computed(() =>
+        this.returnItems().reduce((sum, item) => sum + item.totalReturnAmount, 0)
+    );
+
+    // 📋 State
     selectedInvoice: SaleInvoice | null = null;
     filteredInvoices: SaleInvoice[] = [];
-    invoiceDetails: any[] = []; // Augmented detail with returnAmount
-
-    returnDate: Date = new Date();
-    reason: string = '';
-
-    totalReturnAmount = 0;
+    returnDate = new Date();
+    reason = '';
     saving = false;
 
-    // Edit mode
-    returnId: number | null = null;
-    isViewMode = false;
-    isReadOnly = false;
-
-    /**
-     * 🛡️ Check if any item exceeds remaining quantity
-     * التحقق من تجاوز الكمية المتاحة
-     */
-    get hasExceededQuantity(): boolean {
-        return this.invoiceDetails.some(item =>
-            (item.returnAmount || 0) > (item.remainingQtyToReturn || item.quantity)
-        );
-    }
+    // 🔍 Search
+    invoiceSearchQuery = '';
 
     constructor(
-        private salesInvoiceService: SaleInvoiceService,
-        private salesReturnService: SalesReturnService,
+        private salesService: SaleInvoiceService,
+        private returnsService: SalesReturnService,
         private router: Router,
         private route: ActivatedRoute,
-        private messageService: MessageService,
-        private confirmationService: ConfirmationService,
-        private printService: PrintService
+        private messageService: MessageService
     ) { }
 
     ngOnInit() {
-        // Check for return ID (edit/view mode)
-        const id = this.route.snapshot.params['id'];
-        if (id) {
-            if (this.router.url.includes('create')) {
-                // creating new
-            } else {
-                this.loadReturn(id);
-            }
+        // Check for invoiceId in query params (quick return from list)
+        const invoiceId = this.route.snapshot.queryParams['invoiceId'];
+        if (invoiceId) {
+            this.loadInvoiceForReturn(+invoiceId);
         }
+    }
 
-        // Check for invoiceId from query params (quick return from list)
-        this.route.queryParams.subscribe(params => {
-            const invoiceId = params['invoiceId'];
-            if (invoiceId && !this.selectedInvoice) {
-                this.loadInvoiceForReturn(+invoiceId);
+    /**
+     * 🔍 Search invoices
+     */
+    searchInvoice(event: any) {
+        const query = event.query;
+        this.salesService.getAll(query).subscribe({
+            next: (invoices) => {
+                // Only show approved invoices
+                this.filteredInvoices = invoices.filter(
+                    inv => inv.status === DocumentStatus.Approved
+                );
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'خطأ',
+                    detail: 'فشل البحث عن الفواتير'
+                });
             }
         });
     }
 
     /**
-     * 🔥 Load Invoice for Quick Return
-     * تحميل الفاتورة للمرتجع السريع
+     * 📋 Invoice selected
+     */
+    onInvoiceSelect(invoice: SaleInvoice) {
+        this.loadInvoiceForReturn(invoice.id);
+    }
+
+    /**
+     * 📦 Load invoice for return
      */
     loadInvoiceForReturn(invoiceId: number) {
-        this.salesInvoiceService.getById(invoiceId).subscribe({
+        this.salesService.getById(invoiceId).subscribe({
             next: (invoice) => {
-                this.selectedInvoice = invoice;
-                if (invoice && invoice.items) {
-                    this.invoiceDetails = invoice.items.map(item => ({
-                        ...item,
-                        returnAmount: 0,
-                        remainingQtyToReturn: item.quantity - ((item as any).returnedQuantity || 0)
-                    }));
+                if (invoice.status !== DocumentStatus.Approved) {
+                    this.messageService.add({
+                        severity: 'warn',
+                        summary: 'تنبيه',
+                        detail: 'يمكن إرجاع الفواتير المعتمدة فقط'
+                    });
+                    return;
                 }
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'تم التحميل',
-                    detail: `تم تحميل الفاتورة ${invoice.saleInvoiceNumber}`
+
+                this.selectedInvoice = invoice;
+
+                // Map items to return items
+                const items: ReturnItem[] = invoice.items.map(item => {
+                    // Use backend provided remainingQtyToReturn directly as per requirement
+                    // If backend sends 0 or undefined, we fallback to 0 to prevent issues
+                    const remainingQty = item.remainingQtyToReturn !== undefined ? item.remainingQtyToReturn : 0;
+
+                    return {
+                        id: item.id,
+                        medicineName: item.medicineName || 'Unknown',
+                        batchNumber: item.companyBatchNumber || '', // Correct property
+                        originalQuantity: item.quantity,
+                        returnedQuantity: item.quantity - remainingQty, // Infer returned qty if needed for display, or 0 if not tracking
+                        remainingQtyToReturn: remainingQty,
+                        returnQuantity: 0,
+                        salePrice: item.salePrice,
+                        totalReturnAmount: 0
+                    };
                 });
+
+                this.returnItems.set(items);
             },
-            error: () => {
+            error: (err) => {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'خطأ',
-                    detail: 'فشل تحميل الفاتورة'
+                    detail: 'فشل تحميل بيانات الفاتورة'
                 });
             }
         });
     }
 
-    loadReturn(id: number) {
-        this.salesReturnService.getById(id).subscribe({
-            next: (ret) => {
-                this.returnId = ret.id;
-                this.returnDate = new Date(ret.returnDate);
-                this.reason = ret.reason;
-                this.isViewMode = true;
-
-                // Allow editing only if Draft (1)
-                this.isReadOnly = ret.status !== 1;
-
-                // Load Original Invoice to populate table
-                this.salesInvoiceService.getById(ret.saleInvoiceId).subscribe(inv => {
-                    this.selectedInvoice = inv;
-
-                    if (inv && inv.items) {
-                        this.invoiceDetails = inv.items.map(item => {
-                            // Find if this item was in the return
-                            const returnedItem = ret.items.find((d: any) => d.medicineId === item.medicineId && d.batchId === item.batchId);
-                            return {
-                                ...item,
-                                returnAmount: returnedItem ? returnedItem.quantity : 0
-                            };
-                        });
-                        this.calculateTotal();
-                    }
-                });
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل بيانات المرتجع' });
-                this.goBack();
-            }
-        });
-    }
-
-    searchInvoice(event: any) {
-        this.salesInvoiceService.getAll(event.query).subscribe(res => {
-            this.filteredInvoices = res;
-        });
-    }
-
-    onInvoiceSelect(event: any) {
-        const inv = event.value as SaleInvoice;
-        if (!inv) return;
-
-        // Fetch full details since list might be partial
-        this.salesInvoiceService.getById(inv.id).subscribe(fullInv => {
-            this.selectedInvoice = fullInv;
-            if (fullInv && fullInv.items) {
-                this.invoiceDetails = fullInv.items.map(d => ({
-                    ...d,
-                    returnAmount: 0 // Local property for input
-                }));
-            }
-        });
-    }
-
-    calculateTotal() {
-        this.totalReturnAmount = this.invoiceDetails.reduce((sum, item) => {
-            return sum + ((item.returnAmount || 0) * item.salePrice);
-        }, 0);
-    }
-
-    save(approve: boolean) {
-        if (!this.selectedInvoice) {
-            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى اختيار فاتورة' });
-            return;
-        }
-        if (!this.reason) {
-            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى إدخال سبب الإرجاع' });
-            return;
-        }
-
-        const itemsToReturn = this.invoiceDetails.filter(i => i.returnAmount > 0);
-        if (itemsToReturn.length === 0) {
-            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى تحديد كمية للإرجاع لصنف واحد على الأقل' });
-            return;
-        }
-
-        // Validate Quantity vs Remaining (Strict Logic)
-        for (const item of itemsToReturn) {
-            if (item.returnAmount > item.remainingQtyToReturn) {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'خطأ في الكمية',
-                    detail: `الكمية المرتجعة للصنف ${item.medicineName} تتجاوز الكمية المتاحة للإرجاع (${item.remainingQtyToReturn})`
-                });
-                return;
-            }
-        }
-
-        // Validate Date
-        if (this.selectedInvoice && new Date(this.returnDate) < new Date(this.selectedInvoice.invoiceDate)) {
+    /**
+     * 🔢 Calculate return amount for item
+     */
+    calculateReturnAmount(item: ReturnItem) {
+        if (item.returnQuantity > item.remainingQtyToReturn) {
             this.messageService.add({
                 severity: 'error',
-                summary: 'خطأ في التاريخ',
-                detail: 'تاريخ الإرجاع لا يمكن أن يكون قبل تاريخ الفاتورة الأصلية'
+                summary: 'خطأ',
+                detail: `الكمية المتاحة للإرجاع: ${item.remainingQtyToReturn} فقط`
+            });
+            item.returnQuantity = item.remainingQtyToReturn;
+        }
+
+        item.totalReturnAmount = item.returnQuantity * item.salePrice;
+
+        // Trigger signal update
+        this.returnItems.set([...this.returnItems()]);
+    }
+
+    /**
+     * ✅ Check if has exceeded quantity
+     */
+    get hasExceededQuantity(): boolean {
+        return this.returnItems().some(item =>
+            item.returnQuantity > item.remainingQtyToReturn
+        );
+    }
+
+    /**
+     * 💾 Save as draft
+     */
+    saveDraft() {
+        this.saveReturn(false);
+    }
+
+    /**
+     * ✅ Approve return
+     */
+    approveReturn() {
+        this.saveReturn(true);
+    }
+
+    /**
+     * 💾 Save return
+     */
+    private saveReturn(approve: boolean) {
+        if (!this.selectedInvoice) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'تنبيه',
+                detail: 'يجب اختيار فاتورة أولاً'
             });
             return;
         }
 
-        const dto: CreateSalesReturnDto = {
+        const itemsToReturn = this.returnItems().filter(item => item.returnQuantity > 0);
+
+        if (itemsToReturn.length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'تنبيه',
+                detail: 'يجب إدخال كمية مرتجع لصنف واحد على الأقل'
+            });
+            return;
+        }
+
+        if (this.hasExceededQuantity) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'خطأ',
+                detail: 'بعض الأصناف تتجاوز الكمية المتاحة للإرجاع'
+            });
+            return;
+        }
+
+        if (!this.reason.trim()) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'تنبيه',
+                detail: 'يجب إدخال سبب الإرجاع'
+            });
+            return;
+        }
+
+        this.saving = true;
+
+        const payload: any = {
             saleInvoiceId: this.selectedInvoice.id,
             returnDate: this.returnDate.toISOString(),
             reason: this.reason,
-            remainingQtyToReturn: 0, // Should be calculated or field on backend?
-            // The prompt asks to "Extend DTO with remainingQtyToReturn". 
-            // Usually this is a validation field, but if backend requires it in DTO? 
-            // Or maybe it means "validate against it". 
-            // Let's assume it's part of the DTO as requested.
-            details: itemsToReturn.map(i => ({
-                salesReturnId: 0,
-                medicineId: i.medicineId,
-                batchId: i.batchId,
-                quantity: i.returnAmount,
-                salePrice: i.salePrice
+            items: itemsToReturn.map(item => ({
+                saleInvoiceDetailId: item.id,
+                quantity: item.returnQuantity,
+                returnPrice: item.salePrice
             }))
         };
 
-        this.saving = true;
-        this.salesReturnService.create(dto).subscribe({
-            next: (newReturn) => {
+        const action$ = this.returnsService.create(payload);
+
+        action$.subscribe({
+            next: (returnDoc) => {
                 if (approve) {
-                    this.salesReturnService.approve(newReturn.id).subscribe({
+                    this.returnsService.approve(returnDoc.id).subscribe({
                         next: () => {
-                            this.messageService.add({ severity: 'success', summary: 'تم بنجاح', detail: 'تم حفظ واعتماد المرتجع' });
-
-                            // Print Return Receipt
-                            this.printService.printReturn(newReturn.id).subscribe({
-                                next: () => this.messageService.add({ severity: 'info', summary: 'طباعة', detail: 'تم الطباعة' }),
-                                error: (e) => console.error(e)
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: 'نجاح',
+                                detail: 'تم اعتماد المرتجع بنجاح'
                             });
-
                             this.router.navigate(['/sales/returns']);
                         },
-                        error: (err) => {
-                            this.saving = false;
-                            this.messageService.add({ severity: 'error', summary: 'فشل الاعتماد', detail: err.error?.message || 'تم الحفظ كمسودة ولكن فشل الاعتماد' });
-                            this.router.navigate(['/sales/returns']);
-                        }
+                        error: (err) => this.handleError(err)
                     });
                 } else {
-                    this.messageService.add({ severity: 'success', summary: 'تم الحفظ', detail: 'تم حفظ المرتجع كمسودة' });
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'نجاح',
+                        detail: 'تم حفظ المرتجع كمسودة'
+                    });
                     this.router.navigate(['/sales/returns']);
                 }
             },
-            error: (err) => {
-                this.saving = false;
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل الحفظ' });
-            }
+            error: (err) => this.handleError(err)
         });
     }
 
+    /**
+     * ⚠️ Handle errors
+     */
+    private handleError(err: any) {
+        this.saving = false;
+        this.messageService.add({
+            severity: 'error',
+            summary: 'خطأ',
+            detail: err.error?.message || 'حدث خطأ غير متوقع'
+        });
+    }
+
+    /**
+     * 🔙 Go back
+     */
     goBack() {
         this.router.navigate(['/sales/returns']);
     }

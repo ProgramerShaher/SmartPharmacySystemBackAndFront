@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { take } from 'rxjs/operators';
 import { SupplierService } from '../../services/supplier.service';
 import { Supplier } from '../../../../core/models/supplier.models';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -15,6 +16,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { MenuModule } from 'primeng/menu';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-supplier-list',
@@ -30,7 +33,8 @@ import { ProgressBarModule } from 'primeng/progressbar';
     ConfirmDialogModule,
     ToastModule,
     InputSwitchModule,
-    ProgressBarModule
+    ProgressBarModule,
+    MenuModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './supplier-list.component.html',
@@ -41,8 +45,8 @@ export class SupplierListComponent implements OnInit {
   loading = signal(false);
 
   // Calculated stats
-  totalDebt = computed(() => this.suppliers().reduce((sum, s) => sum + (s.balance || 0), 0));
-  highDebtCount = computed(() => this.suppliers().filter(s => (s.balance || 0) > 10000).length);
+  totalDebt = computed(() => this.suppliers().reduce((sum, s) => sum + (s.Balance || 0), 0));
+  highDebtCount = computed(() => this.suppliers().filter(s => (s.Balance || 0) > 10000).length);
 
   constructor(
     private supplierService: SupplierService,
@@ -50,15 +54,35 @@ export class SupplierListComponent implements OnInit {
     private confirmationService: ConfirmationService
   ) { }
 
+  totalRecords = signal(0);
+  pageSize = signal(10);
+
   ngOnInit() {
-    this.loadSuppliers();
+    // Initial load handled by onLazyLoad
   }
 
-  loadSuppliers() {
+  loadSuppliers(event?: any) {
     this.loading.set(true);
-    this.supplierService.getAll({ pageSize: 1000 }).subscribe({
+
+    // Performance: Calculate page from offset
+    const page = event ? (event.first / event.rows) + 1 : 1;
+    const pageSize = event ? event.rows : 10;
+    const sortBy = event?.sortField || 'Name';
+    const sortDir = event?.sortOrder === 1 ? 'asc' : 'desc';
+
+    this.supplierService.getAll({
+      page,
+      pageSize,
+      sortBy,
+      sortDir
+    }).pipe(
+      // Take 1 to ensure no subscription leaks
+      take(1)
+    ).subscribe({
       next: (res) => {
         this.suppliers.set(res.items);
+        this.totalRecords.set(res.totalCount);
+        this.pageSize.set(pageSize);
         this.loading.set(false);
       },
       error: () => {
@@ -90,15 +114,15 @@ export class SupplierListComponent implements OnInit {
     });
   }
 
-  getSeverity(balance: number): 'danger' | 'warning' | 'success' | undefined {
-    if (balance > 10000) return 'danger';
-    if (balance > 0) return 'warning';
+  getSeverity(Balance: number): 'danger' | 'warning' | 'success' | undefined {
+    if (Balance > 10000) return 'danger';
+    if (Balance > 0) return 'warning';
     return 'success';
   }
 
-  getStatusLabel(balance: number): string {
-    if (balance > 10000) return 'مديونية عالية';
-    if (balance > 0) return 'مدين';
+  getStatusLabel(Balance: number): string {
+    if (Balance > 10000) return 'مديونية عالية';
+    if (Balance > 0) return 'مدين';
     return 'خالص';
   }
 
@@ -117,5 +141,43 @@ export class SupplierListComponent implements OnInit {
     ];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
+  }
+
+  items: MenuItem[] = [];
+
+  showMenu(menu: any, event: any, supplier: Supplier) {
+    this.items = [
+      {
+        label: 'الملف الشخصي',
+        icon: 'pi pi-id-card',
+        routerLink: ['/partners/suppliers/detail', supplier.id]
+      },
+      {
+        label: 'كشف الحساب',
+        icon: 'pi pi-file-pdf',
+        routerLink: ['/partners/suppliers/statement', supplier.id]
+      },
+      {
+        label: 'سند صرف جديد',
+        icon: 'pi pi-wallet',
+        routerLink: ['/partners/suppliers/payments'],
+        queryParams: { supplierId: supplier.id }
+      },
+      {
+        separator: true
+      },
+      {
+        label: 'تعديل البيانات',
+        icon: 'pi pi-pencil',
+        routerLink: ['/partners/suppliers/edit', supplier.id]
+      },
+      {
+        label: 'حذف المورد',
+        icon: 'pi pi-trash',
+        styleClass: 'text-red-500',
+        command: (e) => this.deleteSupplier(e.originalEvent!, supplier)
+      }
+    ];
+    menu.toggle(event);
   }
 }

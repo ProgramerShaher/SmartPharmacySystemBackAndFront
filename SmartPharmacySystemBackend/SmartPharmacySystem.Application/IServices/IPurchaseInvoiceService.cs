@@ -13,5 +13,6 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task UnapproveAsync(int id);
         Task CancelAsync(int id, int userId);
         Task PayCreditInvoiceAsync(int invoiceId, int accountId = 1);
+        Task<DTOs.Dashboard.PurchasesDashboardStatsDto> GetDashboardStatsAsync();
     }
 }

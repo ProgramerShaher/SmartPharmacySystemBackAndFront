@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { PurchaseInvoiceService } from '../../services/purchase-invoice.service';
-import { PurchaseInvoice } from '../../../../core/models';
+import { DashboardStatsService } from '../../../../core/services/dashboard-stats.service';
+import { PurchaseInvoice, DocumentStatus } from '../../../../core/models';
 
 // PrimeNG
 import { TableModule } from 'primeng/table';
@@ -46,11 +47,15 @@ export class PurchaseInvoiceListComponent implements OnInit {
     loading = signal(false);
     showFilters = signal(false);
 
-    // KPI Stats
+    // KPI Stats (from backend)
     totalPurchases = signal(0);
-    supplierDebts = signal(0);
-    returnRate = signal(0);
     monthlyPurchases = signal(0);
+    supplierDebts = signal(0);
+    totalReturnsAmount = signal(0);
+    returnRate = signal(0);
+    overdueCount = signal(0);
+
+    DocumentStatus = DocumentStatus;
 
     // Charts
     supplierDistributionData: any;
@@ -72,6 +77,7 @@ export class PurchaseInvoiceListComponent implements OnInit {
 
     constructor(
         private purchaseService: PurchaseInvoiceService,
+        private dashboardStatsService: DashboardStatsService,
         private router: Router,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
@@ -85,11 +91,11 @@ export class PurchaseInvoiceListComponent implements OnInit {
     }
 
     initCharts() {
-        // Supplier Distribution Donut Chart
+        // Charts initialized with empty/loading state, populated in calculateStats
         this.supplierDistributionData = {
-            labels: ['مورد أ', 'مورد ب', 'مورد ج', 'مورد د', 'آخرون'],
+            labels: [],
             datasets: [{
-                data: [35, 25, 20, 12, 8],
+                data: [],
                 backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'],
                 hoverBackgroundColor: ['#059669', '#2563eb', '#d97706', '#7c3aed', '#4b5563']
             }]
@@ -111,13 +117,11 @@ export class PurchaseInvoiceListComponent implements OnInit {
                     backgroundColor: 'rgba(0, 0, 0, 0.8)',
                     titleFont: { family: 'Cairo, sans-serif' },
                     bodyFont: { family: 'Cairo, sans-serif' },
-                    padding: 10,
-                    cornerRadius: 8,
                     callbacks: {
                         label: (context: any) => {
                             const label = context.label || '';
                             const value = context.parsed || 0;
-                            return `${label}: ${value}%`;
+                            return `${label}: ${value} ر.ي`;
                         }
                     }
                 }
@@ -125,12 +129,11 @@ export class PurchaseInvoiceListComponent implements OnInit {
             cutout: '65%'
         };
 
-        // Purchase Trend Sparkline
         this.purchaseTrendData = {
             labels: this.getLast7Days(),
             datasets: [{
                 label: 'المشتريات اليومية',
-                data: this.generateMockTrendData(7, 5000, 25000),
+                data: Array(7).fill(0),
                 borderColor: '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 tension: 0.4,
@@ -143,24 +146,10 @@ export class PurchaseInvoiceListComponent implements OnInit {
         this.purchaseTrendOptions = {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    titleFont: { family: 'Cairo, sans-serif' },
-                    bodyFont: { family: 'Cairo, sans-serif' },
-                    padding: 10,
-                    cornerRadius: 8
-                }
-            },
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    display: false,
-                    beginAtZero: true
-                },
-                x: {
-                    display: false
-                }
+                y: { display: false, beginAtZero: true },
+                x: { display: false }
             }
         };
     }
@@ -168,38 +157,57 @@ export class PurchaseInvoiceListComponent implements OnInit {
     loadInvoices() {
         this.loading.set(true);
         this.purchaseService.getAll().subscribe({
-            next: (data) => {
-              this.invoices.set(data);
-              this.loading.set(false);
-              this.calculateStats(data);
-          },
-          error: () => {
-              this.messageService.add({
-                  severity: 'error',
-                  summary: 'خطأ',
-                  detail: 'فشل في تحميل فواتير المشتريات'
-              });
-              this.loading.set(false);
-          }
-      });
+            next: (data: any) => {
+                this.invoices.set(data);
+                this.loading.set(false);
+                // Stats are now loaded separately with full dataset
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل البيانات' });
+                this.loading.set(false);
+            }
+        });
     }
 
+    /**
+     * Load KPI stats from dedicated backend endpoint
+     * Single optimized call instead of 3 parallel frontend calculations
+     */
     loadKPIStats() {
-        // Mock data - replace with real API calls
-        this.totalPurchases.set(1250000);
-        this.supplierDebts.set(350000);
-        this.returnRate.set(2.5);
-        this.monthlyPurchases.set(450000);
-    }
+        this.dashboardStatsService.getPurchasesDashboardStats().subscribe({
+            next: (stats) => {
+                this.monthlyPurchases.set(stats.monthlyTotalPurchases);
+                this.totalPurchases.set(stats.monthlyTotalPurchases); // Use monthly for KPI display
+                this.supplierDebts.set(stats.supplierDebts);
+                this.totalReturnsAmount.set(stats.monthlyReturnsAmount);
+                this.returnRate.set(stats.returnRate);
+                this.overdueCount.set(stats.overdueCount);
 
-    calculateStats(invoices: PurchaseInvoice[]) {
-        const total = invoices
-            .filter(inv => {
-                const status = inv.status?.toString().toUpperCase();
-                return status === 'APPROVED' || status === '1';
-            })
-            .reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
-        this.totalPurchases.set(total);
+                // Update sparkline chart
+                this.purchaseTrendData = {
+                    ...this.purchaseTrendData,
+                    datasets: [{
+                        ...this.purchaseTrendData.datasets[0],
+                        data: stats.last7DaysPurchases
+                    }]
+                };
+
+                // Update supplier distribution donut chart
+                const distLabels = stats.supplierDistribution.map(s => s.supplierName);
+                const distData = stats.supplierDistribution.map(s => s.totalAmount);
+
+                this.supplierDistributionData = {
+                    labels: distLabels,
+                    datasets: [{
+                        ...this.supplierDistributionData.datasets[0],
+                        data: distData
+                    }]
+                };
+            },
+            error: (e) => {
+                console.error('Failed to load dashboard stats:', e);
+            }
+        });
     }
 
     toggleFilters() {
@@ -324,50 +332,34 @@ export class PurchaseInvoiceListComponent implements OnInit {
     }
 
     getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
-        if (!status) return 'info';
-        const statusNum = typeof status === 'number' ? status : parseInt(status.toString());
-        
-        switch (statusNum) {
-            case 2: // Approved
-                return 'success';
-            case 1: // Draft
-                return 'warning';
-            case 3: // Cancelled
-                return 'danger';
-            default:
-                return 'info';
-        }
+        if (status === undefined || status === null) return 'info';
+        // Handle both string and number
+        if (status === 'Approved' || status === 2) return 'success';
+        if (status === 'Draft' || status === 1) return 'warning';
+        if (status === 'Cancelled' || status === 3) return 'danger';
+        return 'info';
     }
 
     getStatusLabel(status: any): string {
-        if (!status) return 'غير محدد';
-        const statusNum = typeof status === 'number' ? status : parseInt(status.toString());
-        
-        switch (statusNum) {
-            case 2: // Approved
-                return 'معتمدة';
-            case 1: // Draft
-                return 'مسودة';
-            case 3: // Cancelled
-                return 'ملغاة';
-            default:
-                return 'غير محدد';
-        }
+        if (status === undefined || status === null) return 'غير محدد';
+
+        if (status === 'Approved' || status === 2) return 'معتمدة';
+        if (status === 'Draft' || status === 1) return 'مسودة';
+        if (status === 'Cancelled' || status === 3) return 'ملغاة';
+
+        return 'غير محدد';
     }
 
     isDraft(invoice: PurchaseInvoice): boolean {
-        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
-        return statusNum === 1; // Draft
+        return (invoice.status as any) === 'Draft' || invoice.status === DocumentStatus.Draft || Number(invoice.status) === 1;
     }
 
     isApproved(invoice: PurchaseInvoice): boolean {
-        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
-        return statusNum === 2; // Approved
+        return (invoice.status as any) === 'Approved' || invoice.status === DocumentStatus.Approved || Number(invoice.status) === 2;
     }
 
     isCancelled(invoice: PurchaseInvoice): boolean {
-        const statusNum = typeof invoice.status === 'number' ? invoice.status : parseInt((invoice.status as any)?.toString() || '0');
-        return statusNum === 3; // Cancelled
+        return (invoice.status as any) === 'Cancelled' || invoice.status === DocumentStatus.Cancelled || Number(invoice.status) === 3;
     }
 
     // Helper methods
@@ -379,11 +371,5 @@ export class PurchaseInvoiceListComponent implements OnInit {
             days.push(date.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' }));
         }
         return days;
-    }
-
-    private generateMockTrendData(count: number, min: number, max: number): number[] {
-        return Array.from({ length: count }, () =>
-            Math.floor(Math.random() * (max - min + 1)) + min
-        );
     }
 }

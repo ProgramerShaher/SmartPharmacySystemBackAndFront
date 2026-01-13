@@ -7,11 +7,28 @@
     color: var(--red-500);
 }
 
-::ng-deep .p-sidebar .p-sidebar-header {
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid var(--surface-border);
-}
-
-::ng-deep .p-sidebar .p-sidebar-content {
+// Custom Scrollbar for the modal content
+.custom-scrollbar {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    
+        &::-webkit-scrollbar-thumb {
+            background-color: var(--surface-300);
+            border-radius: 20px;
+        }
+        }
+    
+        // Ensure proper spacing for the slim footer
+        :host ::ng-deep .p-dialog-content {
     padding: 0 !important;
+    border-radius: 0 !important;
+    }
+    
+    :host ::ng-deep .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
 }

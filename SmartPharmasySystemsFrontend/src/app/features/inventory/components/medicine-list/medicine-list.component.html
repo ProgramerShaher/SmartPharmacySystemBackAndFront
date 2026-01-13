@@ -8,11 +8,11 @@
             <div>
                 <h1 class="text-3xl font-bold text-900 m-0">إدارة الأدوية</h1>
                 <p class="text-500 m-0 mt-1">إدارة شاملة للمخزون، الأسعار، وتواريخ الصلاحية</p>
-                </div>
-                </div>
+            </div>
+            </div>
         <div class="flex gap-2">
             <button pButton label="إضافة دواء جديد" icon="pi pi-plus"
-                class="p-button-raised p-button-success border-round-lg px-4" (click)="addMedicine()"></button>
+                class="p-button-raised p-button-success border-round-lg px-4" (click)="openAddMedicine()"></button>
             <button pButton label="تصدير" icon="pi pi-file-excel"
                 class="p-button-outlined p-button-secondary border-round-lg"></button>
         </div>
@@ -29,19 +29,18 @@
                 </span>
             </div>
             <div class="col-12 md:col-3">
-                <p-dropdown [options]="statusOptions" [(ngModel)]="status" (onChange)="loadMedicines({first:0, rows:10})"
-                    placeholder="فلترة حسب الحالة" styleClass="w-full border-round-lg"></p-dropdown>
+                <p-dropdown [options]="statusOptions" [ngModel]="status()"
+                    (ngModelChange)="status.set($event); loadMedicines({first:0, rows:10})" placeholder="فلترة حسب الحالة"
+                    styleClass="w-full border-round-lg" appendTo="body"></p-dropdown>
             </div>
-            <!-- More filters can be added here -->
         </div>
     </div>
 
     <!-- Data Table -->
     <div class="grid">
-        <!-- List Section - Always Full Width -->
         <div class="col-12">
-            <p-table [value]="medicines" [lazy]="true" (onLazyLoad)="loadMedicines($event)" [paginator]="true" [rows]="10"
-                [totalRecords]="totalRecords" [loading]="loading" [rowHover]="true"
+            <p-table [value]="medicines()" [lazy]="true" (onLazyLoad)="loadMedicines($event)" [paginator]="true" [rows]="10"
+                [totalRecords]="totalRecords()" [loading]="loading()" [rowHover]="true"
                 styleClass="p-datatable-lg p-datatable-gridlines border-round-xl overflow-hidden shadow-1">
                 <ng-template pTemplate="header">
                     <tr class="bg-bluegray-50 text-800">
@@ -49,11 +48,10 @@
                         <th pSortableColumn="name">الاسم التجاري / العلمي <p-sortIcon field="name"></p-sortIcon></th>
                         <th pSortableColumn="internalCode">الكود / الباركود <p-sortIcon field="internalCode"></p-sortIcon></th>
                         <th class="text-center" pSortableColumn="categoryName">التصنيف <p-sortIcon field="categoryName"></p-sortIcon></th>
-                        <th class="text-center" pSortableColumn="defaultSalePrice">السعر <p-sortIcon field="defaultSalePrice"></p-sortIcon>
-                        </th>
-                        <th class="text-center" pSortableColumn="totalQuantity">المخزون <p-sortIcon field="totalQuantity"></p-sortIcon></th>
+                        <th class="text-center" pSortableColumn="defaultSalePrice">السعر <p-sortIcon field="defaultSalePrice"></p-sortIcon></th>
+                        <th class="text-center">المخزون (الكل)</th>
                         <th class="text-center" pSortableColumn="status">الحالة <p-sortIcon field="status"></p-sortIcon></th>
-                        <th class="text-center">الإجراءات</th>
+                        <th class="text-center" style="min-width: 160px">الإجراءات</th>
                         </tr>
                         </ng-template>
 
@@ -82,23 +80,22 @@
                                     <span class="font-mono font-bold text-800">{{medicine.internalCode}}</span>
                                 </div>
                                 <div class="flex align-items-center" *ngIf="medicine.defaultBarcode">
-                                    <span
-                                        class="text-xs bg-orange-50 text-orange-700 px-2 py-1 border-round ml-2 border-1 border-orange-100 flex-shrink-0"><i
-                                            class="pi pi-barcode"></i></span>
+                                    <span class="text-xs bg-orange-50 text-orange-700 px-2 py-1 border-round ml-2 border-1 border-orange-100 flex-shrink-0">
+                                        <i class="pi pi-barcode"></i>
+                                    </span>
                                     <span class="font-mono text-600">{{medicine.defaultBarcode}}</span>
                                 </div>
                             </div>
-                            </td>
+                        </td>
                         <td class="text-center">
                             <p-tag [value]="medicine.categoryName || 'غير مصنف'" severity="info" [rounded]="true"></p-tag>
                         </td>
                         <td class="text-center">
                             <div class="font-bold text-teal-700 text-lg">{{medicine.defaultSalePrice | currency:'YER'}}</div>
-                            <!-- <small class="text-500">شراء: {{medicine.defaultPurchasePrice | currency:'YER'}}</small> -->
                         </td>
                         <td class="text-center">
                             <span class="font-bold px-3 py-1 border-round-2xl"
-                                [ngClass]="{'bg-red-100 text-red-700': medicine.totalQuantity <= medicine.minAlertQuantity, 'bg-green-100 text-green-700': medicine.totalQuantity > medicine.minAlertQuantity}">
+                                [ngClass]="{'bg-red-100 text-red-700': (!medicine.totalQuantity || medicine.totalQuantity <= medicine.minAlertQuantity), 'bg-green-100 text-green-700': medicine.totalQuantity > medicine.minAlertQuantity}">
                                 {{medicine.totalQuantity || 0}}
                             </span>
                         </td>
@@ -108,24 +105,32 @@
                         </td>
                         <td class="text-center">
                             <div class="flex justify-content-center gap-2">
-                                <button pButton icon="pi pi-eye" class="p-button-text p-button-rounded p-button-secondary"
-                                    (click)="viewDetails(medicine); $event.stopPropagation()" pTooltip="عرض التفاصيل"></button>
+                                <!-- Inventory Setup Button -->
+                                <button pButton icon="pi pi-plus-circle" class="p-button-text p-button-rounded p-button-success"
+                                    (click)="openAddBatch(medicine); $event.stopPropagation()" pTooltip="إضافة رصيد (دفعة)"></button>
                                 <button pButton icon="pi pi-pencil" class="p-button-text p-button-rounded p-button-info"
-                                    (click)="editMedicine(medicine); $event.stopPropagation()"></button>
+                                    (click)="editMedicine(medicine); $event.stopPropagation()" pTooltip="تعديل"></button>
+                                
                                 <button pButton icon="pi pi-trash" class="p-button-text p-button-rounded p-button-danger"
-                                    (click)="deleteMedicine(medicine); $event.stopPropagation()"></button>
+                                    (click)="deleteMedicine(medicine); $event.stopPropagation()" pTooltip="حذف"></button>
                             </div>
                         </td>
-                        </tr>
-                        </ng-template>
-                        </p-table>
-                        </div>
+                    </tr>
+                    </ng-template>
+                    </p-table>
+                    </div>
     </div>
+</div>
 
 <p-confirmDialog [style]="{width: '450px'}" acceptLabel="نعم، احذف" rejectLabel="إلغاء"></p-confirmDialog>
-
-<!-- Toast for notifications -->
 <p-toast></p-toast>
 
-<app-medicine-add-edit [(visible)]="showSidebar" [medicine]="selectedMedicine" (onSave)="onFormSave()">
+<!-- Add/Edit Medicine Dialog -->
+<!-- Note: We are now controlling visibility with signals/bindings -->
+<app-medicine-add-edit [(visible)]="showMedicineDialog" [medicine]="selectedMedicine! || null"
+    (onSave)="onMedicineSaved()">
 </app-medicine-add-edit>
+<!-- Add Batch Dialog -->
+<app-batch-add-edit [(visible)]="showBatchDialog" [medicineId]="selectedMedicineIdForBatch"
+    [medicineName]="selectedMedicineNameForBatch" (onSave)="onBatchSaved()">
+</app-batch-add-edit>

@@ -85,5 +85,10 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .Where(d => d.PurchaseInvoiceId == invoiceId)
                 .ToListAsync();
         }
+
+        public void RemoveRange(IEnumerable<PurchaseInvoiceDetail> entities)
+        {
+            _context.PurchaseInvoiceDetails.RemoveRange(entities);
+        }
     }
 }

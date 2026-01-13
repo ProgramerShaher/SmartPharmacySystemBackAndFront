@@ -1,0 +1,208 @@
+<div class="net-profit-container">
+  <!-- Header Card -->
+  <p-card styleClass="header-card">
+    <div class="header-content">
+      <div class="header-right">
+        <h2 class="report-title">
+          <i class="pi pi-chart-line"></i>
+          تقرير صافي الأرباح الدوري
+        </h2>
+        <p class="report-subtitle">
+          معادلة: صافي الربح = (إجمالي المبيعات - المرتجعات) - تكلفة البضاعة المباعة - المصروفات
+        </p>
+      </div>
+      <div class="header-left">
+        <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" (click)="printReport()"
+          [disabled]="!report()"></p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Filters Card -->
+  <p-card styleClass="filters-card">
+    <div class="filters-row">
+      <div class="filter-group">
+        <label>من تاريخ</label>
+        <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
+      </div>
+      <div class="filter-group">
+        <label>إلى تاريخ</label>
+        <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true"></p-calendar>
+      </div>
+      <div class="filter-actions">
+        <p-button icon="pi pi-search" label="عرض" (click)="applyDateFilter()"></p-button>
+      </div>
+      <div class="preset-buttons">
+        <p-button label="الشهر الحالي" severity="secondary" [outlined]="true" size="small"
+          (click)="setCurrentMonth()"></p-button>
+        <p-button label="الشهر السابق" severity="secondary" [outlined]="true" size="small"
+          (click)="setLastMonth()"></p-button>
+        <p-button label="السنة الحالية" severity="secondary" [outlined]="true" size="small"
+          (click)="setCurrentYear()"></p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading()">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    <span>جاري تحميل التقرير...</span>
+  </div>
+
+  <!-- Error State -->
+  <p-card styleClass="error-card" *ngIf="error()">
+    <div class="error-content">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ error() }}</span>
+      <p-button label="إعادة المحاولة" icon="pi pi-refresh" (click)="loadReport()"></p-button>
+    </div>
+  </p-card>
+
+  <!-- Report Content -->
+  <ng-container *ngIf="report() && !loading()">
+    <!-- Net Profit Hero Card -->
+    <p-card styleClass="profit-hero-card" [class.profit]="isProfitable()" [class.loss]="!isProfitable()">
+      <div class="profit-hero">
+        <div class="profit-icon">
+          <i [class]="isProfitable() ? 'pi pi-arrow-up' : 'pi pi-arrow-down'"></i>
+        </div>
+        <div class="profit-info">
+          <span class="profit-label">صافي {{ isProfitable() ? 'الربح' : 'الخسارة' }}</span>
+          <span class="profit-value">{{ formatCurrency(report()!.netProfit) }}</span>
+          <p-tag [value]="'نسبة الربح: ' + profitPercentage() + '%'"
+            [severity]="isProfitable() ? 'success' : 'danger'"></p-tag>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <!-- Gross Sales -->
+      <div class="kpi-card sales">
+        <div class="kpi-icon"><i class="pi pi-shopping-cart"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">إجمالي المبيعات</span>
+          <span class="kpi-value">{{ formatCurrency(report()!.grossSales) }}</span>
+          <span class="kpi-count">{{ report()!.salesInvoiceCount }} فاتورة</span>
+        </div>
+      </div>
+
+      <!-- Sales Returns -->
+      <div class="kpi-card returns">
+        <div class="kpi-icon"><i class="pi pi-replay"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">مرتجعات المبيعات</span>
+          <span class="kpi-value text-warning">- {{ formatCurrency(report()!.salesReturns) }}</span>
+        </div>
+      </div>
+
+      <!-- Net Sales -->
+      <div class="kpi-card net-sales">
+        <div class="kpi-icon"><i class="pi pi-wallet"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">صافي المبيعات</span>
+          <span class="kpi-value">{{ formatCurrency(report()!.netSales) }}</span>
+        </div>
+      </div>
+
+      <!-- COGS -->
+      <div class="kpi-card cogs">
+        <div class="kpi-icon"><i class="pi pi-box"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">تكلفة البضاعة المباعة</span>
+          <span class="kpi-value text-danger">- {{ formatCurrency(report()!.costOfGoodsSold) }}</span>
+        </div>
+      </div>
+
+      <!-- Gross Profit -->
+      <div class="kpi-card gross-profit">
+        <div class="kpi-icon"><i class="pi pi-percentage"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">إجمالي الربح</span>
+          <span class="kpi-value" [class.text-success]="report()!.grossProfit >= 0"
+            [class.text-danger]="report()!.grossProfit < 0">
+            {{ formatCurrency(report()!.grossProfit) }}
+          </span>
+          <span class="kpi-margin">هامش: {{ report()!.grossProfitMargin }}%</span>
+        </div>
+      </div>
+
+      <!-- Total Expenses -->
+      <div class="kpi-card expenses">
+        <div class="kpi-icon"><i class="pi pi-money-bill"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">إجمالي المصروفات</span>
+          <span class="kpi-value text-danger">- {{ formatCurrency(report()!.totalExpenses) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expenses Breakdown -->
+    <div class="breakdown-section" *ngIf="report()!.expensesByCategory.length > 0">
+      <p-card styleClass="expenses-card">
+        <ng-template pTemplate="header">
+          <div class="section-header">
+            <h3><i class="pi pi-chart-pie"></i> تفصيل المصروفات حسب الفئة</h3>
+          </div>
+        </ng-template>
+
+        <div class="expenses-content">
+          <div class="chart-container">
+            <p-chart type="doughnut" [data]="expenseChartData()" [options]="expenseChartOptions()"
+              *ngIf="expenseChartData()"></p-chart>
+          </div>
+
+          <div class="expenses-table">
+            <p-table [value]="report()!.expensesByCategory" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>الفئة</th>
+                  <th class="text-end">المبلغ</th>
+                  <th class="text-center">النسبة</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-expense>
+                <tr>
+                  <td>{{ expense.categoryName }}</td>
+                  <td class="text-end amount-cell">{{ formatCurrency(expense.amount) }}</td>
+                  <td class="text-center">
+                    <p-tag [value]="expense.percentage + '%'" severity="info"></p-tag>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Purchase Summary -->
+    <p-card styleClass="purchase-summary-card">
+      <ng-template pTemplate="header">
+        <div class="section-header">
+          <h3><i class="pi pi-truck"></i> ملخص المشتريات (للمقارنة)</h3>
+        </div>
+      </ng-template>
+      <div class="purchase-summary">
+        <div class="summary-item">
+          <span class="item-label">إجمالي المشتريات</span>
+          <span class="item-value">{{ formatCurrency(report()!.totalPurchases) }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="item-label">مرتجعات المشتريات</span>
+          <span class="item-value text-success">- {{ formatCurrency(report()!.purchaseReturns) }}</span>
+        </div>
+        <div class="summary-item total">
+          <span class="item-label">صافي المشتريات</span>
+          <span class="item-value">{{ formatCurrency(report()!.netPurchases) }}</span>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Report Footer -->
+    <div class="report-footer">
+      <span>تاريخ التقرير: {{ report()!.generatedAt | date:'yyyy-MM-dd HH:mm' }}</span>
+      <span>الفترة: {{ fromDate | date:'yyyy-MM-dd' }} - {{ toDate | date:'yyyy-MM-dd' }}</span>
+    </div>
+  </ng-container>
+</div>

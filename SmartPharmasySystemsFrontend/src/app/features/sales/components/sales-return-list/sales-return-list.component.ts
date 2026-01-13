@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SalesReturnService } from '../../services/sales-return.service';
+import { SalesStatisticsService } from '../../services/sales-statistics.service'; // Import Statistics Service
 import { SalesReturn, DocumentStatus } from '../../../../core/models';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -12,6 +13,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { ToolbarModule } from 'primeng/toolbar';
+import { ChartModule } from 'primeng/chart'; // Import ChartModule
 
 @Component({
     selector: 'app-sales-return-list',
@@ -25,7 +27,8 @@ import { ToolbarModule } from 'primeng/toolbar';
         TooltipModule,
         ConfirmDialogModule,
         CardModule,
-        ToolbarModule
+        ToolbarModule,
+        ChartModule
     ],
     templateUrl: './sales-return-list.component.html',
     styleUrls: ['./sales-return-list.component.scss'],
@@ -35,15 +38,32 @@ export class SalesReturnListComponent implements OnInit {
     returns: SalesReturn[] = [];
     loading = true;
 
+    // KPI Signals
+    totalReturnsValue = signal(0);
+    returnsCount = signal(0);
+    todayReturnsCount = signal(0);
+
+    // Charts
+    returnsTrendData: any;
+    returnsTrendOptions: any;
+    returnsReasonData: any;
+    returnsReasonOptions: any;
+
+    DocumentStatus = DocumentStatus;
+
     constructor(
         private salesReturnService: SalesReturnService,
+        private statsService: SalesStatisticsService,
         private router: Router,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) { }
+    ) {
+        this.initCharts();
+    }
 
     ngOnInit() {
         this.loadReturns();
+        this.loadStats();
     }
 
     loadReturns() {
@@ -52,6 +72,7 @@ export class SalesReturnListComponent implements OnInit {
             next: (data) => {
                 this.returns = data;
                 this.loading = false;
+                this.calculateLocalStats(data);
             },
             error: () => {
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل المردودات' });
@@ -60,57 +81,114 @@ export class SalesReturnListComponent implements OnInit {
         });
     }
 
+    loadStats() {
+        // Load live trend data
+        this.statsService.getSalesFlow(7).subscribe({
+            next: (data) => {
+                const labels = data.map(d => {
+                    const date = new Date(d.date);
+                    return date.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' });
+                });
+                const returnsData = data.map(d => d.returns);
+
+                this.returnsTrendData = {
+                    labels: labels,
+                    datasets: [{
+                        label: 'المرتجعات اليومية',
+                        data: returnsData,
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    }]
+                };
+            }
+        });
+    }
+
+    calculateLocalStats(data: SalesReturn[]) {
+        this.returnsCount.set(data.length);
+        const total = data.reduce((sum, r) => sum + r.totalAmount, 0);
+        this.totalReturnsValue.set(total);
+
+        // Mock Reasons Distribution based on filtered Reasons (or just use status for now if reason not available)
+        // Here assuming we want to show Status Distribution as "Returns Analysis"
+        const drafts = data.filter(r => r.status === DocumentStatus.Draft).length;
+        const approved = data.filter(r => r.status === DocumentStatus.Approved).length;
+
+        this.returnsReasonData = {
+            labels: ['معتمد', 'مسودة'],
+            datasets: [{
+                data: [approved, drafts],
+                backgroundColor: ['#dc3545', '#ffc107'],
+                hoverBackgroundColor: ['#c82333', '#e0a800']
+            }]
+        };
+    }
+
+    initCharts() {
+        this.returnsTrendOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleFont: { family: 'Cairo, sans-serif' },
+                    bodyFont: { family: 'Cairo, sans-serif' },
+                    padding: 10,
+                    cornerRadius: 8
+                }
+            },
+            scales: {
+                y: { display: false },
+                x: { display: false }
+            }
+        };
+
+        this.returnsReasonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { family: 'Cairo, sans-serif', size: 11 }, usePointStyle: true }
+                }
+            },
+            cutout: '65%'
+        };
+    }
+
     navigateToCreate() {
         this.router.navigate(['/sales/returns/create']);
     }
 
     viewDetails(id: number) {
-        // reuse create component in read-only mode or creating key?
-        // or a details component if I had one. 
-        // For now: /returns/:id
-        this.router.navigate(['/sales/returns', id]);
+        this.router.navigate(['/sales/returns', id]); // Or reuse create view in read mode
     }
 
-    DocumentStatus = DocumentStatus;
+    getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
+        if (status === undefined || status === null) return 'info';
+        const statusNum = Number(status);
 
-    getStatusSeverity(status: any): any {
-        if (!status && status !== 0) return 'info';
-        // Handle enum numbers
-        if (typeof status === 'number') {
-            if (status === 2) return 'success';  // Approved
-            if (status === 1) return 'warning';  // Draft
-            if (status === 3) return 'danger';   // Cancelled
-        }
-        // Handle strings
-        const statusStr = status.toString().toUpperCase();
-        switch (statusStr) {
-            case 'APPROVED':
-            case '2': return 'success';
-            case 'DRAFT':
-            case '1': return 'warning';
-            case 'CANCELLED':
-            case '3': return 'danger';
+        switch (statusNum) {
+            case DocumentStatus.Approved: return 'success';
+            case DocumentStatus.Draft: return 'warning';
+            case DocumentStatus.Cancelled: return 'danger';
             default: return 'info';
         }
     }
 
     getStatusLabel(status: any): string {
-        if (!status && status !== 0) return 'غير معروف';
-        // Handle enum numbers
-        if (typeof status === 'number') {
-            if (status === 2) return 'معتمد';
-            if (status === 1) return 'مسودة';
-            if (status === 3) return 'ملغى';
-        }
-        // Handle strings
-        const statusStr = status.toString().toUpperCase();
-        switch (statusStr) {
-            case 'APPROVED':
-            case '2': return 'معتمد';
-            case 'DRAFT':
-            case '1': return 'مسودة';
-            case 'CANCELLED':
-            case '3': return 'ملغى';
+        if (status === undefined || status === null) return 'غير محدد';
+        const statusNum = Number(status);
+
+        switch (statusNum) {
+            case DocumentStatus.Approved: return 'معتمد';
+            case DocumentStatus.Draft: return 'مسودة';
+            case DocumentStatus.Cancelled: return 'ملغى';
             default: return 'غير معروف';
         }
     }

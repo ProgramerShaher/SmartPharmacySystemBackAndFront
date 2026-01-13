@@ -46,9 +46,15 @@ export class PurchaseReturnService {
             });
         }
 
-        return this.http.get<ApiResponse<PurchaseReturn[]>>(this.apiUrl, { params })
+        return this.http.get<ApiResponse<any>>(this.apiUrl, { params })
             .pipe(
-                map(res => res.data || []),
+                map(res => {
+                    const data = res.data;
+                    if (data && Array.isArray(data.items)) {
+                        return data.items;
+                    }
+                    return Array.isArray(data) ? data : [];
+                }),
                 catchError(this.handleError)
             );
     }

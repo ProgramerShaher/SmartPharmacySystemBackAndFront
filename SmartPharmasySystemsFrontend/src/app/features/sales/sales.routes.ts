@@ -7,11 +7,11 @@ export const SALES_ROUTES: Routes = [
     },
     {
         path: 'create',
-        loadComponent: () => import('./components/sale-invoice-create/sale-invoice-create.component').then(m => m.SalesInvoiceCreateComponent)
+        loadComponent: () => import('./components/sale-invoice-create/sale-invoice-create.component').then(m => m.SaleInvoiceCreateComponent)
     },
     {
         path: 'edit/:id',
-        loadComponent: () => import('./components/sale-invoice-add/sale-invoice-add.component').then(m => m.SaleInvoiceAddComponent)
+        loadComponent: () => import('./components/sale-invoice-create/sale-invoice-create.component').then(m => m.SaleInvoiceCreateComponent)
     },
     {
         path: 'returns',

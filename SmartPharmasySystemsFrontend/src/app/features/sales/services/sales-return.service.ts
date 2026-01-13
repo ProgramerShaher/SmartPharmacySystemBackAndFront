@@ -23,18 +23,29 @@ export class SalesReturnService {
     private readonly baseUrl = `${environment.apiUrl}/SalesReturns`;
 
     /**
-     * جلب جميع مرتجعات المبيعات مع إمكانية البحث
-     * @param search نص البحث (اختياري)
+     * جلب جميع مرتجعات المبيعات مع إمكانية البحث والفلترة
+     * @param query خيارات البحث والفلتر
      * @returns قائمة مرتجعات المبيعات
      */
-    getAll(search?: string): Observable<SalesReturn[]> {
+    getAll(query?: any): Observable<SalesReturn[]> {
         let params = new HttpParams();
-        if (search) {
-            params = params.set('search', search);
+
+        if (query) {
+            if (query.search) params = params.set('search', query.search);
+            if (query.page) params = params.set('page', query.page.toString());
+            if (query.pageSize) params = params.set('pageSize', query.pageSize.toString());
+            if (query.status) params = params.set('status', query.status.toString());
+            if (query.customerId) params = params.set('customerId', query.customerId.toString());
         }
 
-        return this.http.get<ApiResponse<SalesReturn[]>>(this.baseUrl, { params }).pipe(
-            map(response => response.data || []),
+        return this.http.get<ApiResponse<any>>(this.baseUrl, { params }).pipe(
+            map(response => {
+                const data = response.data;
+                if (data && Array.isArray(data.items)) {
+                    return data.items;
+                }
+                return Array.isArray(data) ? data : [];
+            }),
             catchError(this.handleError)
         );
     }

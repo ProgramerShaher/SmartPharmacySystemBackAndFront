@@ -1,0 +1,53 @@
+<div class="report-container">
+  <p-card styleClass="header-card">
+    <div class="header-content">
+      <div class="header-right">
+        <h2><i class="pi pi-truck"></i> تقرير ديون الموردين</h2>
+      </div>
+      <div class="header-left">
+        <p-button icon="pi pi-refresh" label="تحديث" (click)="loadReport()"></p-button>
+        <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" (click)="printReport()"></p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <div class="loading-container" *ngIf="loading()">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+  </div>
+
+  <div class="summary-cards" *ngIf="report() && !loading()">
+    <div class="summary-card payable"><div class="summary-icon"><i class="pi pi-dollar"></i></div><div class="summary-content"><span class="label">إجمالي الديون (علينا)</span><span class="value text-danger">{{ formatCurrency(summary().totalPayable) }}</span></div></div>
+    <div class="summary-card creditors"><div class="summary-icon"><i class="pi pi-briefcase"></i></div><div class="summary-content"><span class="label">موردين دائنين</span><span class="value">{{ summary().creditorCount }}</span></div></div>
+  </div>
+
+  <p-card styleClass="table-card" *ngIf="report() && !loading()">
+    <p-table [value]="report()!.suppliers" [rowHover]="true" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>اسم المورد</th>
+          <th>رقم الجوال</th>
+          <th class="text-center">إجمالي المشتروات</th>
+          <th class="text-center">إجمالي المدفوعات</th>
+          <th class="text-center">الرصيد</th>
+          <th class="text-center">الحالة</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td class="font-bold">{{ item.supplierName }}</td>
+          <td>{{ item.phoneNumber || '-' }}</td>
+          <td class="text-center">{{ formatCurrency(item.totalPurchases) }}</td>
+          <td class="text-center">{{ formatCurrency(item.totalPayments) }}</td>
+          <td class="text-center font-bold" [class.text-danger]="item.balance > 0" [class.text-success]="item.balance < 0">
+            {{ formatCurrency(Math.abs(item.balance)) }}
+          </td>
+          <td class="text-center">
+            <p-tag [value]="item.balance > 0 ? 'دائن (له)' : 'مدين (عليه)'" 
+                   [severity]="item.balance > 0 ? 'danger' : 'success'">
+            </p-tag>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

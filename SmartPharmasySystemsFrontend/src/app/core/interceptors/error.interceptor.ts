@@ -1,13 +1,20 @@
-import { Injectable } from '@angular/core';
-import { HttpRequest, HttpHandler, HttpEvent, HttpInterceptor } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { throwError, EMPTY } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from '../../features/auth/services/auth.service';
 
-@Injectable()
-export class ErrorInterceptor implements HttpInterceptor {
+export const errorInterceptor: HttpInterceptorFn = (req, next) => {
+    const authService = inject(AuthService);
 
-    constructor() { }
-
-    intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-        return next.handle(request);
-    }
-}
+    return next(req).pipe(
+        catchError((error: HttpErrorResponse) => {
+            if (error.status === 401 || error.status === 403) {
+                // Auto logout if 401 Unauthorized or 403 Forbidden
+                authService.logout();
+                return EMPTY;
+            }
+            return throwError(() => error);
+        })
+    );
+};

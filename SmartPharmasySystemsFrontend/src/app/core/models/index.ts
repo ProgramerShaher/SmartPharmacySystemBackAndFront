@@ -25,6 +25,7 @@ export * from './stock-movement.enums';
 export * from './financial.interface';
 export * from './enums';
 export * from './expense-category.interface';
+export * from './reports.interface';
 
 // Re-export PagedResult for convenience
 export type { PagedResult } from './api-response.interface';

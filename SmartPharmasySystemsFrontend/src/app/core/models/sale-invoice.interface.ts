@@ -31,6 +31,7 @@ export interface SaleInvoice {
     actionDate?: string;
     items: SaleInvoiceDetail[]; 
     salesReturns?: SalesReturn[];
+    notes?: string;
 }
 
 export interface CreateSaleInvoiceDto {

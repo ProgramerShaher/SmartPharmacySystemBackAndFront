@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
+using SmartPharmacySystem.Core.DTOs;
 
 namespace SmartPharmacySystem.Infrastructure.Repositories
 {
@@ -117,6 +118,28 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 customer.Balance += amount;
                 _context.Entry(customer).State = EntityState.Modified;
             }
+        }
+
+        public async Task<CustomerStatistics> GetStatisticsAsync()
+        {
+            // Optimized query using projection to avoid fetching entities
+            // We fetch all needed data in a single or minimal database roundtrips without loading objects
+            var stats = await _context.Customers
+                .AsNoTracking()
+                .GroupBy(c => 1) // Group by constant to aggregate all
+                .Select(g => new CustomerStatistics
+                {
+                    TotalDebt = g.Sum(c => c.Balance),
+                    ActiveCustomersCount = g.Count(c => c.IsActive),
+                    InactiveCustomersCount = g.Count(c => !c.IsActive),
+                    HighDebtCustomersCount = g.Count(c => c.Balance > 5000),
+                    LowDebtCount = g.Count(c => c.Balance <= 1000),
+                    MediumDebtCount = g.Count(c => c.Balance > 1000 && c.Balance <= 5000),
+                    HighDebtDistributionCount = g.Count(c => c.Balance > 5000)
+                })
+                .FirstOrDefaultAsync();
+
+            return stats ?? new CustomerStatistics();
         }
     }
 }

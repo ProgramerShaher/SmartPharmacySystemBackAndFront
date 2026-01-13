@@ -1,5 +1,5 @@
 <!-- Add/Edit Sidebar Drawer -->
-<p-sidebar [(visible)]="displayAddEditSidebar" position="right" [baseZIndex]="10000"
+<p-sidebar [(visible)]="displayAddEditSidebar" position="left" [baseZIndex]="10000"
     styleClass="w-full md:w-5 lg:w-4 p-sidebar-premium" [modal]="true" [showCloseIcon]="true">
     <ng-template pTemplate="header">
         <div class="flex align-items-center gap-2">
@@ -115,22 +115,23 @@
             <div class="col-12 lg:col-8">
                 <div class="glass-panel p-4 h-full border-round-2xl shadow-1 bg-white">
                     <h3 class="m-0 mb-4 font-bold text-gray-700 flex align-items-center gap-2 text-base">
-                        <i class="pi pi-objects-column text-indigo-500"></i>
-                        توزيع مستويات المديونية
+                        <i class="pi pi-chart-line text-emerald-500"></i>
+                        تحليل مستويات المديونية
                     </h3>
-                    <p-chart type="bar" [data]="debtDistributionData" [options]="debtDistributionOptions"
-                        height="250px"></p-chart>
+                    <div class="relative" style="height: 300px">
+                        <p-chart type="line" [data]="debtDistributionData" [options]="debtDistributionOptions" height="100%"
+                            width="100%"></p-chart>
+                    </div>
                 </div>
             </div>
             <div class="col-12 lg:col-4">
                 <div class="glass-panel p-4 h-full border-round-2xl shadow-1 bg-white">
                     <h3 class="m-0 mb-4 font-bold text-gray-700 flex align-items-center gap-2 text-base">
-                        <i class="pi pi-check-circle text-green-500"></i>
+                        <i class="pi pi-users text-indigo-500"></i>
                         حالة العملاء
                     </h3>
-                    <div class="flex justify-content-center">
-                        <p-chart type="doughnut" [data]="activeStatusData" [options]="activeStatusOptions"
-                            height="200px" width="200px"></p-chart>
+                    <div class="relative" style="height: 300px">
+                        <p-chart type="bar" [data]="activeStatusData" [options]="activeStatusOptions" height="100%" width="100%"></p-chart>
                     </div>
                 </div>
             </div>
@@ -140,9 +141,10 @@
     <!-- Table Section -->
     <div class="glass-panel p-0 overflow-hidden shadow-1 border-round-2xl bg-white">
         <p-table [value]="customers()" [loading]="loading()" [paginator]="true" [rows]="10"
+            [lazy]="true" (onLazyLoad)="loadCustomers($event)" [totalRecords]="totalRecords()"
             [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
             currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
-            styleClass="p-datatable-striped p-datatable-sm header-offset">
+            styleClass="premium-table p-datatable-sm header-offset">
 
             <ng-template pTemplate="caption">
                 <div
@@ -159,57 +161,82 @@
 
             <ng-template pTemplate="header">
                 <tr class="text-sm uppercase text-gray-500 bg-gray-50">
-                    <th class="font-semibold p-3 border-none">العميل</th>
-                    <th class="font-semibold p-3 border-none">بيانات الاتصال</th>
-                    <th class="font-semibold p-3 border-none" pSortableColumn="balance">الرصيد <p-sortIcon
+                    <th class="font-semibold p-3 border-none text-right" style="width: 20%">العميل</th>
+                    <th class="font-semibold p-3 border-none text-right" style="width: 20%">بيانات الاتصال</th>
+                    <th class="font-semibold p-3 border-none text-center" style="width: 15%" pSortableColumn="creditLimit">سقف الدين
+                        <p-sortIcon field="creditLimit"></p-sortIcon>
+                    </th>
+                    <th class="font-semibold p-3 border-none text-center" style="width: 15%" pSortableColumn="balance">الرصيد <p-sortIcon
                             field="balance"></p-sortIcon></th>
-                    <th class="font-semibold p-3 border-none">الحالة</th>
-                    <th class="text-center font-semibold p-3 border-none">الإجراءات</th>
+                    <th class="font-semibold p-3 border-none text-center" style="width: 10%">الحالة</th>
+                    <th class="text-center font-semibold p-3 border-none" style="width: 20%">الإجراءات</th>
                 </tr>
             </ng-template>
 
             <ng-template pTemplate="body" let-customer>
                 <tr class="hover-row transition-colors border-bottom-1 surface-border">
-                    <td class="p-3">
+                    <td class="p-3 vertical-align-middle">
                         <div class="flex align-items-center gap-3">
-                            <div class="avatar-circle shadow-1 text-sm font-bold"
+                            <div class="avatar-circle shadow-1 text-sm font-bold flex-shrink-0"
                                 [style.background]="getRandomColor(customer.name)"
-                                style="width: 32px; height: 32px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;">
+                                style="width: 38px; height: 38px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;">
                                 {{ customer.name?.charAt(0) }}
                             </div>
                             <div class="flex flex-column">
-                                <span class="font-bold text-gray-800 text-sm">{{ customer.name }}</span>
-                                <small class="text-gray-500 text-xs">{{ customer.address || 'بدون عنوان' }}</small>
+                                <span class="font-bold text-gray-800 text-sm mb-1">{{ customer.name }}</span>
+                                <small class="text-gray-500 text-xs flex align-items-center gap-1">
+                                    <i class="pi pi-map-marker text-xs"></i>
+                                    {{ customer.address || 'بدون عنوان' }}
+                                </small>
+                                </div>
+                                </div>
+                                </td>
+                                <td class="p-3 vertical-align-middle">
+                                    <div class="flex flex-column gap-2">
+                                        <div class="flex align-items-center gap-2 text-gray-600 bg-gray-50 px-2 py-1 border-round w-fit">
+                                            <i class="pi pi-phone text-xs text-indigo-500"></i>
+                                            <span class="font-mono text-sm font-medium" dir="ltr">{{ customer.phoneNumber || '-' }}</span>
+                                        </div>
+                                        <div *ngIf="customer.email" class="flex align-items-center gap-2 text-gray-500 px-2">
+                                            <i class="pi pi-envelope text-xs text-orange-400"></i>
+                                            <span class="text-xs">{{ customer.email }}</span>
                             </div>
                         </div>
                     </td>
-                    <td class="p-3">
-                        <span class="text-gray-600 font-mono text-sm">{{ customer.phone }}</span>
-                    </td>
-                    <td class="p-3">
-                        <span class="font-bold font-mono text-sm"
-                            [class]="customer.balance > 0 ? 'text-red-500' : 'text-green-500'">
-                            {{ customer.balance | number }}
+                    <td class="p-3 text-center vertical-align-middle">
+                        <span class="font-mono text-sm block text-gray-600" *ngIf="customer.creditLimit > 0">
+                            {{ customer.creditLimit | number }}
+                            <small class="text-xs text-gray-400 font-normal">ر.ي</small>
+                        </span>
+                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 border-round"
+                            *ngIf="!customer.creditLimit || customer.creditLimit === 0">
+                            مفتوح
                         </span>
                     </td>
-                    <td class="p-3">
-                        <p-tag [severity]="customer.isActive ? 'success' : 'secondary'"
+                    <td class="p-3 text-center vertical-align-middle">
+                        <span class="font-bold font-mono text-base block"
+                            [class]="customer.balance > 0 ? 'text-red-600' : 'text-green-600'">
+                            {{ customer.balance | number }}
+                            <small class="text-xs text-gray-400 font-normal">ر.ي</small>
+                        </span>
+                    </td>
+                    <td class="p-3 text-center vertical-align-middle">
+                        <p-tag [severity]="customer.isActive ? 'success' : 'danger'"
                             [value]="customer.isActive ? 'نشط' : 'خامل'" [rounded]="true"
-                            styleClass="text-xs px-2 py-0 border-none bg-opacity-10 text-opacity-80">
+                            styleClass="text-xs px-3 py-1 font-bold">
                         </p-tag>
                     </td>
-                    <td class="text-center p-3">
-                        <div
-                            class="flex justify-content-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td class="text-center p-3 vertical-align-middle">
+                        <div class="flex justify-content-center gap-2">
                             <button pButton icon="pi pi-eye"
-                                class="p-button-rounded p-button-text p-button-secondary w-2rem h-2rem"
-                                pTooltip="التفاصيل" [routerLink]="['/customers/detail', customer.id]"></button>
+                                class="p-button-rounded p-button-text p-button-secondary w-2rem h-2rem hover:bg-gray-100 transition-colors"
+                                pTooltip="التفاصيل" tooltipPosition="top" [routerLink]="['/customers/detail', customer.id]"></button>
                             <button pButton icon="pi pi-pencil"
-                                class="p-button-rounded p-button-text p-button-primary w-2rem h-2rem" pTooltip="تعديل"
-                                (click)="openEditCustomer(customer.id)"></button>
+                                class="p-button-rounded p-button-text p-button-primary w-2rem h-2rem hover:bg-indigo-50 transition-colors" 
+                                pTooltip="تعديل" tooltipPosition="top" (click)="openEditCustomer(customer.id)"></button>
                             <button pButton icon="pi pi-trash"
-                                class="p-button-rounded p-button-text p-button-danger w-2rem h-2rem" pTooltip="حذف"
-                                (click)="deleteCustomer($event, customer)"></button>
+                                class="p-button-rounded p-button-text p-button-danger w-2rem h-2rem hover:bg-red-50 transition-colors" 
+                                pTooltip="حذف" tooltipPosition="top" (click)="deleteCustomer($event, customer)"></button>
                         </div>
                     </td>
                 </tr>

@@ -74,20 +74,44 @@ export class CustomerReceiptsComponent implements OnInit {
             paymentDate: [new Date(), Validators.required],
             paymentMethod: ['Cash', Validators.required],
             referenceNumber: [''],
+            saleInvoiceId: [null],
             notes: ['']
         });
     }
 
+    // Pagination
+    totalRecords = signal(0);
+    currentPage = signal(1);
+    pageSize = signal(10);
+    searchQuery = signal('');
+
     ngOnInit() {
-        this.loadReceipts();
+        this.loadReceipts({ first: 0, rows: 10 });
+        this.loadStats();
     }
 
-    loadReceipts() {
+    loadStats() {
+        this.customerService.getReceiptStatistics().subscribe(stats => {
+            this.totalAmount.set(stats.totalAmount);
+            this.todayAmount.set(stats.todayAmount);
+            this.receiptsCount.set(stats.totalReceipts);
+        });
+    }
+
+    loadReceipts(event?: any) {
         this.loading.set(true);
-        this.customerService.getAllReceipts().subscribe({
-            next: (res: CustomerReceipt[]) => {
-                this.receipts.set(res);
-                this.calculateStats(res);
+        const page = event ? (event.first / event.rows) + 1 : this.currentPage();
+        const size = event ? event.rows : this.pageSize();
+
+        this.customerService.getAllReceipts({ page, pageSize: size, search: this.searchQuery() }).subscribe({
+            next: (res) => {
+                this.receipts.set(res.items);
+                this.totalRecords.set(res.totalCount);
+                this.currentPage.set(page);
+                this.pageSize.set(size);
+
+                // For stats, we might need a separate call or just sum existing page (simplified for now)
+                this.calculateStats(res.items); 
                 this.loading.set(false);
             },
             error: () => {
@@ -98,15 +122,10 @@ export class CustomerReceiptsComponent implements OnInit {
     }
 
     calculateStats(receipts: CustomerReceipt[]) {
+        // Note: This only calculates stats for CURRENT PAGE.
+        // Ideally backend should return global stats in a wrapper, but for now this is better than nothing or crashing.
         const total = receipts.reduce((acc, curr) => acc + curr.amount, 0);
-        this.totalAmount.set(total);
-        this.receiptsCount.set(receipts.length);
-
-        const today = new Date().toDateString();
-        const todaySum = receipts
-            .filter(r => new Date(r.paymentDate).toDateString() === today)
-            .reduce((acc, curr) => acc + curr.amount, 0);
-        this.todayAmount.set(todaySum);
+        this.todayAmount.set(total); // Placeholder
     }
 
     searchCustomers(event: any) {
@@ -115,9 +134,21 @@ export class CustomerReceiptsComponent implements OnInit {
         });
     }
 
+    unpaidInvoices = signal<any[]>([]);
+
     onCustomerSelect(customer: Customer) {
         this.selectedCustomer = customer;
         this.receiptForm.patchValue({ customerId: customer.id });
+
+        // Load unpaid invoices (Smart Linking)
+        this.loading.set(true);
+        this.customerService.getUnpaidInvoices(customer.id).subscribe({
+            next: (invoices) => {
+                this.unpaidInvoices.set(invoices);
+                this.loading.set(false);
+            },
+            error: () => this.loading.set(false)
+        });
     }
 
     openNew() {
@@ -149,6 +180,7 @@ export class CustomerReceiptsComponent implements OnInit {
                 this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ سند القبض وتحديث الرصيد' });
                 this.displayDialog.set(false);
                 this.loadReceipts();
+                this.loadStats(); // Refresh stats
                 this.saving.set(false);
             },
             error: (err) => {
@@ -173,6 +205,7 @@ export class CustomerReceiptsComponent implements OnInit {
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'تم الحذف', detail: 'تم حذف السند وتعديل الأرصدة' });
                         this.loadReceipts();
+                        this.loadStats(); // Refresh stats
                     }
                 });
             }

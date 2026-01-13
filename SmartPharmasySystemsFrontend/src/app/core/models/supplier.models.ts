@@ -7,14 +7,22 @@ export interface Supplier {
     phoneNumber?: string;
     address?: string;
     email?: string;
-    balance: number;
+    Balance: number;
     notes?: string;
     isActive?: boolean;
     isDeleted?: boolean;
     createdAt: string;
     updatedAt?: string;
-    purchaseInvoices?: any[]; // Will be typed properly when PurchaseInvoice interface is available
-    purchaseReturns?: any[]; // Will be typed properly when PurchaseReturn interface is available
+
+    // UI Display Fields (From Backend DTO)
+    statusName?: string;
+    statusColor?: string;
+    statusIcon?: string;
+    actionByName?: string;
+    actionDate?: string;
+
+    purchaseInvoices?: any[];
+    purchaseReturns?: any[];
 }
 
 export interface SupplierPayment {
@@ -61,4 +69,6 @@ export interface SupplierQueryDto {
     search?: string;
     page?: number;
     pageSize?: number;
+    sortBy?: string;
+    sortDir?: string;
 }

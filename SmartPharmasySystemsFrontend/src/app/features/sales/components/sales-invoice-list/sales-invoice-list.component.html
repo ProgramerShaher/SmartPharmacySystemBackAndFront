@@ -180,19 +180,13 @@
                         </span>
                     </td>
                     <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
-                        <p-tag [value]="getStatusLabel(invoice.status)" [severity]="getStatusSeverity(invoice.status)"
+                        <p-tag [value]="invoice.statusName" [severity]="invoice.statusColor" [icon]="invoice.statusIcon"
                             styleClass="text-xs font-bold"></p-tag>
                     </td>
                     <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
                         <div class="flex justify-content-center gap-1 action-buttons-container">
-                            <!-- 👁️ View Details (Always visible) -->
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
-                                pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(invoice.id)"
-                                styleClass="action-btn-view">
-                            </p-button>
-
-                            <!-- 📝 DRAFT STATUS (0) - Blue Approve, Edit, Delete -->
-                            <ng-container *ngIf="isDraft(invoice)">
+                            <!-- DRAFT STATUS: Edit, Delete, Approve -->
+                            <ng-container *ngIf="invoice.status === 'Draft'">
                                 <p-button icon="pi pi-check-circle" [rounded]="true" [text]="true" severity="success"
                                     size="small" pTooltip="اعتماد الفاتورة" tooltipPosition="top"
                                     (onClick)="approveInvoice(invoice.id)"
@@ -208,11 +202,11 @@
                                 </p-button>
                             </ng-container>
 
-                            <!-- ✅ APPROVED STATUS (1) - Green Check, Print, Quick Return -->
-                            <ng-container *ngIf="isApproved(invoice)">
-                                <div class="approved-badge">
-                                    <i class="pi pi-check-circle text-success" style="font-size: 1.5rem;"></i>
-                                </div>
+                            <!-- APPROVED STATUS: View, Print, Return -->
+                            <ng-container *ngIf="invoice.status === 'Approved'">
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض التفاصيل"
+                                    tooltipPosition="top" (onClick)="viewDetails(invoice.id)" styleClass="action-btn-view">
+                                </p-button>
                                 <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary"
                                     size="small" pTooltip="طباعة الفاتورة" tooltipPosition="top"
                                     (onClick)="printInvoice(invoice.id)" styleClass="action-btn-print">
@@ -222,21 +216,12 @@
                                     (onClick)="navigateToReturn(invoice.id)"
                                     styleClass="action-btn-return imperial-glow">
                                 </p-button>
-                                <p-button icon="pi pi-times-circle" [rounded]="true" [text]="true" severity="danger"
-                                    size="small" pTooltip="إلغاء الفاتورة" tooltipPosition="top"
-                                    (onClick)="cancelInvoice(invoice.id)" styleClass="action-btn-cancel">
-                                </p-button>
                             </ng-container>
 
-                            <!-- 🔒 CANCELLED STATUS (2) - Red Lock, View Only -->
-                            <ng-container *ngIf="isCancelled(invoice)">
-                                <div class="cancelled-badge">
-                                    <i class="pi pi-lock text-crimson" style="font-size: 1.5rem;"
-                                        pTooltip="فاتورة ملغاة"></i>
-                                </div>
-                                <p-button icon="pi pi-file-pdf" [rounded]="true" [text]="true" [disabled]="true"
-                                    severity="secondary" size="small" pTooltip="عرض فقط (ملغاة)" tooltipPosition="top"
-                                    styleClass="action-btn-disabled">
+                            <!-- CANCELLED STATUS: View Only -->
+                            <ng-container *ngIf="invoice.status === 'Cancelled'">
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض التفاصيل"
+                                    tooltipPosition="top" (onClick)="viewDetails(invoice.id)" styleClass="action-btn-view">
                                 </p-button>
                             </ng-container>
                         </div>

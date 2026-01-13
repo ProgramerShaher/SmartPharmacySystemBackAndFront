@@ -23,6 +23,15 @@
           <span class="item-label">لوحة التحكم</span>
           <div class="item-glow"></div>
         </a>
+        <!-- Master Dashboard - NEW -->
+        <a routerLink="/dashboard/master" routerLinkActive="active-route" class="menu-item master-dashboard-item">
+          <div class="item-icon icon-master-dashboard">
+            <i class="pi pi-chart-line"></i>
+          </div>
+          <span class="item-label">لوحة التحكم الرئيسية</span>
+          <span class="new-badge">جديد</span>
+          <div class="item-glow"></div>
+        </a>
       </div>
       </div>
 
@@ -190,6 +199,56 @@
             </div>
             </div>
             </div>
+<!-- Reports Group - التقارير -->
+<div class="menu-group">
+  <div class="group-title">
+    <i class="pi pi-chart-bar"></i>
+    <span>التقارير</span>
+  </div>
+  <div class="menu-items">
+    <!-- Reports Submenu -->
+    <div class="submenu-wrapper">
+      <a (click)="toggleReportsMenu()" class="menu-item submenu-trigger"
+        [class.active]="reportsMenuOpen || currentRoute.includes('/reports')">
+        <div class="item-icon icon-reports">
+          <i class="pi pi-file-edit"></i>
+        </div>
+        <span class="item-label">تقارير مالية</span>
+        <i class="pi submenu-arrow" [class.pi-chevron-down]="!reportsMenuOpen"
+          [class.pi-chevron-up]="reportsMenuOpen"></i>
+        <div class="item-glow"></div>
+      </a>
+
+      <div class="submenu-items" [class.open]="reportsMenuOpen">
+        <a routerLink="/reports/daily-sales" routerLinkActive="active-route" class="submenu-item">
+          <i class="pi pi-calendar"></i>
+          <span>المبيعات اليومية</span>
+        </a>
+        <a routerLink="/reports/best-selling" routerLinkActive="active-route" class="submenu-item">
+          <i class="pi pi-star"></i>
+          <span>الأكثر مبيعاً</span>
+        </a>
+        <a routerLink="/reports/customer-debts" routerLinkActive="active-route" class="submenu-item">
+          <i class="pi pi-users"></i>
+          <span>ديون العملاء</span>
+        </a>
+        <a routerLink="/reports/supplier-debts" routerLinkActive="active-route" class="submenu-item">
+          <i class="pi pi-truck"></i>
+          <span>ديون الموردين</span>
+        </a>
+        <a routerLink="/reports/net-profit" routerLinkActive="active-route" class="submenu-item">
+          <i class="pi pi-dollar"></i>
+          <span>صافي الأرباح</span>
+        </a>
+        <a routerLink="/reports/inventory-valuation" routerLinkActive="active-route" class="submenu-item">
+          <i class="pi pi-box"></i>
+          <span>تقييم المخزون</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
     <!-- Admin Group -->
     <div class="menu-group">
       <div class="group-title">

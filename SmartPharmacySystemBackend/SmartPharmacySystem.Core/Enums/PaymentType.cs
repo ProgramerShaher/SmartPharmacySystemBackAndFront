@@ -16,5 +16,17 @@ public enum PaymentType
     /// دفع آجل (على الحساب)
     /// Credit payment (deferred)
     /// </summary>
-    Credit = 2
+    Credit = 2,
+
+    /// <summary>
+    /// تحويل بنكي
+    /// Bank Transfer
+    /// </summary>
+    BankTransfer = 3,
+
+    /// <summary>
+    /// شيك
+    /// Check
+    /// </summary>
+    Check = 4
 }

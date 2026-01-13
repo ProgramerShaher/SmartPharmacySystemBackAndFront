@@ -13,6 +13,7 @@ public class SupplierDto
     public string Email { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
 
+    [System.Text.Json.Serialization.JsonPropertyName("Balance")]
     public decimal Balance { get; set; }
 
     // Status Tracking & Dynamic Colors

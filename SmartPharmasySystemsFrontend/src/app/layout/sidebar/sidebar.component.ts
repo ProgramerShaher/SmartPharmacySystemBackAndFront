@@ -27,6 +27,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     unreadAlertsCount = 0;
     currentRoute = '';
     expenseMenuOpen = false; // Track expense submenu state
+    reportsMenuOpen = false; // Track reports submenu state
     private destroy$ = new Subject<void>();
 
     constructor(
@@ -52,11 +53,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
             if (event.url.includes('/finance/expense')) {
                 this.expenseMenuOpen = true;
             }
+            // Auto-open reports menu if on reports route
+            if (event.url.includes('/reports')) {
+                this.reportsMenuOpen = true;
+            }
         });
     }
 
     toggleExpenseMenu() {
         this.expenseMenuOpen = !this.expenseMenuOpen;
+    }
+
+    toggleReportsMenu() {
+        this.reportsMenuOpen = !this.reportsMenuOpen;
     }
 
     ngOnDestroy() {

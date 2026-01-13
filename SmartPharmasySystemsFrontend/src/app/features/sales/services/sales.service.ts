@@ -16,10 +16,10 @@ export class SalesService {
     getById(id: number): Observable<SaleInvoice> {
         return this.http.get<ApiResponse<SaleInvoice>>(`${environment.apiUrl}/SalesInvoices/${id}`).pipe(map(res => res.data));
     }
-    create(invoice: SaleInvoiceCreateDto): Observable<SaleInvoice> {
+    create(invoice: Partial<SaleInvoice>): Observable<SaleInvoice> {
         return this.http.post<ApiResponse<SaleInvoice>>(`${environment.apiUrl}/SalesInvoices`, invoice).pipe(map(res => res.data));
     }
-    update(id: number, invoice: SaleInvoiceUpdateDto): Observable<SaleInvoice> {
+    update(id: number, invoice: Partial<SaleInvoice>): Observable<SaleInvoice> {
         return this.http.put<ApiResponse<SaleInvoice>>(`${environment.apiUrl}/SalesInvoices/${id}`, invoice).pipe(map(res => res.data));
     }
     delete(id: number): Observable<void> {

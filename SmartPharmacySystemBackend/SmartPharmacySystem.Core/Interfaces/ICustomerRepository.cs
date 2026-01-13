@@ -1,3 +1,4 @@
+using SmartPharmacySystem.Core.DTOs;
 using SmartPharmacySystem.Core.Entities;
 
 namespace SmartPharmacySystem.Core.Interfaces
@@ -13,5 +14,6 @@ namespace SmartPharmacySystem.Core.Interfaces
         Task<(IEnumerable<Customer> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize);
         Task<IEnumerable<Customer>> GetTopDebtorsAsync(int count);
         Task UpdateBalanceAsync(int customerId, decimal amount);
+        Task<CustomerStatistics> GetStatisticsAsync();
     }
 }

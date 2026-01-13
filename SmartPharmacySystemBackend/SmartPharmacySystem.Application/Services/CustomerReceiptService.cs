@@ -31,22 +31,34 @@ namespace SmartPharmacySystem.Application.Services
                 var receipt = _mapper.Map<Core.Entities.CustomerReceipt>(dto);
                 receipt.CreatedBy = userId;
                 receipt.CreatedAt = DateTime.UtcNow;
+                
                 await _unitOfWork.CustomerReceipts.AddAsync(receipt);
-                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync(); // Get ID first for linking
 
-                // 2. Update Customer Balance (Decrease Debt)
+                // 2. Handle Linked Invoice (Mark as Paid)
+                if (dto.SaleInvoiceId.HasValue)
+                {
+                    var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(dto.SaleInvoiceId.Value);
+                    if (invoice != null && invoice.CustomerId == dto.CustomerId)
+                    {
+                        invoice.IsPaid = true;
+                        await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
+                    }
+                }
+
+                // 3. Update Customer Balance (Decrease Debt)
                 await _unitOfWork.Customers.UpdateBalanceAsync(customer.Id, -dto.Amount);
 
-                // 3. Vault Integration (Process Financial Transaction)
-                // Assuming Account ID 1 is the main vault
+                // 4. Vault Integration (Process Financial Transaction)
                 await _financialService.ProcessTransactionAsync(
                     accountId: 1,
                     amount: dto.Amount,
                     type: FinancialTransactionType.Income,
                     referenceType: ReferenceType.CustomerReceipt,
                     referenceId: receipt.Id,
-                    description: $"سند قبض من العميل: {customer.Name}. مرجع: {dto.ReferenceNo}");
+                    description: $"سند قبض من العميل: {customer.Name}. {(string.IsNullOrEmpty(dto.ReferenceNo) ? "" : "مرجع: " + dto.ReferenceNo)} - {dto.Notes}");
 
+                // 5. Commit
                 await _unitOfWork.CommitAsync();
 
                 var result = _mapper.Map<CustomerReceiptDto>(receipt);
@@ -102,6 +114,23 @@ namespace SmartPharmacySystem.Application.Services
         {
             var receipts = await _unitOfWork.CustomerReceipts.GetByCustomerIdAsync(customerId);
             return _mapper.Map<IEnumerable<CustomerReceiptDto>>(receipts);
+        }
+
+        public async Task<Application.Wrappers.PagedResponse<CustomerReceiptDto>> GetPagedAsync(string? search, int page, int pageSize, DateTime? fromDate, DateTime? toDate)
+        {
+            var (items, totalCount) = await _unitOfWork.CustomerReceipts.GetPagedAsync(search, page, pageSize, fromDate, toDate);
+            var dtos = _mapper.Map<IEnumerable<CustomerReceiptDto>>(items);
+            return new Application.Wrappers.PagedResponse<CustomerReceiptDto>(dtos, totalCount, page, pageSize);
+        }
+        public async Task<ReceiptStatisticsDto> GetStatisticsAsync()
+        {
+            var (totalCount, totalAmount, todayAmount) = await _unitOfWork.CustomerReceipts.GetStatisticsAsync();
+            return new ReceiptStatisticsDto
+            {
+                TotalReceipts = totalCount,
+                TotalAmount = totalAmount,
+                TodayAmount = todayAmount
+            };
         }
     }
 }

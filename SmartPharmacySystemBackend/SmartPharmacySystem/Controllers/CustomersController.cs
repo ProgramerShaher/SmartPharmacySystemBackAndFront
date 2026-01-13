@@ -65,5 +65,11 @@ namespace SmartPharmacySystem.Controllers
             var result = await _customerService.GetStatementAsync(id);
             return Ok(ApiResponse<CustomerStatementDto>.Succeeded(result, "تم جلب كشف الحساب بنجاح"));
         }
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStatistics()
+        {
+            var result = await _customerService.GetStatisticsAsync();
+            return Ok(ApiResponse<SmartPharmacySystem.Core.DTOs.CustomerStatistics>.Succeeded(result, "تم جلب إحصائيات العملاء"));
+        }
     }
 }

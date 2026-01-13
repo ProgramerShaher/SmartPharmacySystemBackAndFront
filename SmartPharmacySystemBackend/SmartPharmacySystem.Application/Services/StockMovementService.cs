@@ -193,8 +193,9 @@ namespace SmartPharmacySystem.Application.Services
                 if (batch.IsExpired)
                     throw new InvalidOperationException($"فشل العملية: التشغيلة رقم {batch.CompanyBatchNumber} منتهية الصلاحية.");
 
-                // Validate Stock
-                await ValidateStockAvailability(detail.MedicineId, detail.BatchId, detail.Quantity);
+                // Validate Stock - REMOVED: Redundant. SaleInvoiceService already validates against MedicineBatch.RemainingQuantity.
+                // Relying on InventoryMovements sum causes errors if history is out of sync.
+                // await ValidateStockAvailability(detail.MedicineId, detail.BatchId, detail.Quantity);
 
                 var mov = new InventoryMovement(
                     detail.MedicineId,

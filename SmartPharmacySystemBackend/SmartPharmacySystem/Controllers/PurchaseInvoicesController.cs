@@ -186,5 +186,19 @@ namespace SmartPharmacySystem.Controllers
             await _service.DeleteAsync(id);
             return Ok(ApiResponse<object?>.Succeeded(null, "تم حذف الفاتورة بنجاح"));
         }
+
+        // -------------------------------------------------------------
+        // Dashboard Stats
+        // -------------------------------------------------------------
+        /// <summary>
+        /// Get purchases dashboard statistics (KPI cards)
+        /// Optimized for high performance (<100ms)
+        /// </summary>
+        [HttpGet("dashboard-stats")]
+        public async Task<IActionResult> GetDashboardStats()
+        {
+            var stats = await _service.GetDashboardStatsAsync();
+            return Ok(ApiResponse<SmartPharmacySystem.Application.DTOs.Dashboard.PurchasesDashboardStatsDto>.Succeeded(stats, "تم جلب إحصائيات المشتريات"));
+        }
     }
 }

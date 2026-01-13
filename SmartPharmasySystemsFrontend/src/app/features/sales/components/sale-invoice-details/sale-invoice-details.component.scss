@@ -1,3 +1,525 @@
-.details-container {
-    padding: 20px;
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap');
+
+/* 🎨 ULTRA-LIGHT SLATE BACKGROUND */
+.slate-background {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    padding: 2rem;
+    font-family: 'Cairo', sans-serif;
+    position: relative;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(248, 250, 252, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* 🎯 MASTER ACTION BAR */
+.master-action-bar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: white;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+
+    .action-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .invoice-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+    }
+
+    .action-bar-right {
+        display: flex;
+        gap: 0.75rem;
+    }
+}
+
+/* 📄 THE WHITE CANVAS (PAPER) */
+.paper-canvas {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+    padding: 3rem;
+    position: relative;
+    transition: all 0.3s ease;
+
+    /* ✅ APPROVED GLOW */
+    &.approved-glow {
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.12),
+            0 -10px 40px rgba(34, 197, 94, 0.15);
+        border-top: 3px solid #22c55e;
+    }
+
+    /* ❌ CANCELLED GLOW */
+    &.cancelled-glow {
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.12),
+            0 -10px 40px rgba(239, 68, 68, 0.15);
+        border-top: 3px solid #ef4444;
+        opacity: 0.85;
+    }
+}
+
+/* 🏷️ STATUS STAMP (GLASSMORPHISM) */
+.status-stamp {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: rgba(34, 197, 94, 0.1);
+    backdrop-filter: blur(10px);
+    border: 2px solid #22c55e;
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #16a34a;
+    font-weight: 800;
+    font-size: 1.1rem;
+    transform: rotate(-5deg);
+    box-shadow: 0 8px 20px rgba(34, 197, 94, 0.2);
+
+    i {
+        font-size: 1.5rem;
+    }
+
+    &.cancelled {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+        color: #dc2626;
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
+    }
+}
+
+/* 👑 PREMIUM HEADER ARCHITECTURE */
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+
+    .pharmacy-identity {
+        .pharmacy-name {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .pharmacy-info {
+            color: #64748b;
+            font-size: 0.95rem;
+            margin: 0.25rem 0;
+        }
+
+        .pharmacy-contact {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin: 0.25rem 0;
+        }
+    }
+
+    .power-center {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-end;
+
+        .invoice-badge {
+            background: #f8fafc;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 0.75rem 1.25rem;
+            min-width: 250px;
+
+            .badge-row {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+
+                i {
+                    color: #3b82f6;
+                    font-size: 1.1rem;
+                }
+
+                .badge-label {
+                    font-size: 0.85rem;
+                    color: #64748b;
+                    font-weight: 600;
+                }
+            }
+
+            .badge-value {
+                font-size: 1.25rem;
+                font-weight: 800;
+                color: #1e293b;
+                text-align: right;
+            }
+        }
+    }
+}
+
+/* 💎 MINI INFO-HUB (TRANSPARENT CARDS) */
+.info-hub {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .info-card {
+        background: rgba(248, 250, 252, 0.5);
+        border: 1px dashed #cbd5e1;
+        border-radius: 14px;
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        transition: all 0.2s;
+
+        &:hover {
+            background: rgba(248, 250, 252, 0.8);
+            border-color: #94a3b8;
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+            color: #3b82f6;
+        }
+
+        .card-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            .flying-icon {
+                color: #3b82f6;
+                font-size: 1rem;
+                animation: fly 2s ease-in-out infinite;
+            }
+        }
+    }
+}
+
+@keyframes fly {
+
+    0%,
+    100% {
+        transform: translateX(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateX(5px) rotate(-10deg);
+    }
+}
+
+/* 📊 PROFESSIONAL LEDGER */
+.professional-ledger {
+    margin: 2rem 0;
+
+    .ledger-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 1.5rem;
+
+        i {
+            color: #3b82f6;
+        }
+    }
+}
+
+::ng-deep .striped-ledger {
+    .p-datatable-thead>tr>th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        padding: 1rem;
+        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.9rem;
+    }
+
+    .p-datatable-tbody>tr {
+        transition: background 0.2s;
+
+        &:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        &:hover {
+            background: #eff6ff !important;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+    }
+
+    .row-number {
+        font-weight: 700;
+        color: #94a3b8;
+    }
+
+    .medicine-name {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 1rem;
+    }
+
+    .batch-badge {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+        padding: 0.35rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85rem;
+    }
+
+    .expiry-date {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .quantity-cell {
+        .quantity-value {
+            background: #f0fdf4;
+            color: #16a34a;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 1rem;
+        }
+    }
+
+    .price-cell {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .total-cell {
+        font-weight: 800;
+        color: #1e293b;
+        font-size: 1.05rem;
+    }
+
+    .empty-state {
+        padding: 3rem;
+        text-align: center;
+        color: #94a3b8;
+
+        i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+    }
+}
+
+/* 💰 FINANCIAL IMPACT ZONE */
+.financial-zone {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .summary-section {
+        flex: 1;
+        background: #f8fafc;
+        border-radius: 14px;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px dashed #cbd5e1;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            .summary-label {
+                font-size: 0.95rem;
+                color: #64748b;
+                font-weight: 600;
+            }
+
+            .summary-value {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #1e293b;
+            }
+        }
+    }
+
+    /* 🏆 GRAND TOTAL (THE SHOWSTOPPER) */
+    .grand-total-box {
+        background: linear-gradient(135deg, #28a745 0%, #20803a 100%);
+        color: white;
+        border-radius: 18px;
+        padding: 2rem 2.5rem;
+        text-align: center;
+        box-shadow: 0 15px 40px rgba(40, 167, 69, 0.35);
+        min-width: 350px;
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .grand-label {
+            display: block;
+            font-size: 1rem;
+            opacity: 0.95;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        .grand-value {
+            display: block;
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .grand-currency {
+            display: block;
+            font-size: 1.2rem;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .arabic-text {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.2;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.3;
+    }
+}
+
+/* 📝 FOOTER NOTES */
+.invoice-footer {
+    margin-top: 2rem;
+
+    .notes-section {
+        background: #fffbeb;
+        border: 1px solid #fbbf24;
+        border-radius: 12px;
+        padding: 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+
+        i {
+            color: #f59e0b;
+            font-size: 1.3rem;
+            margin-top: 0.25rem;
+        }
+
+        .notes-label {
+            font-weight: 700;
+            color: #92400e;
+            margin-left: 0.5rem;
+        }
+
+        .notes-text {
+            color: #78350f;
+            margin: 0.5rem 0 0 0;
+            line-height: 1.6;
+        }
+    }
+}
+
+/* 🎨 STATUS TAG OVERRIDE */
+::ng-deep .status-tag {
+    font-weight: 800 !important;
+    font-size: 1rem !important;
+    padding: 0.5rem 1rem !important;
 }

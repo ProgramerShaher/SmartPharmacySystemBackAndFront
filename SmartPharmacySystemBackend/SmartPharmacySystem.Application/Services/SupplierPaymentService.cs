@@ -142,11 +142,10 @@ namespace SmartPharmacySystem.Application.Services
             // 1. Fetch Data
             // A. Purchase Invoices (Credit & Approved) -> Increase Debt (Credit in Statement, Debit in Accounting terms? Wait. Supplier View: We owe him. His Credit increases.)
             // Let's stick to simple Debt Logic in DTO: Credit (Debt Increase), Debit (Debt Decrease).
-            var invoices = await _unitOfWork.PurchaseInvoices
-                .GetAllAsync(); // TODO: Add predicate to repo or filter in memory if volume low. Better add repo method.
+            var invoices = await _unitOfWork.PurchaseInvoices.GetBySupplierIdAsync(supplierId);
 
             var creditInvoices = invoices
-                .Where(i => i.SupplierId == supplierId && i.PaymentMethod == PaymentType.Credit && i.Status == DocumentStatus.Approved)
+                .Where(i => i.PaymentMethod == PaymentType.Credit)
                 .Select(i => new StatementItemDto
                 {
                     Date = i.PurchaseDate,

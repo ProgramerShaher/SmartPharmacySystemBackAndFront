@@ -33,6 +33,17 @@ public class FinancialController : ControllerBase
     }
 
     /// <summary>
+    /// Get specific account by ID
+    /// </summary>
+    /// <access>Admin</access>
+    [HttpGet("accounts/{id}")]
+    public async Task<IActionResult> GetAccountById(int id)
+    {
+        var account = await _financialService.GetAccountByIdAsync(id);
+        return Ok(ApiResponse<PharmacyAccountDto>.Succeeded(account, "تم جلب بيانات الحساب بنجاح"));
+    }
+
+    /// <summary>
     /// Get financial transactions
     /// </summary>
     /// <access>Admin</access>

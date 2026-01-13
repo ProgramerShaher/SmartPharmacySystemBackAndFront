@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { SalesService } from '../../services/sales.service';
 import { InventoryService } from '../../../inventory/services/inventory.service';
 import { SaleInvoice } from '../../../../core/models';
+import { DocumentStatus } from '../../../../core/models/stock-movement.enums';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
@@ -13,8 +14,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-import { SaleInvoiceActionsDialogComponent } from '../sale-invoice-actions-dialog/sale-invoice-actions-dialog.component';
 import { MedicineBatch } from '../../../../core/models';
 
 @Component({
@@ -22,6 +23,7 @@ import { MedicineBatch } from '../../../../core/models';
     standalone: true,
     imports: [
         CommonModule,
+        RouterModule,
         ButtonModule,
         TableModule,
         TagModule,
@@ -29,7 +31,7 @@ import { MedicineBatch } from '../../../../core/models';
         CardModule,
         DividerModule,
         TooltipModule,
-        SaleInvoiceActionsDialogComponent
+        ProgressSpinnerModule
     ],
     templateUrl: './sale-invoice-details.component.html',
     providers: [ConfirmationService]
@@ -41,6 +43,8 @@ export class SaleInvoiceDetailsComponent implements OnInit {
     // Action Dialog State
     actionDialogVisible = false;
     selectedBatch: MedicineBatch | null = null;
+
+    DocumentStatus = DocumentStatus;
 
     constructor(
         private route: ActivatedRoute,
@@ -66,7 +70,7 @@ export class SaleInvoiceDetailsComponent implements OnInit {
         }).subscribe({
             next: (res) => {
                 this.invoice = res.header;
-                this.invoice.saleInvoiceDetails = res.details;
+                this.invoice.items = res.details;
                 this.loading = false;
             },
             error: (e) => {
@@ -123,24 +127,24 @@ export class SaleInvoiceDetailsComponent implements OnInit {
     }
 
     backToList() {
-        this.router.navigate(['/sales/invoices']);
+        this.router.navigate(['/sales']);
     }
 
-    getStatusSeverity(status: string) {
+    getStatusSeverity(status: DocumentStatus): 'success' | 'warning' | 'danger' | 'info' {
         switch (status) {
-            case 'Approved': return 'success';
-            case 'Draft': return 'warning';
-            case 'Cancelled': return 'danger';
+            case DocumentStatus.Approved: return 'success';
+            case DocumentStatus.Draft: return 'warning';
+            case DocumentStatus.Cancelled: return 'danger';
             default: return 'info';
         }
     }
 
-    getStatusLabel(status: string) {
+    getStatusLabel(status: DocumentStatus): string {
         switch (status) {
-            case 'Approved': return 'معتمدة';
-            case 'Draft': return 'مسودة';
-            case 'Cancelled': return 'ملغاة';
-            default: return status;
+            case DocumentStatus.Approved: return 'معتمدة';
+            case DocumentStatus.Draft: return 'مسودة';
+            case DocumentStatus.Cancelled: return 'ملغاة';
+            default: return 'غير معروف';
         }
     }
 
@@ -158,5 +162,46 @@ export class SaleInvoiceDetailsComponent implements OnInit {
         if (this.invoice) {
             this.loadInvoice(this.invoice.id);
         }
+    }
+
+    /**
+     * Convert number to Arabic text
+     */
+    convertToArabicText(amount: number): string {
+        if (!amount) return 'صفر ريال';
+
+        const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة'];
+        const tens = ['', 'عشرة', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+        const hundreds = ['', 'مئة', 'مئتان', 'ثلاثمئة', 'أربعمئة', 'خمسمئة', 'ستمئة', 'سبعمئة', 'ثمانمئة', 'تسعمئة'];
+
+        const intPart = Math.floor(amount);
+
+        if (intPart < 10) {
+            return ones[intPart] + ' ريال';
+        } else if (intPart < 100) {
+            const ten = Math.floor(intPart / 10);
+            const one = intPart % 10;
+            return (ones[one] ? ones[one] + ' و ' : '') + tens[ten] + ' ريال';
+        } else if (intPart < 1000) {
+            const hundred = Math.floor(intPart / 100);
+            const remainder = intPart % 100;
+            let text = hundreds[hundred];
+            if (remainder > 0) {
+                const ten = Math.floor(remainder / 10);
+                const one = remainder % 10;
+                text += ' و ' + (ones[one] ? ones[one] + ' و ' : '') + tens[ten];
+            }
+            return text + ' ريال';
+        } else if (intPart < 10000) {
+            const thousands = Math.floor(intPart / 1000);
+            const remainder = intPart % 1000;
+            let text = ones[thousands] + ' آلاف';
+            if (remainder > 0) {
+                text += ' و ' + this.convertToArabicText(remainder).replace(' ريال', '');
+            }
+            return text + ' ريال';
+        }
+
+        return intPart.toString() + ' ريال';
     }
 }

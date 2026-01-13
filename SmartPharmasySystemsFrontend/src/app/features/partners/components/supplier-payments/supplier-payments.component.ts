@@ -99,15 +99,36 @@ export class SupplierPaymentsComponent implements OnInit {
 
     loadPayments() {
         this.loading.set(true);
+        console.log('DEBUG: Attempting to load payments...');
         this.supplierService.getPayments().subscribe({
             next: (res) => {
+                console.log('DEBUG: Payments loaded successfully', res);
                 this.payments.set(res);
                 this.loading.set(false);
             },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل السندات' });
+            error: (err) => {
+                console.error('DEBUG: Payment Load Error', err);
+                const status = err.status;
+                const msg = err.error?.message || err.message;
+
+                this.messageService.add({
+                    severity: 'error',
+                    summary: `خطأ في التحميل (${status})`,
+                    detail: `فشل الاتصال بالخادم: ${msg}`,
+                    life: 5000
+                });
                 this.loading.set(false);
             }
+        });
+    }
+
+    // Temporary Debug Method for User
+    debugApi() {
+        console.log('Starting Debug Check...');
+        // 1. Check Supplier Endpoint
+        this.supplierService.getPayments().subscribe({
+            next: () => this.messageService.add({ severity: 'success', summary: 'API OK', detail: 'GET /api/SupplierPayments works!' }),
+            error: (e) => this.messageService.add({ severity: 'error', summary: 'API FAIL', detail: `GET /api/SupplierPayments Status: ${e.status}` })
         });
     }
 
@@ -123,19 +144,7 @@ export class SupplierPaymentsComponent implements OnInit {
 
     // ... existing constructor ...
 
-    onSupplierSelect(event: any) {
-        this.selectedSupplier = event.value;
-        this.paymentForm.patchValue({ supplierId: this.selectedSupplier?.id });
 
-        // Reset Smart Logic
-        this.unpaidInvoices.set([]);
-        this.selectedInvoices = [];
-        this.paymentForm.patchValue({ amount: 0 });
-
-        if (this.selectedSupplier?.id) {
-            this.loadUnpaidInvoices(this.selectedSupplier.id);
-        }
-    }
 
     loadUnpaidInvoices(supplierId: number) {
         this.supplierService.getUnpaidInvoices(supplierId).subscribe({
@@ -170,38 +179,96 @@ export class SupplierPaymentsComponent implements OnInit {
         const amount = this.paymentForm.value.amount;
 
         // Check Vault Balance (Real-time Business Logic)
-        this.supplierService.checkVaultBalance(amount).subscribe(hasBalance => {
-            if (!hasBalance) {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'رصيد غير كافٍ',
-                    detail: 'رصيد الخزينة لا يسمح بإجراء هذا الصرف حالياً.'
-                });
-                return;
-            }
-
-            this.saving.set(true);
-            const dto: CreateSupplierPaymentDto = {
-                ...this.paymentForm.value,
-                notes: (this.paymentForm.value.notes || '') + (this.selectedInvoices.length ? ` - سداد فواتير: ${this.selectedInvoices.map(i => i.purchaseInvoiceNumber || i.id).join(', ')}` : ''),
-                supplierId: this.selectedSupplier?.id,
-                paymentDate: (this.paymentForm.value.paymentDate as Date).toISOString()
-            };
-
-            this.supplierService.createPayment(dto).subscribe({
-                next: () => {
-                    this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ سند الصرف بنجاح' });
-                    this.displayDialog.set(false);
-                    this.loadPayments();
-                    this.saving.set(false);
-                },
-                error: (err) => {
-                    const msg = err.error?.message || 'فشل الحفظ';
-                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: msg });
-                    this.saving.set(false);
+        // Resilience: If check fails (e.g. 404), we proceed and let Backend enforce rules.
+        this.supplierService.checkVaultBalance(amount).subscribe({
+            next: (hasBalance) => {
+                if (!hasBalance) {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'رصيد غير كافٍ',
+                        detail: 'رصيد الخزينة لا يسمح بإجراء هذا الصرف حالياً.'
+                    });
+                    return;
                 }
-            });
+                this.executeSave(amount);
+            },
+            error: (err) => {
+                console.warn('Vault balance check failed, proceeding to backend validation', err);
+                // Fallback: Proceed to save and let backend handle validation
+                this.executeSave(amount);
+            }
         });
+    }
+
+    private executeSave(amount: number) {
+        this.saving.set(true);
+
+        // Prepare Notes with selected invoices if any
+        let finalNotes = this.paymentForm.value.notes || '';
+        if (this.selectedInvoices.length > 0) {
+            const invRefs = this.selectedInvoices.map(i => `#${i.purchaseInvoiceNumber || i.id}`).join(', ');
+            finalNotes += ` [سداد فواتير: ${invRefs}]`;
+        }
+
+        const dto: CreateSupplierPaymentDto = {
+            supplierId: this.paymentForm.value.supplierId.id, // Extract ID from object
+            amount: amount,
+            paymentDate: (this.paymentForm.value.paymentDate as Date).toISOString(),
+            referenceNo: this.paymentForm.value.referenceNo,
+            notes: finalNotes
+        };
+
+        this.supplierService.createPayment(dto).subscribe({
+            next: (res) => {
+                this.messageService.add({ severity: 'success', summary: 'تم الحفظ', detail: 'تم إنشاء سند الصرف بنجاح' });
+                this.displayDialog.set(false);
+                this.loadPayments();
+                this.saving.set(false);
+
+                // Offer Print Immediately
+                this.confirmationService.confirm({
+                    header: 'تمت العملية بنجاح',
+                    message: 'تم حفظ السند. هل تريد الطباعة الآن؟',
+                    icon: 'pi pi-print',
+                    acceptLabel: 'طباعة السند',
+                    rejectLabel: 'إغلاق',
+                    acceptButtonStyleClass: 'p-button-primary',
+                    accept: () => {
+                        this.printPayment(res); // Pass the created payment object
+                    }
+                });
+            },
+            error: (err) => {
+                const msg = err.error?.message || 'فشل الحفظ';
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: msg });
+                this.saving.set(false);
+            }
+        });
+    }
+
+    printPayment(payment: any) {
+        // In a real app, this would open a print window or PDF
+        this.messageService.add({ severity: 'info', summary: 'طباعة', detail: `جاري تحضير الملف للطباعة... (Simulated)` });
+        console.log('Printing Voucher:', payment);
+    }
+
+    onSupplierSelect(event: any) {
+        this.selectedSupplier = event.value;
+        const supplierId = this.selectedSupplier?.id;
+
+        // Update Form
+        // We keep the detailed object in the form for autocomplete display, but access .id when saving
+        this.paymentForm.patchValue({ supplierId: this.selectedSupplier });
+
+        // Reset Smart Logic (but NOT amount if user already typed? Requirement says 'Link dynamic'. Probably should reset for new supplier)
+        this.unpaidInvoices.set([]);
+        this.selectedInvoices = [];
+
+        // Rule: Show Balance Immediately
+        // Rule: Fetch Unpaid Invoices Immediately
+        if (supplierId) {
+            this.loadUnpaidInvoices(supplierId);
+        }
     }
 
     cancelPayment(event: Event, payment: SupplierPayment) {

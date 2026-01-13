@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MedicineService } from '../../services/medicine.service';
+import { MedicineBatchService } from '../../services/medicine-batch.service';
 import { MedicineDto, MedicineBatchResponseDto } from '../../../../core/models';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -48,7 +49,8 @@ export class MedicineDetailsComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private medicineService: MedicineService
+        private medicineService: MedicineService,
+        private medicineBatchService: MedicineBatchService
     ) { }
 
     ngOnInit() {
@@ -68,22 +70,22 @@ export class MedicineDetailsComponent implements OnInit {
 
         // Fetch Medicine and Batches in parallel
         this.medicineService.getById(id).subscribe({
-            next: (data) => {
+            next: (data: MedicineDto) => {
                 this.medicine = data;
                 this.checkLoadComplete();
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Error loading medicine:', err);
                 this.loading = false;
             }
         });
 
-        this.medicineService.getFEFOBatches(id).subscribe({
-            next: (data) => {
+        this.medicineBatchService.getByMedicineId(id).subscribe({
+            next: (data: any[]) => {
                 this.batches = data;
                 this.checkLoadComplete();
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Error loading batches:', err);
             }
         });

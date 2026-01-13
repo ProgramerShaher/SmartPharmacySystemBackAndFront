@@ -8,6 +8,7 @@ public interface IFinancialService
 {
     // Account operations
     Task<PharmacyAccountDto> GetBalanceAsync();
+    Task<PharmacyAccountDto> GetAccountByIdAsync(int id);
 
     // Core transaction processing
     Task<FinancialTransactionDto> ProcessTransactionAsync(

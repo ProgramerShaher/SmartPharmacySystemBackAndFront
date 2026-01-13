@@ -68,6 +68,7 @@
     <!-- Premium Table -->
     <div class="glass-panel p-0 overflow-hidden shadow-2 border-round-2xl bg-white">
         <p-table [value]="receipts()" [loading]="loading()" [paginator]="true" [rows]="10"
+            [lazy]="true" (onLazyLoad)="loadReceipts($event)" [totalRecords]="totalRecords()"
             styleClass="p-datatable-striped p-datatable-sm" [rowsPerPageOptions]="[10, 25, 50]"
             currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} سند" [showCurrentPageReport]="true">
 
@@ -170,13 +171,41 @@
             </p-autoComplete>
         </div>
 
-        <!-- Selected Customer Balance Info -->
         <div class="col-12 mb-3" *ngIf="selectedCustomer">
             <div
-                class="flex justify-content-between align-items-center bg-gray-50 p-3 border-round-xl border-1 border-gray-200">
+                class="flex justify-content-between align-items-center bg-gray-50 p-3 border-round-xl border-1 border-gray-200 mb-3">
                 <span class="text-gray-500 text-sm font-bold">الرصيد الحالي (قبل السداد):</span>
                 <span class="text-red-600 font-bold text-lg">{{ selectedCustomer.balance | number }} ر.ي</span>
             </div>
+<!-- Smart Linking: Unpaid Invoices -->
+<div *ngIf="unpaidInvoices().length > 0" class="fadein animation-duration-300">
+    <label class="font-bold mb-2 block text-gray-700 text-xs">الفواتير غير المسددة (اضغط لسداد قيمة الفاتورة)</label>
+    <div class="surface-border border-1 border-round-xl overflow-hidden">
+        <p-table [value]="unpaidInvoices()" [rows]="3" [paginator]="unpaidInvoices().length > 3"
+            styleClass="p-datatable-sm p-datatable-gridlines" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr class="bg-gray-50 text-xs">
+                    <th class="p-2">رقم الفاتورة</th>
+                    <th class="p-2">التاريخ</th>
+                    <th class="p-2">المبلغ</th>
+                    <th class="p-2">الإجراء</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-inv>
+                <tr>
+                    <td class="p-2 text-center text-xs font-bold">{{inv.id}}</td>
+                    <td class="p-2 text-center text-xs text-gray-500">{{inv.invoiceDate | date:'yyyy/MM/dd'}}</td>
+                    <td class="p-2 text-center text-xs font-bold text-red-500">{{inv.totalAmount | number}}</td>
+                    <td class="p-2 text-center">
+                        <button pButton icon="pi pi-check" label="سداد"
+                            class="p-button-text p-button-success p-button-xs py-0 text-xs"
+                            (click)="receiptForm.patchValue({amount: inv.totalAmount, saleInvoiceId: inv.id, notes: 'سداد فاتورة رقم ' + inv.id}); $event.preventDefault()"></button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
         </div>
 
         <!-- Amount -->

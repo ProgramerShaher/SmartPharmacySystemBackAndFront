@@ -70,16 +70,16 @@ public class SupplierRepository : ISupplierRepository
     }
 
     /// <summary>
-    /// Optimized: AsNoTracking + StartsWith for indexed search
+    /// Optimized: AsNoTracking + StartsWith for indexed search + Data Projection
     /// </summary>
     public async Task<(IEnumerable<Supplier> Items, int TotalCount)> GetPagedAsync(
         string? search, int page, int pageSize, string sortBy, string sortDir, bool? hasBalance)
     {
         var query = _context.Suppliers
-            .AsNoTracking()
+            .AsNoTracking() // 1. Access Optimization
             .Where(s => !s.IsDeleted);
 
-        // ✅ Optimized: StartsWith for indexed search
+        // 2. Optimized Search
         if (!string.IsNullOrWhiteSpace(search))
         {
             query = query.Where(s =>
@@ -99,17 +99,32 @@ public class SupplierRepository : ISupplierRepository
         // Get total count before pagination
         var totalCount = await query.CountAsync();
 
-        // ✅ Explicit OrderBy with default
-        query = string.IsNullOrWhiteSpace(sortBy) || sortBy == "Name"
-            ? (sortDir?.ToLower() == "desc"
-                ? query.OrderByDescending(s => s.Name)
-                : query.OrderBy(s => s.Name))
-            : (sortDir?.ToLower() == "desc"
-                ? query.OrderByDescending(s => EF.Property<object>(s, sortBy))
-                : query.OrderBy(s => EF.Property<object>(s, sortBy)));
+        // 3. Sorting
+        // 3. Sorting
+        query = (sortBy?.ToLower(), sortDir?.ToLower()) switch
+        {
+            ("name", "desc") => query.OrderByDescending(s => s.Name),
+            ("name", _) => query.OrderBy(s => s.Name),
+            ("balance", "desc") => query.OrderByDescending(s => s.Balance),
+            ("balance", _) => query.OrderBy(s => s.Balance),
+            ("id", "desc") => query.OrderByDescending(s => s.Id),
+            ("id", _) => query.OrderBy(s => s.Id),
+            _ => query.OrderBy(s => s.Name)
+        };
 
-        // Apply pagination
+        // 4. Data Projection (Select only needed fields) & Pagination
+        // Note: We return Supplier entity here to match Interface, but EF will only select these columns from SQL
         var items = await query
+            .Select(s => new Supplier 
+            {
+                Id = s.Id,
+                Name = s.Name,
+                PhoneNumber = s.PhoneNumber,
+                Balance = s.Balance,
+                Address = s.Address,
+                CreatedAt = s.CreatedAt,
+                // Only fetch minimal required fields
+            })
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

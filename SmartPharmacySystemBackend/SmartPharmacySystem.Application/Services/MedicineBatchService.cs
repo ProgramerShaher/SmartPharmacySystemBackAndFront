@@ -862,6 +862,7 @@ public class MedicineBatchService(
             ExpiryDate = batch.ExpiryDate,
             EntryDate = batch.EntryDate,
             UnitPurchasePrice = batch.UnitPurchasePrice,
+            RetailPrice = batch.RetailPrice,
             // SalePrice = 0, // Removed
             StorageLocation = batch.StorageLocation,
             Status = batch.Status,

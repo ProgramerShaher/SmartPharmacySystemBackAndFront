@@ -27,14 +27,33 @@ export class SaleInvoiceService {
    * @param search نص البحث (اختياري)
    * @returns قائمة فواتير المبيعات
    */
-  getAll(search?: string): Observable<SaleInvoice[]> {
+  /**
+   * جلب جميع فواتير المبيعات مع إمكانية البحث والفلترة
+   * @param query خيارات البحث والفلتر
+   * @returns قائمة فواتير المبيعات
+   */
+  getAll(query?: any): Observable<SaleInvoice[]> {
     let params = new HttpParams();
-    if (search) {
-      params = params.set('search', search);
+
+    if (query) {
+      if (query.search) params = params.set('search', query.search);
+      if (query.page) params = params.set('page', query.page.toString());
+      if (query.pageSize) params = params.set('pageSize', query.pageSize.toString());
+      if (query.status) params = params.set('status', query.status.toString());
+      if (query.customerId) params = params.set('customerId', query.customerId.toString());
+      if (query.dateFrom) params = params.set('dateFrom', query.dateFrom);
+      if (query.dateTo) params = params.set('dateTo', query.dateTo);
+      if (query.paymentMethod) params = params.set('paymentMethod', query.paymentMethod.toString());
     }
 
-    return this.http.get<ApiResponse<SaleInvoice[]>>(this.baseUrl, { params }).pipe(
-      map(response => response.data || []),
+    return this.http.get<ApiResponse<any>>(this.baseUrl, { params }).pipe(
+      map(response => {
+        const data = response.data;
+        if (data && Array.isArray(data.items)) {
+          return data.items;
+        }
+        return Array.isArray(data) ? data : [];
+      }),
       catchError(this.handleError)
     );
   }

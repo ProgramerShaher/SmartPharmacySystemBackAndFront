@@ -1,6 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TableModule, Table } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -8,19 +8,18 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
-import { SidebarModule } from 'primeng/sidebar';
-import { MenuModule } from 'primeng/menu';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationService, MessageService, LazyLoadEvent } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
-import { MedicineService } from '../../services/medicine.service';
-import { MedicineDto, MedicineQueryDto, MedicineBatchResponseDto } from '../../../../core/models';
-import { Subject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { ToastModule } from "primeng/toast";
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
+import { MedicineService } from '../../services/medicine.service';
+import { Medicine, MedicineQueryDto } from '../../../../core/models/medicine.interface';
 import { MedicineAddEditComponent } from '../medicine-add-edit/medicine-add-edit.component';
+import { BatchAddEditComponent } from '../batch-add-edit/batch-add-edit.component';
 
 @Component({
     selector: 'app-medicine-list',
@@ -35,47 +34,44 @@ import { MedicineAddEditComponent } from '../medicine-add-edit/medicine-add-edit
         DropdownModule,
         TagModule,
         ToolbarModule,
-        SidebarModule,
-        MenuModule,
         TooltipModule,
         ConfirmDialogModule,
         DialogModule,
         ToastModule,
-        MedicineAddEditComponent
+        MedicineAddEditComponent,
+        BatchAddEditComponent
     ],
     templateUrl: './medicine-list.component.html',
     styleUrls: ['./medicine-list.component.scss'],
     providers: [MessageService, ConfirmationService]
 })
 export class MedicineListComponent implements OnInit {
-    // Data
-    medicines: MedicineDto[] = [];
-    selectedMedicine: MedicineDto | null = null;
-    fefoBatches: MedicineBatchResponseDto[] = [];
-
-    // Pagination & Loading
-    totalRecords = 0;
-    loading = true;
-    pageSize = 10;
-
-    // Search
-    private searchSubject = new Subject<string>();
-    searchTerm = '';
+    // Signals & State
+    medicines = signal<Medicine[]>([]);
+    totalRecords = signal(0);
+    loading = signal(true);
 
     // Filters
-    categoryId: number | undefined;
-    manufacturer: string | undefined;
-    status: string | undefined;
+    searchTerm = signal('');
+    categoryId = signal<number | undefined>(undefined);
+    status = signal<string | undefined>(undefined);
 
     // UI State
-    showSidebar = false; // For Add/Edit
-    isEditMode = false;
+    showMedicineDialog = signal(false);
+    showBatchDialog = signal(false);
+
+    selectedMedicine: Medicine | null = null;
+    selectedMedicineIdForBatch = 0;
+    selectedMedicineNameForBatch = '';
 
     statusOptions = [
         { label: 'الكل', value: null },
         { label: 'نشط', value: 'Active' },
         { label: 'غير نشط', value: 'Inactive' }
     ];
+
+    private searchSubject = new Subject<string>();
+    private lastLazyEvent: any = { first: 0, rows: 10 };
 
     constructor(
         private medicineService: MedicineService,
@@ -90,107 +86,76 @@ export class MedicineListComponent implements OnInit {
             debounceTime(500),
             distinctUntilChanged()
         ).subscribe(term => {
-            this.searchTerm = term;
-            this.loadMedicines({ first: 0, rows: this.pageSize });
+            this.searchTerm.set(term);
+            this.loadMedicines(this.lastLazyEvent);
         });
     }
 
-    /**
-     * Load medicines with server-side pagination
-     */
+    onSearch(value: string) {
+        this.searchSubject.next(value);
+    }
+
     loadMedicines(event: any) {
-        this.loading = true;
+        this.loading.set(true);
+        this.lastLazyEvent = event;
+
         const page = (event.first / event.rows) + 1;
         const pageSize = event.rows;
-
-        // Sorting
         const sortBy = event.sortField;
         const sortDescending = event.sortOrder === -1;
 
         const query: MedicineQueryDto = {
             page,
             pageSize,
-            search: this.searchTerm,
-            categoryId: this.categoryId,
-            manufacturer: this.manufacturer,
-            status: this.status,
+            search: this.searchTerm(),
+            categoryId: this.categoryId(),
+            status: this.status(),
             sortBy,
             sortDescending
         };
 
-        this.medicineService.search(query).subscribe({
+        this.medicineService.getAll(query).subscribe({
             next: (result) => {
-                this.medicines = result.items;
-                this.totalRecords = result.totalCount;
-                this.loading = false;
+                this.medicines.set(result.items);
+                this.totalRecords.set(result.totalCount);
+                this.loading.set(false);
             },
             error: (err) => {
+                this.loading.set(false);
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل الأدوية' });
-                this.loading = false;
             }
         });
     }
 
-    /**
-     * Trigger search
-     */
-    onSearch(value: string) {
-        this.searchSubject.next(value);
-    }
+    // --- Medicines Actions ---
 
-    /**
-     * View details (Navigate to separate page)
-     */
-    viewDetails(medicine: MedicineDto) {
-        this.router.navigate(['/inventory/medicines/details', medicine.id]);
-    }
-
-    /* 
-    // Legacy Side Panel Logic - Removed as per user request
-    loadBatches(id: number) { ... }
-    */
-
-    loadBatches(id: number) {
-        this.medicineService.getFEFOBatches(id).subscribe({
-            next: (batches) => {
-                this.fefoBatches = batches;
-            },
-            error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل الدفعات' });
-            }
-        });
-    }
-
-    /**
-     * Add/Edit Actions
-     */
-    addMedicine() {
+    openAddMedicine() {
         this.selectedMedicine = null;
-        this.isEditMode = false;
-        this.showSidebar = true;
+        this.showMedicineDialog.set(true);
     }
 
-    editMedicine(medicine: MedicineDto) {
+    editMedicine(medicine: Medicine) {
         this.selectedMedicine = medicine;
-        this.isEditMode = true;
-        this.showSidebar = true;
+        this.showMedicineDialog.set(true);
     }
 
-    onFormSave() {
-        this.showSidebar = false;
-        this.loadMedicines({ first: 0, rows: this.pageSize });
+    onMedicineSaved() {
+        this.loadMedicines(this.lastLazyEvent);
     }
 
-    deleteMedicine(medicine: MedicineDto) {
+    deleteMedicine(medicine: Medicine) {
         this.confirmationService.confirm({
             message: `هل أنت متأكد من حذف ${medicine.name}؟`,
             header: 'تأكيد الحذف',
             icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'نعم، احذف',
+            rejectLabel: 'إلغاء',
+            acceptButtonStyleClass: 'p-button-danger',
             accept: () => {
                 this.medicineService.delete(medicine.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حذف الدواء بنجاح' });
-                        this.loadMedicines({ first: 0, rows: this.pageSize });
+                        this.loadMedicines(this.lastLazyEvent);
                     },
                     error: (err) => {
                         this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'لا يمكن حذف الدواء لارتباطه بسجلات أخرى' });
@@ -200,16 +165,27 @@ export class MedicineListComponent implements OnInit {
         });
     }
 
-    /**
-     * UI Helpers
-     */
-    getStatusSeverity(status: string): 'success' | 'danger' | 'warning' {
-        return status === 'Active' ? 'success' : 'danger';
+    // --- Batch Actions (Inventory Setup) ---
+
+    openAddBatch(medicine: Medicine) {
+        this.selectedMedicineIdForBatch = medicine.id;
+        this.selectedMedicineNameForBatch = medicine.name;
+        this.showBatchDialog.set(true);
     }
 
-    getBatchExpirySeverity(batch: MedicineBatchResponseDto): 'success' | 'warning' | 'danger' {
-        if (batch.isExpired) return 'danger';
-        if (batch.isExpiringSoon) return 'warning';
-        return 'success';
+    onBatchSaved() {
+        // Maybe refresh list to show updated stock if backend updates it?
+        // Or just show success. 
+        // Ideally, reloading medicines might update the 'Stock' or 'TotalQuantity' column if computed by backend.
+        this.loadMedicines(this.lastLazyEvent);
+    }
+
+    // --- View Details ---
+    viewDetails(medicine: Medicine) {
+        this.router.navigate(['/inventory/medicines/details', medicine.id]);
+    }
+
+    getStatusSeverity(status: string): 'success' | 'danger' | 'warning' | 'info' {
+        return status === 'Active' ? 'success' : 'danger';
     }
 }

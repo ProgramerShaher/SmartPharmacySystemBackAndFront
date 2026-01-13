@@ -11,6 +11,7 @@ public interface ISaleInvoiceRepository
     Task<SaleInvoice> GetByIdAsync(int id);
     Task<IEnumerable<SaleInvoice>> GetAllAsync();
     Task AddAsync(SaleInvoice entity);
+    Task<IEnumerable<SaleInvoice>> GetUnpaidByCustomerIdAsync(int customerId);
     Task UpdateAsync(SaleInvoice entity);
     Task DeleteAsync(int id);
     Task SoftDeleteAsync(int id);

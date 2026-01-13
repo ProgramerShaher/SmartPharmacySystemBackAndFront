@@ -104,12 +104,18 @@ builder.Services.AddScoped<IBarcodeResolverService, BarcodeResolverService>();
 builder.Services.AddScoped<ISupplierPaymentService, SupplierPaymentService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerReceiptService, CustomerReceiptService>();
+builder.Services.AddScoped<IReportService, ReportService>(); // Central Reporting Engine
+builder.Services.AddScoped<IMasterDashboardService, MasterDashboardService>(); // Master Dashboard - Single Source of Truth
 
 // -------------------- HttpContextAccessor --------------------
 builder.Services.AddHttpContextAccessor();
 
 // -------------------- Controllers --------------------
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<ExpiryCheckWorker>();
 

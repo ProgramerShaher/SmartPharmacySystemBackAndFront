@@ -86,6 +86,13 @@ public class MedicineBatchResponseDto
     public decimal UnitPurchasePrice { get; set; }
 
     /// <summary>
+    /// Suggested retail/sale price for this batch.
+    /// سعر البيع/التجزئة المقترح لهذه الدفعة.
+    /// </summary>
+    /// <example>15.00</example>
+    public decimal RetailPrice { get; set; }
+
+    /// <summary>
     /// Storage location within the pharmacy.
     /// موقع التخزين داخل الصيدلية.
     /// </summary>

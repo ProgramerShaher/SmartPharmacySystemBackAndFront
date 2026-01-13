@@ -15,6 +15,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
+        // Increase timeout for heavy queries
+        this.Database.SetCommandTimeout(60);
     }
 
     // DbSets for all entities

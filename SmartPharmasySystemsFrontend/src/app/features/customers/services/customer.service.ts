@@ -47,6 +47,14 @@ export class CustomerService {
     }
 
     /**
+     * Get customer statistics (Total Debt, Counts, Distribution)
+     */
+    getStatistics(): Observable<import('../../../core/models/customer.models').CustomerStatistics> {
+        return this.http.get<ApiResponse<import('../../../core/models/customer.models').CustomerStatistics>>(`${this.apiUrl}/stats`)
+            .pipe(map(res => res.data));
+    }
+
+    /**
      * Get customer by ID
      */
     getById(id: number): Observable<Customer> {
@@ -99,13 +107,18 @@ export class CustomerService {
     }
 
     /**
-     * Get all receipts
+     * Get all receipts (Paged)
      */
-    getAllReceipts(customerId?: number): Observable<CustomerReceipt[]> {
-        let params = new HttpParams();
-        if (customerId) params = params.set('customerId', customerId.toString());
+    getAllReceipts(query: { page: number; pageSize: number; search?: string }): Observable<PagedResult<CustomerReceipt>> {
+        let params = new HttpParams()
+            .set('page', query.page.toString())
+            .set('pageSize', query.pageSize.toString());
 
-        return this.http.get<ApiResponse<CustomerReceipt[]>>(`${this.receiptsUrl}`, { params })
+        if (query.search) {
+            params = params.set('search', query.search);
+        }
+
+        return this.http.get<ApiResponse<PagedResult<CustomerReceipt>>>(`${this.receiptsUrl}`, { params })
             .pipe(map(res => res.data));
     }
 
@@ -114,6 +127,14 @@ export class CustomerService {
      */
     getReceiptById(id: number): Observable<CustomerReceipt> {
         return this.http.get<ApiResponse<CustomerReceipt>>(`${this.receiptsUrl}/${id}`)
+            .pipe(map(res => res.data));
+    }
+
+    /**
+     * Get Global Receipt Statistics
+     */
+    getReceiptStatistics(): Observable<{ totalReceipts: number; totalAmount: number; todayAmount: number }> {
+        return this.http.get<ApiResponse<{ totalReceipts: number; totalAmount: number; todayAmount: number }>>(`${this.receiptsUrl}/stats`)
             .pipe(map(res => res.data));
     }
 
@@ -140,6 +161,14 @@ export class CustomerService {
                 map(res => res.data),
                 tap(() => this.refreshCustomersWithDebt())
             );
+    }
+
+    /**
+     * Get unpaid invoices for a customer
+     */
+    getUnpaidInvoices(customerId: number): Observable<any[]> {
+        return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/SalesInvoices/unpaid/${customerId}`)
+            .pipe(map(res => res.data));
     }
 
     /**

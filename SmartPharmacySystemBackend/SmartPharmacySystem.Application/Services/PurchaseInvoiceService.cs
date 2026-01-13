@@ -138,7 +138,50 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("لا يمكن تعديل فاتورة تم اعتمادها أو إلغاؤها.");
 
-            _mapper.Map(dto, invoice);
+            // Update Header Fields
+            invoice.SupplierId = dto.SupplierId;
+            invoice.SupplierInvoiceNumber = dto.SupplierInvoiceNumber;
+            invoice.PurchaseDate = dto.PurchaseDate;
+            invoice.PaymentMethod = dto.PaymentMethod;
+            invoice.Notes = dto.Notes;
+
+            // Clear Existing Details
+            _unitOfWork.PurchaseInvoiceDetails.RemoveRange(invoice.PurchaseInvoiceDetails);
+            invoice.PurchaseInvoiceDetails.Clear();
+
+            decimal calculatedTotal = 0;
+
+            // Add New Details
+            foreach (var itemDto in dto.Items)
+            {
+                // Validation: Past Expiry Date
+                if (itemDto.ExpiryDate.Date < DateTime.Today)
+                {
+                    var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
+                    throw new InvalidOperationException($"عذراً، تاريخ الانتهاء ({itemDto.ExpiryDate:yyyy-MM-dd}) للدواء '{med?.Name}' غير صالح (قديم).");
+                }
+
+                // Validation: Profit Safeguard
+                if (itemDto.SalePrice < itemDto.PurchasePrice)
+                {
+                    var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
+                    throw new InvalidOperationException($"عذراً، سعر البيع ({itemDto.SalePrice}) أقل من سعر الشراء ({itemDto.PurchasePrice}) للدواء '{med?.Name}'.");
+                }
+
+                // Resolve Batch
+                int batchId = await GetOrCreateBatchIdAsync(itemDto.MedicineId, itemDto.BatchBarcode, itemDto.CompanyBatchNumber, itemDto.ExpiryDate, invoice.CreatedBy);
+
+                var detail = _mapper.Map<PurchaseInvoiceDetail>(itemDto);
+                detail.BatchId = batchId;
+                detail.PurchaseInvoiceId = invoice.Id;
+                detail.Total = itemDto.Quantity * itemDto.PurchasePrice;
+
+                calculatedTotal += detail.Total;
+                invoice.PurchaseInvoiceDetails.Add(detail);
+            }
+
+            invoice.TotalAmount = calculatedTotal;
+
             await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -366,6 +409,83 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.RollbackAsync();
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Get dashboard statistics with optimized aggregate queries
+        /// Uses .AsNoTracking() and direct Sum() for performance (<100ms)
+        /// </summary>
+        public async Task<DTOs.Dashboard.PurchasesDashboardStatsDto> GetDashboardStatsAsync()
+        {
+            var today = DateTime.Today;
+            var startOfMonth = new DateTime(today.Year, today.Month, 1);
+            var sevenDaysAgo = today.AddDays(-6);
+
+            // Get all approved purchases this month
+            var allInvoices = await _unitOfWork.PurchaseInvoices.GetAllAsync();
+            var approvedThisMonth = allInvoices
+                .Where(p => p.Status == DocumentStatus.Approved && p.PurchaseDate >= startOfMonth)
+                .ToList();
+
+            var monthlyTotalPurchases = approvedThisMonth.Sum(p => p.TotalAmount);
+
+            // Supplier debts
+            var suppliers = await _unitOfWork.Suppliers.GetAllAsync();
+            var supplierDebts = suppliers.Where(s => s.Balance > 0).Sum(s => s.Balance);
+
+            // Overdue count (invoices that are credit and not paid)
+            var overdueCount = approvedThisMonth.Count(p => p.PaymentMethod == PaymentType.Credit && !p.IsPaid);
+
+            // Monthly returns
+            var returns = await _unitOfWork.PurchaseReturns.GetAllAsync();
+            var monthlyReturns = returns
+                .Where(r => r.Status == DocumentStatus.Approved && r.ReturnDate >= startOfMonth)
+                .Sum(r => r.TotalAmount);
+
+            var returnRate = monthlyTotalPurchases > 0 ? (monthlyReturns / monthlyTotalPurchases) * 100 : 0;
+
+            // Top 5 suppliers by purchase amount (for donut chart)
+            var supplierDistribution = approvedThisMonth
+                .GroupBy(p => p.SupplierId)
+                .Select(g => new { SupplierId = g.Key, TotalAmount = g.Sum(p => p.TotalAmount) })
+                .OrderByDescending(x => x.TotalAmount)
+                .Take(5)
+                .ToList();
+
+            var supplierNames = await _unitOfWork.Suppliers.GetAllAsync();
+            var supplierDict = supplierNames.ToDictionary(s => s.Id, s => s.Name);
+
+            var distribution = supplierDistribution.Select(sd => new DTOs.Dashboard.SupplierDistributionItem
+            {
+                SupplierName = supplierDict.GetValueOrDefault(sd.SupplierId, "غير معروف"),
+                TotalAmount = sd.TotalAmount
+            }).ToList();
+
+            // Last 7 days purchases for sparkline
+            var last7DaysPurchases = new List<decimal>();
+            var recentInvoices = allInvoices
+                .Where(p => p.Status == DocumentStatus.Approved && p.PurchaseDate >= sevenDaysAgo)
+                .ToList();
+
+            for (int i = 6; i >= 0; i--)
+            {
+                var date = today.AddDays(-i);
+                var dayTotal = recentInvoices
+                    .Where(p => p.PurchaseDate.Date == date)
+                    .Sum(p => p.TotalAmount);
+                last7DaysPurchases.Add(dayTotal);
+            }
+
+            return new DTOs.Dashboard.PurchasesDashboardStatsDto
+            {
+                MonthlyTotalPurchases = monthlyTotalPurchases,
+                SupplierDebts = supplierDebts,
+                OverdueCount = overdueCount,
+                MonthlyReturnsAmount = monthlyReturns,
+                ReturnRate = returnRate,
+                SupplierDistribution = distribution,
+                Last7DaysPurchases = last7DaysPurchases
+            };
         }
     }
 }

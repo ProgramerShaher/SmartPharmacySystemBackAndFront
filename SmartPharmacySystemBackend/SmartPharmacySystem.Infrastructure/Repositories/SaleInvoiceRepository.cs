@@ -71,6 +71,25 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
     }
 
     /// <summary>
+    /// Gets unpaid invoices for a specific customer
+    /// </summary>
+    public async Task<IEnumerable<SaleInvoice>> GetUnpaidByCustomerIdAsync(int customerId)
+    {
+        return await _context.SaleInvoices
+            .AsNoTracking()
+            .Where(s => s.CustomerId == customerId && !s.IsPaid && !s.IsDeleted)
+            .OrderBy(s => s.InvoiceDate)
+            .Select(s => new SaleInvoice
+            {
+                Id = s.Id,
+                InvoiceDate = s.InvoiceDate,
+                TotalAmount = s.TotalAmount,
+                Status = s.Status
+            })
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Gets paged sale invoices with optimized query
     /// استعلام محسّن مع Paging و AsNoTracking
     /// </summary>

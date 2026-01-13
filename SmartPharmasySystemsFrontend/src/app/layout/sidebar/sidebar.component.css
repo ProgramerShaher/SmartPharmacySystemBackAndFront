@@ -324,6 +324,34 @@
     color: #fff;
 }
 
+/* Master Dashboard - Special Styling */
+.item-icon.icon-master-dashboard {
+    background: linear-gradient(135deg, #f59e0b, #f97316, #ef4444);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.master-dashboard-item {
+    position: relative;
+}
+
+.master-dashboard-item .new-badge {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.15rem 0.5rem;
+    border-radius: 99px;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    animation: pulse-badge 2s infinite;
+    position: relative;
+    z-index: 1;
+    margin-right: 0.5rem;
+}
+
+.master-dashboard-item:hover .new-badge {
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
+}
 .menu-item .item-label {
     font-size: 0.9rem;
     font-weight: 600;

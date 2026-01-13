@@ -50,7 +50,7 @@ export class CustomerAddEditComponent implements OnInit, OnChanges {
   ) {
     this.customerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
-      phone: ['', [Validators.required]],
+      phoneNumber: ['', [Validators.required]],
       email: ['', [Validators.email]],
       address: [''],
       creditLimit: [0],
@@ -107,7 +107,8 @@ export class CustomerAddEditComponent implements OnInit, OnChanges {
     const customerData = this.customerForm.value;
 
     if (this.isEditMode()) {
-      this.customerService.update(this.customerId!, customerData).subscribe({
+      const updateData = { ...customerData, id: this.customerId };
+      this.customerService.update(this.customerId!, updateData).subscribe({
         next: () => {
           this.handleSuccess('تم تحديث بيانات العميل بنجاح');
           this.onSave.emit();

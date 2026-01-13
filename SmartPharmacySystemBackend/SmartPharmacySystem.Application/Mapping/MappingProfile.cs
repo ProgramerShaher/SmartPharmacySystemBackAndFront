@@ -45,7 +45,7 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<UpdateSupplierDto, Supplier>();
             CreateMap<Supplier, SupplierDto>()
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Balance == 0 ? "خالص" : "مديونية"))
-                .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src => src.Balance == 0 ? "#28a745" : "#fd7e14"))
+                .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src => src.Balance == 0 ? "success" : "#fd7e14"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src => src.Balance == 0 ? "fas fa-check" : "fas fa-hand-holding-usd"))
                 .ReverseMap();
 
@@ -113,7 +113,7 @@ namespace SmartPharmacySystem.Application.Mapping
                     (src.ExpiryDate - DateTime.Now).TotalDays <= 30 ? "قريب الانتهاء" : "صالح"))
                 .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src =>
                     (src.ExpiryDate - DateTime.Now).TotalDays <= 7 ? "#8B0000" :
-                    (src.ExpiryDate - DateTime.Now).TotalDays <= 30 ? "#ffc107" : "#28a745"))
+                    (src.ExpiryDate - DateTime.Now).TotalDays <= 30 ? "#ffc107" : "success"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src =>
                     (src.ExpiryDate - DateTime.Now).TotalDays <= 7 ? "fas fa-exclamation-triangle" :
                     (src.ExpiryDate - DateTime.Now).TotalDays <= 30 ? "fas fa-exclamation-circle" : "fas fa-check"));
@@ -139,7 +139,7 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<UpdatePurchaseInvoiceDto, PurchaseInvoice>();
             CreateMap<PurchaseInvoice, PurchaseInvoiceDto>()
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : string.Empty))
-                .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.PurchaseInvoiceDetails != null ? src.PurchaseInvoiceDetails.Sum(d => d.Quantity * d.PurchasePrice) : 0))
+                .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.PurchaseInvoiceDetails)) // Map Items List
                 .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.FullName : string.Empty))
                 .ForMember(dest => dest.ApprovedByName, opt => opt.MapFrom(src => src.Approver != null ? src.Approver.FullName : null))
@@ -147,16 +147,16 @@ namespace SmartPharmacySystem.Application.Mapping
                 // Status Tracking
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "مسودة" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "مكتمل" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغى" : src.Status.ToString()))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "معتمدة" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغاة" : src.Status.ToString()))
                 .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "#6c757d" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "#28a745" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "#dc3545" : "#007bff"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "warning" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "success" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "danger" : "info"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "fas fa-file-edit" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "fas fa-check-circle" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "fas fa-times-circle" : "fas fa-info-circle"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "pi pi-pencil" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "pi pi-check" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "pi pi-times" : "pi pi-info-circle"))
                 // Action Tracking
                 .ForMember(dest => dest.ActionByName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? (src.Canceller != null ? src.Canceller.FullName : "System") :
@@ -211,16 +211,16 @@ namespace SmartPharmacySystem.Application.Mapping
                 // Status Tracking
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "مسودة" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "مكتمل" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغى" : src.Status.ToString()))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "معتمدة" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغاة" : src.Status.ToString()))
                 .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "#6c757d" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "#28a745" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "#dc3545" : "#007bff"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "warning" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "success" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "danger" : "info"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "fas fa-file-edit" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "fas fa-check-circle" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "fas fa-times-circle" : "fas fa-info-circle"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "pi pi-pencil" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "pi pi-check" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "pi pi-times" : "pi pi-info-circle"))
                 // Action Tracking
                 .ForMember(dest => dest.ActionByName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? (src.Canceller != null ? src.Canceller.FullName : "System") :
@@ -287,7 +287,7 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<PurchaseReturn, PurchaseReturnDto>()
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : string.Empty))
                 .ForMember(dest => dest.PurchaseInvoiceNumber, opt => opt.MapFrom(src => src.PurchaseInvoice != null ? src.PurchaseInvoice.SupplierInvoiceNumber : string.Empty))
-                .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.PurchaseReturnDetails != null ? src.PurchaseReturnDetails.Sum(d => d.Quantity * d.PurchasePrice) : 0))
+                .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.PurchaseReturnDetails)) // Map Items List
                 .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.FullName : string.Empty))
                 .ForMember(dest => dest.ApprovedByName, opt => opt.MapFrom(src => src.Approver != null ? src.Approver.FullName : null))
@@ -295,16 +295,16 @@ namespace SmartPharmacySystem.Application.Mapping
                 // Status Tracking
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "مسودة" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "مكتمل" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغى" : src.Status.ToString()))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "معتمدة" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغاة" : src.Status.ToString()))
                 .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "#6c757d" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "#28a745" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "#dc3545" : "#007bff"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "warning" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "success" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "danger" : "info"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "fas fa-file-edit" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "fas fa-check-circle" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "fas fa-times-circle" : "fas fa-info-circle"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "pi pi-pencil" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "pi pi-check" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "pi pi-times" : "pi pi-info-circle"))
                 // Action Tracking
                 .ForMember(dest => dest.ActionByName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? (src.Canceller != null ? src.Canceller.FullName : "System") :
@@ -360,16 +360,16 @@ namespace SmartPharmacySystem.Application.Mapping
                 // Status Tracking
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "مسودة" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "مكتمل" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغى" : src.Status.ToString()))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "معتمدة" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "ملغاة" : src.Status.ToString()))
                 .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "#6c757d" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "#28a745" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "#dc3545" : "#007bff"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "warning" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "success" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "danger" : "info"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src =>
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "fas fa-file-edit" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "fas fa-check-circle" :
-                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "fas fa-times-circle" : "fas fa-info-circle"))
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Draft ? "pi pi-pencil" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Approved ? "pi pi-check" :
+                    src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? "pi pi-times" : "pi pi-info-circle"))
                 // Action Tracking
                 .ForMember(dest => dest.ActionByName, opt => opt.MapFrom(src =>
                     src.Status == SmartPharmacySystem.Core.Enums.DocumentStatus.Cancelled ? (src.Canceller != null ? src.Canceller.FullName : "System") :

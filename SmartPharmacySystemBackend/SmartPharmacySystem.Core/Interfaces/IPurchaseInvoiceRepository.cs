@@ -24,4 +24,5 @@ public interface IPurchaseInvoiceRepository
     /// <param name="id">The purchase invoice ID</param>
     /// <returns>The purchase invoice with all related entities, or null if not found</returns>
     Task<PurchaseInvoice?> GetByIdWithFullDetailsAsync(int id);
+    Task<IEnumerable<PurchaseInvoice>> GetBySupplierIdAsync(int supplierId);
 }

@@ -15,9 +15,12 @@
                     </p>
                 </div>
             </div>
-            <p-button label="إنشاء سند صرف جديد" icon="pi pi-plus" (onClick)="openNew()"
-                styleClass="p-button-raised p-button-rounded premium-payment-btn h-3rem px-5 shadow-6">
-            </p-button>
+            <div class="flex gap-2">
+                <button pButton label="إنشاء سند صرف جديد" icon="pi pi-plus" (onClick)="openNew()"
+                    class="p-button-raised p-button-rounded premium-payment-btn h-3rem px-5 shadow-6"></button>
+                <button pButton label="فحص الاتصال" icon="pi pi-cog" (click)="debugApi()"
+                    class="p-button-warning p-button-outlined p-button-rounded h-3rem px-5 shadow-6"></button>
+            </div>
         </div>
     </div>
 
@@ -101,112 +104,100 @@
     </div>
 </div>
 
-<!-- Premium Creation Dialog -->
-<p-dialog [(visible)]="displayDialog" [header]="'إنشاء سند صرف مالي جديد'" [modal]="true" [style]="{width: '550px'}"
-    styleClass="premium-payment-dialog" [draggable]="false" [breakpoints]="{'960px': '95vw'}">
+<!-- Compact & Official Creation Dialog -->
+<p-dialog [(visible)]="displayDialog" [header]="'سند صرف مالي جديد'" [modal]="true" [style]="{width: '600px'}"
+    styleClass="compact-payment-dialog" [draggable]="false" [resizable]="false" [maximizable]="false"
+    [appendTo]="'body'">
 
-    <div class="dialog-header-accent"></div>
-
-    <form [formGroup]="paymentForm" class="p-fluid grid mt-4 p-2">
-        <div class="field col-12 mb-4">
-            <label class="font-bold flex align-items-center gap-2 mb-2 text-900">
-                <i class="pi pi-user text-indigo-500"></i> اختيار المورد المستفيد
-            </label>
-            <p-autoComplete formControlName="supplierId" [suggestions]="filteredSuppliers"
-                (completeMethod)="searchSuppliers($event)" field="name" (onSelect)="onSupplierSelect($event)"
-                placeholder="ابحث باسم المورد هنا..."
-                inputStyleClass="h-3rem border-round-xl shadow-2 border-primary-50">
-                <ng-template let-supplier pTemplate="item">
-                    <div class="flex justify-content-between align-items-center w-full p-1">
-                        <div class="flex align-items-center gap-2">
-                            <div class="avatar-tiny" [style.background]="getRandomColor(supplier.name)">{{
-                                supplier.name?.charAt(0) }}</div>
-                            <span class="font-bold text-800">{{ supplier.name }}</span>
-                        </div>
-                        <span class="text-red-500 font-black px-2 py-1 bg-red-50 border-round-lg">{{ supplier.balance |
-                            number }} ر.ي</span>
-                    </div>
-                </ng-template>
-            </p-autoComplete>
-        </div>
-
-        <div class="col-12 animate-fade-in" *ngIf="selectedSupplier">
-            <div
-                class="balance-notification bg-blue-50 p-3 border-round-2xl border-1 border-blue-100 flex justify-content-between align-items-center mb-4">
-                <div class="flex align-items-center gap-2">
-                    <i class="pi pi-info-circle text-blue-600 text-xl"></i>
-                    <span class="text-blue-800 font-bold">الرصيد المستحق للمورد:</span>
+    <form [formGroup]="paymentForm" class="p-fluid grid mt-2" *ngIf="displayDialog()">
+        <!-- Supplier & Balance Row -->
+        <div class="field col-12 mb-3">
+            <label class="font-bold block mb-2 text-800 text-sm">المورد المستفيد <span class="text-red-500">*</span></label>
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <p-autoComplete formControlName="supplierId" [suggestions]="filteredSuppliers"
+                        (completeMethod)="searchSuppliers($event)" field="name" (onSelect)="onSupplierSelect($event)"
+                        placeholder="ابحث واختر المورد..." [dropdown]="true" [forceSelection]="true"
+                        inputStyleClass="w-full text-sm" [appendTo]="'body'">
+                         <ng-template let-supplier pTemplate="item">
+                            <div class="flex justify-content-between align-items-center w-full text-sm">
+                                <span>{{ supplier.name }}</span>
+                                <span class="font-bold" [class.text-red-500]="supplier.Balance > 0">{{ supplier.Balance | number }}</span>
+                            </div>
+                            </ng-template>
+                            </p-autoComplete>
+                            </div>
+                <!-- Dynamic Balance Badge (Instant Visibility) -->
+                <div *ngIf="selectedSupplier"
+                    class="w-auto flex flex-column justify-content-center px-3 bg-red-50 border-round border-1 border-red-100 min-w-8rem text-center animate-fade-in">
+                    <span class="text-xs text-red-600 font-bold mb-1">الرصيد المستحق</span>
+                    <span class="text-lg font-black text-red-700">{{ selectedSupplier.Balance | number }}</span>
                 </div>
-                <div class="text-blue-700 font-black text-2xl">{{ selectedSupplier.balance | number }} <small
-                        class="text-sm">ر.ي</small></div>
+            </div>
             </div>
 
-            <!-- Invoices Table in Dialog -->
-            <div class="field mb-4" *ngIf="unpaidInvoices().length > 0">
-                <label class="block font-bold mb-2 text-700">تسوية فواتير محددة (اختياري)</label>
+        <!-- Smart Logic: Unpaid Invoices Table (Compact) -->
+        <div class="col-12 mb-3 animate-fade-in" *ngIf="unpaidInvoices().length > 0">
+            <div class="surface-card border-1 border-200 border-round p-0 overflow-hidden">
                 <div
-                    class="invoice-selection-list glass-morphism border-round-2xl overflow-hidden border-1 border-primary-50">
-                    <p-table [value]="unpaidInvoices()" [(selection)]="selectedInvoices"
-                        (selectionChange)="onInvoiceSelectionChange($event)" dataKey="id" [scrollable]="true"
-                        scrollHeight="180px" styleClass="p-datatable-sm">
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 3rem" class="bg-gray-50">
-                                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
-                                <th class="bg-gray-50 text-xs font-bold">رقم الفاتورة</th>
-                                <th class="bg-gray-50 text-xs font-bold">المبلغ</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-inv>
-                            <tr [class.bg-blue-50]="selectedInvoices && selectedInvoices.includes(inv)">
-                                <td><p-tableCheckbox [value]="inv"></p-tableCheckbox></td>
-                                <td class="font-bold font-mono text-700">#{{ inv.purchaseInvoiceNumber || inv.id }}</td>
-                                <td class="font-black text-blue-700">{{ inv.totalAmount | number }}</td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
+                    class="bg-gray-50 p-2 text-xs font-bold text-700 border-bottom-1 border-200 flex justify-content-between align-items-center">
+                    <span>فواتير معلقة (حدد للسداد الآلي)</span>
+                    <span class="text-primary">{{ selectedInvoices.length }} محدد</span>
                 </div>
-            </div>
+                <p-table [value]="unpaidInvoices()" [(selection)]="selectedInvoices"
+                    (selectionChange)="onInvoiceSelectionChange($event)" dataKey="id" [scrollable]="true"
+                    scrollHeight="130px" styleClass="p-datatable-xm text-sm">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 2.5rem" class="p-1 text-center"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                            <th class="p-1 text-xs">رقم الفاتورة</th>
+                            <th class="p-1 text-xs">التاريخ</th>
+                            <th class="p-1 text-xs text-left px-3">المبلغ</th>
+                            </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-inv>
+                        <tr [class.bg-highlight]="selectedInvoices && selectedInvoices.includes(inv)">
+                            <td class="p-1 text-center"><p-tableCheckbox [value]="inv"></p-tableCheckbox></td>
+                            <td class="p-1 font-mono text-xs">#{{ inv.purchaseInvoiceNumber || inv.id }}</td>
+                            <td class="p-1 text-xs text-500">{{ inv.purchaseInvoiceDate | date:'MM/dd' }}</td>
+                            <td class="p-1 text-xs font-bold text-left px-3">{{ inv.totalAmount | number }}</td>
+                        </tr>
+                        </ng-template>
+                        </p-table>
+                        </div>
+                        </div>
+<!-- Date & Reference Row -->
+<div class="field col-6 mb-3">
+    <label class="font-bold block mb-2 text-800 text-sm">تاريخ السند <span class="text-red-500">*</span></label>
+    <p-calendar formControlName="paymentDate" [showIcon]="true" [appendTo]="'body'" dateFormat="yy/mm/dd"
+        inputStyleClass="text-sm font-bold text-center"></p-calendar>
+</div>
+<div class="field col-6 mb-3">
+    <label class="font-bold block mb-2 text-800 text-sm">رقم المرجع / الشيك (اختياري)</label>
+    <input type="text" pInputText formControlName="referenceNo" class="text-sm" placeholder="---" />
         </div>
 
-        <div class="field col-12 mb-4">
-            <label class="font-bold flex align-items-center gap-2 mb-2 text-900">
-                <i class="pi pi-money-bill text-red-500"></i> المبلغ المراد صرفه نهائياً
-            </label>
-            <div class="amount-input-wrapper">
-                <p-inputNumber formControlName="amount" mode="currency" currency="YER" locale="ar-YE"
-                    inputStyleClass="huge-amount-input h-5rem text-center font-black text-4xl text-red-600 border-round-3xl border-2 border-red-200 bg-red-50 shadow-inner">
-                </p-inputNumber>
-                <div class="amount-glow"></div>
-            </div>
+        <!-- Amount & Notes -->
+        <div class="field col-12 md:col-6 mb-3">
+            <label class="font-bold block mb-2 text-800 text-sm">المبلغ المصروف <span class="text-red-500">*</span></label>
+            <p-inputNumber formControlName="amount" mode="currency" currency="YER" locale="ar-YE"
+                [min]="0"
+                styleClass="w-full"
+                inputStyleClass="w-full text-lg font-black text-center text-red-700 bg-red-50 border-red-200">
+            </p-inputNumber>
+        </div>
+        <div class="field col-12 md:col-6 mb-3">
+            <label class="font-bold block mb-2 text-800 text-sm">البيان / ملاحظات</label>
+            <input type="text" pInputText formControlName="notes" class="text-sm" placeholder="بيان مختصر..." />
         </div>
 
-        <div class="grid col-12 p-0 px-2 gap-3">
-            <div class="field col mb-4">
-                <label class="font-bold block mb-2 text-700">تاريخ العملية</label>
-                <p-calendar formControlName="paymentDate" [showIcon]="true" appendTo="body"
-                    inputStyleClass="h-3rem border-round-xl shadow-1"></p-calendar>
-            </div>
-            <div class="field col mb-4">
-                <label class="font-bold block mb-2 text-700">رقم المرجع / الشيك</label>
-                <input type="text" pInputText formControlName="referenceNo" placeholder="مثلاً: 102938"
-                    class="h-3rem border-round-xl shadow-1" />
-            </div>
-        </div>
-
-        <div class="field col-12 mb-4">
-            <label class="font-bold block mb-2 text-700">البيان / ملاحظات</label>
-            <textarea pInputTextarea formControlName="notes" rows="2" class="border-round-2xl shadow-1"
-                placeholder="اكتب أي ملاحظات إضافية هنا..."></textarea>
-        </div>
-
-        <div class="col-12 mt-2 flex justify-content-end align-items-center gap-3">
-            <p-button label="إلغاء الأمر" icon="pi pi-times" (onClick)="displayDialog.set(false)"
-                styleClass="p-button-text p-button-plain font-bold">
-            </p-button>
-            <p-button label="تأكيد وتنفيذ عملية الصرف" icon="pi pi-send" [loading]="saving()" (onClick)="savePayment()"
-                styleClass="p-button-raised h-3rem px-6 font-bold premium-execution-btn shadow-8">
-            </p-button>
+        <!-- Footer Actions -->
+        <div class="col-12 mt-3 flex justify-content-end gap-2 border-top-1 border-100 pt-3">
+            <button pButton label="إلغاء (Esc)" class="p-button-text p-button-secondary p-button-sm font-bold"
+                (click)="displayDialog.set(false)"></button>
+            <button pButton label="حفظ واعتماد (F10)" icon="pi pi-check"
+                class="p-button-primary p-button-sm font-bold px-4 shadow-1" (click)="savePayment()"
+                [loading]="saving()"></button>
         </div>
     </form>
 </p-dialog>

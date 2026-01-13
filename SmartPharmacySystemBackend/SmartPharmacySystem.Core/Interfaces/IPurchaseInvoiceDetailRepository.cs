@@ -12,4 +12,5 @@ public interface IPurchaseInvoiceDetailRepository
     Task SoftDeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
     Task<IEnumerable<PurchaseInvoiceDetail>> GetDetailsByInvoiceIdAsync(int invoiceId);
+    void RemoveRange(IEnumerable<PurchaseInvoiceDetail> entities);
 }

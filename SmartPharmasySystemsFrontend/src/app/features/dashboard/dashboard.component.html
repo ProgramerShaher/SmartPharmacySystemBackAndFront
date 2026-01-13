@@ -19,35 +19,22 @@
             tooltipPosition="bottom"></button>
     </div>
     </div>
-<!-- ============================================
-       بطاقات المؤشرات الرئيسية / KPI Cards
-       ============================================ -->
-<div class="grid mb-4">
-    <!-- رصيد الصيدلية / Pharmacy Balance -->
-    <div class="col-12 md:col-6 lg:col-3">
-        <app-stat-card *ngIf="!isLoading(); else skeleton" title="الرصيد النقدي الحالي" [value]="pharmacyBalance()"
-            icon="pi-wallet" [trend]="salesTrend()" subtitle="رصيد الصيدلية" color="emerald"
-            format="currency"></app-stat-card>
-        <ng-template #skeleton>
-            <p-skeleton height="160px" borderRadius="16px"></p-skeleton>
-        </ng-template>
-    </div>
-<!-- مبيعات اليوم / Today's Sales -->
-<div class="col-12 md:col-6 lg:col-3">
-    <app-stat-card *ngIf="!isLoading()" title="مبيعات اليوم" [value]="todaySales()" icon="pi-shopping-cart"
-        subtitle="إجمالي المبيعات" color="blue" format="currency"></app-stat-card>
-    </div>
-<!-- أصناف قريبة من الانتهاء / Expiring Items -->
-<div class="col-12 md:col-6 lg:col-3">
-    <app-stat-card *ngIf="!isLoading()" title="أصناف قريبة الانتهاء" [value]="expiringItems()" icon="pi-calendar-times"
-        subtitle="خلال 30 يوم" color="orange" format="number"></app-stat-card>
-</div>
 
-<!-- أصناف منخفضة المخزون / Low Stock Items -->
-<div class="col-12 md:col-6 lg:col-3">
-    <app-stat-card *ngIf="!isLoading()" title="أصناف منخفضة المخزون" [value]="lowStockItems()"
-        icon="pi-exclamation-triangle" subtitle="تحتاج إعادة طلب" color="red" format="number"></app-stat-card>
-</div>
+<!-- ============================================
+   بطاقات المؤشرات الرئيسية / KPI Cards
+   ============================================ -->
+<div class="grid mb-4">
+    <ng-container *ngIf="!isLoading() && kpiCards().length > 0; else skeletonCards">
+        <div class="col-12 md:col-6 lg:col-3" *ngFor="let card of kpiCards()">
+            <app-kpi-card [data]="card"></app-kpi-card>
+        </div>
+    </ng-container>
+
+    <ng-template #skeletonCards>
+        <div class="col-12 md:col-6 lg:col-3" *ngFor="let i of [1,2,3,4]">
+            <p-skeleton height="180px" borderRadius="16px"></p-skeleton>
+        </div>
+    </ng-template>
 </div>
 
 <!-- ============================================
@@ -69,7 +56,7 @@
         </div>
         <div *ngIf="!isLoading() && salesVsPurchasesData; else chartSkeleton" style="height: 400px;">
             <p-chart type="line" [data]="salesVsPurchasesData" [options]="salesVsPurchasesOptions"
-                [style]="{'height': '100%'}"></p-chart>
+                height="400px"></p-chart>
         </div>
 <ng-template #chartSkeleton>
     <p-skeleton height="400px"></p-skeleton>
@@ -89,7 +76,7 @@
 
         <div *ngIf="!isLoading() && inventoryDistributionData" style="height: 350px;">
             <p-chart type="doughnut" [data]="inventoryDistributionData" [options]="inventoryDistributionOptions"
-                [style]="{'height': '100%'}"></p-chart>
+                height="350px"></p-chart>
         </div>
     </div>
 </div>
@@ -111,7 +98,7 @@
             <p class="text-color-secondary text-sm m-0">أعلى 5 أصناف هذا الشهر</p>
             </div>
         </div>
-<p-table [value]="topSellingMedicines()" [tableStyle]="{'min-width': '100%'}" styleClass="p-datatable-sm">
+<p-table [value]="topSellingMedicines()" styleClass="p-datatable-sm">
     <ng-template pTemplate="header">
         <tr>
             <th class="text-right">اسم الدواء</th>

@@ -9,27 +9,25 @@ import { PaymentType } from './enums';
  */
 export interface PurchaseInvoice {
     id: number;
-    purchaseInvoiceNumber: string;
     supplierId: number;
     supplierName: string;
     supplierInvoiceNumber: string;
-    purchaseDate: string; // ISO date string
+    purchaseInvoiceNumber: string;
+    purchaseDate: string; // ISO Date
     totalAmount: number;
     paymentMethod: PaymentType;
-    status: DocumentStatus;
     notes: string;
     createdBy: number;
+    createdAt: string; // ISO Date
     createdByName: string;
-    createdAt: string; // ISO date string
-    approvedBy?: number | null;
-    approvedByName?: string | null;
-    approvedAt?: string | null;
-    cancelledBy?: number | null;
-    cancelledByName?: string | null;
-    cancelledAt?: string | null;
-    isDeleted: boolean;
+    approvedByName?: string;
+    cancelledByName?: string;
+    status: DocumentStatus;
 
-    // Status Display Fields
+    // Payment Status
+    isPaid?: boolean;
+
+    // Status Tracking & Dynamic Colors
     statusName: string;
     statusColor: string;
     statusIcon: string;
@@ -38,9 +36,10 @@ export interface PurchaseInvoice {
     actionByName: string;
     actionDate: string;
 
-    // Navigation Properties
-    supplier?: Supplier;
-    items?: PurchaseInvoiceDetail[];
+    isDeleted: boolean;
+
+    // Details
+    items: PurchaseInvoiceDetail[];
 }
 
 /**

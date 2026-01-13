@@ -78,17 +78,31 @@
                         <span class="amount-badge danger">{{ret.totalAmount | number:'1.0-2'}} ر.ي</span>
                     </td>
                     <td class="text-center">
-                        <p-tag [severity]="getStatusSeverity(ret.status)" [value]="getStatusLabel(ret.status)"
+                        <p-tag [severity]="ret.statusColor" [value]="ret.statusName" [icon]="ret.statusIcon"
                             styleClass="px-3 border-round-lg shadow-1"></p-tag>
                     </td>
                     <td class="text-center">
                         <div class="flex justify-content-center gap-1">
-                            <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل"
-                                (onClick)="viewReturn(ret)"></p-button>
-                            <p-button *ngIf="isDraft(ret.status)" icon="pi pi-pencil" severity="warning" rounded text
-                                pTooltip="تعديل" (onClick)="editReturn(ret)"></p-button>
-                            <p-button *ngIf="isDraft(ret.status)" icon="pi pi-trash" severity="danger" rounded text
-                                pTooltip="حذف" (onClick)="deleteReturn(ret)"></p-button>
+                            <!-- DRAFT STATUS: Edit, Delete, Approve -->
+                            <ng-container *ngIf="ret.status === 'Draft'">
+                                <!-- Note: If Approve function exists in TS, add it here. Assuming standard 'approveReturn' -->
+                                <p-button icon="pi pi-check-circle" severity="success" rounded text pTooltip="اعتماد" tooltipPosition="top"
+                                    (onClick)="approveReturn(ret)"></p-button>
+                                <p-button icon="pi pi-pencil" severity="warning" rounded text pTooltip="تعديل"
+                                    (onClick)="editReturn(ret)"></p-button>
+                                <p-button icon="pi pi-trash" severity="danger" rounded text pTooltip="حذف" (onClick)="deleteReturn(ret)"></p-button>
+                            </ng-container>
+                            
+                            <!-- APPROVED STATUS: View -->
+                            <ng-container *ngIf="ret.status === 'Approved'">
+                                <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل"
+                                    (onClick)="viewReturn(ret)"></p-button>
+                            </ng-container>
+                            
+                            <!-- CANCELLED STATUS: View -->
+                            <ng-container *ngIf="ret.status === 'Cancelled'">
+                                <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل" (onClick)="viewReturn(ret)"></p-button>
+                            </ng-container>
                         </div>
                     </td>
                 </tr>

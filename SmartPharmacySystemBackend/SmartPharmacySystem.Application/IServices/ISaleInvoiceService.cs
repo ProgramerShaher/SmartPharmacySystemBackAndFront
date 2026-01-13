@@ -11,7 +11,9 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<IEnumerable<SaleInvoiceDto>> GetAllAsync();
         Task ApproveAsync(int id, int userId);
         Task UnapproveSalesInvoiceAsync(int id);
+        Task<IEnumerable<SaleInvoiceDto>> GetUnpaidByCustomerIdAsync(int customerId);
         Task CancelAsync(int id, int userId);
         Task ReceiveCreditPaymentAsync(int invoiceId, int accountId = 1);
+        Task<DTOs.Dashboard.SalesDashboardStatsDto> GetDashboardStatsAsync();
     }
 }

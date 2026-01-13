@@ -97,6 +97,26 @@ export class PurchaseReturnListComponent implements OnInit {
         });
     }
 
+    approveReturn(ret: PurchaseReturn) {
+        this.confirmationService.confirm({
+            message: 'هل أنت متأكد من اعتماد هذا المرتجع؟ سيتم خصم الكميات من المخزون.',
+            header: 'تأكيد الاعتماد',
+            icon: 'pi pi-check-circle',
+            acceptButtonStyleClass: 'p-button-success',
+            accept: () => {
+                this.purchaseReturnService.approve(ret.id).subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'success', summary: 'تم الاعتماد', detail: 'تم اعتماد المرتجع بنجاح' });
+                        this.loadReturns();
+                    },
+                    error: (err) => {
+                        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل الاعتماد: ' + (err.error?.message || err.message) });
+                    }
+                });
+            }
+        });
+    }
+
     getStatusLabel(status: any): string {
         if (!status) return 'غير محدد';
         const statusNum = typeof status === 'number' ? status : parseInt(status.toString());

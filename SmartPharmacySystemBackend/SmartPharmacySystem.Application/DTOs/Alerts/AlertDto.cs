@@ -1,1 +1,13 @@
-﻿using SmartPharmacySystem.Core.Enums; namespace SmartPharmacySystem.Application.DTOs.Alerts; public class AlertDto { public int Id { get; set; } public int BatchId { get; set; } public string BatchNumber { get; set; } = string.Empty; public string MedicineName { get; set; } = string.Empty; public AlertType AlertType { get; set; } public AlertSeverity Severity { get; set; } public string Message { get; set; } = string.Empty; public DateTime? ExpiryDateSnapshot { get; set; } public bool IsRead { get; set; } public DateTime CreatedAt { get; set; } }
+﻿using SmartPharmacySystem.Core.Enums; namespace SmartPharmacySystem.Application.DTOs.Alerts; 
+public class AlertDto {
+    public int Id { get; set; }
+    public int BatchId { get; set; }
+    public string BatchNumber { get; set; } = string.Empty;
+    public string MedicineName { get; set; } = string.Empty;
+    public AlertType AlertType { get; set; }
+    public AlertSeverity Severity { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public DateTime? ExpiryDateSnapshot { get; set; }
+    public bool IsRead { get; set; }
+    public DateTime CreatedAt { get; set; }
+}

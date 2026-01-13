@@ -86,7 +86,7 @@ export class SupplierAddEditComponent implements OnInit {
                 console.log(`✅ Finished loading supplier ID: ${id}`);
             }))
             .subscribe({
-                next: (supplier) => {
+                next: (supplier: Supplier) => {
                     console.log(`📋 Supplier data loaded successfully:`, supplier);
                     this.supplierForm.patchValue({
                         name: supplier.name,
@@ -95,7 +95,7 @@ export class SupplierAddEditComponent implements OnInit {
                         email: supplier.email || '',
                         address: supplier.address,
                         notes: supplier.notes || '',
-                        balance: supplier.balance || 0
+                        balance: supplier.Balance || 0
                     });
                 },
                 error: (error) => {
@@ -132,7 +132,7 @@ export class SupplierAddEditComponent implements OnInit {
             contactPerson: formValue.contactPerson || '',
             email: formValue.email || '',
             notes: formValue.notes || '',
-            balance: formValue.balance || 0
+            Balance: formValue.balance || 0
         };
 
         console.log(`📝 Submitting supplier data:`, supplierData);

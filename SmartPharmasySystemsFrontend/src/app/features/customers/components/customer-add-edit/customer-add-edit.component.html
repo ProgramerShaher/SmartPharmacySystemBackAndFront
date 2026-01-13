@@ -33,11 +33,11 @@
                             class="text-red-500">*</span></label>
                     <span class="p-input-icon-left">
                         <i class="pi pi-phone text-gray-400"></i>
-                        <input id="phone" type="text" pInputText formControlName="phone" placeholder="77xxxxxxx"
+                        <input id="phone" type="text" pInputText formControlName="phoneNumber" placeholder="77xxxxxxx"
                             class="premium-input" />
                     </span>
                     <small class="text-red-500 block mt-1"
-                        *ngIf="customerForm.get('phone')?.touched && customerForm.get('phone')?.invalid">
+                        *ngIf="customerForm.get('phoneNumber')?.touched && customerForm.get('phoneNumber')?.invalid">
                         رقم الهاتف مطلوب
                     </small>
                 </div>
@@ -53,9 +53,8 @@
 
                 <div class="field col-12">
                     <label for="creditLimit" class="font-bold text-sm mb-2 text-gray-600">سقف المديونية (ر.ي)</label>
-                    <p-inputNumber id="creditLimit" formControlName="creditLimit" mode="currency" currency="YER"
-                        locale="ar-YE" placeholder="0.00" styleClass="w-full" inputStyleClass="premium-input text-left"
-                        [min]="0">
+                    <p-inputNumber id="creditLimit" formControlName="creditLimit" mode="decimal" [minFractionDigits]="2" suffix=" ر.ي"
+                        placeholder="0.00" styleClass="w-full" inputStyleClass="premium-input text-left" [min]="0" [useGrouping]="false">
                     </p-inputNumber>
                     <small class="text-gray-400 text-xs mt-1 block">اترك القيمة 0 ليكون سقف المديونية مفتوحاً</small>
                 </div>

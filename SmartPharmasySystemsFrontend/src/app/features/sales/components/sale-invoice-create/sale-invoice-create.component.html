@@ -1,152 +1,263 @@
-<div class="card p-0 shadow-3 border-round-xl overflow-hidden" [class.opacity-80]="loading" dir="rtl">
-    <!-- Header Section -->
-    <div class="bg-primary p-4 text-white flex justify-content-between align-items-center">
-        <div class="flex align-items-center gap-3">
-            <i class="pi pi-file-edit text-3xl"></i>
-            <div>
-                <h2 class="m-0 text-xl font-bold">فاتورة مبيعات</h2>
-                <small class="opacity-80">إدارة مبيعات الصيدلية والتحكم في المخزون</small>
-            </div>
-        </div>
-        <div class="flex align-items-center gap-3">
-            <p-tag [severity]="getStatusSeverity(saleForm.get('status')?.value)"
-                [value]="getStatusLabel(saleForm.get('status')?.value)" styleClass="text-lg px-3 py-2"></p-tag>
-            <div class="flex gap-2">
-                <p-button *ngIf="saleForm.get('status')?.value === 'Draft'" label="حفظ كمسودة" icon="pi pi-save"
-                    severity="info" (onClick)="saveDraft()" [loading]="loading"></p-button>
-                <p-button *ngIf="saleForm.get('status')?.value === 'Draft'" label="اعتماد الفاتورة" icon="pi pi-check"
-                    severity="success" (onClick)="approveInvoice()" [loading]="loading"
-                    [disabled]="saleForm.invalid || !currentInvoice"></p-button>
-                <p-button *ngIf="saleForm.get('status')?.value === 'Approved'" label="إلغاء الفاتورة" icon="pi pi-times"
-                    severity="danger" (onClick)="cancelInvoice()" [loading]="loading"></p-button>
-                <p-button label="رجوع" icon="pi pi-arrow-left" severity="secondary" outlined
-                    (onClick)="cancel()"></p-button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <form [formGroup]="saleForm" class="p-4 bg-gray-50">
-        <!-- Invoice Header Row -->
-        <div class="grid p-fluid">
-            <div class="col-12 md:col-2">
-                <label class="block font-bold mb-2 text-secondary">رقم الفاتورة</label>
-                <input pInputText formControlName="invoiceNumber" placeholder="تلقائي..."
-                    class="bg-gray-100 font-bold" />
-            </div>
-            <div class="col-12 md:col-3">
-                <label class="block font-bold mb-2 text-secondary">العميل</label>
-                <input pInputText formControlName="customerName" placeholder="اسم العميل..." />
-            </div>
-            <div class="col-12 md:col-3">
-                <label class="block font-bold mb-2 text-secondary">تاريخ الفاتورة</label>
-                <p-calendar formControlName="saleInvoiceDate" [showIcon]="true" dateFormat="dd/mm/yy"
-                    appendTo="body"></p-calendar>
-            </div>
-            <div class="col-12 md:col-2">
-                <label class="block font-bold mb-2 text-secondary">طريقة الدفع</label>
-                <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" appendTo="body"></p-dropdown>
-            </div>
-            <div class="col-12 md:col-2">
-                <label class="block font-bold mb-2 text-secondary">الملاحظات</label>
-                <input pInputText formControlName="notes" placeholder="..." />
-            </div>
-        </div>
-
-        <p-divider align="right" styleClass="my-5">
-            <span class="flex align-items-center gap-2 text-primary font-bold">
-                <i class="pi pi-list"></i> تفاصيل الأصناف
-            </span>
-        </p-divider>
-
-        <!-- Details Grid -->
-        <p-table [value]="items.controls" responsiveLayout="scroll"
-            styleClass="p-datatable-gridlines p-datatable-sm shadow-1">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th class="bg-white text-right p-3" style="min-width: 250px">الصنف</th>
-                    <th class="bg-white text-center p-3" style="width: 200px">الدفعة</th>
-                    <th class="bg-white text-center p-3" style="width: 120px">الكمية</th>
-                    <th class="bg-white text-center p-3" style="width: 150px">سعر الوحدة</th>
-                    <th class="bg-white text-center p-3" style="width: 150px">الإجمالي</th>
-                    <th *ngIf="!isReadOnly" class="bg-white text-center p-3" style="width: 50px"></th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item let-i="rowIndex">
-                <tr [formGroup]="$any(item)" class="bg-white">
-                    <td class="p-2">
-                        <p-autoComplete *ngIf="!isReadOnly; else medicineNameRead" [suggestions]="filteredMedicines"
-                            (completeMethod)="searchMedicine($event)" field="name"
-                            (onSelect)="onMedicineSelect($event.value, i)" placeholder="ابحث..." styleClass="w-full"
-                            appendTo="body" [forceSelection]="true"></p-autoComplete>
-                        <ng-template #medicineNameRead>
-                            <span class="font-bold">{{item.get('medicineName')?.value}}</span>
-                        </ng-template>
-                    </td>
-                    <td class="p-2">
-                        <p-dropdown *ngIf="!isReadOnly; else batchRead" [options]="batchesByItem[i] || []"
-                            optionLabel="companyBatchNumber" placeholder="اختر الدفعة" appendTo="body"
-                            formControlName="batchId" optionValue="id" styleClass="w-full border-none">
-                            <ng-template pTemplate="item" let-batch>
-                                <div class="flex justify-content-between align-items-center w-full">
-                                    <span class="font-bold text-primary">{{batch.companyBatchNumber}}</span>
-                                    <p-tag [severity]="batch.remainingQuantity < 10 ? 'danger' : 'success'"
-                                        [value]="batch.remainingQuantity + ' متوفر'"></p-tag>
-                                </div>
-                            </ng-template>
-                        </p-dropdown>
-                        <ng-template #batchRead>
-                            <div class="text-center font-medium">{{item.get('batchId')?.value}}</div>
-                        </ng-template>
-                    </td>
-                    <td class="p-2">
-                        <p-inputNumber formControlName="quantity" [min]="1" styleClass="w-full"
-                            inputStyleClass="text-center font-bold" [disabled]="isReadOnly"></p-inputNumber>
-                    </td>
-                    <td class="p-2">
-                        <p-inputNumber formControlName="salePrice" mode="currency" currency="EGP" styleClass="w-full"
-                            inputStyleClass="text-center" [disabled]="isReadOnly"></p-inputNumber>
-                    </td>
-                    <td class="p-2 text-center font-bold text-primary">
-                        {{item.get('totalSale')?.value | currency:'EGP'}}
-                    </td>
-                    <td *ngIf="!isReadOnly" class="p-2 text-center">
-                        <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
-                            (click)="removeItem(i)"></button>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="footer" *ngIf="!isReadOnly">
-                <tr>
-                    <td colspan="6" class="p-3 text-right">
-                        <p-button label="إضافة صنف" icon="pi pi-plus" severity="info" outlined size="small"
-                            (onClick)="addItem()"></p-button>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-
-        <!-- Summary Panel -->
-        <div class="grid mt-5 justify-content-end">
-            <div class="col-12 md:col-4">
-                <div class="bg-white border-round-xl shadow-1 p-4 border-1 border-primary-100">
-                    <div class="flex justify-content-between py-2 border-bottom-1 border-gray-100">
-                        <span class="text-secondary">إجمالي المبلغ:</span>
-                        <span class="text-xl font-bold">{{currentInvoice?.totalAmount || 0 | currency:'EGP'}}</span>
-                    </div>
-                    <div class="flex justify-content-between py-2 border-bottom-1 border-gray-100">
-                        <span class="text-secondary">إجمالي التكلفة:</span>
-                        <span class="text-xl font-bold">{{currentInvoice?.totalCost || 0 | currency:'EGP'}}</span>
-                    </div>
-                    <div class="flex justify-content-between py-2 bg-primary-50 px-2 mt-3 border-round">
-                        <span class="text-primary font-bold">إجمالي الربح:</span>
-                        <span class="text-2xl font-extrabold text-primary">{{currentInvoice?.totalProfit || 0 |
-                            currency:'EGP'}}</span>
-                    </div>
+<div class="sale-invoice-create" dir="rtl">
+    <!-- Floating Header -->
+    <header class="floating-header">
+        <div class="header-content">
+            <div class="header-left">
+                <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" (onClick)="goBack()"
+                    pTooltip="العودة"></p-button>
+                <div class="header-info">
+                    <h1>تسجيل فاتورة بيع</h1>
+                    <span class="header-subtitle">نظام POS الذكي</span>
                 </div>
             </div>
+            <div class="header-actions">
+                <p-button label="حفظ كمسودة" icon="pi pi-save" styleClass="draft-btn" [outlined]="true" (onClick)="saveDraft()"
+                    [loading]="saving"></p-button>
+                <p-button label="اعتماد وترحيل المخزن" icon="pi pi-check-circle" styleClass="approve-btn"
+                    (onClick)="approveInvoice()" [loading]="saving"></p-button>
+            </div>
         </div>
-    </form>
-</div>
+    </header>
+    <!-- Main Grid: Right (Form + Table) | Left (Purple Sidebar) -->
+    <div class="main-grid">
+        <!-- RIGHT SECTION -->
+        <div class="right-section">
+            <!-- Customer & Document Card -->
+            <div class="form-card">
+                <div class="card-header">
+                    <i class="pi pi-user"></i>
+                    <h3>بيانات العميل والمستند</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Flying Customer Toggle -->
+                    <div class="flying-toggle-container">
+                        <p-inputSwitch [(ngModel)]="isCashCustomer" (onChange)="toggleCashCustomer()"></p-inputSwitch>
+                        <span class="toggle-label">عميل نقدي طيار ✈️</span>
+                    </div>
+<div class="form-row">
+    <!-- 1. حالة العميل الطيار -->
+    <div class="form-field" *ngIf="isCashCustomer">
+        <label>اسم العميل</label>
+        <input pInputText [(ngModel)]="flyingCustomerName" placeholder="أدخل اسم العميل..." class="w-full" />
+        <div class="flying-notice">
+            <i class="pi pi-info-circle"></i>
+            <strong>العميل الطيار: دفع نقدي</strong>
+        </div>
+                        </div>
+<!-- 2. حالة العميل المسجل - Dropdown مع Filter -->
+<div class="form-field" *ngIf="!isCashCustomer">
+    <label>اختر العميل</label>
+    <p-dropdown [options]="customers" [(ngModel)]="selectedCustomer" optionLabel="name" placeholder="ابحث عن العميل..."
+        [filter]="true" filterBy="name" [showClear]="true" appendTo="body" styleClass="w-full">
+        <ng-template let-customer pTemplate="item">
+            <div class="customer-dropdown-item">
+                <span class="customer-name">{{ customer.name }}</span>
+                <span class="customer-phone">{{ customer.phone }}</span>
+            </div>
+                                </ng-template>
+                                </p-dropdown>
+                                </div>
+                                <!-- تاريخ الفاتورة -->
+                                <div class="form-field">
+                                    <label>تاريخ الفاتورة</label>
+                                    <p-calendar [(ngModel)]="invoiceDate" [showIcon]="true" dateFormat="dd/mm/yy" appendTo="body"
+                                        styleClass="w-full"></p-calendar>
+                        </div>
 
-<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+                        <!-- طريقة السداد (مخفية للطيار) -->
+                        <div class="form-field" *ngIf="!isCashCustomer">
+                            <label>طريقة السداد</label>
+                            <p-dropdown [options]="paymentMethods" [(ngModel)]="selectedPaymentMethod" optionLabel="label" optionValue="value"
+                                appendTo="body" styleClass="w-full"></p-dropdown>
+                        </div>
+                        </div>
+                        </div>
+                        </div>
+
+            <!-- Items Table Card -->
+            <div class="table-card">
+                <div class="card-header">
+                    <div class="header-left">
+                        <i class="pi pi-shopping-cart"></i>
+                        <h3>أصناف الفاتورة</h3>
+                    </div>
+                    <p-button label="+ إضافة صنف" icon="pi pi-plus" styleClass="add-item-btn"
+                        (onClick)="openAddItemDialog()"></p-button>
+                </div>
+            
+                <p-table [value]="items()" styleClass="items-table" responsiveLayout="scroll">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>الصنف</th>
+                            <th class="text-center">الدفعة</th>
+                            <th class="text-center">الكمية</th>
+                            <th class="text-right">السعر</th>
+                            <th class="text-right">الإجمالي</th>
+                            <th class="text-right">الربح</th>
+                            <th class="text-center"></th>
+                            </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item let-i="rowIndex">
+                        <tr class="clickable-row" (click)="editItemInModal(item, i)" pTooltip="اضغط للتعديل" tooltipPosition="right">
+                            <td class="item-name">{{ item.medicineName }}</td>
+                            <td class="text-center">
+                                <span class="batch-badge">{{ item.batchNumber }}</span>
+                            </td>
+                            <td class="text-center">
+                                <p-inputNumber [(ngModel)]="item.quantity" (ngModelChange)="updateItemQuantity(item, $event)" [min]="1"
+                                    [max]="item.availableQuantity" [showButtons]="true" buttonLayout="horizontal" inputStyleClass="qty-input"
+                                    styleClass="compact-qty"></p-inputNumber>
+                            </td>
+                            <td class="text-right price-cell">{{ item.salePrice | number:'1.0-2' }}</td>
+                            <td class="text-right total-cell">{{ item.total | number:'1.0-2' }}</td>
+                            <td class="text-right">
+                                <span class="profit-badge">{{ item.profit | number:'1.0-2' }}</span>
+                            </td>
+                            <td class="text-center">
+                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="removeItem(i)"></p-button>
+                            </td>
+                            </tr>
+                            </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                <i class="pi pi-inbox"></i>
+                                <p>لم يتم إضافة أصناف بعد</p>
+                            </td>
+                            </tr>
+                            </ng-template>
+                            </p-table>
+            </div>
+            </div>
+            
+            <!-- LEFT SECTION: Purple Gradient Sidebar -->
+            <aside class="purple-sidebar">
+                <!-- Grand Total (Purple Gradient) -->
+                <div class="grand-total-card">
+                    <span class="total-label">إجمالي الفاتورة النهائية</span>
+                    <span class="total-value">{{ total() | number:'1.0-0' }}</span>
+                    <span class="total-currency">ر.ي</span>
+                </div>
+            
+                <!-- Mini Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">عدد البنود</span>
+                        <span class="stat-value">{{ items().length }}</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">إجمالي القطع</span>
+                        <span class="stat-value">{{ totalQuantity() }}</span>
+                    </div>
+                    <div class="stat-card full">
+                        <span class="stat-label">صافي الضريبة</span>
+                        <span class="stat-value">0.00 ر.ي</span>
+                    </div>
+                </div>
+            
+                <!-- Action Buttons -->
+                <div class="sidebar-actions">
+                    <p-button label="اعتماد وترحيل المخزن" icon="pi pi-verified" styleClass="w-full approve-action-btn"
+                        [disabled]="items().length === 0" [loading]="saving" (onClick)="approveInvoice()"></p-button>
+                    <p-button label="حفظ كمسودة" icon="pi pi-save" styleClass="w-full draft-action-btn" (onClick)="saveDraft()"
+                        [loading]="saving"></p-button>
+                    <p-button label="تفريغ القائمة" icon="pi pi-trash" styleClass="w-full clear-btn" [text]="true" severity="danger"
+                        (onClick)="clearList()"></p-button>
+                </div>
+            </aside>
+            </div>
+            </div>
+            
+            <!-- ========== النافذة المنبثقة الملكية لإضافة صنف ========== -->
+            <p-dialog [(visible)]="addItemDialogVisible" header="إضافة صنف للفاتورة" [modal]="true" [style]="{width: '750px'}"
+                [rtl]="true" [draggable]="false" [resizable]="false" styleClass="premium-item-modal" appendTo="body"
+                [baseZIndex]="10000">
+            
+                <div class="modal-content">
+            
+                    <!-- اسم الدواء - AutoComplete -->
+                    <div class="modal-field">
+                        <label class="field-label">
+                            <i class="pi pi-search"></i>
+                            اسم الدواء
+                        </label>
+                        <p-autoComplete [(ngModel)]="selectedMedicineForModal" [suggestions]="filteredMedicines"
+                            (completeMethod)="searchMedicine($event)" (onSelect)="onMedicineSelectInModal($event.value)"
+                            field="name" placeholder="ابحث عن الدواء..." [dropdown]="true" appendTo="body" styleClass="w-full">
+                            <ng-template let-med pTemplate="item">
+                                <div class="medicine-dropdown-item">
+                                    <div class="med-info">
+                                        <span class="med-name">{{ med.name }}</span>
+                                        <span class="med-generic">{{ med.genericName }}</span>
+                                    </div>
+                                    <span class="med-price">{{ med.salePrice }} ر.ي</span>
+                                </div>
+                            </ng-template>
+                        </p-autoComplete>
+                    </div>
+            
+                    <!-- اختيار الدفعة FEFO -->
+                    <div class="modal-field" *ngIf="selectedMedicineForModal && availableBatches.length > 0">
+                        <label class="field-label">
+                            <i class="pi pi-box"></i>
+                            اختر الدفعة (FEFO - الأقرب انتهاءً أولاً)
+                        </label>
+                        <div class="batches-container">
+                            <div *ngFor="let batch of availableBatches" class="batch-card"
+                                [class.selected]="selectedBatchForModal?.id === batch.id"
+                                [class.expiring]="getBatchStatus(batch.expiryDate) === 'critical'"
+                                (click)="selectBatchForModal(batch)">
+                                <div class="batch-header">
+                                    <span class="batch-number">#{{ batch.companyBatchNumber }}</span>
+                                    <span class="batch-price">{{ batch.retailPrice }} ر.ي</span>
+                                </div>
+                                <div class="batch-details">
+                                    <span class="batch-expiry" [class.critical]="getBatchStatus(batch.expiryDate) === 'critical'">
+                                        <i class="pi pi-calendar"></i>
+                                        {{ batch.expiryDate | date:'dd/MM/yyyy' }}
+                                    </span>
+                                    <span class="batch-qty">
+                                        <i class="pi pi-box"></i>
+                                        متاح: {{ batch.remainingQuantity }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+        <!-- الكمية -->
+        <div class="modal-field" *ngIf="selectedBatchForModal">
+            <label class="field-label">الكمية المطلوبة</label>
+            <p-inputNumber [(ngModel)]="modalQuantity" [min]="1" [max]="selectedBatchForModal.remainingQuantity"
+                [showButtons]="true" styleClass="w-full qty-field"></p-inputNumber>
+            <small class="hint">الحد الأقصى: {{ selectedBatchForModal.remainingQuantity }}</small>
+        </div>
+        <!-- صندوق الإجمالي الديناميكي - أخضر ليموني -->
+        <div class="instant-total-box" *ngIf="selectedBatchForModal && modalQuantity">
+            <div class="total-row">
+                <span class="label">الكمية</span>
+                <span class="value">{{ modalQuantity }}</span>
+            </div>
+            <div class="total-row">
+                <span class="label">السعر</span>
+                <span class="value">{{ (selectedBatchForModal.retailPrice || selectedBatchForModal.unitPurchasePrice || 0) |
+                    number:'1.2-2' }} ر.ي</span>
+            </div>
+            <div class="total-row grand">
+                <span class="label">الإجمالي الفوري</span>
+                <span class="value">{{ ((selectedBatchForModal.retailPrice || selectedBatchForModal.unitPurchasePrice || 0) *
+                    modalQuantity) | number:'1.2-2' }} ر.ي</span>
+            </div>
+            </div>
+
+    </div>
+<ng-template pTemplate="footer">
+    <div class="modal-footer">
+        <p-button label="إلغاء" icon="pi pi-times" [outlined]="true" (onClick)="closeAddItemDialog()"></p-button>
+        <p-button label="إضافة للفاتورة" icon="pi pi-check" styleClass="add-to-invoice-btn"
+            (onClick)="addItemFromModal()" [disabled]="!selectedBatchForModal || !modalQuantity"></p-button>
+    </div>
+    </ng-template>
+    </p-dialog>
+
+<p-toast position="top-left"></p-toast>

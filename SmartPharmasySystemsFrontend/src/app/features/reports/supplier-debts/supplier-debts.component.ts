@@ -1,0 +1,52 @@
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ReportService } from '../../../core/services/report.service';
+import { SupplierDebtsReport } from '../../../core/models/reports.interface';
+
+@Component({
+  selector: 'app-supplier-debts',
+  standalone: true,
+  imports: [CommonModule, FormsModule, CardModule, ButtonModule, TableModule, TagModule, ProgressSpinnerModule],
+  templateUrl: './supplier-debts.component.html',
+  styleUrls: ['./supplier-debts.component.css']
+})
+export class SupplierDebtsComponent implements OnInit {
+  private readonly reportService = inject(ReportService);
+  protected readonly Math = Math;
+
+  report = signal<SupplierDebtsReport | null>(null);
+  loading = signal<boolean>(false);
+  error = signal<string | null>(null);
+
+  summary = computed(() => ({
+    totalPayable: this.report()?.totalPayable || 0,
+    creditorCount: this.report()?.creditorCount || 0,
+    debtorCount: this.report()?.debtorCount || 0
+  }));
+
+  ngOnInit(): void {
+    this.loadReport();
+  }
+
+  async loadReport(): Promise<void> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      const result = await this.reportService.getSupplierDebtsReport().toPromise();
+      this.report.set(result || null);
+    } catch (err: any) {
+      this.error.set(err?.error?.message || 'حدث خطأ');
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  formatCurrency(v: number): string { return v.toLocaleString('ar-SA', { minimumFractionDigits: 2 }); }
+  printReport(): void { window.print(); }
+}

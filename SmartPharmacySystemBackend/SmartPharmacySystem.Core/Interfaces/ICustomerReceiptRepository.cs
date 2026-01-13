@@ -9,5 +9,7 @@ namespace SmartPharmacySystem.Core.Interfaces
         Task UpdateAsync(CustomerReceipt entity);
         Task<IEnumerable<CustomerReceipt>> GetByCustomerIdAsync(int customerId);
         Task<CustomerReceipt?> GetByIdWithCustomerAsync(int id);
+        Task<(IEnumerable<CustomerReceipt> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize, DateTime? fromDate, DateTime? toDate);
+        Task<(int TotalCount, decimal TotalAmount, decimal TodayAmount)> GetStatisticsAsync();
     }
 }

@@ -132,5 +132,9 @@ namespace SmartPharmacySystem.Application.Services
 
             return result;
         }
+        public async Task<Core.DTOs.CustomerStatistics> GetStatisticsAsync()
+        {
+            return await _unitOfWork.Customers.GetStatisticsAsync();
+        }
     }
 }

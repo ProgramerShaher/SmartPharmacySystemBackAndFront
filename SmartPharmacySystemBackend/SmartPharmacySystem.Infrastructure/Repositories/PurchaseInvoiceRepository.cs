@@ -103,5 +103,13 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                     .ThenInclude(d => d.Batch)
                 .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         }
+    public async Task<IEnumerable<PurchaseInvoice>> GetBySupplierIdAsync(int supplierId)
+        {
+            return await _context.PurchaseInvoices
+                .AsNoTracking()
+                .Where(i => i.SupplierId == supplierId && !i.IsDeleted && i.Status == Core.Enums.DocumentStatus.Approved)
+                .OrderByDescending(i => i.PurchaseDate)
+                .ToListAsync();
+        }
     }
 }

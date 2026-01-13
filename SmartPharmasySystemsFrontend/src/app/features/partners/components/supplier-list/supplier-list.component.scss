@@ -51,85 +51,19 @@
     -webkit-text-fill-color: transparent;
   }
 
-  .premium-btn {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
-    border: none !important;
-    padding: 0 2.5rem;
-    border-radius: 50px !important;
-    height: 3.5rem !important;
-    font-weight: 700 !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 8px 15px rgba(37, 99, 235, 0.2) !important;
-
-    &:hover {
-      transform: translateY(-4px) scale(1.02) !important;
-      box-shadow: 0 15px 30px rgba(37, 99, 235, 0.4) !important;
+    // Helper for percentage display in RTL interfaces
+    .dir-ltr {
+      direction: ltr !important;
+      unicode-bidi: embed;
     }
 
-    &:active {
-      transform: translateY(-1px) !important;
-    }
-  }
-
-  .glass-morphism {
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-  }
-
-  .stat-card {
-    border-radius: 28px;
-    padding: 2rem;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-
-    &:hover {
-      transform: translateY(-12px);
-      background: rgba(255, 255, 255, 0.85);
-      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.12);
-
-      .stat-icon {
-        transform: scale(1.1) rotate(8deg);
-      }
-    }
-
-    &.debt {
-      border-bottom: 6px solid #ef4444;
-    }
-
-    &.high-debt {
-      border-bottom: 6px solid #f97316;
-    }
-
-    &.total-suppliers {
-      border-bottom: 6px solid #2563eb;
-    }
-  }
-
-  .stat-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-
-    &.red-light-bg {
-      background: #fee2e2;
-      color: #ef4444;
-    }
-
-    &.orange-light-bg {
-      background: #ffedd5;
-      color: #f97316;
-    }
-
-    &.blue-light-bg {
-      background: #dbeafe;
-      color: #2563eb;
+    /* Custom Progress Bar Style */
+    ::ng-deep .custom-progress {
+      height: 0.6rem !important;
+      background: #e2e8f0 !important;
+    .p-progressbar-value {
+        background: linear-gradient(90deg, #3b82f6, #2563eb) !important; // Blue for 'Collection Rate' usually positive
+        box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
     }
   }
 
@@ -263,4 +197,46 @@
       filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.05));
     }
   }
+::ng-deep .premium-menu {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+  margin-top: 8px;
+
+  .p-menuitem-link {
+    padding: 1rem 1.5rem !important;
+    transition: all 0.2s;
+
+    .p-menuitem-icon {
+      color: #64748b;
+      font-size: 1.1rem;
+    }
+
+    .p-menuitem-text {
+      font-weight: 600;
+      color: #334155;
+    }
+
+    &:hover {
+      background: #f8fafc !important;
+      transform: translateX(-4px);
+
+      .p-menuitem-icon {
+        color: #2563eb;
+      }
+
+      .p-menuitem-text {
+        color: #1e293b;
+      }
+    }
+  }
+
+  .p-menuitem-separator {
+    border-top: 1px solid #f1f5f9;
+    margin: 4px 0;
+  }
+}
 }

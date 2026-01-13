@@ -3,14 +3,16 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { ApiResponse, PagedResult } from '../../../core/models';
 import {
+    ApiResponse,
+    PagedResult,
     Supplier,
     SupplierPayment,
     CreateSupplierPaymentDto,
     SupplierStatement,
-    SupplierQueryDto
-} from '../../../core/models/supplier.models';
+    SupplierQueryDto,
+    PurchaseInvoice
+} from '../../../core/models';
 
 @Injectable({
     providedIn: 'root'
@@ -29,8 +31,12 @@ export class SupplierService {
     getAll(query?: SupplierQueryDto): Observable<PagedResult<Supplier>> {
         let params = new HttpParams();
         if (query?.search) params = params.set('search', query.search);
+
+        // Pagination & Sorting (Critical for Performance)
         if (query?.page) params = params.set('page', query.page.toString());
         if (query?.pageSize) params = params.set('pageSize', query.pageSize.toString());
+        if (query?.sortBy) params = params.set('sortBy', query.sortBy);
+        if (query?.sortDir) params = params.set('sortDir', query.sortDir);
 
         this.loading.set(true);
         return this.http.get<ApiResponse<PagedResult<Supplier>>>(this.apiUrl, { params })
@@ -38,7 +44,8 @@ export class SupplierService {
                 map(res => res.data),
                 tap(res => {
                     this.suppliers.set(res.items);
-                    const total = res.items.reduce((acc, curr) => acc + (curr.balance || 0), 0);
+                    // Use totalCount from backend if available, or calc local (less accurate for paged)
+                    const total = res.items.reduce((acc, curr) => acc + (curr.Balance || 0), 0);
                     this.totalSupplierDebt.set(total);
                     this.loading.set(false);
                 })
@@ -71,7 +78,7 @@ export class SupplierService {
         let params = new HttpParams();
         if (supplierId) params = params.set('supplierId', supplierId.toString());
 
-        return this.http.get<ApiResponse<SupplierPayment[]>>(this.paymentsUrl, { params })
+        return this.http.get<ApiResponse<SupplierPayment[]>>(`${this.paymentsUrl}/all`, { params })
             .pipe(map(res => res.data));
     }
 
@@ -88,9 +95,11 @@ export class SupplierService {
     // --- Supplier Statement ---
 
     getStatement(supplierId: number): Observable<SupplierStatement> {
-        return this.http.get<ApiResponse<SupplierStatement>>(`${this.paymentsUrl}/statement/${supplierId}`)
+        return this.http.get<ApiResponse<SupplierStatement>>(`${this.paymentsUrl}/supplier/${supplierId}/statement`)
             .pipe(map(res => res.data));
     }
+
+    // https://localhost:7107/api/SupplierPayments/supplier/3/statement
 
     // --- Smart Payment Helpers ---
 
@@ -98,24 +107,16 @@ export class SupplierService {
      * Get unpaid credit invoices for a supplier to support "Smart Payment" distribution.
      * Uses PurchaseInvoiceService to fetch and filters client-side.
      */
-    getUnpaidInvoices(supplierId: number): Observable<any[]> { // Using any[] to avoid circular dependency if model not exported here
-        // Ideally we inject PurchaseInvoiceService, but to avoid circular deps if any, 
-        // we might better make this call direct or use clean architecture.
-        // For now, let's use a direct HTTP call to PurchaseInvoices with filters if possible, 
-        // or inject the service if no cycle exists. 
-        // Checking imports... PurchaseInvoiceService is not imported. Safe to inject?
-        // Let's try direct HTTP to keep it decoupled from another service class if possible, 
-        // OR better yet, let's inject HttpClient and call the endpoint manually to be safe.
-        
+    getUnpaidInvoices(supplierId: number): Observable<PurchaseInvoice[]> {
         let params = new HttpParams()
             .set('supplierId', supplierId.toString())
             .set('status', '2') // Approved
-            .set('paymentMethod', '1'); // Credit (Assuming Enum 1=Credit)
+            .set('paymentMethod', '1'); // Credit
             
-        return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/PurchaseInvoices`, { params })
+        return this.http.get<ApiResponse<PurchaseInvoice[]>>(`${environment.apiUrl}/PurchaseInvoices`, { params })
             .pipe(
                 map(res => res.data || []),
-                map(invoices => invoices.filter(inv => !inv.isPaid)) // Client-side filter for IsPaid if API doesn't support it
+                map(invoices => invoices.filter(inv => !inv.isPaid))
             );
     }
 

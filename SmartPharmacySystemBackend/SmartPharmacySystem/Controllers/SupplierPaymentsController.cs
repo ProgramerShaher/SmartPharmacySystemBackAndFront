@@ -21,6 +21,13 @@ namespace SmartPharmacySystem.Controllers
             _currentUserService = currentUserService;
         }
 
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAll()
+        {
+            var result = await _paymentService.GetRecentPaymentsAsync(0);
+            return Ok(ApiResponse<IEnumerable<SupplierPaymentDto>>.Succeeded(result, "تم جلب جميع السندات بنجاح."));
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateSupplierPaymentDto dto)
         {

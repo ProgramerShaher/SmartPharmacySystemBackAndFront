@@ -187,18 +187,17 @@ export class PurchaseInvoiceDetailsComponent implements OnInit {
 
   getStatusLabel(status: any) {
     if (status === undefined || status === null) return 'قيد التدقيق';
-    const s = status.toString().toUpperCase();
-    switch (s) {
-      case 'APPROVED':
-      case '1':
-      case 'TRUE':
+    const statusNum = Number(status);
+
+    switch (statusNum) {
+      case DocumentStatus.Approved:
         return 'تم التوريد والمراجعة';
-      case 'DRAFT':
-      case '0':
+      case DocumentStatus.Draft:
         return 'مسودة تكميلية';
-      case 'CANCELLED':
-      case '2':
+      case DocumentStatus.Cancelled:
         return 'عملية ملغاة';
+      case DocumentStatus.Returned:
+        return 'مرتجع';
       default:
         return status;
     }
@@ -206,34 +205,33 @@ export class PurchaseInvoiceDetailsComponent implements OnInit {
 
   getStatusClass(status: any) {
     if (status === undefined || status === null) return 'draft';
-    const s = status.toString().toUpperCase();
-    switch (s) {
-      case 'APPROVED':
-      case '1':
-      case 'TRUE':
+    const statusNum = Number(status);
+
+    switch (statusNum) {
+      case DocumentStatus.Approved:
         return 'approved';
-      case 'CANCELLED':
-      case '2':
+      case DocumentStatus.Cancelled:
         return 'cancelled';
+      case DocumentStatus.Draft:
+        return 'draft';
       default:
         return 'draft';
     }
   }
 
-  getStatusSeverity(status: any): any {
+  getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
     if (status === undefined || status === null) return 'warning';
-    const s = status.toString().toUpperCase();
-    switch (s) {
-      case 'APPROVED':
-      case '1':
-      case 'TRUE':
+    const statusNum = Number(status);
+
+    switch (statusNum) {
+      case DocumentStatus.Approved:
         return 'success';
-      case 'DRAFT':
-      case '0':
+      case DocumentStatus.Draft:
         return 'warning';
-      case 'CANCELLED':
-      case '2':
+      case DocumentStatus.Cancelled:
         return 'danger';
+      case DocumentStatus.Returned:
+        return 'info';
       default:
         return 'info';
     }

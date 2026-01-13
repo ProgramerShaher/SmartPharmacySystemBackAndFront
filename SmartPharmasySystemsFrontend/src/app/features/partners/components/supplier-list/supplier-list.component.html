@@ -4,211 +4,197 @@
   </div>
 
   <!-- Header with Stats -->
-  <div class="premium-header mb-6">
-    <div
-      class="flex flex-column lg:flex-row justify-content-between align-items-start lg:align-items-center mb-6 gap-4">
-      <div class="header-title">
-        <div class="flex align-items-center gap-4 mb-2">
-          <div class="icon-wrapper">
-            <i class="pi pi-truck text-3xl"></i>
+  <!-- Masterpiece Header & Stats -->
+  <div class="card border-none shadow-none bg-transparent mb-4">
+    <div class="flex flex-column lg:flex-row justify-content-between align-items-center mb-5 lg:mb-6 gap-4">
+  
+      <!-- Right Side: Title -->
+      <div class="flex align-items-center order-1 lg:order-2 gap-3 text-right">
+        <div class="flex flex-column align-items-end">
+          <h1 class="text-4xl lg:text-5xl font-bold m-0 text-900 tracking-tight mb-1">إدارة الموردين</h1>
+          <p class="text-600 m-0 text-lg opacity-80">نظام ذكي لمراقبة الشركاء، الأرصدة، وسلسلة التوريد</p>
+        </div>
+        <div class="w-4rem h-4rem bg-blue-600 border-round-xl flex align-items-center justify-content-center shadow-4">
+          <i class="pi pi-truck text-white text-3xl"></i>
+        </div>
+        </div>
+<!-- Left Side: Buttons -->
+<div class="flex gap-3 order-2 lg:order-1 w-full lg:w-auto justify-content-center lg:justify-content-start">
+  <button pButton label="سندات الصرف" icon="pi pi-wallet" routerLink="/partners/suppliers/payments"
+    class="p-button-outlined p-button-rounded border-blue-200 text-blue-600 hover:bg-blue-50 font-bold px-4 h-3rem"></button>
+  <button pButton label="إضافة مورد جديد" icon="pi pi-plus" routerLink="/partners/suppliers/create"
+    class="p-button-rounded bg-blue-600 border-blue-600 shadow-3 hover:shadow-5 font-bold px-4 h-3rem"></button>
+</div>
+</div>
+
+    <!-- Minimalist KPI Row -->
+    <div class="flex flex-column lg:flex-row justify-content-between gap-4 lg:gap-6 px-2 lg:px-5">
+    
+      <!-- Card 3: Total Debt (Right aligned in RTL) -->
+      <div class="flex-1 flex flex-column align-items-center lg:align-items-end text-center lg:text-right">
+        <div class="flex align-items-center gap-3 mb-2">
+          <span class="text-700 font-bold text-sm">إجمالي المديونية المستحقة</span>
+          <div class="w-3rem h-3rem border-circle surface-100 flex align-items-center justify-content-center">
+            <i class="pi pi-chart-line text-xl text-900"></i>
           </div>
-          <div>
-                        <h1 class="text-5xl font-bold m-0 tracking-tight">إدارة الموردين</h1>
-                        <p class="text-color-secondary mt-1 text-xl opacity-80">نظام ذكي لمراقبة الشركاء، الأرصدة، وسلسلة التوريد</p>
-                        </div>
-                </div>
-                </div>
-                <div class="flex gap-3 w-full lg:w-auto">
-                  <p-button label="سندات الصرف" icon="pi pi-wallet" routerLink="/partners/suppliers/payments"
-                    styleClass="p-button-outlined p-button-rounded h-3rem font-bold border-2 hover:bg-blue-50 transition-colors">
-                  </p-button>
-                  <p-button label="إضافة مورد جديد" icon="pi pi-plus-circle"
-                    routerLink="/partners/suppliers/create"
-                    styleClass="p-button-raised p-button-rounded premium-btn shadow-6">
-                </p-button>
-            </div>
+        </div>
+        <div class="text-5xl font-bold text-900 mb-2">{{ totalDebt() | number }} <span
+            class="text-xl text-500 font-medium">ر.ي</span></div>
+        <div class="flex align-items-center gap-2 w-full justify-content-center lg:justify-content-end">
+          <span class="text-sm font-bold text-700">60%</span>
+          <span class="text-sm text-500">معدل التحصيل / السداد</span>
+        </div>
+        <p-progressBar [value]="60" [showValue]="false"
+          styleClass="h-1rem w-10rem mt-2 border-round-xl custom-progress"></p-progressBar>
         </div>
 
-        <div class="grid mt-4">
-          <!-- Total Debt Card -->
-          <div class="col-12 md:col-6 lg:col-4">
-            <div class="stat-card glass-morphism debt">
-              <div class="flex justify-content-between align-items-start">
-                <div>
-                  <span class="block text-600 font-bold mb-3 uppercase tracking-widest text-sm">إجمالي المديونية المستحقة</span>
-                  <div class="text-red-500 font-bold text-4xl mb-2">{{ totalDebt() | number }} <small
-                      class="text-lg">ر.ي</small></div>
-                </div>
-                        <div class="stat-icon red-light-bg shadow-2">
-                          <i class="pi pi-chart-line text-2xl"></i>
-                        </div>
-                        </div>
-                    <div class="mt-4">
-                      <div class="flex justify-content-between mb-2">
-                        <span class="text-sm font-semibold opacity-70">معدل التحصيل / السداد</span>
-                        <span class="text-sm font-bold text-red-600">60%</span>
-                      </div>
-                        <p-progressBar [value]="60" [showValue]="false" styleClass="h-6px"></p-progressBar>
-                        </div>
-                        </div>
-                        </div>
+      <!-- Separator -->
+      <div class="hidden lg:block w-1px bg-gray-200 h-8rem align-self-center my-auto"></div>
+      
+      <!-- Card 2: Critical Debt -->
+      <div class="flex-1 flex flex-column align-items-center lg:align-items-end text-center lg:text-right">
+        <div class="flex align-items-center gap-3 mb-2">
+          <span class="text-700 font-bold text-sm">موردين بمديونية حرجة</span>
+          <div class="w-3rem h-3rem border-circle surface-100 flex align-items-center justify-content-center">
+            <i class="pi pi-exclamation-circle text-xl text-900"></i>
+          </div>
+        </div>
+        <div class="text-5xl font-bold text-900 mb-2">{{ highDebtCount() }}</div>
+        <div class="flex align-items-center gap-2 text-sm text-500">
+          <span>يحتاج <strong>{{ highDebtCount() }}</strong> مورد لتسوية أرصدتهم فوراً</span>
+          <i class="pi pi-info-circle"></i>
+        </div>
+        </div>
 
-            <!-- High Debt Suppliers Card -->
-            <div class="col-12 md:col-6 lg:col-4">
-              <div class="stat-card glass-morphism high-debt">
-                <div class="flex justify-content-between align-items-start">
-                  <div>
-                            <span class="block text-600 font-bold mb-3 uppercase tracking-widest text-sm">موردين بمديونية حرجة</span>
-                            <div class="text-orange-500 font-bold text-4xl mb-1">{{ highDebtCount() }}</div>
-                            </div>
-                        <div class="stat-icon orange-light-bg shadow-2">
-                          <i class="pi pi-exclamation-circle text-2xl"></i>
-                        </div>
-                        </div>
-                        <div class="mt-4 text-sm font-medium">
-                          <span class="text-orange-600"><i class="pi pi-info-circle ml-1"></i> تنبيه:</span> يحتاج بعض الموردين لتسوية أرصدتهم
-                          فوراً
-                        </div>
-                        </div>
-                        </div>
+      <!-- Separator -->
+      <div class="hidden lg:block w-1px bg-gray-200 h-8rem align-self-center my-auto"></div>
+      
+      <!-- Card 1: Total Suppliers -->
+      <div class="flex-1 flex flex-column align-items-center lg:align-items-end text-center lg:text-right">
+        <div class="flex align-items-center gap-3 mb-2">
+          <span class="text-700 font-bold text-sm">إجمالي شبكة الموردين</span>
+          <div class="w-3rem h-3rem border-circle surface-100 flex align-items-center justify-content-center">
+            <i class="pi pi-users text-xl text-900"></i>
+          </div>
+        </div>
+        <div class="text-5xl font-bold text-900 mb-2">{{ suppliers().length }}</div>
+        <div class="flex align-items-center gap-2 text-sm">
+          <span class="text-500">نمو في عدد الموردين هذا الشهر</span>
+          <span class="text-green-600 font-bold flex align-items-center dir-ltr">
+            <i class="pi pi-arrow-up text-xs mr-1"></i> 8%
+          </span>
+        </div>
+        </div>
+        </div>
+        </div>
 
-            <!-- Total Suppliers Card -->
-            <div class="col-12 lg:col-4">
-              <div class="stat-card glass-morphism total-suppliers">
-                <div class="flex justify-content-between align-items-start">
-                  <div>
-                            <span class="block text-600 font-bold mb-3 uppercase tracking-widest text-sm">إجمالي شبكة الموردين</span>
-                            <div class="text-blue-600 font-bold text-4xl mb-1">{{ suppliers().length }}</div>
-                            </div>
-                        <div class="stat-icon blue-light-bg shadow-2">
-                          <i class="pi pi-users text-2xl"></i>
-                        </div>
-                        </div>
-                    <div class="mt-4 text-sm">
-                      <span class="text-green-500 font-bold bg-green-50 px-2 py-1 border-round-lg ml-2"><i
-                          class="pi pi-arrow-up text-xs mr-1"></i> 8%</span>
-                      <span class="text-600 font-medium">نمو في عدد الموردين هذا الشهر</span>
-                    </div>
-                </div>
-                </div>
-                </div>
-    </div>
-
-    <!-- Table Section -->
-    <div class="glass-panel p-0 overflow-hidden shadow-8 border-round-3xl bg-white-alpha-80 border-1 border-white-alpha-30">
-      <p-table [value]="suppliers()" [loading]="loading()" [paginator]="true" [rows]="10"
+    <!-- Condensed Data Table Section -->
+    <div
+      class="glass-panel p-0 overflow-hidden shadow-4 border-round-xl bg-white-alpha-90 border-1 border-white-alpha-40 mt-3">
+      <p-table #dt [value]="suppliers()" [loading]="loading()" [paginator]="true" [rows]="10" [lazy]="true"
+        (onLazyLoad)="loadSuppliers($event)" [totalRecords]="totalRecords()"
             [rowsPerPageOptions]="[10, 25, 50]"
             [showCurrentPageReport]="true"
-            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
-            styleClass="premium-table">
+            currentPageReportTemplate="{first}-{last} / {totalRecords}"
+            styleClass="p-datatable-sm text-sm"
+            [rowHover]="true">
             
             <ng-template pTemplate="caption">
-                <div class="flex flex-column md:flex-row justify-content-between align-items-center p-4 gap-3">
+                <div class="flex flex-column md:flex-row justify-content-between align-items-center p-2 px-3 gap-2">
                     <div class="flex align-items-center gap-2">
-                        <i class="pi pi-list text-2xl text-blue-600"></i>
-                        <span class="text-xl font-bold text-900">قائمة الشركاء التجاريين</span>
+                        <i class="pi pi-list text-lg text-blue-600"></i>
+                        <span class="text-base font-bold text-800">قائمة الشركاء</span>
                     </div>
                     <div class="flex gap-2 w-full md:w-auto">
                         <span class="p-input-icon-left w-full">
-                            <i class="pi pi-search text-600"></i>
-                            <input pInputText type="text" placeholder="ابحث بالاسم، الهاتف، أو العنوان..." class="w-full md:w-25rem" />
+                            <i class="pi pi-search text-500 text-xs"></i>
+                            <input #searchInput pInputText type="text" (input)="dt.filterGlobal(searchInput.value, 'contains')" placeholder="بحث..."
+                              class="w-full md:w-15rem p-inputtext-sm" />
                         </span>
-                        <p-button icon="pi pi-filter" styleClass="p-button-text p-button-secondary border-1 border-200"></p-button>
+                        <p-button icon="pi pi-filter"
+                          styleClass="p-button-text p-button-sm p-button-secondary border-1 border-200 w-2rem h-2rem"></p-button>
                     </div>
                 </div>
             </ng-template>
 
             <ng-template pTemplate="header">
-              <tr>
-                    <th class="text-right">معلومات المورد</th>
-                    <th class="text-right">بيانات التواصل</th>
-                    <th class="text-right" pSortableColumn="balance">الرصيد المالي <p-sortIcon field="balance"></p-sortIcon></th>
-                    <th class="text-right">تاريخ الإضافة</th>
-                    <th class="text-right">الحالة</th>
-                    <th class="text-center">إجراءات التحكم</th>
+              <tr class="text-xs bg-gray-50">
+                <th class="text-right p-2 font-semibold text-700">المورد</th>
+                <th class="text-right p-2 font-semibold text-700">تواصل</th>
+                <th class="text-right p-2 font-semibold text-700" pSortableColumn="Balance">الرصيد <p-sortIcon
+                    field="Balance"></p-sortIcon></th>
+                <th class="text-right p-2 font-semibold text-700">تاريخ الإضافة</th>
+                <th class="text-right p-2 font-semibold text-700">الحالة</th>
+                <th class="text-center p-2 font-semibold text-700">تحكم</th>
                     </tr>
                     </ng-template>
 
             <ng-template pTemplate="body" let-supplier>
-                <tr class="hover-row">
-                  <td>
-                    <div class="flex align-items-center gap-3">
-                      <div class="avatar-circle shadow-4" [style.background]="getRandomColor(supplier.name)">
+                <tr class="hover-row transition-colors transition-duration-100">
+                  <td class="p-2">
+                    <div class="flex align-items-center gap-2">
+                      <div class="avatar-circle w-2rem h-2rem text-sm shadow-1 border-none"
+                        [style.background]="getRandomColor(supplier.name)">
                         {{ supplier.name?.charAt(0) }}
                       </div>
-                            <div class="flex flex-column gap-1">
-                              <span class="font-bold text-900 text-lg">{{ supplier.name }}</span>
-                              <div class="flex align-items-center text-600 text-xs">
-                                <i class="pi pi-map-marker ml-1"></i>
-                                <span>{{ supplier.address || 'لم يتم تحديد عنوان' }}</span>
+                            <div class="flex flex-column">
+                              <span class="font-bold text-800 text-sm white-space-nowrap overflow-hidden text-overflow-ellipsis"
+                                style="max-width: 15rem;">{{ supplier.name }}</span>
+                              <div class="flex align-items-center text-500 text-xs gap-1">
+                                <i class="pi pi-map-marker" style="font-size: 0.6rem;"></i>
+                                <span class="white-space-nowrap overflow-hidden text-overflow-ellipsis" style="max-width: 10rem;">{{
+                                  supplier.address || 'بدون عنوان' }}</span>
                               </div>
                             </div>
                             </div>
                             </td>
-                    <td>
-                      <div class="flex flex-column gap-2">
+                    <td class="p-2">
+                      <div class="flex flex-column gap-1">
                         <a [href]="'tel:' + supplier.phoneNumber"
-                          class="no-underline text-blue-600 font-bold flex align-items-center gap-2 hover:underline">
-                          <div class="w-2rem h-2rem border-circle bg-blue-50 flex align-items-center justify-content-center">
-                            <i class="pi pi-phone text-xs"></i>
-                          </div>
+                          class="no-underline text-blue-600 font-medium flex align-items-center gap-1 hover:text-blue-800 text-xs">
+                          <i class="pi pi-phone" style="font-size: 0.7rem;"></i>
                           <span>{{ supplier.phoneNumber }}</span>
                         </a>
-                        <div class="flex align-items-center gap-2 text-600 text-sm italic">
-                          <i class="pi pi-envelope text-xs"></i>
-                          <span>{{ supplier.email || 'لا يوجد بريد' }}</span>
-                        </div>
                       </div>
                     </td>
-                    <td class="font-bold">
-                      <div class="flex flex-column">
-                        <span [class]="supplier.balance > 0 ? 'text-red-500' : 'text-green-500'" class="text-xl">
-                          {{ supplier.balance | number }} <small class="text-xs">ر.ي</small>
+                    <td class="p-2 font-semibold">
+                      <div class="flex align-items-baseline gap-1">
+                        <span [class]="supplier.Balance > 0 ? 'text-red-600' : 'text-green-600'" class="text-sm">
+                          {{ supplier.Balance | number }}
                         </span>
-                            <span class="text-xs text-500 font-medium">{{ supplier.balance > 0 ? 'ذمم مستحقة' : 'رصيد دائن' }}</span>
-                            </div>
-                            </td>
-                            <td class="text-600">
-                              <div class="flex align-items-center gap-2">
-                                <i class="pi pi-calendar-plus opacity-70"></i>
-                                <span>{{ supplier.createdAt | date:'yyyy/MM/dd' }}</span>
+                        <small class="text-xs text-500">ر.ي</small>
                         </div>
                         </td>
-                    <td>
-                      <p-tag [severity]="supplier.isActive ? 'success' : 'danger'" [value]="supplier.isActive ? 'نشط' : 'متوقف'"
-                        [rounded]="true" styleClass="px-4 py-2 text-xs font-bold shadow-1">
+                            <td class="p-2 text-600 text-xs">
+                                <span>{{ supplier.createdAt | date:'yyyy/MM/dd' }}</span>
+                        </td>
+                    <td class="p-2">
+                      <p-tag [value]="supplier.statusName"
+                        [style]="{'background-color': supplier.statusColor + '15', 'color': supplier.statusColor, 'border': '1px solid ' + supplier.statusColor + '40'}"
+                        [rounded]="true" styleClass="px-2 py-0 text-xs font-bold h-1.5rem">
                       </p-tag>
                     </td>
-                    <td class="text-center">
-                      <div class="flex justify-content-center gap-2">
-                        <button pButton icon="pi pi-id-card" class="p-button-rounded p-button-text hover:bg-blue-50"
-                          pTooltip="عرض الملف الشخصي" [routerLink]="['/partners/suppliers/detail', supplier.id]"></button>
-                        <button pButton icon="pi pi-file-pdf" class="p-button-rounded p-button-text p-button-success hover:bg-green-50"
-                          pTooltip="كشف الحساب التفصيلي" [routerLink]="['/partners/suppliers/statement', supplier.id]"></button>
-                        <button pButton icon="pi pi-wallet" class="p-button-rounded p-button-text p-button-info hover:bg-cyan-50"
-                          pTooltip="إنشاء سند صرف" [routerLink]="['/partners/suppliers/payments']"
-                          [queryParams]="{supplierId: supplier.id}"></button>
-                        <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-warning hover:bg-orange-50"
-                          pTooltip="تعديل البيانات" [routerLink]="['/partners/suppliers/edit', supplier.id]"></button>
-                        <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger hover:bg-red-50"
-                          pTooltip="حذف نهائي" (click)="deleteSupplier($event, supplier)"></button>
-                      </div>
+                    <td class="text-center p-2">
+                      <button pButton type="button" icon="pi pi-ellipsis-v"
+                        class="p-button-rounded p-button-text p-button-secondary p-button-sm w-2rem h-2rem hover:bg-surface-100"
+                        (click)="showMenu(menu, $event, supplier)"></button>
+                      <p-menu #menu [model]="items" [popup]="true" appendTo="body" styleClass="premium-menu text-sm"></p-menu>
                     </td>
                     </tr>
                     </ng-template>
 
             <ng-template pTemplate="emptymessage">
               <tr>
-                    <td colspan="6" class="text-center p-8 bg-white-alpha-50">
+                    <td colspan="6" class="text-center p-6 bg-white-alpha-50">
                       <div class="empty-state">
                         <div
-                          class="w-8rem h-8rem bg-blue-50 border-circle flex align-items-center justify-content-center mx-auto mb-4 shadow-2">
-                          <i class="pi pi-truck text-6xl text-blue-300"></i>
+                          class="w-6rem h-6rem bg-blue-50 border-circle flex align-items-center justify-content-center mx-auto mb-3 shadow-1">
+                          <i class="pi pi-truck text-4xl text-blue-300"></i>
                         </div>
-                        <h3 class="text-2xl font-bold text-700 mb-2">لا يوجد موردون حالياً</h3>
-                        <p class="text-500 mb-6 text-lg">لم يتم العثور على أي بيانات، ابدأ ببناء شبكة الموردين الخاصة بك الآن</p>
-                        <p-button label="إضافة أول مورد" icon="pi pi-plus" routerLink="/partners/suppliers/create"
-                          styleClass="p-button-rounded premium-btn px-6"></p-button>
+                        <h3 class="text-lg font-bold text-700 mb-1">لا يوجد موردون</h3>
+                        <p class="text-500 mb-4 text-sm">ابدأ ببناء شبكة الموردين الآن</p>
+                        <p-button label="إضافة مورد" icon="pi pi-plus" routerLink="/partners/suppliers/create"
+                          styleClass="p-button-rounded p-button-sm premium-btn px-4"></p-button>
                       </div>
                     </td>
                     </tr>

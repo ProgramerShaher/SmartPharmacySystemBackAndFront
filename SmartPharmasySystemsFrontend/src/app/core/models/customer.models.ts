@@ -1,7 +1,7 @@
 export interface Customer {
     id: number;
     name: string;
-    phone?: string;
+    phoneNumber?: string;
     email?: string;
     address?: string;
     balance: number; // Current debt (positive = customer owes us)
@@ -63,4 +63,14 @@ export interface CustomerQueryDto {
     hasDebt?: boolean; // Filter customers with balance > 0
     page?: number;
     pageSize?: number;
+}
+
+export interface CustomerStatistics {
+    totalDebt: number;
+    activeCustomersCount: number;
+    inactiveCustomersCount: number;
+    highDebtCustomersCount: number; // > 5000
+    lowDebtCount: number;    // 0 - 1000
+    mediumDebtCount: number; // 1000 - 5000
+    highDebtDistributionCount: number; // > 5000
 }

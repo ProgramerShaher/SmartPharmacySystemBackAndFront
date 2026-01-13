@@ -28,6 +28,13 @@ public class FinancialService : IFinancialService
         return _mapper.Map<PharmacyAccountDto>(account);
     }
 
+    public async Task<PharmacyAccountDto> GetAccountByIdAsync(int id)
+    {
+        var account = await _unitOfWork.Financials.GetAccountByIdAsync(id)
+                     ?? throw new KeyNotFoundException($"الحساب رقم {id} غير موجود");
+        return _mapper.Map<PharmacyAccountDto>(account);
+    }
+
     /// <summary>
     /// معالجة حركة مالية واحدة
     /// CRITICAL: الرصيد يُحسب من الحركات فقط - لا تعديل مباشر

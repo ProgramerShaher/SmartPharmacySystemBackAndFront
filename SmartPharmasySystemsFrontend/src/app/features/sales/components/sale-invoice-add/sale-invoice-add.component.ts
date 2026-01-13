@@ -78,16 +78,16 @@ export class SaleInvoiceAddComponent {
             totalAmount: this.totalAmount
         };
 
-        this.salesService.createInvoice(saleData).subscribe({
+        this.salesService.create(saleData).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Sale completed' });
-                this.router.navigate(['/sales/invoices']);
+                this.router.navigate(['/sales']);
             },
-            error: (e) => console.error(e)
+            error: (e: any) => console.error(e)
         });
     }
 
     cancel() {
-        this.router.navigate(['/sales/invoices']);
+        this.router.navigate(['/sales']);
     }
 }

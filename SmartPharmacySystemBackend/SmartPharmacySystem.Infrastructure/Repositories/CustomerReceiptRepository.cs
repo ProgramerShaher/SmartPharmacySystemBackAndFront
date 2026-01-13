@@ -44,5 +44,52 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .Include(r => r.Customer)
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
+
+        public async Task<(IEnumerable<CustomerReceipt> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize, DateTime? fromDate, DateTime? toDate)
+        {
+            var query = _context.CustomerReceipts
+                .Include(r => r.Customer)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(r => r.Customer.Name.Contains(search) || r.Id.ToString().Contains(search) || (r.ReferenceNo != null && r.ReferenceNo.Contains(search)));
+            }
+
+            if (fromDate.HasValue)
+                query = query.Where(r => r.ReceiptDate >= fromDate.Value);
+
+            if (toDate.HasValue)
+                query = query.Where(r => r.ReceiptDate <= toDate.Value);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(r => r.ReceiptDate)
+                .ThenByDescending(r => r.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+        public async Task<(int TotalCount, decimal TotalAmount, decimal TodayAmount)> GetStatisticsAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            
+            var totalCount = await _context.CustomerReceipts
+                .CountAsync(r => !r.IsCancelled);
+
+            var totalAmount = await _context.CustomerReceipts
+                .Where(r => !r.IsCancelled)
+                .SumAsync(r => r.Amount);
+
+            var todayAmount = await _context.CustomerReceipts
+                .Where(r => !r.IsCancelled && r.ReceiptDate.Date == today)
+                .SumAsync(r => r.Amount);
+
+            return (totalCount, totalAmount, todayAmount);
+        }
     }
 }

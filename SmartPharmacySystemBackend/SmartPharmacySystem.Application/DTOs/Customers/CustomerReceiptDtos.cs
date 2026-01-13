@@ -22,6 +22,7 @@ namespace SmartPharmacySystem.Application.DTOs.Customers
         public DateTime ReceiptDate { get; set; } = DateTime.UtcNow;
         public string? ReferenceNo { get; set; }
         public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
+        public int? SaleInvoiceId { get; set; }
         public string? Notes { get; set; }
     }
 

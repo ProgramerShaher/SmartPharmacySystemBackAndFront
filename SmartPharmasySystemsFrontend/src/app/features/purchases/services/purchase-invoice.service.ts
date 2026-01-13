@@ -55,9 +55,15 @@ export class PurchaseInvoiceService {
             params = params.set('pageSize', query.pageSize.toString());
         }
 
-        return this.http.get<ApiResponse<PurchaseInvoice[]>>(this.apiUrl, { params })
+        return this.http.get<ApiResponse<any>>(this.apiUrl, { params })
             .pipe(
-                map(response => response.data || []),
+                map(response => {
+                    const data = response.data;
+                    if (data && Array.isArray(data.items)) {
+                        return data.items;
+                    }
+                    return Array.isArray(data) ? data : [];
+                }),
                 catchError(this.handleError)
             );
     }

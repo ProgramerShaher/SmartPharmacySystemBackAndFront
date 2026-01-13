@@ -1,157 +1,106 @@
-<div class="add-edit-container animate-fade-in pb-8" dir="rtl">
-  <!-- Breadcrumb / Back Navigation -->
-  <div class="navigation-bar mb-5 flex align-items-center gap-3">
-    <p-button icon="pi pi-arrow-right"
-            (click)="onCancel()" 
-            styleClass="p-button-rounded p-button-text p-button-plain surface-100 shadow-1 hover:surface-200 transition-all h-3rem w-3rem">
-        </p-button>
-        <span class="text-600 font-bold uppercase tracking-wider text-sm">إدارة الشركاء / {{ isEditMode ? 'تعديل بيانات' : 'إضافة جديد' }}</span>
-    </div>
-<div
-  class="max-w-4xl mx-auto shadow-8 border-round-3xl glass-panel-form overflow-hidden border-1 border-white-alpha-30">
-  <!-- Form Header -->
-  <div class="form-header-premium p-6 text-white relative">
-    <div
-      class="absolute top-0 right-0 w-full h-full opacity-10 pointer-events-none overflow-hidden border-round-top-3xl">
-      <i class="pi pi-truck absolute -bottom-2 -left-2 text-8xl rotate-12"></i>
+<div class="add-edit-container animate-fade-in p-4" dir="rtl">
+  <div class="max-w-4xl mx-auto">
+    <!-- Compact Header -->
+    <div class="flex justify-content-between align-items-center mb-4">
+      <div class="flex align-items-center gap-3">
+        <button pButton icon="pi pi-arrow-right" (click)="onCancel()"
+          class="p-button-text p-button-rounded text-600"></button>
+        <h1 class="text-2xl font-bold text-900 m-0">
+          {{ isEditMode ? 'تحديث بيانات مورد' : 'إضافة مورد جديد' }}
+        </h1>
             </div>
-            <div class="relative z-1">
-              <h1 class="text-4xl font-black m-0 mb-2">
-                <i class="pi {{ isEditMode ? 'pi-user-edit' : 'pi-user-plus' }} mr-2"></i>
-                {{ isEditMode ? 'تعديل بيانات المورد' : 'إضافة مورد تجاري جديد' }}
-              </h1>
-              <p class="text-white-alpha-80 text-lg font-medium">{{ isEditMode ? 'قم بتحديث سجل المورد والحفاظ على دقة البيانات
-                المالية' : 'أدخل بيانات الشريك الجديد لبدء التعاملات التجارية' }}</p>
+            <div class="text-sm text-500 d-none md:block">
+              {{ isEditMode ? '#SUP-' + supplierId : 'سجل جديد' }}
             </div>
-            <div class="header-wave-decoration"></div>
         </div>
 
-        <!-- Main Form Body -->
-        <div class="p-5 md:p-8 bg-white-alpha-90">
-            <!-- Loading State -->
-            <div *ngIf="loading" class="flex flex-column justify-content-center align-items-center py-8">
-              <div class="premium-form-loader mb-4"></div>
-              <p class="text-indigo-600 font-bold text-xl animate-pulse">جاري جلب بيانات المورد...</p>
+        <!-- Compact Form -->
+        <div class="surface-card p-4 border-round-xl border-1 border-200 shadow-sm">
+          <div *ngIf="loading" class="flex justify-content-center p-5">
+            <div class="premium-form-loader"></div>
             </div>
-<form *ngIf="!loading" [formGroup]="supplierForm" (ngSubmit)="onSubmit()" class="animate-fade-in">
-  <!-- Section 1: Basic Identity -->
-  <div class="form-section mb-8">
-    <div class="flex align-items-center gap-2 mb-5 border-bottom-1 surface-border pb-3">
-      <div
-        class="section-number bg-indigo-600 text-white font-bold w-2rem h-2rem flex align-items-center justify-content-center border-round-lg shadow-2 text-sm">
-        ١</div>
-      <h2 class="text-xl font-bold text-900 m-0">المعلومات الأساسية والتعريفية</h2>
+<form *ngIf="!loading" [formGroup]="supplierForm" (ngSubmit)="onSubmit()">
+  <!-- Identity Section -->
+  <div class="grid p-fluid">
+                    <div class="col-12 mb-3">
+                      <span class="text-900 font-bold block mb-1">البيانات الأساسية</span>
+                      <div class="h-1px bg-100 w-full mb-3"></div>
                     </div>
-                    <div class="grid p-fluid">
-                      <div class="field col-12 md:col-6">
-                        <label class="font-bold text-700 block mb-2">أسم المورد / الشركة <span class="text-red-500">*</span></label>
+                    
+                    <div class="col-12 md:col-6 mb-3">
+                      <label class="block text-sm font-medium mb-1">اسم المورد / الشركة <span class="text-red-500">*</span></label>
                         <span class="p-input-icon-right">
-                          <i class="pi pi-building text-indigo-400"></i>
-                          <input pInputText formControlName="name" placeholder="مثلاً: شركة التوريدات الطبية" class="premium-input" />
+                            <i class="pi pi-building text-400 text-sm"></i>
+                            <input pInputText formControlName="name" placeholder="اسم الشركة" class="p-inputtext-sm w-full" />
                         </span>
-                        <small class="text-red-500 font-medium"
-                          *ngIf="supplierForm.get('name')?.touched && supplierForm.get('name')?.invalid">{{ getFieldError('name') }}</small>
-                      </div>
-                        <div class="field col-12 md:col-6">
-                          <label class="font-bold text-700 block mb-2">اسم مسؤول المبيعات (المندوب) <span class="text-red-500">*</span></label>
-                          <span class="p-input-icon-right">
-                            <i class="pi pi-user text-indigo-400"></i>
-                            <input pInputText formControlName="contactPerson" placeholder="اسم الشخص الذي تتواصل معه" class="premium-input" />
-                          </span>
-                          <small class="text-red-500 font-medium"
-                            *ngIf="supplierForm.get('contactPerson')?.touched && supplierForm.get('contactPerson')?.invalid">{{
-                            getFieldError('contactPerson') }}</small>
+                        <small class="text-red-500 block mt-1" *ngIf="supplierForm.get('name')?.invalid && supplierForm.get('name')?.touched">{{
+                          getFieldError('name') }}</small>
                         </div>
-                        </div>
+<div class="col-12 md:col-6 mb-3">
+  <label class="block text-sm font-medium mb-1">مسؤول المبيعات <span class="text-red-500">*</span></label>
+  <span class="p-input-icon-right">
+                            <i class="pi pi-user text-400 text-sm"></i>
+                            <input pInputText formControlName="contactPerson" placeholder="اسم جهة الاتصال" class="p-inputtext-sm w-full" />
+                            </span>
+                        <small class="text-red-500 block mt-1"
+                          *ngIf="supplierForm.get('contactPerson')?.invalid && supplierForm.get('contactPerson')?.touched">{{
+                          getFieldError('contactPerson') }}</small>
                         </div>
 
-                <!-- Section 2: Contact Details -->
-                <div class="form-section mb-8">
-                  <div class="flex align-items-center gap-2 mb-5 border-bottom-1 surface-border pb-3">
-                    <div
-                      class="section-number bg-blue-500 text-white font-bold w-2rem h-2rem flex align-items-center justify-content-center border-round-lg shadow-2 text-sm">
-                      ٢</div>
-                    <h2 class="text-xl font-bold text-900 m-0">قنوات التواصل والعناوين</h2>
-                  </div>
-                
-                  <div class="grid p-fluid">
-                    <div class="field col-12 md:col-6">
-                      <label class="font-bold text-700 block mb-2">رقم الهاتف الجوال <span class="text-red-500">*</span></label>
+                    <div class="col-12 md:col-6 mb-3">
+                      <label class="block text-sm font-medium mb-1">رقم الهاتف <span class="text-red-500">*</span></label>
                       <span class="p-input-icon-right">
-                        <i class="pi pi-phone text-blue-400"></i>
-                        <input pInputText formControlName="phoneNumber" placeholder="777XXXXXX" class="premium-input font-mono" />
-                      </span>
-                      <small class="text-red-500 font-medium"
-                        *ngIf="supplierForm.get('phoneNumber')?.touched && supplierForm.get('phoneNumber')?.invalid">{{
-                        getFieldError('phoneNumber') }}</small>
+                            <i class="pi pi-phone text-400 text-sm"></i>
+                            <input pInputText formControlName="phoneNumber" placeholder="رقم الهاتف" class="p-inputtext-sm w-full font-mono" />
+                            </span>
+                        <small class="text-red-500 block mt-1"
+                          *ngIf="supplierForm.get('phoneNumber')?.invalid && supplierForm.get('phoneNumber')?.touched">{{
+                          getFieldError('phoneNumber') }}</small>
                     </div>
-                
-                    <div class="field col-12 md:col-6">
-                      <label class="font-bold text-700 block mb-2">البريد الإلكتروني</label>
+
+                    <div class="col-12 md:col-6 mb-3">
+                      <label class="block text-sm font-medium mb-1">البريد الإلكتروني</label>
                       <span class="p-input-icon-right">
-                        <i class="pi pi-envelope text-blue-400"></i>
-                        <input pInputText formControlName="email" placeholder="example@domain.com" class="premium-input font-mono" />
-                      </span>
+                            <i class="pi pi-envelope text-400 text-sm"></i>
+                            <input pInputText formControlName="email" placeholder="example@mail.com" class="p-inputtext-sm w-full" />
+                            </span>
                     </div>
 
-                        <div class="field col-12">
-                          <label class="font-bold text-700 block mb-2">العنوان الجغرافي بالتفصيل <span class="text-red-500">*</span></label>
-                          <span class="p-input-icon-right">
-                            <i class="pi pi-map-marker text-red-400"></i>
-                            <input pInputText formControlName="address" placeholder="المدينة - الشارع - وصف المكان" class="premium-input" />
-                          </span>
-                          <small class="text-red-500 font-medium"
-                            *ngIf="supplierForm.get('address')?.touched && supplierForm.get('address')?.invalid">{{ getFieldError('address')
-                            }}</small>
-                        </div>
-                        </div>
+                    <div class="col-12 mb-3">
+                      <label class="block text-sm font-medium mb-1">العنوان <span class="text-red-500">*</span></label>
+                      <span class="p-input-icon-right">
+                            <i class="pi pi-map-marker text-400 text-sm"></i>
+                            <input pInputText formControlName="address" placeholder="العنوان التفصيلي" class="p-inputtext-sm w-full" />
+                            </span>
+                        <small class="text-red-500 block mt-1"
+                          *ngIf="supplierForm.get('address')?.invalid && supplierForm.get('address')?.touched">{{ getFieldError('address')
+                          }}</small>
                         </div>
 
-                <!-- Section 3: Financial & Notes -->
-                <div class="form-section mb-8">
-                  <div class="flex align-items-center gap-2 mb-5 border-bottom-1 surface-border pb-3">
-                    <div
-                      class="section-number bg-orange-500 text-white font-bold w-2rem h-2rem flex align-items-center justify-content-center border-round-lg shadow-2 text-sm">
-                      ٣</div>
-                    <h2 class="text-xl font-bold text-900 m-0">الرصيد الافتتاحي والملاحظات</h2>
-                  </div>
-
-                    <div class="grid p-fluid">
-                      <div class="field col-12 md:col-6" *ngIf="!isEditMode">
-                        <label class="font-bold text-700 block mb-2">الرصيد الافتتاحي المستحق للمورد</label>
-                        <p-inputNumber formControlName="balance"
-                                mode="currency" 
-                                currency="YER" 
-                                locale="ar-YE"
-                                inputStyleClass="premium-input font-black text-xl text-indigo-600 bg-indigo-50 border-primary-50">
-                            </p-inputNumber>
-                            <small class="text-500 block mt-1"><i class="pi pi-info-circle mr-1"></i> يتم إدخال هذا الرصيد لمرة واحدة فقط عند الإنشاء</small>
-                        </div>
-
-                        <div class="field col-12" [class.md:col-6]="!isEditMode">
-                          <label class="font-bold text-700 block mb-2">ملاحظات إرشادية</label>
-                          <textarea pInputTextarea formControlName="notes" rows="3"
-                                placeholder="اكتب أي ملاحظات مهمة عن التعامل مع هذا المورد..."
-                                class="premium-input border-round-2xl"></textarea>
-                        </div>
+                    <!-- Financial Section -->
+                    <div class="col-12 mt-3 mb-3">
+                      <span class="text-900 font-bold block mb-1">البيانات المالية</span>
+                      <div class="h-1px bg-100 w-full mb-3"></div>
                     </div>
-                </div>
 
-                <!-- Strategic Actions -->
-                <div class="flex flex-column md:flex-row justify-content-end align-items-center gap-4 pt-6 border-top-1 surface-border">
-                  <p-button label="إلغاء والعودة" icon="pi pi-times"
-                        (onClick)="onCancel()" 
-                        [text]="true"
-                        styleClass="p-button-plain font-bold h-3rem px-5">
-                    </p-button>
-                    <p-button 
-                        type="submit" 
-                        [label]="isEditMode ? 'تحديث السجل المالي' : 'إضافة المورد للنظام'" 
-                        [icon]="saving ? 'pi pi-spin pi-spinner' : (isEditMode ? 'pi pi-save' : 'pi pi-check-circle')" 
-                        [loading]="saving"
-                        [disabled]="supplierForm.invalid || saving"
-                        styleClass="premium-save-btn h-4rem px-8 shadow-8 border-round-2xl font-black text-xl">
-                    </p-button>
+                    <div class="col-12 md:col-6 mb-3" *ngIf="!isEditMode">
+                      <label class="block text-sm font-medium mb-1">الرصيد الافتتاحي</label>
+                      <p-inputNumber formControlName="balance" mode="currency" currency="YER" locale="ar-YE" styleClass="w-full"
+                        inputStyleClass="w-full p-inputtext-sm font-bold text-blue-800">
+                      </p-inputNumber>
+                    </div>
+
+                    <div class="col-12 mb-4">
+                      <label class="block text-sm font-medium mb-1">ملاحظات</label>
+                      <textarea pInputTextarea formControlName="notes" rows="3" class="p-inputtext-sm w-full border-200"></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="col-12 flex justify-content-end gap-2 border-top-1 border-100 pt-4">
+                      <p-button label="إلغاء" (click)="onCancel()" styleClass="p-button-text p-button-secondary p-button-sm"></p-button>
+                      <p-button type="submit" [label]="isEditMode ? 'حفظ التعديلات' : 'إضافة المورد'" [loading]="saving" icon="pi pi-check"
+                        styleClass="p-button-primary p-button-sm px-4 shadow-1"></p-button>
+                    </div>
                 </div>
             </form>
         </div>

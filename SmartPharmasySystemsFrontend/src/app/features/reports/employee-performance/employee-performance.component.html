@@ -1,0 +1,184 @@
+<div class="report-container">
+  <p-card styleClass="header-card">
+    <div class="header-content">
+      <div class="header-title">
+        <h2><i class="pi pi-id-card"></i> تقرير أداء الموظفين</h2>
+        <span>متابعة المبيعات والمردودات حسب الموظف والتاريخ</span>
+      </div>
+
+      <div class="filters">
+        <p-dropdown
+          [options]="employeeOptions()"
+          [(ngModel)]="selectedEmployeeId"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="الموظف"
+          [showClear]="true">
+        </p-dropdown>
+
+        <p-dropdown
+          [options]="roleOptions()"
+          [(ngModel)]="selectedRoleId"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="الدور"
+          [showClear]="true">
+        </p-dropdown>
+
+        <p-dropdown
+          [options]="operationTypes"
+          [(ngModel)]="selectedOperationType"
+          optionLabel="label"
+          optionValue="value">
+        </p-dropdown>
+
+        <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
+        <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
+
+        <p-button icon="pi pi-search" label="عرض" (click)="applyFilter()"></p-button>
+        <p-button icon="pi pi-refresh" label="مسح" severity="secondary" [outlined]="true" (click)="resetFilters()"></p-button>
+        <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" (click)="printReport()"></p-button>
+      </div>
+    </div>
+  </p-card>
+
+  <div class="loading-container" *ngIf="loading()">
+    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+  </div>
+
+  <p-card *ngIf="error() && !loading()" styleClass="error-card">
+    {{ error() }}
+  </p-card>
+
+  <div class="summary-cards" *ngIf="report() && !loading()">
+    <div class="summary-card sales">
+      <div class="summary-icon"><i class="pi pi-shopping-cart"></i></div>
+      <div class="summary-content">
+        <span class="label">إجمالي المبيعات</span>
+        <span class="value">{{ formatCurrency(summary().totalSales) }}</span>
+      </div>
+    </div>
+
+    <div class="summary-card returns">
+      <div class="summary-icon"><i class="pi pi-replay"></i></div>
+      <div class="summary-content">
+        <span class="label">إجمالي المردودات</span>
+        <span class="value">{{ formatCurrency(summary().totalReturns) }}</span>
+      </div>
+    </div>
+
+    <div class="summary-card net">
+      <div class="summary-icon"><i class="pi pi-wallet"></i></div>
+      <div class="summary-content">
+        <span class="label">صافي المبيعات</span>
+        <span class="value">{{ formatCurrency(summary().netSales) }}</span>
+      </div>
+    </div>
+
+    <div class="summary-card count">
+      <div class="summary-icon"><i class="pi pi-file"></i></div>
+      <div class="summary-content">
+        <span class="label">الفواتير / المردودات</span>
+        <span class="value">{{ summary().invoiceCount }} / {{ summary().returnCount }}</span>
+      </div>
+    </div>
+  </div>
+
+  <p-card styleClass="table-card" *ngIf="report() && !loading()">
+    <ng-template pTemplate="title">ملخص الموظفين</ng-template>
+    <p-table [value]="report()!.employees" [rowHover]="true" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>الموظف</th>
+          <th>الدور</th>
+          <th class="text-center">عدد الفواتير</th>
+          <th class="text-center">المبيعات</th>
+          <th class="text-center">عدد المردودات</th>
+          <th class="text-center">المردودات</th>
+          <th class="text-center">الصافي</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-employee>
+        <tr>
+          <td>
+            <strong>{{ employee.employeeName }}</strong>
+            <span class="muted">&#64;{{ employee.username }}</span>
+          </td>
+          <td><p-tag [value]="employee.roleName" severity="info"></p-tag></td>
+          <td class="text-center">{{ employee.salesInvoiceCount }}</td>
+          <td class="text-center">{{ formatCurrency(employee.totalSales) }}</td>
+          <td class="text-center">{{ employee.salesReturnCount }}</td>
+          <td class="text-center text-danger">{{ formatCurrency(employee.totalReturns) }}</td>
+          <td class="text-center text-success">{{ formatCurrency(employee.netSales) }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="7" class="empty-message">لا توجد عمليات حسب الفلاتر الحالية</td></tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-card styleClass="table-card" *ngIf="report() && !loading() && report()!.saleInvoices.length">
+    <ng-template pTemplate="title">تفاصيل فواتير البيع</ng-template>
+    <p-table [value]="report()!.saleInvoices" [rowHover]="true" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>الفاتورة</th>
+          <th>التاريخ والوقت</th>
+          <th>الموظف</th>
+          <th>العميل</th>
+          <th>الأصناف</th>
+          <th class="text-center">الإجمالي</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-invoice>
+        <tr>
+          <td>{{ invoice.invoiceNumber }}</td>
+          <td>{{ formatDateTime(invoice.invoiceDate) }}</td>
+          <td>{{ invoice.employeeName }}</td>
+          <td>{{ invoice.customerName || '-' }}</td>
+          <td>
+            <div class="items-list">
+              <span *ngFor="let item of invoice.items">
+                {{ item.medicineName }} × {{ item.quantity }} = {{ formatCurrency(item.totalAmount) }}
+              </span>
+            </div>
+          </td>
+          <td class="text-center">{{ formatCurrency(invoice.totalAmount) }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <p-card styleClass="table-card" *ngIf="report() && !loading() && report()!.salesReturns.length">
+    <ng-template pTemplate="title">تفاصيل مردودات البيع</ng-template>
+    <p-table [value]="report()!.salesReturns" [rowHover]="true" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>رقم المردود</th>
+          <th>الفاتورة</th>
+          <th>التاريخ والوقت</th>
+          <th>الموظف</th>
+          <th>الأصناف المرتجعة</th>
+          <th class="text-center">قيمة الإرجاع</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-returnItem>
+        <tr>
+          <td>SR-{{ returnItem.returnId }}</td>
+          <td>{{ returnItem.saleInvoiceNumber }}</td>
+          <td>{{ formatDateTime(returnItem.returnDate) }}</td>
+          <td>{{ returnItem.employeeName }}</td>
+          <td>
+            <div class="items-list">
+              <span *ngFor="let item of returnItem.items">
+                {{ item.medicineName }} × {{ item.quantity }} = {{ formatCurrency(item.totalAmount) }}
+              </span>
+            </div>
+          </td>
+          <td class="text-center text-danger">{{ formatCurrency(returnItem.totalAmount) }}</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

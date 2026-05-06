@@ -12,6 +12,6 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task DeleteAsync(int id);
         Task<IEnumerable<CustomerDto>> GetTopDebtorsAsync(int count);
         Task<CustomerStatementDto> GetStatementAsync(int customerId);
-        Task<Core.DTOs.CustomerStatistics> GetStatisticsAsync();
+        Task<Core.Models.CustomerStatistics> GetStatisticsAsync();
     }
 }

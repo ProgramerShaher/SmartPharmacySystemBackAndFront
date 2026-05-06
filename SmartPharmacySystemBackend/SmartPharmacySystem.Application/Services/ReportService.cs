@@ -842,6 +842,196 @@ public class ReportService : IReportService
         return result;
     }
 
+    public async Task<EmployeePerformanceReportDto> GetEmployeePerformanceReportAsync(EmployeePerformanceReportQueryDto query)
+    {
+        var fromDate = query.FromDate?.Date;
+        var toDate = query.ToDate?.Date.AddDays(1).AddTicks(-1);
+        var operationType = string.IsNullOrWhiteSpace(query.OperationType) ? "All" : query.OperationType.Trim();
+
+        var includeSales = operationType.Equals("All", StringComparison.OrdinalIgnoreCase)
+            || operationType.Equals("Sales", StringComparison.OrdinalIgnoreCase);
+        var includeReturns = operationType.Equals("All", StringComparison.OrdinalIgnoreCase)
+            || operationType.Equals("Returns", StringComparison.OrdinalIgnoreCase);
+
+        if (!includeSales && !includeReturns)
+            throw new ArgumentException("OperationType must be All, Sales, or Returns.");
+
+        var result = new EmployeePerformanceReportDto
+        {
+            FromDate = fromDate,
+            ToDate = query.ToDate?.Date,
+            EmployeeId = query.EmployeeId,
+            RoleId = query.RoleId,
+            OperationType = operationType
+        };
+
+        var employeesQuery = _context.Users.AsNoTracking().Where(u => !u.IsDeleted);
+
+        if (query.EmployeeId.HasValue)
+            employeesQuery = employeesQuery.Where(u => u.Id == query.EmployeeId.Value);
+
+        if (query.RoleId.HasValue)
+            employeesQuery = employeesQuery.Where(u => u.RoleId == query.RoleId.Value);
+
+        var employees = await employeesQuery
+            .Select(u => new
+            {
+                u.Id,
+                u.FullName,
+                u.Username,
+                u.RoleId,
+                RoleName = u.Role.Name
+            })
+            .ToListAsync();
+
+        var employeeIds = employees.Select(e => e.Id).ToList();
+        if (employeeIds.Count == 0)
+            return result;
+
+        var salesQuery = _context.SaleInvoices
+            .AsNoTracking()
+            .Where(i => i.Status == DocumentStatus.Approved
+                && employeeIds.Contains(i.CreatedBy)
+                && (!fromDate.HasValue || i.InvoiceDate >= fromDate.Value)
+                && (!toDate.HasValue || i.InvoiceDate <= toDate.Value));
+
+        var returnsQuery = _context.SalesReturns
+            .AsNoTracking()
+            .Where(r => r.Status == DocumentStatus.Approved
+                && employeeIds.Contains(r.CreatedBy)
+                && (!fromDate.HasValue || r.ReturnDate >= fromDate.Value)
+                && (!toDate.HasValue || r.ReturnDate <= toDate.Value));
+
+        var salesSummary = includeSales
+            ? await salesQuery
+                .GroupBy(i => i.CreatedBy)
+                .Select(g => new EmployeePerformanceSummaryDto
+                {
+                    EmployeeId = g.Key,
+                    TotalSales = g.Sum(i => i.TotalAmount),
+                    SalesInvoiceCount = g.Count(),
+                    ItemsSold = g.Sum(i => i.SaleInvoiceDetails.Sum(d => d.Quantity))
+                })
+                .ToDictionaryAsync(x => x.EmployeeId)
+            : new Dictionary<int, EmployeePerformanceSummaryDto>();
+
+        var returnsSummary = includeReturns
+            ? await returnsQuery
+                .GroupBy(r => r.CreatedBy)
+                .Select(g => new EmployeePerformanceSummaryDto
+                {
+                    EmployeeId = g.Key,
+                    TotalReturns = g.Sum(r => r.TotalAmount),
+                    SalesReturnCount = g.Count(),
+                    ItemsReturned = g.Sum(r => r.SalesReturnDetails.Sum(d => d.Quantity))
+                })
+                .ToDictionaryAsync(x => x.EmployeeId)
+            : new Dictionary<int, EmployeePerformanceSummaryDto>();
+
+        result.Employees = employees
+            .Select(employee =>
+            {
+                salesSummary.TryGetValue(employee.Id, out var sale);
+                returnsSummary.TryGetValue(employee.Id, out var ret);
+
+                return new EmployeePerformanceSummaryDto
+                {
+                    EmployeeId = employee.Id,
+                    EmployeeName = employee.FullName,
+                    Username = employee.Username,
+                    RoleId = employee.RoleId,
+                    RoleName = employee.RoleName,
+                    TotalSales = sale?.TotalSales ?? 0,
+                    SalesInvoiceCount = sale?.SalesInvoiceCount ?? 0,
+                    ItemsSold = sale?.ItemsSold ?? 0,
+                    TotalReturns = ret?.TotalReturns ?? 0,
+                    SalesReturnCount = ret?.SalesReturnCount ?? 0,
+                    ItemsReturned = ret?.ItemsReturned ?? 0
+                };
+            })
+            .Where(e => e.SalesInvoiceCount > 0 || e.SalesReturnCount > 0)
+            .OrderByDescending(e => e.NetSales)
+            .ToList();
+
+        result.TotalSales = result.Employees.Sum(e => e.TotalSales);
+        result.SalesInvoiceCount = result.Employees.Sum(e => e.SalesInvoiceCount);
+        result.ItemsSold = result.Employees.Sum(e => e.ItemsSold);
+        result.TotalReturns = result.Employees.Sum(e => e.TotalReturns);
+        result.SalesReturnCount = result.Employees.Sum(e => e.SalesReturnCount);
+        result.ItemsReturned = result.Employees.Sum(e => e.ItemsReturned);
+
+        if (includeSales)
+        {
+            result.SaleInvoices = await salesQuery
+                .OrderByDescending(i => i.InvoiceDate)
+                .ThenByDescending(i => i.CreatedAt)
+                .Select(i => new EmployeeSalesInvoiceDto
+                {
+                    InvoiceId = i.Id,
+                    InvoiceNumber = i.SaleInvoiceNumber,
+                    InvoiceDate = i.InvoiceDate,
+                    CreatedAt = i.CreatedAt,
+                    EmployeeId = i.CreatedBy,
+                    EmployeeName = i.Creator != null ? i.Creator.FullName : "Unknown",
+                    RoleName = i.Creator != null ? i.Creator.Role.Name : string.Empty,
+                    CustomerName = i.CustomerName ?? (i.Customer != null ? i.Customer.Name : null),
+                    PaymentMethod = i.PaymentMethod.ToString(),
+                    TotalAmount = i.TotalAmount,
+                    ItemsCount = i.SaleInvoiceDetails.Sum(d => d.Quantity),
+                    Items = i.SaleInvoiceDetails
+                        .Select(d => new EmployeeOperationItemDto
+                        {
+                            MedicineId = d.MedicineId,
+                            MedicineName = d.Medicine.Name,
+                            BatchId = d.BatchId,
+                            BatchNumber = d.Batch.CompanyBatchNumber,
+                            Quantity = d.Quantity,
+                            UnitPrice = d.SalePrice,
+                            TotalAmount = d.TotalLineAmount
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+        }
+
+        if (includeReturns)
+        {
+            result.SalesReturns = await returnsQuery
+                .OrderByDescending(r => r.ReturnDate)
+                .ThenByDescending(r => r.CreatedAt)
+                .Select(r => new EmployeeSalesReturnDto
+                {
+                    ReturnId = r.Id,
+                    SaleInvoiceId = r.SaleInvoiceId,
+                    SaleInvoiceNumber = r.SaleInvoice.SaleInvoiceNumber,
+                    ReturnDate = r.ReturnDate,
+                    CreatedAt = r.CreatedAt,
+                    EmployeeId = r.CreatedBy,
+                    EmployeeName = r.Creator != null ? r.Creator.FullName : "Unknown",
+                    RoleName = r.Creator != null ? r.Creator.Role.Name : string.Empty,
+                    CustomerName = r.Customer != null ? r.Customer.Name : r.SaleInvoice.CustomerName,
+                    Reason = r.Reason,
+                    TotalAmount = r.TotalAmount,
+                    ItemsCount = r.SalesReturnDetails.Sum(d => d.Quantity),
+                    Items = r.SalesReturnDetails
+                        .Select(d => new EmployeeOperationItemDto
+                        {
+                            MedicineId = d.MedicineId,
+                            MedicineName = d.Medicine.Name,
+                            BatchId = d.BatchId,
+                            BatchNumber = d.Batch.CompanyBatchNumber,
+                            Quantity = d.Quantity,
+                            UnitPrice = d.SalePrice,
+                            TotalAmount = d.TotalLineAmount
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+        }
+
+        return result;
+    }
+
     // ===================== تقرير ديون الموردين - Supplier Debts Report =====================
 
     /// <inheritdoc/>

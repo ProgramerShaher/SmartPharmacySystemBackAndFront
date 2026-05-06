@@ -1,159 +1,161 @@
-<div class="page-container animate-fade-in" dir="rtl">
-    <!-- Header With Stats -->
-    <header class="page-header glass-panel mb-4 return-header">
-        <div class="header-content">
-            <div class="title-section">
-                <div class="icon-wrapper return">
-                    <i class="pi pi-replay"></i>
-                </div>
-                <div class="text-wrapper">
-                    <h1 class="m-0 text-3xl font-bold">مردودات المبيعات</h1>
-                    <p class="m-0 opacity-70">إدارة مرتجعات الأدوية من العملاء</p>
-                </div>
+<div class="returns-container p-4 animate-fade-in" dir="rtl">
+    <!-- 👑 Imperial Header -->
+    <div class="flex justify-content-between align-items-center mb-4">
+        <div class="flex align-items-center gap-3">
+            <div class="icon-circle bg-gradient-returns">
+                <i class="pi pi-replay text-3xl text-white"></i>
             </div>
-            <div class="action-section">
-                <p-button label="إضافة مردود" icon="pi pi-plus" styleClass="p-button-raised p-button-danger p-button-lg"
-                    (onClick)="navigateToCreate()"></p-button>
+            <div>
+                <h1 class="text-3xl font-bold m-0 text-gray-800">مردودات المبيعات</h1>
+                <p class="text-gray-500 text-sm mt-1">إدارة مرتجعات الأدوية والمستلزمات من العملاء</p>
             </div>
         </div>
-    </header>
 
-    <!-- Key Metrics & Charts -->
-    <div class="metrics-grid grid mb-4">
-        <!-- KPI Cards -->
-        <div class="col-12 md:col-8">
-            <div class="grid">
-                <div class="col-12 md:col-6">
-                    <div class="kpi-card glass-panel h-full flex align-items-center justify-content-between p-4">
-                        <div class="kpi-info">
-                            <span class="label text-gray-500 mb-2 block">إجمالي المردودات</span>
-                            <span class="value text-3xl font-bold text-red-600">{{ totalReturnsValue() | number:'1.0-2' }}
-                                <small>ر.ي</small></span>
-                        </div>
-                        <div class="kpi-icon bg-red-50 text-red-600 p-3 border-round-xl">
-                            <i class="pi pi-wallet text-2xl"></i>
-                        </div>
+        <div class="flex gap-2">
+            <p-button label="إضافة مردود" icon="pi pi-plus" [rounded]="true" severity="danger"
+                (onClick)="navigateToCreate()"></p-button>
+        </div>
+    </div>
+
+    <!-- 🔥 KPI Cards - Imperial Premium Design -->
+    <div class="grid mb-4">
+        <!-- 💰 Total Returns Value Card -->
+        <div class="col-12 md:col-4">
+            <div class="imperial-kpi-card returns-value-card h-full">
+                <div class="flex justify-content-between align-items-start">
+                    <div>
+                        <span class="kpi-label">إجمالي المردودات</span>
+                        <h3 class="kpi-value">{{ totalReturnsValue() | number:'1.0-2' }}</h3>
+                        <span class="kpi-currency">ر.ي</span>
                     </div>
-                </div>
-                <div class="col-12 md:col-6">
-                    <div class="kpi-card glass-panel h-full flex align-items-center justify-content-between p-4">
-                        <div class="kpi-info">
-                            <span class="label text-gray-500 mb-2 block">عدد المردودات</span>
-                            <span class="value text-3xl font-bold text-gray-800">{{ returnsCount() }}
-                                <small>فاتورة</small></span>
-                        </div>
-                        <div class="kpi-icon bg-gray-50 text-gray-600 p-3 border-round-xl">
-                            <i class="pi pi-file text-2xl"></i>
-                        </div>
-                    </div>
-                </div>
-    
-                <!-- Trend Chart -->
-                <div class="col-12 mt-3">
-                    <div class="glass-panel p-4 h-full">
-                        <h3 class="m-0 mb-3 text-lg font-bold text-gray-700">اتجاه المرتجعات (7 أيام)</h3>
-                        <div class="chart-container" style="height: 120px;">
-                            <p-chart type="line" [data]="returnsTrendData" [options]="returnsTrendOptions"></p-chart>
-                        </div>
+                    <div class="kpi-icon-wrapper">
+                        <i class="pi pi-wallet"></i>
                     </div>
                 </div>
             </div>
         </div>
-    
-        <!-- Donut Chart -->
+
+        <!-- 📊 Returns Count Card -->
         <div class="col-12 md:col-4">
-            <div class="glass-panel p-4 h-full">
-                <h3 class="m-0 mb-3 text-lg font-bold text-gray-700">حالة المرتجعات</h3>
-                <div class="chart-container flex align-items-center justify-content-center" style="height: 240px;">
-                    <p-chart type="doughnut" [data]="returnsReasonData" [options]="returnsReasonOptions"></p-chart>
+            <div class="imperial-kpi-card returns-count-card h-full">
+                <div class="flex justify-content-between align-items-start">
+                    <div>
+                        <span class="kpi-label">عدد الفواتير المرتجعة</span>
+                        <h3 class="kpi-value">{{ returnsCount() }}</h3>
+                        <span class="kpi-currency">فاتورة</span>
+                    </div>
+                    <div class="kpi-icon-wrapper">
+                        <i class="pi pi-file"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 📉 Returns Status Summary -->
+        <div class="col-12 md:col-4">
+            <div class="imperial-kpi-card returns-status-card h-full">
+                <div class="flex justify-content-between align-items-start">
+                    <div>
+                        <span class="kpi-label">نسبة المرتجعات</span>
+                        <h3 class="kpi-value">{{ returnsPercentage() | number:'1.0-1' }}%</h3>
+                        <span class="kpi-currency">من المبيعات</span>
+                    </div>
+                    <div class="kpi-icon-wrapper">
+                        <i class="pi pi-chart-line"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Content Card -->
-    <div class="glass-panel p-0 overflow-hidden">
-        <p-table #dt [value]="returns" [rows]="10" [paginator]="true" [loading]="loading"
-            [globalFilterFields]="['returnNumber', 'customerName', 'saleInvoiceId']" responsiveLayout="scroll"
-            [breakpoint]="'960px'" styleClass="p-datatable-sm" [showCurrentPageReport]="true"
-            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}">
+    <!-- Table Section -->
+    <div class="glass-panel border-round-xl shadow-2 bg-white overflow-hidden">
+        <p-table #dt [value]="returns" [rows]="15" [paginator]="true" [loading]="loading"
+            [globalFilterFields]="['id', 'customerName', 'saleInvoiceId']" 
+            styleClass="p-datatable-striped p-datatable-sm"
+            responsiveLayout="scroll" 
+            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} مردود"
+            [showCurrentPageReport]="true">
 
             <ng-template pTemplate="caption">
-                <div class="table-header-box p-3 flex justify-content-between align-items-center flex-wrap gap-3">
-                    <span class="p-input-icon-left w-full md:w-30rem">
+                <div class="flex justify-content-between align-items-center p-2">
+                    <span class="p-input-icon-left w-full md:w-25rem">
                         <i class="pi pi-search"></i>
                         <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
-                            placeholder="بحث في المردودات..." class="w-full h-3rem no-border" />
+                            placeholder="بحث سريع..." class="p-inputtext-sm w-full" />
                     </span>
-                    <div class="flex gap-2">
-                        <p-button icon="pi pi-refresh" severity="secondary" rounded outlined text
-                            (onClick)="loadReturns()"></p-button>
-                    </div>
+                    <p-button icon="pi pi-refresh" [rounded]="true" [text]="true" (onClick)="loadReturns()"></p-button>
                 </div>
             </ng-template>
 
             <ng-template pTemplate="header">
-                <tr>
-                    <th pSortableColumn="id">رقم المردود <p-sortIcon field="id"></p-sortIcon></th>
-                    <th pSortableColumn="returnDate">التاريخ <p-sortIcon field="returnDate"></p-sortIcon></th>
-                    <th>الفاتورة الأصل</th>
-                    <th pSortableColumn="customerName">العميل <p-sortIcon field="customerName"></p-sortIcon></th>
-                    <th pSortableColumn="totalAmount" class="text-center">الإجمالي <p-sortIcon
-                            field="totalAmount"></p-sortIcon></th>
-                    <th pSortableColumn="status" class="text-center">الحالة <p-sortIcon field="status"></p-sortIcon>
-                    </th>
-                    <th class="text-center">الإجراءات</th>
+                <tr class="bg-gray-50 text-gray-700 text-xs">
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">رقم المردود</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">التاريخ</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">الفاتورة الأصل</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">العميل</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الإجمالي</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الحالة</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الإجراءات</th>
                 </tr>
             </ng-template>
 
             <ng-template pTemplate="body" let-ret>
-                <tr class="fadein">
-                    <td>
-                        <span class="font-bold text-lg text-red-500">#{{ret.id}}</span>
+                <tr class="hover:surface-50 transition-colors">
+                    <td class="px-4 py-2 border-bottom-1 border-gray-100">
+                        <span class="font-bold text-red-600 text-lg">#{{ret.id}}</span>
                     </td>
-                    <td>
+                    <td class="px-4 py-2 border-bottom-1 border-gray-100">
                         <div class="flex align-items-center gap-2">
-                            <i class="pi pi-calendar opacity-50"></i>
-                            {{ret.returnDate | date:'dd/MM/yyyy'}}
+                            <i class="pi pi-calendar text-gray-400"></i>
+                            <span class="text-sm">{{ret.returnDate | date:'dd/MM/yyyy'}}</span>
                         </div>
                     </td>
-                    <td>
-                        <span class="text-blue-500 font-bold underline cursor-pointer">#{{ret.saleInvoiceId}}</span>
+                    <td class="px-4 py-2 border-bottom-1 border-gray-100">
+                        <span class="text-blue-600 font-bold">#{{ret.saleInvoiceId}}</span>
                     </td>
-                    <td>
-                        <span class="font-medium">{{ret.customerName || 'عميل نقدي'}}</span>
+                    <td class="px-4 py-2 border-bottom-1 border-gray-100">
+                        <div class="font-bold text-gray-700">{{ret.customerName || 'عميل نقدي'}}</div>
                     </td>
-                    <td class="text-center">
-                        <span class="amount-badge danger">{{ret.totalAmount | number:'1.0-2'}} ر.ي</span>
+                    <td class="px-4 py-2 border-bottom-1 border-gray-100 text-center">
+                        <span class="font-bold text-lg text-red-700 bg-red-50 px-3 py-1 border-round-xl border-1 border-red-100">
+                            {{ ret.totalAmount | number:'1.0-2' }} <small class="text-red-400">ر.ي</small>
+                        </span>
                     </td>
-                    <td class="text-center">
-                        <p-tag [severity]="ret.statusColor" [value]="ret.statusName" [icon]="ret.statusIcon"
-                            styleClass="px-3 border-round-lg shadow-1"></p-tag>
+                    <td class="px-4 py-2 border-bottom-1 border-gray-100 text-center">
+                        <p-tag [value]="ret.statusName || getStatusLabel(ret.status)" 
+                            [severity]="getStatusSeverity(ret.status)" 
+                            [icon]="ret.statusIcon" styleClass="text-xs font-bold shadow-1"></p-tag>
                     </td>
-                    <td class="text-center">
+                    <td class="px-4 py-2 border-bottom-1 border-gray-100 text-center">
                         <div class="flex justify-content-center gap-1">
-                            <!-- DRAFT STATUS: Edit, Delete, Approve -->
-                            <ng-container *ngIf="ret.status === 'Draft'">
-                                <p-button icon="pi pi-check-circle" severity="success" rounded text pTooltip="اعتماد" tooltipPosition="top"
-                                    (onClick)="approveReturn(ret.id)"></p-button>
-                                <p-button icon="pi pi-pencil" severity="secondary" rounded text pTooltip="تعديل/عرض" tooltipPosition="top"
-                                    (onClick)="viewDetails(ret.id)"></p-button>
-                                <p-button icon="pi pi-trash" severity="danger" rounded text pTooltip="حذف" tooltipPosition="top"
-                                    (onClick)="deleteReturn(ret.id)"></p-button>
+                            <!-- DRAFT STATUS -->
+                            <ng-container *ngIf="ret.status === 'Draft' || ret.status === 1">
+                                <p-button icon="pi pi-check-circle" [rounded]="true" [text]="true" severity="success" size="small"
+                                    pTooltip="اعتماد" tooltipPosition="top" (onClick)="approveReturn(ret.id)"></p-button>
+                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary" size="small"
+                                    pTooltip="تعديل" tooltipPosition="top" (onClick)="viewDetails(ret.id)"></p-button>
+                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+                                    pTooltip="حذف" tooltipPosition="top" (onClick)="deleteReturn(ret.id)"></p-button>
                             </ng-container>
 
-                            <!-- APPROVED STATUS: View, Print -->
-                            <ng-container *ngIf="ret.status === 'Approved'">
-                                <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل" tooltipPosition="top"
-                                    (onClick)="viewDetails(ret.id)"></p-button>
-                            </ng-container>
-
-                            <!-- CANCELLED STATUS: View -->
-                            <ng-container *ngIf="ret.status === 'Cancelled'">
-                                <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل" tooltipPosition="top"
-                                    (onClick)="viewDetails(ret.id)"></p-button>
+                            <!-- APPROVED STATUS -->
+                            <ng-container *ngIf="ret.status === 'Approved' || ret.status === 2">
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                                    pTooltip="عرض" tooltipPosition="top" (onClick)="viewDetails(ret.id)"></p-button>
+                                <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary" size="small"
+                                    pTooltip="طباعة" tooltipPosition="top"></p-button>
                             </ng-container>
                         </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="text-center p-5 text-500">
+                        <i class="pi pi-inbox text-4xl mb-3 block"></i>
+                        لا توجد طلبات مردودات حالياً.
                     </td>
                 </tr>
             </ng-template>

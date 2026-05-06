@@ -20,7 +20,9 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 
 interface ReturnItem {
-    id: number; // SaleInvoiceDetailId
+    id: number; // SaleInvoiceDetailId (for UI only)
+    medicineId: number;
+    batchId: number;
     medicineName: string;
     batchNumber: string;
     originalQuantity: number;
@@ -94,12 +96,13 @@ export class SalesReturnCreateComponent implements OnInit {
      * 🔍 Search invoices
      */
     searchInvoice(event: any) {
-        const query = event.query;
+        const query = (event?.query ?? '').toString().trim();
+
         this.salesService.getAll(query).subscribe({
             next: (invoices) => {
                 // Only show approved invoices
                 this.filteredInvoices = invoices.filter(
-                    inv => inv.status === DocumentStatus.Approved
+                    inv => this.isApprovedInvoice(inv)
                 );
             },
             error: (err) => {
@@ -112,10 +115,21 @@ export class SalesReturnCreateComponent implements OnInit {
         });
     }
 
+    private isApprovedInvoice(invoice: SaleInvoice): boolean {
+        const status: any = (invoice as any)?.status;
+
+        // Backend might return numeric enum (2) or string ("Approved")
+        if (status === 'Approved') return true;
+
+        const statusNum = Number(status);
+        return statusNum === Number(DocumentStatus.Approved);
+    }
+
     /**
      * 📋 Invoice selected
      */
     onInvoiceSelect(invoice: SaleInvoice) {
+        this.invoiceSearchQuery = invoice?.saleInvoiceNumber || '';
         this.loadInvoiceForReturn(invoice.id);
     }
 
@@ -125,7 +139,7 @@ export class SalesReturnCreateComponent implements OnInit {
     loadInvoiceForReturn(invoiceId: number) {
         this.salesService.getById(invoiceId).subscribe({
             next: (invoice) => {
-                if (invoice.status !== DocumentStatus.Approved) {
+                if (!this.isApprovedInvoice(invoice)) {
                     this.messageService.add({
                         severity: 'warn',
                         summary: 'تنبيه',
@@ -135,6 +149,7 @@ export class SalesReturnCreateComponent implements OnInit {
                 }
 
                 this.selectedInvoice = invoice;
+                this.invoiceSearchQuery = invoice?.saleInvoiceNumber || '';
 
                 // Map items to return items
                 const items: ReturnItem[] = invoice.items.map(item => {
@@ -142,13 +157,15 @@ export class SalesReturnCreateComponent implements OnInit {
                     // If backend sends 0 or undefined, we fallback to 0 to prevent issues
                     const remainingQty = item.remainingQtyToReturn !== undefined ? item.remainingQtyToReturn : 0;
 
-                    return {
-                        id: item.id,
-                        medicineName: item.medicineName || 'Unknown',
-                        batchNumber: item.companyBatchNumber || '', // Correct property
-                        originalQuantity: item.quantity,
-                        returnedQuantity: item.quantity - remainingQty, // Infer returned qty if needed for display, or 0 if not tracking
-                        remainingQtyToReturn: remainingQty,
+                return {
+                    id: item.id,
+                    medicineId: item.medicineId,
+                    batchId: item.batchId,
+                    medicineName: item.medicineName || 'Unknown',
+                    batchNumber: item.companyBatchNumber || '', // Correct property
+                    originalQuantity: item.quantity,
+                    returnedQuantity: item.quantity - remainingQty, // Infer returned qty if needed for display, or 0 if not tracking
+                    remainingQtyToReturn: remainingQty,
                         returnQuantity: 0,
                         salePrice: item.salePrice,
                         totalReturnAmount: 0
@@ -257,10 +274,14 @@ export class SalesReturnCreateComponent implements OnInit {
             saleInvoiceId: this.selectedInvoice.id,
             returnDate: this.returnDate.toISOString(),
             reason: this.reason,
-            items: itemsToReturn.map(item => ({
-                saleInvoiceDetailId: item.id,
+            details: itemsToReturn.map(item => ({
+                // Backend DTO currently validates SalesReturnId and SalePrice as required.
+                // SalesReturnId is not known on create; sending 0 satisfies [Required] for int.
+                salesReturnId: 0,
+                medicineId: item.medicineId,
+                batchId: item.batchId,
                 quantity: item.returnQuantity,
-                returnPrice: item.salePrice
+                salePrice: item.salePrice
             }))
         };
 

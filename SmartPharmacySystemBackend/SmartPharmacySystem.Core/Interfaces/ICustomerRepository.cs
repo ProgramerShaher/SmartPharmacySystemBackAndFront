@@ -1,5 +1,5 @@
-using SmartPharmacySystem.Core.DTOs;
 using SmartPharmacySystem.Core.Entities;
+using SmartPharmacySystem.Core.Models;
 
 namespace SmartPharmacySystem.Core.Interfaces
 {

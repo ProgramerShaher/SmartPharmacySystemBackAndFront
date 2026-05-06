@@ -16,7 +16,8 @@ import {
   DailySalesReport,
   BestSellingMedicinesReport,
   CustomerDebtsReport,
-  SupplierDebtsReport
+  SupplierDebtsReport,
+  EmployeePerformanceReport
 } from '../models/reports.interface';
 
 /**
@@ -257,6 +258,27 @@ export class ReportService {
   getSupplierDebtsReport(): Observable<SupplierDebtsReport> {
     return this.http.get<{ data: SupplierDebtsReport }>(
       `${this.baseUrl}/supplier-debts`
+    ).pipe(map(res => res.data));
+  }
+
+  getEmployeePerformanceReport(query: {
+    employeeId?: number;
+    roleId?: number;
+    fromDate?: Date;
+    toDate?: Date;
+    operationType?: string;
+  } = {}): Observable<EmployeePerformanceReport> {
+    let params = new HttpParams();
+
+    if (query.employeeId) params = params.set('employeeId', query.employeeId.toString());
+    if (query.roleId) params = params.set('roleId', query.roleId.toString());
+    if (query.fromDate) params = params.set('fromDate', query.fromDate.toISOString().split('T')[0]);
+    if (query.toDate) params = params.set('toDate', query.toDate.toISOString().split('T')[0]);
+    if (query.operationType) params = params.set('operationType', query.operationType);
+
+    return this.http.get<{ data: EmployeePerformanceReport }>(
+      `${this.baseUrl}/employee-performance`,
+      { params }
     ).pipe(map(res => res.data));
   }
 }

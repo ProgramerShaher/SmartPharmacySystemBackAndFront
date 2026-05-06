@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPharmacySystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class FinalModelSync : Migration
+    public partial class FixAdminPasswordHash : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -117,8 +117,8 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Balance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
@@ -139,19 +139,19 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     InternalCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ScientificName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ScientificName = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     ActiveIngredient = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: true),
                     Manufacturer = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DefaultBarcode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DefaultBarcode = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     MovingAverageCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DefaultPurchasePrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     DefaultSalePrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     MinAlertQuantity = table.Column<int>(type: "int", nullable: false),
                     ReorderLevel = table.Column<int>(type: "int", nullable: false),
                     SoldByUnit = table.Column<bool>(type: "bit", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -837,15 +837,15 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "Description", "IsDeleted", "Name" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(7550), "رواتب الموظفين والبدلات", false, "رواتب" },
-                    { 2, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9276), "إيجار مقر الصيدلية والمخازن", false, "إيجار" },
-                    { 3, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9281), "فواتير الكهرباء", false, "كهرباء" },
-                    { 4, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9282), "فواتير المياه", false, "مياه" },
-                    { 5, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9284), "فواتير الهاتف والاشتراكات", false, "اتصالات وانترنت" },
-                    { 6, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9285), "أدوات مكتبية ومطبوعات", false, "قرطاسية وأدوات مكتبية" },
-                    { 7, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9286), "صيانة المعدات والمباني", false, "صيانة" },
-                    { 8, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9288), "أدوات ومواد نظافة", false, "نظافة" },
-                    { 9, new DateTime(2025, 12, 30, 19, 57, 43, 566, DateTimeKind.Utc).AddTicks(9289), "مصاريف متنوعة", false, "أخرى" }
+                    { 1, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(7502), "رواتب الموظفين والبدلات", false, "رواتب" },
+                    { 2, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9401), "إيجار مقر الصيدلية والمخازن", false, "إيجار" },
+                    { 3, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9406), "فواتير الكهرباء", false, "كهرباء" },
+                    { 4, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9466), "فواتير المياه", false, "مياه" },
+                    { 5, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467), "فواتير الهاتف والاشتراكات", false, "اتصالات وانترنت" },
+                    { 6, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467), "أدوات مكتبية ومطبوعات", false, "قرطاسية وأدوات مكتبية" },
+                    { 7, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9468), "صيانة المعدات والمباني", false, "صيانة" },
+                    { 8, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9469), "أدوات ومواد نظافة", false, "نظافة" },
+                    { 9, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9470), "مصاريف متنوعة", false, "أخرى" }
                 });
 
             migrationBuilder.InsertData(
@@ -867,14 +867,19 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 columns: new[] { "Id", "CreatedAt", "CreatedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "Username" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "admin@pharmacy.com", "مدير النظام", false, null, null, "$2a$11$XKV8qNJKqF3yqVqKqF3yqeqF3yqVqKqF3yqVqKqF3yqVqKqF3yqVq", null, null, 1, 1, "admin" },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "pharmacist@pharmacy.com", "صيدلي النظام", false, null, null, "$2a$11$XKV8qNJKqF3yqVqKqF3yqeqF3yqVqKqF3yqVqKqF3yqVqKqF3yqVq", null, null, 2, 1, "pharmacist" }
+                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "admin@pharmacy.com", "مدير النظام", false, null, null, "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim", null, null, 1, 1, "admin" },
+                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "pharmacist@pharmacy.com", "صيدلي النظام", false, null, null, "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim", null, null, 2, 1, "pharmacist" }
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Alerts_BatchId",
+                name: "IX_Alerts_BatchId_AlertType",
                 table: "Alerts",
-                column: "BatchId");
+                columns: new[] { "BatchId", "AlertType" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Alerts_CreatedAt",
+                table: "Alerts",
+                column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CustomerReceipts_CustomerId",
@@ -956,14 +961,34 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicineBatches_MedicineId",
+                name: "IX_MedicineBatches_MedicineId_ExpiryDate",
                 table: "MedicineBatches",
-                column: "MedicineId");
+                columns: new[] { "MedicineId", "ExpiryDate" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Medicines_CategoryId",
+                name: "IX_MedicineBatches_Status_ExpiryDate",
+                table: "MedicineBatches",
+                columns: new[] { "Status", "ExpiryDate" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Medicines_Barcode_Performance",
                 table: "Medicines",
-                column: "CategoryId");
+                column: "DefaultBarcode");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Medicines_CategoryId_Status",
+                table: "Medicines",
+                columns: new[] { "CategoryId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Medicines_Name_Performance",
+                table: "Medicines",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Medicines_ScientificName",
+                table: "Medicines",
+                column: "ScientificName");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PharmacyAccounts_Name",
@@ -1022,13 +1047,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PurchaseInvoices_PurchaseDate_Status",
+                table: "PurchaseInvoices",
+                columns: new[] { "PurchaseDate", "Status" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PurchaseInvoices_PurchaseInvoiceNumber",
                 table: "PurchaseInvoices",
                 column: "PurchaseInvoiceNumber",
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PurchaseInvoices_SupplierId",
+                name: "IX_PurchaseInvoices_SupplierId_Performance",
                 table: "PurchaseInvoices",
                 column: "SupplierId");
 
@@ -1109,9 +1139,14 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "CreatedBy");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SaleInvoices_CustomerId",
+                name: "IX_SaleInvoices_CustomerId_Performance",
                 table: "SaleInvoices",
                 column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SaleInvoices_InvoiceDate_Status",
+                table: "SaleInvoices",
+                columns: new[] { "InvoiceDate", "Status" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_SaleInvoices_SaleInvoiceNumber",
@@ -1168,6 +1203,16 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "IX_SupplierPayments_SupplierId",
                 table: "SupplierPayments",
                 column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Suppliers_Name_Performance",
+                table: "Suppliers",
+                column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Suppliers_PhoneNumber",
+                table: "Suppliers",
+                column: "PhoneNumber");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_CreatedBy",

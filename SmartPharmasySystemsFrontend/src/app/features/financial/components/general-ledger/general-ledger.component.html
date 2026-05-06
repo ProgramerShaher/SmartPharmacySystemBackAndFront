@@ -7,7 +7,7 @@
           <i class="pi pi-book"></i>
         </div>
         <div class="text-wrapper">
-          <h1 class="m-0 text-3xl font-bold">دفتر الأستاذ العام</h1>
+          <h1 class="m-0 text-2xl font-bold">دفتر الأستاذ العام</h1>
           <p class="m-0 opacity-70">سجل شامل لجميع الحركات المالية</p>
         </div>
       </div>
@@ -17,6 +17,7 @@
           icon="pi pi-file-excel" 
           severity="success" 
           outlined
+          styleClass="p-button-sm"
           (onClick)="exportToExcel()">
         </p-button>
         <p-button 
@@ -24,6 +25,7 @@
           icon="pi pi-refresh" 
           severity="secondary" 
           outlined
+          styleClass="p-button-sm"
           (onClick)="loadLedger()">
         </p-button>
       </div>
@@ -31,7 +33,7 @@
   </header>
 
   <!-- Filters -->
-  <div class="glass-panel p-4 mb-4">
+  <div class="glass-panel filters-panel mb-4">
     <div class="grid align-items-end">
       <div class="col-12 md:col-6 lg:col-4">
         <label class="font-bold text-sm block mb-2">فترة التقرير</label>
@@ -51,7 +53,7 @@
           icon="pi pi-filter-slash" 
           severity="secondary" 
           outlined
-          styleClass="w-full"
+          styleClass="w-full p-button-sm"
           (onClick)="clearFilters()">
         </p-button>
       </div>
@@ -87,42 +89,43 @@
 
       <ng-template pTemplate="body" let-entry>
         <tr class="fadein">
-          <td>
-            <div class="flex align-items-center gap-2">
-              <i class="pi pi-calendar text-sm opacity-50"></i>
-              <span class="text-sm">{{ entry.transactionDate | date:'dd/MM/yyyy' }}</span>
+          <td class="text-center">
+            <div class="flex flex-column align-items-center">
+              <span class="text-xs font-bold text-gray-700">{{ entry.transactionDate | date:'dd/MM/yyyy' }}</span>
             </div>
           </td>
           <td>
-            <span class="font-medium">{{ entry.description }}</span>
-            <small class="block text-500 mt-1">{{ entry.category }}</small>
+            <div class="flex flex-column">
+              <span class="font-bold text-gray-800 line-height-2">{{ entry.description }}</span>
+              <span class="text-xs text-500">{{ entry.category }}</span>
+            </div>
           </td>
-          <td>
+          <td class="text-center">
             <p-tag 
-              [value]="getReferenceTypeLabel(entry.referenceType)" 
-              [severity]="getReferenceTypeSeverity(entry.referenceType)"
-              styleClass="shadow-sm">
+              [value]="getTransactionNature(entry)" 
+              [severity]="getTransactionNatureSeverity(entry)"
+              styleClass="text-xs font-bold shadow-1">
             </p-tag>
           </td>
           <td class="text-center">
-            <span class="font-mono text-sm font-bold text-primary">{{ entry.referenceNumber }}</span>
+            <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 border-round">{{ entry.referenceNumber || '---' }}</span>
           </td>
           <td class="text-right">
-            <span *ngIf="entry.outgoing > 0" class="font-bold text-red-600">
+            <span *ngIf="entry.outgoing > 0" class="text-debit text-lg">
               {{ entry.outgoing | number:'1.0-2' }}
             </span>
-            <span *ngIf="entry.outgoing === 0" class="opacity-30">-</span>
+            <span *ngIf="entry.outgoing === 0" class="opacity-20">-</span>
           </td>
           <td class="text-right">
-            <span *ngIf="entry.incoming > 0" class="font-bold text-green-600">
+            <span *ngIf="entry.incoming > 0" class="text-credit text-lg">
               {{ entry.incoming | number:'1.0-2' }}
             </span>
-            <span *ngIf="entry.incoming === 0" class="opacity-30">-</span>
+            <span *ngIf="entry.incoming === 0" class="opacity-20">-</span>
           </td>
           <td class="text-right">
-            <div class="balance-cell" [ngClass]="{'negative': entry.runningBalance < 0}">
+            <div class="balance-cell" [ngClass]="entry.runningBalance >= 0 ? 'positive' : 'negative'">
               <span class="font-bold text-lg">{{ entry.runningBalance | number:'1.0-2' }}</span>
-              <small class="block text-xs opacity-70">ر.ي</small>
+              <small class="text-xs opacity-60 mr-1">ر.ي</small>
             </div>
           </td>
         </tr>

@@ -22,7 +22,8 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task CreateManualMovementAsync(CreateManualMovementDto dto);
 
         Task<StockMovementDto> GetByIdAsync(int id);
-        Task<PagedResult<StockMovementDto>> SearchAsync(BaseQueryDto query);
+        Task<PagedResult<StockMovementDto>> SearchAsync(StockMovementQueryDto query);
+        Task<StockMovementSummaryDto> GetSummaryAsync();
         Task<IEnumerable<StockCardDto>> GetStockCardAsync(int medicineId, int? batchId = null);
         Task<int> GetCurrentBalanceAsync(int medicineId, int? batchId = null);
     }

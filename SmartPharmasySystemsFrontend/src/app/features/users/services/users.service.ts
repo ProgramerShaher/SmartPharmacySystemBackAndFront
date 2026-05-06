@@ -23,4 +23,8 @@ export class UsersService {
     delete(id: number): Observable<void> {
         return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/Users/${id}`).pipe(map(res => res.data));
     }
+
+    getRoles(): Observable<Role[]> {
+        return this.http.get<ApiResponse<Role[]>>(`${environment.apiUrl}/Roles`).pipe(map(res => res.data));
+    }
 }

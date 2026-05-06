@@ -102,30 +102,42 @@ export class GeneralLedgerComponent implements OnInit {
         this.loadLedger();
     }
 
-    getReferenceTypeLabel(type: ReferenceType): string {
-        const labels: Record<ReferenceType, string> = {
-            [ReferenceType.Manual]: 'تسوية يدوية',
-            [ReferenceType.SaleInvoice]: 'فاتورة مبيعات',
-            [ReferenceType.PurchaseInvoice]: 'فاتورة شراء',
-            [ReferenceType.Salary]: 'راتب',
-            [ReferenceType.Expenses]: 'مصروفات',
-            [ReferenceType.SaleReturn]: 'مردود مبيعات',
-            [ReferenceType.PurchaseReturn]: 'مردود مشتريات'
-        };
-        return labels[type] || 'غير محدد';
+    getReferenceTypeLabel(type: any): string {
+        if (type === undefined || type === null) return 'غير محدد';
+        
+        const typeStr = type.toString();
+        // Handle both numeric and string values
+        if (typeStr === '0' || typeStr === 'Manual') return 'تسوية يدوية';
+        if (typeStr === '1' || typeStr === 'SaleInvoice') return 'فاتورة مبيعات';
+        if (typeStr === '2' || typeStr === 'PurchaseInvoice') return 'فاتورة شراء';
+        if (typeStr === '3' || typeStr === 'Salary') return 'راتب';
+        if (typeStr === '4' || typeStr === 'Expenses') return 'مصروفات';
+        if (typeStr === '5' || typeStr === 'SaleReturn') return 'مردود مبيعات';
+        if (typeStr === '6' || typeStr === 'PurchaseReturn') return 'مردود مشتريات';
+        
+        return 'غير محدد';
     }
 
-    getReferenceTypeSeverity(type: ReferenceType): any {
-        const severities: Record<ReferenceType, string> = {
-            [ReferenceType.Manual]: 'warning',
-            [ReferenceType.SaleInvoice]: 'success',
-            [ReferenceType.PurchaseInvoice]: 'info',
-            [ReferenceType.Salary]: 'danger',
-            [ReferenceType.Expenses]: 'danger',
-            [ReferenceType.SaleReturn]: 'warning',
-            [ReferenceType.PurchaseReturn]: 'secondary'
-        };
-        return severities[type] || 'info';
+    getReferenceTypeSeverity(type: any): string {
+        const typeStr = type?.toString();
+        if (typeStr === '1' || typeStr === 'SaleInvoice') return 'success';
+        if (typeStr === '2' || typeStr === 'PurchaseInvoice') return 'info';
+        if (typeStr === '5' || typeStr === 'SaleReturn') return 'warning';
+        if (typeStr === '6' || typeStr === 'PurchaseReturn') return 'help';
+        if (typeStr === '4' || typeStr === 'Expenses' || typeStr === '3' || typeStr === 'Salary') return 'danger';
+        return 'secondary';
+    }
+
+    getTransactionNature(entry: GeneralLedger): string {
+        if (entry.incoming > 0) return 'إيراد';
+        if (entry.outgoing > 0) return 'مصروف';
+        return 'أخرى';
+    }
+
+getTransactionNatureSeverity(entry: GeneralLedger): "success" | "info" | "warning" | "danger" | "secondary" | "contrast" | undefined {
+        if (entry.incoming > 0) return 'success';
+        if (entry.outgoing > 0) return 'danger';
+        return 'warning';
     }
 
     exportToExcel() {

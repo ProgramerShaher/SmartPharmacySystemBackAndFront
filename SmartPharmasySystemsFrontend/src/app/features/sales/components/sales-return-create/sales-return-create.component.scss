@@ -1,177 +1,147 @@
-/**
- * 🔄 SMART RETURNS - PREMIUM POS DESIGN *======================================* تصميم متوافق مع نظام نقاط البيع والمشتريات
- */
-
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
 
 :host {
     font-family: 'Cairo', sans-serif !important;
-    display: block;
 }
 
-/* 🎨 Colors & Variables */
-:root {
-    --glass-bg: rgba(255, 255, 255, 0.9);
-        --glass-border: rgba(255, 255, 255, 0.5);
-        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-        --primary-color: #28a745;
-        --text-color: #1f2937;
-}
-
-/* 🏗️ Layout Structure */
-.pos-container {
-    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+.returns-create-container {
+    background: #f8fafc;
     min-height: 100vh;
-    padding: 1.5rem;
-        color: var(--text-color);
+    padding: 0.5rem !important;
 }
 
-.pos-content-grid {
+/* 🎩 Header - Slim */
+.imperial-header {
+    background: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-right: 3px solid #ef4444;
+}
+
+.status-badge {
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    
+    &.draft {
+        background: #eff6ff;
+        color: #2563eb;
+        border: 1px solid #dbeafe;
+    }
+}
+
+/* 🏗️ Layout */
+.layout-grid {
     display: grid;
-    grid-template-columns: 1fr 380px;
-        gap: 1.5rem;
-    @media (max-width: 1200px) {
+    grid-template-columns: 1fr 280px;
+    gap: 0.75rem;
+
+    @media (max-width: 1100px) {
         grid-template-columns: 1fr;
     }
 }
 
-/* 🪟 Glass Panel */
-.glass-panel {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border);
-        border-radius: 16px;
-        box-shadow: var(--glass-shadow);
-}
-
-.elevation-hover {
-    transition: transform 0.2s, box-shadow 0.2s;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-    }
-}
-
-/* 🎩 Header */
-.pos-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-        border-bottom: 2px solid rgba(40, 167, 69, 0.2);
-
-    &.sales-accent {
-            border-left: 4px solid #28a745;
-        }
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.back-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50% !important;
-    background: rgba(0, 0, 0, 0.05);
-
-    &:hover {
-        background: rgba(0, 0, 0, 0.1);
-    }
-}
-
-.status-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    &.draft {
-            background-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
+/* 🃏 Premium Card - Ultra Compact */
+.premium-card {
+    background: white;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     
-        &.approved {
-            background-color: #10b981;
-            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8rem;
+        color: #1e293b;
+    }
+}
+
+.p-4 { padding: 1rem !important; }
+.p-3 { padding: 0.75rem !important; }
+
+/* 🏷️ Info Items */
+.info-item {
+    background: #f1f5f9;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    border-right: 2px solid #cbd5e1;
+
+    label {
+        display: block;
+        font-size: 0.65rem;
+        color: #64748b;
+        font-weight: 600;
+        margin-bottom: 0.1rem;
+    }
+
+    .info-value {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #1e293b;
+    }
+}
+
+/* 📋 Compact Numeric Input */
+::ng-deep .compact-numeric {
+    .p-inputnumber-input {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 6px !important;
+        background: #fff5f5 !important;
+        
+        &:focus {
+            border-color: #f87171 !important;
+            box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.1) !important;
         }
     }
+}
 
 /* 📊 Sidebar */
-.pos-sidebar {
+.sidebar-panel {
     .sticky-sidebar {
         position: sticky;
-        top: 1.5rem;
+        top: 1rem;
     }
 }
 
-.summary-card {
-    background: linear-gradient(145deg, #ffffff, #f3f4f6);
-    padding: 1.5rem;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-        border: 1px solid rgba(0, 0, 0, 0.05);
-
-    &.return {
-            background: linear-gradient(145deg, #fef2f2, #fee2e2);
-            border: 1px solid rgba(220, 38, 38, 0.1);
-        }
-
-        .label {
-            font-size: 0.9rem;
-            color: #6b7280;
-        margin-bottom: 0.5rem;
-    }
-
-        .value {
-            font-size: 2rem;
-        font-weight: 800;
-        line-height: 1;
-    }
+.total-box {
+    border: 1px dashed #f87171;
 }
 
-/* 🔢 Inputs */
-::ng-deep .compact-input .p-inputnumber-input {
-    padding: 0.5rem !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    &:focus {
-            box-shadow: none !important;
-    }
-}
-
-/* 📱 Responsive */
-@media (max-width: 768px) {
-    .pos-container {
-            padding: 1rem;
-        }
-    
-        .pos-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-    }
-
-/* ✨ Animation */
+/* 🔄 Animations */
 .animate-fade-in {
     animation: fadeIn 0.4s ease-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 🛠️ PrimeNG Overrides */
+::ng-deep {
+    .compact-autocomplete {
+        .p-inputtext {
+            padding: 0.45rem 0.75rem !important;
+            border-radius: 6px !important;
+            font-size: 0.8rem !important;
+        }
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .p-table-sm {
+        .p-datatable-thead > tr > th {
+            padding: 0.4rem !important;
+            background: #f8fafc !important;
+            color: #475569 !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            font-size: 0.75rem !important;
+        }
+        .p-datatable-tbody > tr > td {
+            padding: 0.35rem !important;
+            font-size: 0.8rem !important;
+        }
     }
 }

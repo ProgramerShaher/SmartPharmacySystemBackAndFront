@@ -57,7 +57,11 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BatchId");
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Alerts_CreatedAt");
+
+                    b.HasIndex("BatchId", "AlertType")
+                        .HasDatabaseName("IX_Alerts_BatchId_AlertType");
 
                     b.ToTable("Alerts");
                 });
@@ -265,7 +269,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(155),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(7502),
                             Description = "رواتب الموظفين والبدلات",
                             IsDeleted = false,
                             Name = "رواتب"
@@ -273,7 +277,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1678),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9401),
                             Description = "إيجار مقر الصيدلية والمخازن",
                             IsDeleted = false,
                             Name = "إيجار"
@@ -281,7 +285,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1683),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9406),
                             Description = "فواتير الكهرباء",
                             IsDeleted = false,
                             Name = "كهرباء"
@@ -289,7 +293,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1685),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9466),
                             Description = "فواتير المياه",
                             IsDeleted = false,
                             Name = "مياه"
@@ -297,7 +301,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1687),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467),
                             Description = "فواتير الهاتف والاشتراكات",
                             IsDeleted = false,
                             Name = "اتصالات وانترنت"
@@ -305,7 +309,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1688),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467),
                             Description = "أدوات مكتبية ومطبوعات",
                             IsDeleted = false,
                             Name = "قرطاسية وأدوات مكتبية"
@@ -313,7 +317,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1690),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9468),
                             Description = "صيانة المعدات والمباني",
                             IsDeleted = false,
                             Name = "صيانة"
@@ -321,7 +325,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 8,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1691),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9469),
                             Description = "أدوات ومواد نظافة",
                             IsDeleted = false,
                             Name = "نظافة"
@@ -329,7 +333,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 9,
-                            CreatedAt = new DateTime(2026, 1, 1, 21, 39, 55, 674, DateTimeKind.Utc).AddTicks(1694),
+                            CreatedAt = new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9470),
                             Description = "مصاريف متنوعة",
                             IsDeleted = false,
                             Name = "أخرى"
@@ -477,7 +481,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DefaultBarcode")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<decimal>("DefaultPurchasePrice")
                         .HasPrecision(18, 2)
@@ -505,7 +509,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
@@ -514,21 +518,31 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ScientificName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("SoldByUnit")
                         .HasColumnType("bit");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
+                    b.HasIndex("DefaultBarcode")
+                        .HasDatabaseName("IX_Medicines_Barcode_Performance");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Medicines_Name_Performance");
+
+                    b.HasIndex("ScientificName")
+                        .HasDatabaseName("IX_Medicines_ScientificName");
+
+                    b.HasIndex("CategoryId", "Status")
+                        .HasDatabaseName("IX_Medicines_CategoryId_Status");
 
                     b.ToTable("Medicines");
                 });
@@ -603,7 +617,11 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.HasIndex("CreatedBy");
 
-                    b.HasIndex("MedicineId");
+                    b.HasIndex("MedicineId", "ExpiryDate")
+                        .HasDatabaseName("IX_MedicineBatches_MedicineId_ExpiryDate");
+
+                    b.HasIndex("Status", "ExpiryDate")
+                        .HasDatabaseName("IX_MedicineBatches_Status_ExpiryDate");
 
                     b.ToTable("MedicineBatches");
                 });
@@ -771,7 +789,11 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.HasIndex("PurchaseInvoiceNumber")
                         .IsUnique();
 
-                    b.HasIndex("SupplierId");
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("IX_PurchaseInvoices_SupplierId_Performance");
+
+                    b.HasIndex("PurchaseDate", "Status")
+                        .HasDatabaseName("IX_PurchaseInvoices_PurchaseDate_Status");
 
                     b.ToTable("PurchaseInvoices");
                 });
@@ -1048,12 +1070,17 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.HasIndex("CancelledBy");
 
-                    b.HasIndex("CreatedBy");
+                    b.HasIndex("CreatedBy")
+                        .HasDatabaseName("IX_SaleInvoices_CreatedBy");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("IX_SaleInvoices_CustomerId_Performance");
 
                     b.HasIndex("SaleInvoiceNumber")
                         .IsUnique();
+
+                    b.HasIndex("InvoiceDate", "Status")
+                        .HasDatabaseName("IX_SaleInvoices_InvoiceDate_Status");
 
                     b.ToTable("SaleInvoices");
                 });
@@ -1270,18 +1297,24 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("IX_Suppliers_Name_Performance");
+
+                    b.HasIndex("PhoneNumber")
+                        .HasDatabaseName("IX_Suppliers_PhoneNumber");
 
                     b.ToTable("Suppliers");
                 });
@@ -1408,7 +1441,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "admin@pharmacy.com",
                             FullName = "مدير النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$XKV8qNJKqF3yqVqKqF3yqeqF3yqVqKqF3yqVqKqF3yqVqKqF3yqVq",
+                            PasswordHash = "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim",
                             RoleId = 1,
                             Status = 1,
                             Username = "admin"
@@ -1421,7 +1454,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "pharmacist@pharmacy.com",
                             FullName = "صيدلي النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$XKV8qNJKqF3yqVqKqF3yqeqF3yqVqKqF3yqVqKqF3yqVqKqF3yqVq",
+                            PasswordHash = "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim",
                             RoleId = 2,
                             Status = 1,
                             Username = "pharmacist"

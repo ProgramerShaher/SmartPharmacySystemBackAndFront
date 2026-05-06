@@ -213,6 +213,25 @@ public class ReportsController : ControllerBase
         return Ok(ApiResponse<CustomerDebtsReportDto>.Succeeded(result, "تم جلب تقرير ديون العملاء بنجاح"));
     }
 
+    [HttpGet("employee-performance")]
+    public async Task<IActionResult> GetEmployeePerformanceReport([FromQuery] EmployeePerformanceReportQueryDto query)
+    {
+        if (query.FromDate.HasValue && query.ToDate.HasValue && query.FromDate.Value.Date > query.ToDate.Value.Date)
+        {
+            return BadRequest(ApiResponse<object>.Failed("تاريخ البداية يجب أن يكون قبل تاريخ النهاية"));
+        }
+
+        try
+        {
+            var result = await _reportService.GetEmployeePerformanceReportAsync(query);
+            return Ok(ApiResponse<EmployeePerformanceReportDto>.Succeeded(result, "تم جلب تقرير أداء الموظفين بنجاح"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ApiResponse<object>.Failed(ex.Message));
+        }
+    }
+
     // ===================== تقرير ديون الموردين - Supplier Debts Report =====================
 
     /// <summary>

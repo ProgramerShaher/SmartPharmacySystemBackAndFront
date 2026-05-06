@@ -29,6 +29,12 @@ export const REPORTS_ROUTES: Routes = [
         title: 'المبيعات اليومية'
       },
       {
+        path: 'employee-performance',
+        loadComponent: () => import('./employee-performance/employee-performance.component')
+          .then(m => m.EmployeePerformanceComponent),
+        title: 'تقرير أداء الموظفين'
+      },
+      {
         path: 'best-selling',
         loadComponent: () => import('./best-selling/best-selling.component')
           .then(m => m.BestSellingComponent),

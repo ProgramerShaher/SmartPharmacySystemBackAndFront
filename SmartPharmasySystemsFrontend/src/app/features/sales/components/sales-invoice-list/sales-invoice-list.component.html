@@ -148,7 +148,7 @@
                     <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">العميل</th>
                     <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الإجمالي</th>
                     <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الربح</th>
-                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الحالة</th>
+                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center bg-blue-50">الحالة</th>
                     <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الإجراءات</th>
                 </tr>
             </ng-template>
@@ -170,18 +170,19 @@
                         <div class="font-bold text-gray-700">{{ invoice.customerName || 'نقدي' }}</div>
                     </td>
                     <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
-                        <span class="font-bold text-xl text-blue-600 bg-blue-50 px-3 py-1 border-round">
-                            {{ (invoice.totalAmount || 0) | number:'1.0-2' }} ر.ي
+                        <span class="font-bold text-xl text-blue-700 bg-blue-50 px-3 py-1 border-round-xl border-1 border-blue-100">
+                            {{ (invoice.totalAmount || 0) | number:'1.0-2' }} <small class="text-blue-400">ر.ي</small>
                         </span>
                     </td>
                     <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
-                        <span class="font-bold text-lg text-emerald-600 bg-emerald-50 px-2 py-1 border-round">
+                        <span class="font-bold text-lg text-emerald-700 bg-emerald-50 px-3 py-1 border-round-xl border-1 border-emerald-100">
                             {{ (invoice.totalProfit || 0) | number:'1.0-2' }}
                         </span>
                     </td>
                     <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
-                        <p-tag [value]="invoice.statusName" [severity]="invoice.statusColor" [icon]="invoice.statusIcon"
-                            styleClass="text-xs font-bold"></p-tag>
+                        <p-tag [value]="invoice.statusName || getStatusLabel(invoice.status)" 
+                            [severity]="getStatusSeverity(invoice.status)" 
+                            [icon]="invoice.statusIcon" styleClass="text-xs font-bold shadow-1"></p-tag>
                     </td>
                     <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
                         <div class="flex justify-content-center gap-1 action-buttons-container">
@@ -204,8 +205,9 @@
 
                             <!-- APPROVED STATUS: View, Print, Return -->
                             <ng-container *ngIf="invoice.status === 'Approved'">
-                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض التفاصيل"
-                                    tooltipPosition="top" (onClick)="viewDetails(invoice.id)" styleClass="action-btn-view">
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                                    pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(invoice.id)"
+                                    styleClass="action-btn-view">
                                 </p-button>
                                 <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary"
                                     size="small" pTooltip="طباعة الفاتورة" tooltipPosition="top"
@@ -220,8 +222,9 @@
 
                             <!-- CANCELLED STATUS: View Only -->
                             <ng-container *ngIf="invoice.status === 'Cancelled'">
-                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض التفاصيل"
-                                    tooltipPosition="top" (onClick)="viewDetails(invoice.id)" styleClass="action-btn-view">
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                                    pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(invoice.id)"
+                                    styleClass="action-btn-view">
                                 </p-button>
                             </ng-container>
                         </div>

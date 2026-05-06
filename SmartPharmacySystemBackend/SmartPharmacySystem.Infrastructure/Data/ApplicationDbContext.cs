@@ -594,8 +594,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         });
 
         // ==================== Seed Data ====================
+        // ==================== Seed Data ====================
 
-        // Seed Roles
+        // 1. Seed Roles (يتم تعريفها مرة واحدة فقط)
         modelBuilder.Entity<Role>().HasData(
             new Role
             {
@@ -613,10 +614,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             }
         );
 
-        // Seed Default Users
-        // Password for both: Admin@123 (hashed with BCrypt)
-        // Note: This is a placeholder hash - will be replaced with actual BCrypt hash in migration
-        var defaultPasswordHash = "$2a$11$XKV8qNJKqF3yqVqKqF3yqeqF3yqVqKqF3yqVqKqF3yqVqKqF3yqVq";
+        // 2. تلويد الهاش لكلمة المرور "1234"
+        // ملاحظة: تأكد من وجود مكتبة BCrypt.Net-Next في المشروع
+        // في أعلى الملف تأكد من وجود:
+        // using BCrypt.Net;
+
+        // داخل ميثود OnModelCreating في جزء Seed Users:
+        var hashed1234 = BCrypt.Net.BCrypt.HashPassword("1234");
 
         modelBuilder.Entity<User>().HasData(
             new User
@@ -624,19 +628,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 Id = 1,
                 FullName = "مدير النظام",
                 Username = "admin",
-                PasswordHash = defaultPasswordHash,
+                PasswordHash = hashed1234, // نضع المتغير الذي ولدناه الآن
                 RoleId = 1,
                 Status = UserStatus.Active,
                 Email = "admin@pharmacy.com",
                 CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
                 IsDeleted = false
             },
-            new User
+
+        new User
             {
                 Id = 2,
                 FullName = "صيدلي النظام",
                 Username = "pharmacist",
-                PasswordHash = defaultPasswordHash,
+                PasswordHash = hashed1234,
                 RoleId = 2,
                 Status = UserStatus.Active,
                 Email = "pharmacist@pharmacy.com",
@@ -645,7 +650,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 IsDeleted = false
             }
         );
-
         // ==================== Performance Indexes ====================
         // Added for query optimization and faster search operations
 

@@ -43,6 +43,28 @@ export interface StockMovementDto {
     createdBy: number;
     createdByName?: string;  // This already exists
     notes: string;
+    financialDescription?: string;
+}
+
+export interface StockMovementSummary {
+    totalStockValue: number;
+    nearExpiryCount: number;
+    lowStockCount: number;
+    todayMovements: number;
+    last30DaysTrend: StockMovementTrend[];
+    categoryDistribution: StockCategoryDistribution[];
+}
+
+export interface StockMovementTrend {
+    date: string;
+    additions: number;
+    deductions: number;
+}
+
+export interface StockCategoryDistribution {
+    categoryName: string;
+    quantity: number;
+    value: number;
 }
 
 /**
@@ -82,6 +104,7 @@ export interface StockMovementQueryDto {
     referenceType?: ReferenceType;
     startDate?: string;
     endDate?: string;
+    createdBy?: number;
     page?: number;
     pageSize?: number;
 }

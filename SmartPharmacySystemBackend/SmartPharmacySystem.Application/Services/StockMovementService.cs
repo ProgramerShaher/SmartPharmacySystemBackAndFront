@@ -4,20 +4,24 @@ using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Application.Interfaces;
+using SmartPharmacySystem.Application.Interfaces.Data;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace SmartPharmacySystem.Application.Services
 {
     public class StockMovementService : IStockMovementService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IApplicationDbContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<StockMovementService> _logger;
 
-        public StockMovementService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<StockMovementService> logger)
+        public StockMovementService(IUnitOfWork unitOfWork, IApplicationDbContext context, IMapper mapper, ILogger<StockMovementService> logger)
         {
             _unitOfWork = unitOfWork;
+            _context = context;
             _mapper = mapper;
             _logger = logger;
         }
@@ -107,17 +111,179 @@ namespace SmartPharmacySystem.Application.Services
             return _mapper.Map<StockMovementDto>(entity);
         }
 
-        public async Task<PagedResult<StockMovementDto>> SearchAsync(BaseQueryDto query)
+        public async Task<PagedResult<StockMovementDto>> SearchAsync(StockMovementQueryDto query)
         {
-            var (items, totalCount) = await _unitOfWork.InventoryMovements.GetPagedAsync(
-                query.Search ?? string.Empty,
-                query.Page,
-                query.PageSize,
-                query.SortBy,
-                query.SortDirection);
+            var page = query.Page <= 0 ? 1 : query.Page;
+            var pageSize = query.PageSize <= 0 ? 25 : query.PageSize;
 
-            var dtos = _mapper.Map<IEnumerable<StockMovementDto>>(items);
-            return new PagedResult<StockMovementDto>(dtos, totalCount, query.Page, query.PageSize);
+            var movementsQuery = _context.InventoryMovements
+                .AsNoTracking()
+                .Include(m => m.Medicine)
+                .Include(m => m.Batch)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(query.Search))
+            {
+                var search = query.Search.Trim().ToLower();
+                movementsQuery = movementsQuery.Where(m =>
+                    m.ReferenceNumber.ToLower().Contains(search) ||
+                    m.Notes.ToLower().Contains(search) ||
+                    m.Medicine.Name.ToLower().Contains(search) ||
+                    (m.Batch != null && m.Batch.CompanyBatchNumber.ToLower().Contains(search)));
+            }
+
+            if (query.MedicineId.HasValue)
+                movementsQuery = movementsQuery.Where(m => m.MedicineId == query.MedicineId.Value);
+
+            if (query.BatchId.HasValue)
+                movementsQuery = movementsQuery.Where(m => m.BatchId == query.BatchId.Value);
+
+            if (TryParseEnum<StockMovementType>(query.MovementType, out var movementType))
+                movementsQuery = movementsQuery.Where(m => m.MovementType == movementType);
+
+            if (TryParseEnum<ReferenceType>(query.ReferenceType, out var referenceType))
+                movementsQuery = movementsQuery.Where(m => m.ReferenceType == referenceType);
+
+            if (query.CreatedBy.HasValue)
+                movementsQuery = movementsQuery.Where(m => m.CreatedBy == query.CreatedBy.Value);
+
+            if (query.StartDate.HasValue)
+                movementsQuery = movementsQuery.Where(m => m.Date >= query.StartDate.Value.Date);
+
+            if (query.EndDate.HasValue)
+            {
+                var endDate = query.EndDate.Value.Date.AddDays(1).AddTicks(-1);
+                movementsQuery = movementsQuery.Where(m => m.Date <= endDate);
+            }
+
+            var totalCount = await movementsQuery.CountAsync();
+
+            var movements = await movementsQuery
+                .OrderByDescending(m => m.Date)
+                .ThenByDescending(m => m.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(m => new
+                {
+                    m.Id,
+                    m.MedicineId,
+                    m.BatchId,
+                    m.MovementType,
+                    m.ReferenceType,
+                    m.Quantity,
+                    m.Date,
+                    m.ReferenceId,
+                    m.ReferenceNumber,
+                    m.CreatedBy,
+                    m.Notes,
+                    MedicineName = m.Medicine.Name,
+                    BatchNumber = m.Batch != null ? m.Batch.CompanyBatchNumber : null,
+                    CreatedByName = _context.Users
+                        .Where(u => u.Id == m.CreatedBy)
+                        .Select(u => u.FullName)
+                        .FirstOrDefault(),
+                    FinancialDescription = _context.FinancialTransactions
+                        .Where(f => f.ReferenceId == m.ReferenceId && f.ReferenceType == m.ReferenceType)
+                        .Select(f => f.Description)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            var dtos = movements.Select(m => new StockMovementDto
+            {
+                Id = m.Id,
+                MedicineId = m.MedicineId,
+                BatchId = m.BatchId,
+                MovementType = m.MovementType,
+                MovementTypeLabel = GetMovementTypeLabel(m.MovementType),
+                ReferenceType = m.ReferenceType,
+                ReferenceTypeLabel = GetReferenceTypeLabel(m.ReferenceType),
+                Quantity = m.Quantity,
+                Date = m.Date,
+                ReferenceId = m.ReferenceId,
+                ReferenceNumber = m.ReferenceNumber,
+                CreatedBy = m.CreatedBy,
+                CreatedByName = m.CreatedByName,
+                Notes = m.Notes,
+                FinancialDescription = m.FinancialDescription,
+                MedicineName = m.MedicineName,
+                BatchNumber = m.BatchNumber
+            }).ToList();
+
+            return new PagedResult<StockMovementDto>(dtos, totalCount, page, pageSize);
+        }
+
+        public async Task<StockMovementSummaryDto> GetSummaryAsync()
+        {
+            var today = DateTime.UtcNow.Date;
+            var start = today.AddDays(-29);
+            var end = today.AddDays(1);
+
+            var activeBatches = _context.MedicineBatches
+                .AsNoTracking()
+                .Where(b => !b.IsDeleted && b.RemainingQuantity > 0);
+
+            var totalStockValue = await activeBatches
+                .SumAsync(b => (decimal?)b.RemainingQuantity * b.UnitPurchasePrice) ?? 0;
+
+            var nearExpiryCount = await activeBatches
+                .CountAsync(b => b.ExpiryDate.Date >= today && b.ExpiryDate.Date <= today.AddDays(30));
+
+            var lowStockCount = await _context.Medicines
+                .AsNoTracking()
+                .Where(m => !m.IsDeleted)
+                .CountAsync(m => m.MedicineBatches
+                    .Where(b => !b.IsDeleted)
+                    .Sum(b => b.RemainingQuantity) <= m.ReorderLevel);
+
+            var todayMovements = await _context.InventoryMovements
+                .AsNoTracking()
+                .CountAsync(m => m.Date >= today && m.Date < end);
+
+            var rawTrend = await _context.InventoryMovements
+                .AsNoTracking()
+                .Where(m => m.Date >= start && m.Date < end)
+                .GroupBy(m => m.Date.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Additions = g.Where(m => m.Quantity > 0).Sum(m => m.Quantity),
+                    Deductions = g.Where(m => m.Quantity < 0).Sum(m => -m.Quantity)
+                })
+                .ToListAsync();
+
+            var trendLookup = rawTrend.ToDictionary(x => x.Date.Date);
+            var trend = Enumerable.Range(0, 30)
+                .Select(i =>
+                {
+                    var date = start.AddDays(i);
+                    return trendLookup.TryGetValue(date, out var item)
+                        ? new StockMovementTrendDto { Date = date, Additions = item.Additions, Deductions = item.Deductions }
+                        : new StockMovementTrendDto { Date = date, Additions = 0, Deductions = 0 };
+                })
+                .ToList();
+
+            var categoryDistribution = await activeBatches
+                .GroupBy(b => b.Medicine.Category != null ? b.Medicine.Category.Name : "بدون تصنيف")
+                .Select(g => new StockCategoryDistributionDto
+                {
+                    CategoryName = g.Key,
+                    Quantity = g.Sum(b => b.RemainingQuantity),
+                    Value = g.Sum(b => b.RemainingQuantity * b.UnitPurchasePrice)
+                })
+                .OrderByDescending(x => x.Value)
+                .Take(8)
+                .ToListAsync();
+
+            return new StockMovementSummaryDto
+            {
+                TotalStockValue = totalStockValue,
+                NearExpiryCount = nearExpiryCount,
+                LowStockCount = lowStockCount,
+                TodayMovements = todayMovements,
+                Last30DaysTrend = trend,
+                CategoryDistribution = categoryDistribution
+            };
         }
 
         public async Task<int> GetCurrentBalanceAsync(int medicineId, int? batchId = null)
@@ -259,7 +425,7 @@ namespace SmartPharmacySystem.Application.Services
                     detail.Quantity,
                     ret.Id,
                     ret.Id.ToString(),
-                    1, // Default user if SalesReturn doesn't have CreatedBy in schema
+                    ret.CreatedBy,
                     "إضافة مرتجع مبيعات تلقائي"
                 );
                 await _unitOfWork.InventoryMovements.AddAsync(mov);
@@ -275,6 +441,43 @@ namespace SmartPharmacySystem.Application.Services
                 throw new InvalidOperationException($"الرصيد المتاح غير كافٍ. المطلوب: {requestedQuantity}، المتوفر: {currentBalance}");
             }
         }
+
+        private static bool TryParseEnum<TEnum>(string? value, out TEnum result) where TEnum : struct, Enum
+        {
+            result = default;
+            if (string.IsNullOrWhiteSpace(value))
+                return false;
+
+            return int.TryParse(value, out var number)
+                ? Enum.IsDefined(typeof(TEnum), number) && Enum.TryParse(number.ToString(), out result)
+                : Enum.TryParse(value, true, out result);
+        }
+
+        private static string GetMovementTypeLabel(StockMovementType type) => type switch
+        {
+            StockMovementType.Purchase => "توريد",
+            StockMovementType.Sale => "بيع",
+            StockMovementType.PurchaseReturn => "مردود مشتريات",
+            StockMovementType.SalesReturn => "مردود مبيعات",
+            StockMovementType.Adjustment => "تعديل مخزون",
+            StockMovementType.Damage => "تالف",
+            StockMovementType.Expiry => "منتهي الصلاحية",
+            _ => "غير معروف"
+        };
+
+        private static string GetReferenceTypeLabel(ReferenceType type) => type switch
+        {
+            ReferenceType.PurchaseInvoice => "فاتورة مشتريات",
+            ReferenceType.SaleInvoice => "فاتورة مبيعات",
+            ReferenceType.PurchaseReturn => "مردود مشتريات",
+            ReferenceType.SalesReturn => "مردود مبيعات",
+            ReferenceType.Manual => "يدوي",
+            ReferenceType.OpeningBalance => "رصيد افتتاحي",
+            ReferenceType.ManualAdjustment => "تعديل يدوي",
+            ReferenceType.SupplierPayment => "سند صرف مورد",
+            ReferenceType.CustomerReceipt => "سند قبض عميل",
+            _ => "غير معروف"
+        };
 
         #endregion
     }

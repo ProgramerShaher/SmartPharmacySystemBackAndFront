@@ -219,7 +219,7 @@ export class FinancialDashboardComponent implements OnInit {
     }
 
     getTransactionTypeLabel(type: number) {
-        switch (type) {
+        switch (this.normalizeTransactionType(type)) {
             case 1: return 'وارد (Income)';
             case 2: return 'منصرف (Expense)';
             case 3: return 'تسوية';
@@ -228,11 +228,29 @@ export class FinancialDashboardComponent implements OnInit {
     }
 
     getTransactionSeverity(type: number): "success" | "danger" | "warning" | "info" {
-        switch (type) {
+        switch (this.normalizeTransactionType(type)) {
             case 1: return 'success';
             case 2: return 'danger';
             case 3: return 'warning';
             default: return 'info';
         }
+    }
+
+    isIncome(type: any): boolean {
+        return this.normalizeTransactionType(type) === 1;
+    }
+
+    isExpense(type: any): boolean {
+        return this.normalizeTransactionType(type) === 2;
+    }
+
+    private normalizeTransactionType(type: any): number {
+        // Backend may serialize enums as numbers (1/2) or strings ("Income"/"Expense").
+        if (type === 1 || type === '1' || type === 'Income' || type === 'INCOME') return 1;
+        if (type === 2 || type === '2' || type === 'Expense' || type === 'EXPENSE') return 2;
+        if (type === 3 || type === '3' || type === 'Adjustment' || type === 'ADJUSTMENT') return 3;
+
+        const n = Number(type);
+        return Number.isFinite(n) ? n : 0;
     }
 }

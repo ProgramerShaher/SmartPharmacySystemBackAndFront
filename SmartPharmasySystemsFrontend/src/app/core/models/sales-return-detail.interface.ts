@@ -21,7 +21,9 @@ export interface SalesReturnDetail {
 }
 
 export interface CreateSalesReturnDetailDto {
+    salesReturnId?: number; // required by current backend validation; 0 on create
     medicineId: number;
     batchId: number;
     quantity: number;
+    salePrice?: number; // required by current backend validation
 }

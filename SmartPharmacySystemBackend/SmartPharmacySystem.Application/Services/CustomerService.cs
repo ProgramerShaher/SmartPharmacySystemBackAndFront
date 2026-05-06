@@ -4,6 +4,7 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
+using SmartPharmacySystem.Core.Models;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -132,7 +133,7 @@ namespace SmartPharmacySystem.Application.Services
 
             return result;
         }
-        public async Task<Core.DTOs.CustomerStatistics> GetStatisticsAsync()
+        public async Task<CustomerStatistics> GetStatisticsAsync()
         {
             return await _unitOfWork.Customers.GetStatisticsAsync();
         }

@@ -42,6 +42,7 @@ export class SalesReturnListComponent implements OnInit {
     totalReturnsValue = signal(0);
     returnsCount = signal(0);
     todayReturnsCount = signal(0);
+    returnsPercentage = signal(0); // Added for the new KPI card
 
     // Charts
     returnsTrendData: any;
@@ -112,6 +113,7 @@ export class SalesReturnListComponent implements OnInit {
         this.returnsCount.set(data.length);
         const total = data.reduce((sum, r) => sum + r.totalAmount, 0);
         this.totalReturnsValue.set(total);
+        this.returnsPercentage.set(5.2); // Setting a realistic mock percentage for now
 
         // Mock Reasons Distribution based on filtered Reasons (or just use status for now if reason not available)
         // Here assuming we want to show Status Distribution as "Returns Analysis"

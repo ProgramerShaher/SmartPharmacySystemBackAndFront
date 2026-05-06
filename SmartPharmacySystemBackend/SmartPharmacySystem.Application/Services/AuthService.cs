@@ -57,6 +57,9 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("الحساب غير نشط. يرجى التواصل مع المدير");
         }
 
+        // سطر مؤقت للفحص
+        _logger.LogInformation("Password from Request: {Pass}", request.Password);
+        _logger.LogInformation("Hash from DB: {Hash}", user.PasswordHash);
         // التحقق من كلمة المرور
         if (!VerifyPassword(request.Password, user.PasswordHash))
         {

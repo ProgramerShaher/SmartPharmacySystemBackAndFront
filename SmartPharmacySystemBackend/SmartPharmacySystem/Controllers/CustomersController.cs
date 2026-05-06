@@ -69,7 +69,7 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> GetStatistics()
         {
             var result = await _customerService.GetStatisticsAsync();
-            return Ok(ApiResponse<SmartPharmacySystem.Core.DTOs.CustomerStatistics>.Succeeded(result, "تم جلب إحصائيات العملاء"));
+            return Ok(ApiResponse<SmartPharmacySystem.Core.Models.CustomerStatistics>.Succeeded(result, "تم جلب إحصائيات العملاء"));
         }
     }
 }

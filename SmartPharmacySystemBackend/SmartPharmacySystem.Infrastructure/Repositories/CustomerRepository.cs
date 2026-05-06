@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
+using SmartPharmacySystem.Core.Models;
 using SmartPharmacySystem.Infrastructure.Data;
-using SmartPharmacySystem.Core.DTOs;
 
 namespace SmartPharmacySystem.Infrastructure.Repositories
 {

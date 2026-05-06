@@ -1,262 +1,171 @@
-<div class="movement-container p-4 animate-fade-in" dir="rtl">
-  <!-- Premium Header -->
-  <div class="flex justify-content-between align-items-center mb-5">
-    <div class="flex align-items-center gap-3">
-      <div class="icon-circle bg-gradient-primary">
-        <i class="pi pi-history text-3xl text-white"></i>
-      </div>
+﻿<div class="movement-container" dir="rtl">
+  <p-toast></p-toast>
+
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-history"></i></div>
       <div>
-        <h1 class="text-4xl font-bold m-0 text-gray-800">حركات المخزون</h1>
-        <p class="text-gray-500 text-sm mt-1">نظام متكامل لمراقبة وتحليل حركة المخزون</p>
+        <h1>حركات المخزون</h1>
+        <p>بيانات فعلية من قاعدة البيانات مع تتبع المستخدم ونوع الحركة والمرجع</p>
       </div>
     </div>
 
-    <div class="flex gap-2">
-      <p-button icon="pi pi-filter" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="الفلاتر"
-        tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
-      <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger" pTooltip="تصدير PDF"
-        tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
-      <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success" pTooltip="تصدير Excel"
-        tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
-      <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom"
-        (onClick)="loadMovements()" [loading]="loading()"></p-button>
+    <div class="actions no-print">
+      <p-button icon="pi pi-filter" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="الفلاتر" tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
+      <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger" pTooltip="تصدير PDF" tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
+      <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success" pTooltip="تصدير Excel" tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
+      <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadMovements(); loadKPIStats()" [loading]="loading()"></p-button>
     </div>
   </div>
 
-  <!-- KPI Cards -->
-  <div class="grid mb-4">
-    <div class="col-12 md:col-3">
-      <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
-        <div class="absolute right-0 top-0 h-full w-4px bg-emerald-500"></div>
-        <div class="flex justify-content-between align-items-center">
-          <div>
-            <span class="text-gray-500 font-bold text-xs uppercase block mb-2">إجمالي قيمة المخزون</span>
-            <h3 class="text-3xl font-bold text-emerald-600 m-0">{{ totalStockValue() | number }}</h3>
-            <span class="text-xs text-gray-400">ر.ي</span>
-          </div>
-          <div class="bg-emerald-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center">
-            <i class="pi pi-wallet text-emerald-500 text-2xl"></i>
-          </div>
-        </div>
-      </div>
+  <div class="kpi-grid">
+    <div class="kpi-card stock">
+      <span class="kpi-label">قيمة المخزون</span>
+      <strong>{{ totalStockValue() | number:'1.0-2' }}</strong>
+      <small>ر.ي حسب الكمية المتبقية وتكلفة الشراء</small>
     </div>
-
-    <div class="col-12 md:col-3">
-      <div
-        class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale cursor-pointer">
-        <div class="absolute right-0 top-0 h-full w-4px bg-red-500"></div>
-        <div class="flex justify-content-between align-items-center">
-          <div>
-            <span class="text-gray-500 font-bold text-xs uppercase block mb-2">أصناف قريبة الانتهاء</span>
-            <h3 class="text-3xl font-bold text-red-600 m-0">{{ nearExpiryCount() }}</h3>
-            <span class="text-xs text-gray-400">صنف</span>
-          </div>
-          <div class="bg-red-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center relative">
-            <i class="pi pi-exclamation-triangle text-red-500 text-2xl"></i>
-            <span
-              class="absolute top-0 right-0 bg-red-500 text-white text-xs w-1rem h-1rem border-circle flex align-items-center justify-content-center font-bold">!</span>
-          </div>
-        </div>
-      </div>
+    <div class="kpi-card expiry">
+      <span class="kpi-label">قريبة الانتهاء</span>
+      <strong>{{ nearExpiryCount() }}</strong>
+      <small>دفعات خلال 30 يوم</small>
     </div>
-
-    <div class="col-12 md:col-3">
-      <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
-        <div class="absolute right-0 top-0 h-full w-4px bg-orange-500"></div>
-        <div class="flex justify-content-between align-items-center">
-          <div>
-            <span class="text-gray-500 font-bold text-xs uppercase block mb-2">تحت حد الطلب</span>
-            <h3 class="text-3xl font-bold text-orange-600 m-0">{{ lowStockCount() }}</h3>
-            <span class="text-xs text-gray-400">صنف</span>
-          </div>
-          <div class="bg-orange-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center">
-            <i class="pi pi-chart-line text-orange-500 text-2xl"></i>
-          </div>
-        </div>
-      </div>
+    <div class="kpi-card low">
+      <span class="kpi-label">تحت حد الطلب</span>
+      <strong>{{ lowStockCount() }}</strong>
+      <small>أصناف وصلت حد إعادة الطلب</small>
     </div>
-
-    <div class="col-12 md:col-3">
-      <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
-        <div class="absolute right-0 top-0 h-full w-4px bg-indigo-500"></div>
-        <div class="flex justify-content-between align-items-center">
-          <div>
-            <span class="text-gray-500 font-bold text-xs uppercase block mb-2">حركات اليوم</span>
-            <h3 class="text-3xl font-bold text-indigo-600 m-0">{{ todayMovements() }}</h3>
-            <span class="text-xs text-gray-400">عملية</span>
-          </div>
-          <div class="bg-indigo-50 w-4rem h-4rem border-circle flex align-items-center justify-content-center">
-            <i class="pi pi-clock text-indigo-500 text-2xl"></i>
-          </div>
-        </div>
-      </div>
+    <div class="kpi-card today">
+      <span class="kpi-label">حركات اليوم</span>
+      <strong>{{ todayMovements() }}</strong>
+      <small>من قاعدة البيانات</small>
     </div>
   </div>
 
-  <!-- Charts Section -->
-  <div class="grid mb-4">
-    <div class="col-12 md:col-8">
-      <div class="glass-panel p-4 border-round-2xl shadow-2 bg-white">
-        <div class="flex justify-content-between align-items-center mb-3">
-          <div>
-            <h3 class="text-xl font-bold text-gray-800 m-0">حركة المخزون (آخر 30 يوم)</h3>
-            <p class="text-sm text-gray-500 mt-1">تحليل الإضافات والخصومات اليومية</p>
-          </div>
-          <i class="pi pi-chart-line text-indigo-400 text-2xl"></i>
+  <div class="charts-grid">
+    <section class="panel trend-panel">
+      <div class="panel-head">
+        <div>
+          <h3>آخر 30 يوم</h3>
+          <p>الإضافات والخصومات اليومية</p>
         </div>
-        <div style="height: 280px;">
-          <p-chart type="line" [data]="movementTrendData" [options]="movementTrendOptions" height="280px"></p-chart>
-        </div>
+        <i class="pi pi-chart-line"></i>
       </div>
-    </div>
+      <p-chart type="line" [data]="movementTrendData" [options]="movementTrendOptions" height="220px"></p-chart>
+    </section>
 
-    <div class="col-12 md:col-4">
-      <div class="glass-panel p-4 border-round-2xl shadow-2 bg-white h-full">
-        <div class="flex justify-content-between align-items-center mb-3">
-          <div>
-            <h3 class="text-xl font-bold text-gray-800 m-0">توزيع المخزون</h3>
-            <p class="text-sm text-gray-500 mt-1">حسب الفئات</p>
-          </div>
-          <i class="pi pi-chart-pie text-emerald-400 text-2xl"></i>
+    <section class="panel category-panel">
+      <div class="panel-head">
+        <div>
+          <h3>توزيع المخزون</h3>
+          <p>حسب التصنيف والكمية المتبقية</p>
         </div>
-        <div style="height: 280px;" class="flex align-items-center justify-content-center">
-          <p-chart type="doughnut" [data]="categoryDistributionData" [options]="categoryDistributionOptions"
-            height="240px"></p-chart>
-        </div>
+        <i class="pi pi-chart-pie"></i>
       </div>
-    </div>
+      <p-chart type="doughnut" [data]="categoryDistributionData" [options]="categoryDistributionOptions" height="220px"></p-chart>
+    </section>
   </div>
 
-  <!-- Advanced Filters (Collapsible) -->
-  <div class="glass-panel p-4 mb-4 border-round-2xl shadow-1 bg-white" *ngIf="showFilters()">
-    <div class="grid p-fluid">
-      <div class="col-12 md:col-3">
-        <label class="font-bold text-gray-700 text-sm mb-2 block">بحث</label>
-        <input pInputText [(ngModel)]="query.search" placeholder="ابحث برقم المرجع أو الدواء..." class="premium-input"
-          (keyup.enter)="loadMovements()">
-      </div>
-
-      <div class="col-12 md:col-3">
-        <label class="font-bold text-gray-700 text-sm mb-2 block">نوع الحركة</label>
-        <p-dropdown [options]="movementTypes" [(ngModel)]="query.movementType" optionLabel="label" optionValue="value"
-          placeholder="جميع الأنواع" [showClear]="true" styleClass="premium-dropdown"
-          (onChange)="loadMovements()"></p-dropdown>
-      </div>
-
-      <div class="col-12 md:col-3">
-        <label class="font-bold text-gray-700 text-sm mb-2 block">من تاريخ</label>
-        <p-calendar [(ngModel)]="startDate" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="اختر التاريخ"
-          inputStyleClass="premium-input" (onSelect)="onDateChange()"></p-calendar>
-      </div>
-
-      <div class="col-12 md:col-3">
-        <label class="font-bold text-gray-700 text-sm mb-2 block">إلى تاريخ</label>
-        <p-calendar [(ngModel)]="endDate" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="اختر التاريخ"
-          inputStyleClass="premium-input" (onSelect)="onDateChange()"></p-calendar>
-      </div>
+  <section class="filters-panel no-print" *ngIf="showFilters()">
+    <div class="filter-field">
+      <label>بحث</label>
+      <input pInputText [(ngModel)]="query.search" placeholder="الدواء، التشغيلة، المرجع، الملاحظة" (keyup.enter)="loadMovements()">
     </div>
-  </div>
+    <div class="filter-field">
+      <label>نوع الحركة</label>
+      <p-dropdown [options]="movementTypes" [(ngModel)]="query.movementType" optionLabel="label" optionValue="value" placeholder="كل الأنواع" [showClear]="true" (onChange)="loadMovements()"></p-dropdown>
+    </div>
+    <div class="filter-field">
+      <label>من تاريخ</label>
+      <p-calendar [(ngModel)]="startDate" [showIcon]="true" dateFormat="yy-mm-dd" placeholder="من" (onSelect)="onDateChange()"></p-calendar>
+    </div>
+    <div class="filter-field">
+      <label>إلى تاريخ</label>
+      <p-calendar [(ngModel)]="endDate" [showIcon]="true" dateFormat="yy-mm-dd" placeholder="إلى" (onSelect)="onDateChange()"></p-calendar>
+    </div>
+    <p-button icon="pi pi-search" label="عرض" size="small" (onClick)="loadMovements()"></p-button>
+  </section>
 
-  <!-- Premium Table with Row Expansion -->
-  <div class="glass-panel border-round-2xl shadow-2 bg-white overflow-hidden">
-    <p-table [value]="movements()" [rows]="query.pageSize" [totalRecords]="totalRecords()" [loading]="loading()"
-      [paginator]="true" [rowsPerPageOptions]="[10, 25, 50, 100]" [lazy]="true" (onLazyLoad)="onPageChange($event)"
-      styleClass="p-datatable-striped p-datatable-sm" responsiveLayout="scroll" dataKey="id"
-      currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} حركة" [showCurrentPageReport]="true">
+  <section class="table-panel">
+    <p-table
+      [value]="movements()"
+      [rows]="query.pageSize"
+      [totalRecords]="totalRecords()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rowsPerPageOptions]="[10, 15, 25, 50]"
+      [lazy]="true"
+      (onLazyLoad)="onPageChange($event)"
+      styleClass="p-datatable-sm compact-table"
+      responsiveLayout="scroll"
+      dataKey="id"
+      currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} حركة"
+      [showCurrentPageReport]="true">
 
       <ng-template pTemplate="header">
-        <tr class="bg-gray-50 text-gray-700 uppercase text-xs">
-          <th style="width: 3rem" class="py-3 px-4"></th>
-          <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">التاريخ</th>
-          <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">نوع الحركة</th>
-          <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">الدواء</th>
-          <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">رقم التشغيلة</th>
-          <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الكمية</th>
-          <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">المرجع</th>
-          <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">إجراءات</th>
+        <tr>
+          <th class="toggle-col"></th>
+          <th>التاريخ</th>
+          <th>نوع الحركة</th>
+          <th>الدواء</th>
+          <th>التشغيلة</th>
+          <th class="text-center">الكمية</th>
+          <th>المستخدم</th>
+          <th>المرجع</th>
+          <th class="text-center no-print">إجراءات</th>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="body" let-movement let-expanded="expanded">
-        <tr class="hover:surface-50 transition-colors">
-          <td class="px-4 py-3 border-bottom-1 border-gray-100">
-            <button type="button" pButton pRipple [pRowToggler]="movement"
-              class="p-button-text p-button-rounded p-button-plain"
-              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-left'"></button>
+        <tr>
+          <td class="toggle-col">
+            <button type="button" pButton [pRowToggler]="movement" class="p-button-text p-button-rounded p-button-sm" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-left'"></button>
           </td>
-          <td class="px-4 py-3 border-bottom-1 border-gray-100">
-            <span class="font-mono text-sm text-gray-600 font-medium">
-              {{ movement.date | date:'dd/MM/yyyy' }}
-            </span>
-            <div class="text-xs text-gray-400">{{ movement.date | date:'HH:mm' }}</div>
+          <td>
+            <span class="date-main">{{ movement.date | date:'dd/MM/yyyy' }}</span>
+            <small class="date-time">{{ movement.date | date:'HH:mm' }}</small>
           </td>
-          <td class="px-4 py-3 border-bottom-1 border-gray-100">
-            <p-tag [value]="getMovementTypeLabel(movement.movementType)"
-              [severity]="getMovementTypeSeverity(movement.movementType)" styleClass="text-xs"></p-tag>
+          <td>
+            <span [class]="getTypeClass(movement.movementType)">{{ movement.movementTypeLabel || getMovementTypeLabel(movement.movementType) }}</span>
           </td>
-          <td class="px-4 py-3 border-bottom-1 border-gray-100">
-            <div class="font-bold text-gray-700">{{ movement.medicineName }}</div>
-            <small class="text-gray-400">كود: {{ movement.medicineId }}</small>
+          <td>
+            <strong class="medicine-name">{{ movement.medicineName || '-' }}</strong>
+            <small class="muted">كود: {{ movement.medicineId }}</small>
           </td>
-          <td class="px-4 py-3 border-bottom-1 border-gray-100">
-            <span class="font-mono bg-indigo-50 text-indigo-700 px-2 py-1 border-round text-sm">
-              {{ movement.batchNumber || '---' }}
-            </span>
+          <td><span class="batch-chip">{{ movement.batchNumber || '-' }}</span></td>
+          <td class="text-center"><span [class]="getQuantityClass(movement)">{{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}</span></td>
+          <td>
+            <strong class="user-name">{{ movement.createdByName || 'غير محدد' }}</strong>
+            <small class="muted">ID: {{ movement.createdBy || '-' }}</small>
           </td>
-          <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
-            <span class="font-bold text-xl px-3 py-1 border-round"
-              [ngClass]="isAddition(movement.movementType) ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'">
-              {{ isAddition(movement.movementType) ? '+' : '-' }}{{ movement.quantity }}
-            </span>
+          <td>
+            <strong class="ref-number">{{ movement.referenceNumber || '-' }}</strong>
+            <small class="ref-type">{{ movement.referenceTypeLabel || getReferenceTypeLabel(movement.referenceType) }}</small>
           </td>
-          <td class="px-4 py-3 border-bottom-1 border-gray-100">
-            <div class="font-semibold text-gray-700">{{ movement.referenceNumber }}</div>
-            <small class="text-gray-400">{{ getReferenceTypeLabel(movement.referenceType) }}</small>
-          </td>
-          <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
-            <div class="flex justify-content-center gap-1">
-              <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
-                pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(movement)"></p-button>
-              <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary" size="small"
-                pTooltip="طباعة" tooltipPosition="top"></p-button>
-            </div>
+          <td class="text-center no-print">
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(movement)"></p-button>
           </td>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="rowexpansion" let-movement>
         <tr>
-          <td colspan="8" class="p-0">
-            <div class="p-4 bg-gray-50">
-              <div class="grid">
-                <div class="col-12 md:col-6">
-                  <div class="bg-white p-3 border-round-xl shadow-1">
-                    <h4 class="text-sm font-bold text-gray-600 uppercase mb-3 flex align-items-center gap-2">
-                      <i class="pi pi-info-circle text-indigo-500"></i>
-                      معلومات إضافية
-                    </h4>
-                    <div class="grid text-sm">
-                      <div class="col-6 text-gray-500">المستخدم:</div>
-                      <div class="col-6 font-bold text-gray-800">{{ movement.createdByName || 'غير محدد' }}</div>
-                      <div class="col-6 text-gray-500">الملاحظات:</div>
-                      <div class="col-6 text-gray-700">{{ movement.notes || 'لا توجد ملاحظات' }}</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-12 md:col-6">
-                  <div class="bg-white p-3 border-round-xl shadow-1">
-                    <h4 class="text-sm font-bold text-gray-600 uppercase mb-3 flex align-items-center gap-2">
-                      <i class="pi pi-box text-emerald-500"></i>
-                      تفاصيل التشغيلة
-                    </h4>
-                    <div class="grid text-sm">
-                      <div class="col-6 text-gray-500">رقم التشغيلة:</div>
-                      <div class="col-6 font-bold text-indigo-600">{{ movement.batchNumber || 'غير محدد' }}</div>
-                      <div class="col-6 text-gray-500">معرف التشغيلة:</div>
-                      <div class="col-6 font-mono text-gray-700">{{ movement.batchId || 'N/A' }}</div>
-                    </div>
-                  </div>
-                </div>
+          <td colspan="9" class="expansion-cell">
+            <div class="details-grid">
+              <div class="detail-box">
+                <span>الملاحظة</span>
+                <strong>{{ movement.notes || 'لا توجد ملاحظات' }}</strong>
+              </div>
+              <div class="detail-box" *ngIf="movement.financialDescription">
+                <span>الوصف المالي</span>
+                <strong>{{ movement.financialDescription }}</strong>
+              </div>
+              <div class="detail-box">
+                <span>معرف المرجع</span>
+                <strong>{{ movement.referenceId }}</strong>
+              </div>
+              <div class="detail-box">
+                <span>معرف التشغيلة</span>
+                <strong>{{ movement.batchId || '-' }}</strong>
               </div>
             </div>
           </td>
@@ -265,19 +174,12 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="8" class="text-center p-6">
-            <div class="flex flex-column align-items-center">
-              <div class="w-5rem h-5rem bg-gray-50 border-circle flex align-items-center justify-content-center mb-3">
-                <i class="pi pi-inbox text-4xl text-gray-300"></i>
-              </div>
-              <span class="text-gray-500 font-medium text-lg">لا توجد حركات مخزنية</span>
-              <span class="text-gray-400 text-sm mt-1">جرب تغيير الفلاتر أو إضافة حركات جديدة</span>
-            </div>
+          <td colspan="9" class="empty-message">
+            <i class="pi pi-inbox"></i>
+            <span>لا توجد حركات مخزنية حسب الفلاتر الحالية</span>
           </td>
         </tr>
       </ng-template>
     </p-table>
-  </div>
+  </section>
 </div>
-
-<p-toast position="top-left"></p-toast>

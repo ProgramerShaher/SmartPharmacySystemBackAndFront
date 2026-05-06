@@ -5,6 +5,7 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -25,7 +26,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IInvoiceNumberGenerator _invoiceNumberGenerator = invoiceNumberGenerator;
         private readonly IFinancialService _financialService = financialService;
         private readonly IAlertService _alertService = alertService;
-        private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<SaleInvoiceDto> CreateAsync(CreateSaleInvoiceDto dto, int userId)
         {

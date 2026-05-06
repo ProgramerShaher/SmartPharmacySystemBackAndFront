@@ -106,6 +106,8 @@ public interface IReportService
     /// <returns>تقرير ديون الموردين</returns>
     Task<SupplierDebtsReportDto> GetSupplierDebtsReportAsync();
 
+    Task<EmployeePerformanceReportDto> GetEmployeePerformanceReportAsync(EmployeePerformanceReportQueryDto query);
+
     /// <summary>
     /// الحصول على ملخص سريع للتقارير
     /// Get quick reports summary (for dashboard)

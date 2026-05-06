@@ -310,3 +310,78 @@ export interface SupplierDebt {
   lastPaymentDate?: string;
   daysOverdue: number;
 }
+
+export interface EmployeePerformanceReport {
+  fromDate?: string;
+  toDate?: string;
+  employeeId?: number;
+  roleId?: number;
+  operationType: string;
+  generatedAt: string;
+  totalSales: number;
+  salesInvoiceCount: number;
+  totalReturns: number;
+  salesReturnCount: number;
+  netSales: number;
+  itemsSold: number;
+  itemsReturned: number;
+  employees: EmployeePerformanceSummary[];
+  saleInvoices: EmployeeSalesInvoice[];
+  salesReturns: EmployeeSalesReturn[];
+}
+
+export interface EmployeePerformanceSummary {
+  employeeId: number;
+  employeeName: string;
+  username: string;
+  roleId: number;
+  roleName: string;
+  totalSales: number;
+  salesInvoiceCount: number;
+  itemsSold: number;
+  totalReturns: number;
+  salesReturnCount: number;
+  itemsReturned: number;
+  netSales: number;
+}
+
+export interface EmployeeSalesInvoice {
+  invoiceId: number;
+  invoiceNumber: string;
+  invoiceDate: string;
+  createdAt: string;
+  employeeId: number;
+  employeeName: string;
+  roleName: string;
+  customerName?: string;
+  paymentMethod: string;
+  totalAmount: number;
+  itemsCount: number;
+  items: EmployeeOperationItem[];
+}
+
+export interface EmployeeSalesReturn {
+  returnId: number;
+  saleInvoiceId: number;
+  saleInvoiceNumber: string;
+  returnDate: string;
+  createdAt: string;
+  employeeId: number;
+  employeeName: string;
+  roleName: string;
+  customerName?: string;
+  reason?: string;
+  totalAmount: number;
+  itemsCount: number;
+  items: EmployeeOperationItem[];
+}
+
+export interface EmployeeOperationItem {
+  medicineId: number;
+  medicineName: string;
+  batchId: number;
+  batchNumber?: string;
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+}

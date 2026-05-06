@@ -481,34 +481,24 @@ export class SalesInvoiceListComponent implements OnInit {
 
     getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
         if (status === undefined || status === null) return 'info';
-        const statusNum = Number(status);
 
-        switch (statusNum) {
-            case DocumentStatus.Approved:
-                return 'success';
-            case DocumentStatus.Draft:
-                return 'warning';
-            case DocumentStatus.Cancelled:
-                return 'danger';
-            default:
-                return 'info';
-        }
+        const statusStr = status.toString();
+        if (statusStr === 'Approved' || status === DocumentStatus.Approved) return 'success';
+        if (statusStr === 'Draft' || status === DocumentStatus.Draft) return 'warning';
+        if (statusStr === 'Cancelled' || status === DocumentStatus.Cancelled) return 'danger';
+
+        return 'info';
     }
 
     getStatusLabel(status: any): string {
         if (status === undefined || status === null) return 'غير محدد';
-        const statusNum = Number(status);
 
-        switch (statusNum) {
-            case DocumentStatus.Approved:
-                return 'معتمدة';
-            case DocumentStatus.Draft:
-                return 'مسودة';
-            case DocumentStatus.Cancelled:
-                return 'ملغاة';
-            default:
-                return 'غير محدد';
-        }
+        const statusStr = status.toString();
+        if (statusStr === 'Approved' || status === DocumentStatus.Approved) return 'معتمدة';
+        if (statusStr === 'Draft' || status === DocumentStatus.Draft) return 'مسودة';
+        if (statusStr === 'Cancelled' || status === DocumentStatus.Cancelled) return 'ملغاة';
+
+        return 'غير محدد';
     }
 
     isDraft(invoice: SaleInvoice): boolean {

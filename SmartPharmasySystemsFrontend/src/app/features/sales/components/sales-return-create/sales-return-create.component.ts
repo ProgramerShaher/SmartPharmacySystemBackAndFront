@@ -18,11 +18,10 @@ import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { SearchIcon } from 'primeng/icons/search';
 
 interface ReturnItem {
-    id: number; // SaleInvoiceDetailId (for UI only)
-    medicineId: number;
-    batchId: number;
+    id: number; // SaleInvoiceDetailId
     medicineName: string;
     batchNumber: string;
     originalQuantity: number;
@@ -98,7 +97,8 @@ export class SalesReturnCreateComponent implements OnInit {
     searchInvoice(event: any) {
         const query = (event?.query ?? '').toString().trim();
 
-        this.salesService.getAll(query).subscribe({
+        // SaleInvoiceService.getAll expects an object (search/page/...) not a raw string
+        this.salesService.getAll({ search: query }).subscribe({
             next: (invoices) => {
                 // Only show approved invoices
                 this.filteredInvoices = invoices.filter(
@@ -139,7 +139,7 @@ export class SalesReturnCreateComponent implements OnInit {
     loadInvoiceForReturn(invoiceId: number) {
         this.salesService.getById(invoiceId).subscribe({
             next: (invoice) => {
-                if (!this.isApprovedInvoice(invoice)) {
+                if (invoice.status !== DocumentStatus.Approved) {
                     this.messageService.add({
                         severity: 'warn',
                         summary: 'تنبيه',
@@ -157,15 +157,13 @@ export class SalesReturnCreateComponent implements OnInit {
                     // If backend sends 0 or undefined, we fallback to 0 to prevent issues
                     const remainingQty = item.remainingQtyToReturn !== undefined ? item.remainingQtyToReturn : 0;
 
-                return {
-                    id: item.id,
-                    medicineId: item.medicineId,
-                    batchId: item.batchId,
-                    medicineName: item.medicineName || 'Unknown',
-                    batchNumber: item.companyBatchNumber || '', // Correct property
-                    originalQuantity: item.quantity,
-                    returnedQuantity: item.quantity - remainingQty, // Infer returned qty if needed for display, or 0 if not tracking
-                    remainingQtyToReturn: remainingQty,
+                    return {
+                        id: item.id,
+                        medicineName: item.medicineName || 'Unknown',
+                        batchNumber: item.companyBatchNumber || '', // Correct property
+                        originalQuantity: item.quantity,
+                        returnedQuantity: item.quantity - remainingQty, // Infer returned qty if needed for display, or 0 if not tracking
+                        remainingQtyToReturn: remainingQty,
                         returnQuantity: 0,
                         salePrice: item.salePrice,
                         totalReturnAmount: 0
@@ -274,14 +272,10 @@ export class SalesReturnCreateComponent implements OnInit {
             saleInvoiceId: this.selectedInvoice.id,
             returnDate: this.returnDate.toISOString(),
             reason: this.reason,
-            details: itemsToReturn.map(item => ({
-                // Backend DTO currently validates SalesReturnId and SalePrice as required.
-                // SalesReturnId is not known on create; sending 0 satisfies [Required] for int.
-                salesReturnId: 0,
-                medicineId: item.medicineId,
-                batchId: item.batchId,
+            items: itemsToReturn.map(item => ({
+                saleInvoiceDetailId: item.id,
                 quantity: item.returnQuantity,
-                salePrice: item.salePrice
+                returnPrice: item.salePrice
             }))
         };
 

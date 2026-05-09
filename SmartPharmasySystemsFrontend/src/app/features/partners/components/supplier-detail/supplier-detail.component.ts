@@ -10,9 +10,11 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
+import { TabViewModule } from 'primeng/tabview';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { SupplierService } from '../../services/supplier.service';
 import { Supplier } from '../../../../core/models/supplier.models';
+import { DocumentStatus } from '../../../../core/models/stock-movement.enums';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -31,6 +33,7 @@ import { of } from 'rxjs';
     ToastModule,
     TooltipModule,
     TableModule,
+    TabViewModule,
   ],
   templateUrl: './supplier-detail.component.html',
   styleUrl: './supplier-detail.component.scss',
@@ -219,22 +222,21 @@ export class SupplierDetailComponent implements OnInit {
     return colors[index];
   }
 
-  getInvoiceStatusSeverity(status: string): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
-    switch (status?.toLowerCase()) {
-      case 'paid': return 'success';
-      case 'pending': return 'warning';
-      case 'cancelled': return 'danger';
+  getInvoiceStatusSeverity(status: DocumentStatus): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
+    switch (status) {
+      case DocumentStatus.Approved: return 'success';
+      case DocumentStatus.Draft: return 'warning';
+      case DocumentStatus.Cancelled: return 'danger';
       default: return 'info';
     }
   }
 
-  getInvoiceStatusLabel(status: string): string {
-    switch (status?.toLowerCase()) {
-      case 'paid': return 'مدفوعة';
-      case 'pending': return 'قيد الانتظار';
-      case 'cancelled': return 'ملغاة';
-      case 'approved': return 'معتمد';
-      default: return status || 'غير معروف';
+  getInvoiceStatusLabel(status: DocumentStatus): string {
+    switch (status) {
+      case DocumentStatus.Approved: return 'معتمدة';
+      case DocumentStatus.Draft: return 'مسودة';
+      case DocumentStatus.Cancelled: return 'ملغاة';
+      default: return 'غير معروف';
     }
   }
 }

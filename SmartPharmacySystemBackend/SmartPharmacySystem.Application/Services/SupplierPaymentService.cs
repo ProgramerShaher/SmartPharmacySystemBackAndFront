@@ -51,6 +51,7 @@ namespace SmartPharmacySystem.Application.Services
                     Amount = dto.Amount,
                     PaymentDate = dto.PaymentDate,
                     ReferenceNo = dto.ReferenceNo,
+                    PurchaseInvoiceId = dto.PurchaseInvoiceId,
                     Notes = dto.Notes,
                     CreatedBy = userId,
                     IsDeleted = false
@@ -58,6 +59,24 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.SupplierPayments.AddAsync(payment);
                 await _unitOfWork.SaveChangesAsync(); // Get ID
+
+                // 2.5. Link to Purchase Invoice if provided
+                if (dto.PurchaseInvoiceId.HasValue)
+                {
+                    var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(dto.PurchaseInvoiceId.Value)
+                        ?? throw new KeyNotFoundException("الفاتورة غير موجودة.");
+
+                    if (invoice.SupplierId != dto.SupplierId)
+                        throw new InvalidOperationException("الفاتورة لا تتبع لنفس المورد.");
+
+                    invoice.PaidAmount += dto.Amount;
+                    if (invoice.PaidAmount >= invoice.TotalAmount)
+                    {
+                        invoice.IsPaid = true;
+                    }
+
+                    await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
+                }
 
                 // 3. Update Supplier Balance (Decrease Debt)
                 supplier.Balance -= dto.Amount;
@@ -110,6 +129,21 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     supplier.Balance += payment.Amount;
                     await _unitOfWork.Suppliers.UpdateAsync(supplier);
+                }
+
+                // 2.5 Reverse Purchase Invoice Payment if linked
+                if (payment.PurchaseInvoiceId.HasValue)
+                {
+                    var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(payment.PurchaseInvoiceId.Value);
+                    if (invoice != null)
+                    {
+                        invoice.PaidAmount -= payment.Amount;
+                        if (invoice.PaidAmount < invoice.TotalAmount)
+                        {
+                            invoice.IsPaid = false;
+                        }
+                        await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
+                    }
                 }
 
                 // 3. Reverse Financial Transaction (Income back to Vault)
@@ -210,7 +244,7 @@ namespace SmartPharmacySystem.Application.Services
                 SupplierId = supplier.Id,
                 SupplierName = supplier.Name,
                 TotalBalance = runningBalance,
-                Status = runningBalance == 0 ? "خالص" : "مديون",
+                Status = runningBalance == 0 ? "خالص" : "دائن",
                 StatusColor = runningBalance == 0 ? "Green" : "Red",
                 Transactions = allTransactions
             };

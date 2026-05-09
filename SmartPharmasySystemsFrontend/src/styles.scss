@@ -4,30 +4,33 @@
 /* PrimeIcons & PrimeFlex */
 @import "primeicons/primeicons.css";
 @import "primeflex/primeflex.css";
+@import "primeng/resources/themes/lara-light-blue/theme.css"; // أو ثيمك المفضل
+@import "primeng/resources/primeng.min.css";
+@import "primeflex/primeflex.css"; // مهم جداً لمربعات الـ grid
 
 /* Global Variables & Premium Design System */
 :root {
     --primary-color: #10b981;
     --primary-color-text: #ffffff;
     --primary-rgb: 16, 185, 129;
-    
-        --primary-50: #ecfdf5;
-        --primary-100: #d1fae5;
-        --primary-200: #a7f3d0;
-        --primary-300: #6ee7b7;
-        --primary-400: #34d399;
-        --primary-500: #10b981;
-        --primary-600: #059669;
-        --primary-700: #047857;
-        --primary-800: #065f46;
-        --primary-900: #064e3b;
+
+    --primary-50: #ecfdf5;
+    --primary-100: #d1fae5;
+    --primary-200: #a7f3d0;
+    --primary-300: #6ee7b7;
+    --primary-400: #34d399;
+    --primary-500: #10b981;
+    --primary-600: #059669;
+    --primary-700: #047857;
+    --primary-800: #065f46;
+    --primary-900: #064e3b;
 
     --font-family: 'Cairo', sans-serif;
-    
+
     --sidebar-width: 280px;
     --topbar-height: 4.5rem;
-        --border-radius: 1rem;
-        --border-radius-lg: 1.5rem;
+    --border-radius: 1rem;
+    --border-radius-lg: 1.5rem;
 }
 
 .light-theme {
@@ -36,17 +39,17 @@
     --text-color: #1e293b;
     --text-color-secondary: #64748b;
     --card-bg: rgba(255, 255, 255, 0.85);
-        --card-border: 1px solid rgba(255, 255, 255, 0.5);
+    --card-border: 1px solid rgba(255, 255, 255, 0.5);
     --border-color: #e2e8f0;
     --table-header-bg: #f8fafc;
     --modal-bg: #ffffff;
     --input-bg: #ffffff;
     --surface-hover: #f1f5f9;
     --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        --glass-bg: rgba(255, 255, 255, 0.7);
-        --glass-border: 1px solid rgba(255, 255, 255, 0.4);
-        --glass-blur: blur(12px);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.4);
+    --glass-blur: blur(12px);
 }
 
 .dark-theme {
@@ -55,17 +58,17 @@
     --text-color: #f1f5f9;
     --text-color-secondary: #94a3b8;
     --card-bg: rgba(15, 23, 42, 0.8);
-        --card-border: 1px solid rgba(255, 255, 255, 0.05);
+    --card-border: 1px solid rgba(255, 255, 255, 0.05);
     --border-color: #1e293b;
     --table-header-bg: #0f172a;
     --modal-bg: #0f172a;
     --input-bg: #1e293b;
     --surface-hover: #1e293b;
     --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-        --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-        --glass-bg: rgba(15, 23, 42, 0.7);
-        --glass-border: 1px solid rgba(255, 255, 255, 0.05);
-        --glass-blur: blur(15px);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.05);
+    --glass-blur: blur(15px);
 }
 
 html,
@@ -88,8 +91,8 @@ body {
 .card {
     background: var(--card-bg);
     border: var(--card-border);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-md);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
     padding: 1.5rem;
     backdrop-filter: var(--glass-blur);
 }
@@ -134,13 +137,14 @@ body {
 ::ng-deep {
     .p-datatable {
         border-radius: var(--border-radius);
-            overflow: hidden;
+        overflow: hidden;
+
         .p-datatable-thead>tr>th {
             background: var(--table-header-bg);
             color: var(--text-color);
             border-bottom: 2px solid var(--border-color);
-                font-weight: 700;
-                padding: 1rem;
+            font-weight: 700;
+            padding: 1rem;
         }
 
         .p-datatable-tbody>tr {
@@ -150,24 +154,24 @@ body {
 
             &:hover {
                 background: var(--surface-hover) !important;
-                    transform: scale(0.998);
+                transform: scale(0.998);
             }
 
             >td {
                 padding: 1rem;
                 border-color: var(--border-color);
             }
-                                }
+        }
     }
 
-                .p-inputtext,
-                .p-inputnumber-input,
-                .p-password-input {
-                    border-radius: 0.75rem !important;
-                    padding: 0.75rem 1rem !important;
+    .p-inputtext,
+    .p-inputnumber-input,
+    .p-password-input {
+        border-radius: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
         background: var(--input-bg) !important;
         border: 2px solid var(--border-color) !important;
-            transition: all 0.2s ease !important;
+        transition: all 0.2s ease !important;
 
         &:focus {
             border-color: var(--primary-color) !important;
@@ -175,38 +179,40 @@ body {
         }
     }
 
-                .p-button {
-                    border-radius: 0.75rem;
-                    padding: 0.6rem 1.5rem;
-                    font-weight: 600;
-                    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    .p-button {
+        border-radius: 0.75rem;
+        padding: 0.6rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
         &:hover {
             transform: translateY(-2px);
-                box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
-            }
-            }
+            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    }
 
-                .p-dialog {
-                    border: var(--glass-border);
-                    backdrop-filter: var(--glass-blur);
-                    box-shadow: var(--shadow-lg);
+    .p-dialog {
+        border: var(--glass-border);
+        backdrop-filter: var(--glass-blur);
+        box-shadow: var(--shadow-lg);
 
         .p-dialog-header {
-                background: transparent;
-                padding: 1.5rem;
-                border-bottom: 1px solid var(--border-color);
-            }
-                        .p-dialog-content {
-                            background: transparent;
-                            padding: 2rem 1.5rem;
-                        }
-                        .p-dialog-footer {
-                            background: transparent;
-                            padding: 1rem 1.5rem;
-                            border-top: 1px solid var(--border-color);
-                        }
-                }
+            background: transparent;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .p-dialog-content {
+            background: transparent;
+            padding: 2rem 1.5rem;
+        }
+
+        .p-dialog-footer {
+            background: transparent;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+    }
 }
 
 /* RTL Support */
@@ -216,10 +222,10 @@ body {
         right: 1rem;
     }
 
-        .p-input-icon-left .p-inputtext {
-            padding-left: 1rem !important;
-            padding-right: 2.5rem !important;
-        }
+    .p-input-icon-left .p-inputtext {
+        padding-left: 1rem !important;
+        padding-right: 2.5rem !important;
+    }
 }
 
 /* Scrollbar */

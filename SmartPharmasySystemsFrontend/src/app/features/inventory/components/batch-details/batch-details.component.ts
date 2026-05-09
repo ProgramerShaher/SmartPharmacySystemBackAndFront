@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
-import { MedicineBatch, InventoryMovement } from '../../../../core/models';
+import { MedicineBatch, StockCardDto } from '../../../../core/models';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -10,6 +10,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { BatchActionsDialogComponent } from '../batch-actions-dialog/batch-actions-dialog.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
     selector: 'app-batch-details',
@@ -21,14 +22,16 @@ import { BatchActionsDialogComponent } from '../batch-actions-dialog/batch-actio
         TagModule,
         TooltipModule,
         DialogModule,
-        BatchActionsDialogComponent
+        BatchActionsDialogComponent,
+        ProgressSpinnerModule
     ],
     providers: [],
-    templateUrl: './batch-details.component.html'
+    templateUrl: './batch-details.component.html',
+    styleUrl: './batch-details.component.scss'
 })
 export class BatchDetailsComponent implements OnInit {
     batch: MedicineBatch | null = null;
-    stockCard: InventoryMovement[] = [];
+    stockCard: StockCardDto[] = [];
     loading = true;
     displayActionDialog = false;
 
@@ -70,7 +73,11 @@ export class BatchDetailsComponent implements OnInit {
                 }
 
                 this.batch = data;
-                this.loadStockCard(id);
+                if (this.batch.medicineId) {
+                    this.loadStockCard(this.batch.medicineId, id);
+                } else {
+                    this.loading = false;
+                }
             },
             error: (err) => {
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل تفاصيل الدفعة' });
@@ -79,8 +86,8 @@ export class BatchDetailsComponent implements OnInit {
         });
     }
 
-    loadStockCard(batchId: number) {
-        this.inventoryService.getStockCard(batchId).subscribe({
+    loadStockCard(medicineId: number, batchId: number) {
+        this.inventoryService.getStockCard(medicineId, batchId).subscribe({
             next: (data) => {
                 this.stockCard = data;
                 this.loading = false;
@@ -130,6 +137,31 @@ export class BatchDetailsComponent implements OnInit {
             case 'ADJUSTMENT': return 'warning';
             default: return 'info';
         }
+    }
+
+    getMovementTypeLabel(type: any): string {
+        const typeStr = String(type).toLowerCase();
+        if (typeStr.includes('purchase')) return 'شراء / توريد';
+        if (typeStr.includes('sale')) return 'بيع مباشر';
+        if (typeStr.includes('return')) return 'مرتجع';
+        if (typeStr.includes('adjustment')) return 'تعديل جردي';
+        if (typeStr.includes('damage')) return 'تالف';
+        if (typeStr.includes('opening')) return 'رصيد أول';
+        if (typeStr.includes('stockin') || typeStr === 'in') return 'إضافة مخزنية';
+        if (typeStr.includes('stockout') || typeStr === 'out') return 'صرف مخزني';
+        return type || 'غير معروف';
+    }
+
+    getExpiryLabel(days: number): string {
+        if (days <= 0) return 'منتهية الصلاحية';
+        if (days <= 30) return `تنتهي خلال ${days} يوم`;
+        return `صالحة (${days} يوم)`;
+    }
+
+    getExpirySeverity(days: number): 'success' | 'warning' | 'danger' {
+        if (days <= 0) return 'danger';
+        if (days <= 30) return 'warning';
+        return 'success';
     }
 
     goBack() {

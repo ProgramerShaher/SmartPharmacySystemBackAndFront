@@ -99,5 +99,20 @@ public class MedicineDto
     /// <summary>
     /// هل محذوف
     /// </summary>
+    /// <summary>
+    /// السعر الإجمالي (سعر البيع)
+    /// </summary>
+    public decimal SalePrice { get; set; }
+
+    /// <summary>
+    /// سعر الشراء
+    /// </summary>
+    public decimal PurchasePrice { get; set; }
+
+    /// <summary>
+    /// المخزون الكلي
+    /// </summary>
+    public int TotalStock { get; set; }
+
     public bool IsDeleted { get; set; }
 }

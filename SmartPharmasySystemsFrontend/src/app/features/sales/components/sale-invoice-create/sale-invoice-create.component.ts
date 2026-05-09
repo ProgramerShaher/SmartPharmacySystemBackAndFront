@@ -25,6 +25,11 @@ import { MedicineService } from '../../../inventory/services/medicine.service';
 import { MedicineBatchService } from '../../../inventory/services/medicine-batch.service';
 import { CustomerService } from '../../../customers/services/customer.service';
 import { DropdownModule } from "primeng/dropdown";
+import { BarcodeService } from '../../../../core/services/barcode.service';
+import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
+import { TransactionType } from '../../../../core/models/barcode.interface';
+import { HostListener } from '@angular/core';
+import { finalize } from 'rxjs/operators';
 
 interface InvoiceItem {
     medicineId: number;
@@ -60,7 +65,8 @@ interface InvoiceItem {
         TooltipModule,
         DialogModule,
         InputSwitchModule,
-        DropdownModule
+        DropdownModule,
+        BarcodeSimulatorComponent
     ],
     templateUrl: './sale-invoice-create.component.html',
     styleUrls: ['./sale-invoice-create.component.scss'],
@@ -125,6 +131,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
         private medicineService: MedicineService,
         private medicineBatchService: MedicineBatchService,
         private customerService: CustomerService,
+        private barcodeService: BarcodeService,
         private router: Router,
         private route: ActivatedRoute
     ) { }
@@ -142,6 +149,89 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 this.toggleCashCustomer();
             }
         });
+    }
+
+    // 🔍 BARCODE SCANNER ENGINE
+    private barcodeBuffer = '';
+    private lastKeyTime = 0;
+    simulatorVisible = false;
+    readonly transactionType = TransactionType.Sale;
+
+    @HostListener('window:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        const currentTime = new Date().getTime();
+
+        // If typing is very fast (< 30ms between keys), it's likely a scanner
+        if (currentTime - this.lastKeyTime > 50) {
+            this.barcodeBuffer = '';
+        }
+
+        if (event.key === 'Enter') {
+            if (this.barcodeBuffer.length > 3) {
+                this.processScannedBarcode(this.barcodeBuffer);
+                this.barcodeBuffer = '';
+                event.preventDefault();
+            }
+        } else if (event.key.length === 1) {
+            this.barcodeBuffer += event.key;
+        }
+
+        this.lastKeyTime = currentTime;
+    }
+
+    processScannedBarcode(barcode: string) {
+        this.messageService.add({ severity: 'info', summary: 'جاري البحث', detail: `تم مسح الباركود: ${barcode}` });
+
+        this.barcodeService.processBarcode({
+            barcode: barcode,
+            transactionType: TransactionType.Sale
+        }).subscribe({
+            next: (res) => {
+                if (res.success && res.data) {
+                    this.addBarcodeItemToInvoice(res.data);
+                } else {
+                    this.messageService.add({ severity: 'error', summary: 'فشل', detail: res.message || 'الصنف غير موجود' });
+                }
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'خطأ',
+                    detail: err.error?.message || 'حدث خطأ أثناء معالجة الباركود'
+                });
+            }
+        });
+    }
+
+    private addBarcodeItemToInvoice(data: any) {
+        // Check if item already exists in cart with same batch
+        const existingItem = this.items().find(i => i.batchId === data.batchId);
+
+        if (existingItem) {
+            this.updateItemQuantity(existingItem, existingItem.quantity + 1);
+            this.messageService.add({ severity: 'success', summary: 'تحديث الكمية', detail: `تم زيادة كمية ${data.tradeName}` });
+        } else {
+            const newItem: InvoiceItem = {
+                medicineId: data.medicineId,
+                medicineName: data.tradeName,
+                batchId: data.batchId,
+                batchNumber: data.batchNumber,
+                quantity: 1,
+                salePrice: data.salePrice,
+                unitCost: data.movingAverageCost, // Best estimate for profit if batch cost not clear
+                total: data.salePrice,
+                profit: data.salePrice - data.movingAverageCost,
+                expiryDate: new Date(data.expiryDate),
+                availableQuantity: data.availableQuantity
+            };
+
+            this.items.update(current => [...current, newItem]);
+            this.messageService.add({ severity: 'success', summary: 'إضافة صنف', detail: `تم إضافة ${data.tradeName} للفاتورة` });
+        }
+    }
+
+    toggleSimulator() {
+        this.simulatorVisible = !this.simulatorVisible;
     }
 
     // 🔄 INTELLIGENT CUSTOMER TOGGLE

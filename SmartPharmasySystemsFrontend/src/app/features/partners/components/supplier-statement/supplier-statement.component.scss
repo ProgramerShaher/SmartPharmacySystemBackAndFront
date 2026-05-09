@@ -1,158 +1,232 @@
+/* supplier-statement.component.scss */
+
+:host { display: block; }
+
 .statement-container {
-    background: #f8fafc;
-    min-height: 100vh;
-    padding: 2rem;
+    padding: 1.5rem;
+    background: #f4f6f9;
+    min-height: calc(100vh - 70px);
 }
 
-.glass-morphism {
-    background: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+/* ─── Search Bar ─────────────────────────────────── */
+.search-bar {
+    border: 1px solid #e2e8f0 !important;
 }
-
-.selection-header {
-    transition: all 0.3s ease;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-    }
-}
-
-.premium-ledger-table {
-    ::ng-deep {
-        .p-datatable-thead>tr>th {
-            padding: 1.5rem;
-            border: none;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        .p-datatable-tbody>tr {
-            border-bottom: 1px solid #f1f5f9;
-            transition: background 0.2s ease;
-
-            &:hover {
-                background: #fdfdfd;
-            }
-
-            &.bg-highlight {
-                background: #f0fdf4;
-            }
-
-            >td {
-                padding: 1.25rem 1.5rem;
-                border: none;
-            }
-        }
-    }
-}
-
-.ref-badge {
-    background: #f1f5f9;
-    padding: 0.4rem 0.8rem;
-    border-radius: 8px;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #475569;
-}
-
-.ledger-footer-row {
-    td {
-        border: none !important;
-    }
-}
-
-.premium-loading-overlay {
-    height: 400px;
+.search-icon-box {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 10px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
-.loader-wave {
-    width: 100px;
-    height: 4px;
-    background: #e2e8f0;
-    position: relative;
+/* ─── Summary Cards ──────────────────────────────── */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+
+    @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+    @media (max-width: 576px)  { grid-template-columns: 1fr; }
+}
+
+.summary-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    border: 1px solid #e2e8f0;
+    transition: transform .18s;
+
+    &:hover { transform: translateY(-2px); }
+
+    .card-icon {
+        width: 3rem; height: 3rem;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; flex-shrink: 0;
+    }
+    .card-body  { min-width: 0; }
+    .card-label { font-size: .72rem; font-weight: 700; color: #64748b; white-space: nowrap; }
+    .card-value { font-size: 1.15rem; font-weight: 900; color: #0f172a; margin-top: .2rem; }
+    .unit       { font-size: .7rem;  color: #94a3b8;  font-weight: 600; }
+    .supplier-name { font-size: 1rem; }
+
+    &.card-blue       { border-bottom: 3px solid #3b82f6; .card-icon { background:#eff6ff; color:#3b82f6; } }
+    &.card-red        { border-bottom: 3px solid #ef4444; .card-icon { background:#fef2f2; color:#ef4444; } }
+    &.card-teal       { border-bottom: 3px solid #0891b2; .card-icon { background:#ecfeff; color:#0891b2; } }
+    &.card-red-strong { border-bottom: 3px solid #dc2626; .card-icon { background:#fef2f2; color:#dc2626; } }
+    &.card-green-strong{ border-bottom: 3px solid #16a34a; .card-icon { background:#f0fdf4; color:#16a34a; } }
+    &.card-gray       { border-bottom: 3px solid #94a3b8; .card-icon { background:#f1f5f9; color:#94a3b8; } }
+}
+
+/* ─── Amounts ────────────────────────────────────── */
+.credit-value { color: #dc2626 !important; }   /* دائن علينا — أحمر */
+.paid-value   { color: #0e7490 !important; }   /* مسدد — تيل */
+.debit-value  { color: #16a34a !important; }   /* مدين لنا — أخضر */
+
+/* ─── Legend ─────────────────────────────────────── */
+.legend-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .75rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: .6rem 1rem;
+    font-size: .8rem;
+    color: #475569;
+
+    .legend-title { font-weight: 800; color: #1e293b; margin-left: .25rem; }
+    .legend-sep   { color: #cbd5e1; }
+
+    .legend-item  { display: flex; align-items: center; gap: .4rem; }
+    .legend-dot   {
+        width: .9rem; height: .9rem; border-radius: 3px;
+        border: 1px solid rgba(0,0,0,.12);
+    }
+    .dot-invoice  { background: #bfdbfe; }
+    .dot-payment  { background: #a5f3fc; }
+    .dot-return   { background: #fef08a; }
+
+    .badge-red-sm   { background:#fef2f2; color:#dc2626; border:1px solid #fca5a5; border-radius:4px; padding:.1rem .4rem; font-weight:700; font-size:.72rem; }
+    .badge-teal-sm  { background:#ecfeff; color:#0e7490; border:1px solid #a5f3fc; border-radius:4px; padding:.1rem .4rem; font-weight:700; font-size:.72rem; }
+    .badge-green-sm { background:#f0fdf4; color:#16a34a; border:1px solid #86efac; border-radius:4px; padding:.1rem .4rem; font-weight:700; font-size:.72rem; }
+}
+
+/* ─── Ledger Table ───────────────────────────────── */
+.ledger-wrap {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e2e8f0;
     overflow: hidden;
-    border-radius: 2px;
-
-    &::after {
-        content: '';
-        position: absolute;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, #4f46e5, transparent);
-        animation: wave 1.5s infinite;
-    }
+    box-shadow: 0 2px 8px rgba(0,0,0,.03);
 }
 
-@keyframes wave {
-    100% {
-        left: 100%;
+::ng-deep .ledger-table {
+    .p-datatable-thead > tr > th {
+        background: #f8fafc;
+        color: #475569;
+        font-size: .76rem;
+        font-weight: 800;
+        padding: .85rem 1rem;
+        border-bottom: 2px solid #e2e8f0;
+        vertical-align: bottom;
+        line-height: 1.3;
+
+        .col-hint {
+            font-size: .64rem;
+            font-weight: 500;
+            opacity: .7;
+            margin-top: .15rem;
+        }
     }
+    .p-datatable-tbody > tr > td {
+        padding: .55rem .9rem;
+        font-size: .86rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    /* Column header themes */
+    .th-credit  { color: #dc2626 !important; background: #fff5f5 !important; }
+    .th-paid    { color: #0e7490 !important; background: #f0fdfe !important; }
+    .th-debit   { color: #16a34a !important; background: #f0fdf4 !important; }
+    .th-balance { color: #1e40af !important; background: #eff6ff !important; }
+
+    /* Column width helpers */
+    .col-num  { width: 2.5rem; }
+    .col-date { width: 7rem;   }
+    .col-ref  { width: 7rem;   }
+    .col-amount { width: 8.5rem; }
+    .col-balance { width: 9.5rem; }
+
+    /* Row backgrounds */
+    .row-invoice { background: #eff6ff; border-right: 3px solid #3b82f6; &:hover { background: #dbeafe !important; } }
+    .row-payment { background: #f0fdfe; border-right: 3px solid #0891b2; &:hover { background: #cffafe !important; } }
+    .row-return  { background: #fefce8; border-right: 3px solid #d97706; &:hover { background: #fef9c3 !important; } }
 }
 
+/* ─── Type Badges ────────────────────────────────── */
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .18rem .6rem;
+    border-radius: 20px;
+    font-size: .74rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &.badge-invoice { background:#dbeafe; color:#1d4ed8; border:1px solid #93c5fd; }
+    &.badge-payment { background:#cffafe; color:#0e7490; border:1px solid #67e8f9; }
+    &.badge-return  { background:#fef9c3; color:#854d0e; border:1px solid #fde047; }
+}
+
+.notes-text {
+    font-size: .72rem;
+    color: #64748b;
+    margin-top: .2rem;
+}
+
+/* ─── Reference Chip ─────────────────────────────── */
+.ref-chip {
+    background: #f1f5f9;
+    color: #475569;
+    font-family: monospace;
+    font-size: .75rem;
+    padding: .15rem .55rem;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    display: inline-block;
+}
+
+/* ─── Amount Cells ───────────────────────────────── */
+.amount-credit { color: #dc2626; font-weight: 800; font-size: .95rem; }  /* فواتير */
+.amount-paid   { color: #0e7490; font-weight: 800; font-size: .95rem; }  /* سندات الصرف */
+.amount-debit  { color: #16a34a; font-weight: 800; font-size: .95rem; }  /* مرتجعات */
+
+.dash-placeholder { color: #cbd5e1; font-size: 1.1rem; line-height: 1; }
+
+/* ─── Running Balance ────────────────────────────── */
+.running-bal {
+    font-weight: 800;
+    font-size: .9rem;
+
+    &.bal-owe  { background: #fef2f2 !important; color: #dc2626; }  /* دين علينا */
+    &.bal-owed { background: #f0fdf4 !important; color: #16a34a; }  /* دين للمورد عندنا */
+    &.bal-zero { background: #f8fafc !important; color: #64748b; }
+}
+
+/* ─── Totals Row ─────────────────────────────────── */
+::ng-deep .ledger-table .p-datatable-tfoot > tr.totals-row > td {
+    background: #1e293b !important;
+    color: #fff !important;
+    padding: .85rem 1rem;
+    font-size: .9rem;
+    border: none;
+}
+
+/* ─── Print ──────────────────────────────────────── */
 @media print {
-    .no-print {
-        display: none !important;
-    }
-
-    .print-only-header,
-    .print-footer {
-        display: block !important;
-    }
-
-    .statement-container {
-        padding: 0 !important;
-        background: white !important;
-    }
-
-    .glass-morphism {
-        border: none !important;
-        box-shadow: none !important;
-        background: white !important;
-    }
-
-    .ledger-container {
-        border: 2px solid #000 !important;
-        border-radius: 0 !important;
-    }
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.scale-in {
-    animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes scaleIn {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
+    .no-print { display: none !important; }
+    .print-only-header, .print-only-footer { display: block !important; }
+    .statement-container { padding: 0; background: transparent; }
+    .summary-cards { grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+    .summary-card  { box-shadow: none; border: 1px solid #000; padding: .6rem .8rem; }
+    .ledger-wrap   { border: 1px solid #000; box-shadow: none; border-radius: 0; }
+    ::ng-deep .ledger-table {
+        .p-datatable-thead > tr > th { background: #f0f0f0 !important; border: 1px solid #000 !important; }
+        .p-datatable-tbody > tr > td { border: 1px solid #000 !important; }
+        .row-invoice, .row-payment, .row-return { background: transparent !important; }
     }
 }

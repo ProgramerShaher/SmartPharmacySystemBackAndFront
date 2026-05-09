@@ -1,157 +1,210 @@
-.supplier-detail-container {
-  background: radial-gradient(circle at top right, #fdfbfb 0%, #ebedee 100%);
-  min-height: 100vh;
-    padding: 2.5rem;
-      position: relative;
+/* supplier-detail.component.scss */
+
+.supplier-detail-page {
+    padding: 1.5rem;
+    background: #f8fafc;
+    min-height: 100vh;
 }
 
-.detail-navbar {
-  position: relative;
-    z-index: 10;
-    }
+/* ── Navbar ───────────────────────────────────────── */
+.navbar-title {
+    display: flex;
+    flex-direction: column;
+}
 
+/* ── Profile Card (Sidebar) ───────────────────────── */
 .profile-card {
-  border-radius: 32px;
-  height: 100%;
-}
-
-.avatar-large {
-  width: 140px;
-  height: 140px;
-  border-radius: 40px;
-  display: flex;
-  align-items: center;
-    justify-content: center;
-      color: white;
-    font-size: 4rem;
-      font-weight: 800;
-    border: 5px solid white;
+    transition: box-shadow 0.3s ease;
+    
+    .card-header-bg {
+        height: 120px;
+        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
     }
 
-.over-card {
-  border-radius: 28px;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-        transform: translateY(-8px);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
-        }
-        }
-
-.icon-box {
-  width: 50px;
-  height: 50px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    .avatar-large {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: #fff;
+        color: #1e293b;
+        font-size: 2.5rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 40px; /* Pull it up into the header background */
+        z-index: 2;
+    }
 }
 
-.balance-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(219, 234, 254, 0.6));
-  border: 1px solid rgba(37, 99, 235, 0.1);
+.info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
 }
 
-.statement-cta {
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
-  color: white;
-    i,
-      h3 {
-        color: white !important;
-      }
-    
-      &:hover {
-        background: linear-gradient(135deg, #4f46e5, #4338ca);
-        }
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .info-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .info-content {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .info-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .info-value {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-top: 0.1rem;
+    }
 }
 
-.glass-morphism {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+/* ── KPI Cards ────────────────────────────────────── */
+.kpi-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #e2e8f0;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    .kpi-icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
-.info-tabs-card {
-  border-radius: 28px;
-  margin-top: 1rem;
-}
+/* ── Tabs Content ─────────────────────────────────── */
+.content-tabs-card {
+    ::ng-deep .premium-tabview {
+        .p-tabview-nav {
+            background: #f8fafc;
+            border: none;
+            padding: 0.5rem 1rem 0;
+            display: flex;
+            gap: 0.5rem;
 
-.premium-detail-table {
-  ::ng-deep {
-        .p-datatable-thead>tr>th {
-            padding: 1.25rem 1.5rem;
-              border: none;
+            li {
+                .p-tabview-nav-link {
+                    background: transparent;
+                    border: none;
+                    color: #64748b;
+                    font-size: 0.875rem;
+                    padding: 1rem 1.5rem;
+                    border-radius: 12px 12px 0 0;
+                    transition: all 0.2s;
+
+                    &:not(.p-disabled):focus {
+                        box-shadow: none;
+                    }
+                }
+
+                &.p-highlight .p-tabview-nav-link {
+                    background: #fff;
+                    color: #3b82f6;
+                    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+                }
             }
-                .p-datatable-tbody>tr {
-            border-bottom: 1px solid #f1f5f9;
-            
-              &:last-child {
-                border: none;
-              }
-            }
-            }
+        }
+
+        .p-tabview-panels {
+            padding: 1.5rem;
+            background: #fff;
+        }
+    }
 }
 
-.contact-item {
-  transition: all 0.3s ease;
+/* ── Custom Table ─────────────────────────────────── */
+::ng-deep .custom-table {
+    .p-datatable-thead > tr > th {
+        background: #f1f5f9;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        padding: 1rem;
+        border: none;
+    }
 
-  &:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  }
+    .p-datatable-tbody > tr > td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
 }
 
-.premium-loader {
-  width: 60px;
-  height: 60px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+/* ── Badges ───────────────────────────────────────── */
+.badge-pill {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+
+    &-green {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    &-orange {
+        background: #ffedd5;
+        color: #9a3412;
+    }
+}
+
+/* ── Loading Spinner ──────────────────────────────── */
+.premium-spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-      }
-    
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
-@keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
-
-  100% {
-    opacity: 1;
-  }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.fadein {
+    animation: fadeIn 0.4s ease-out forwards;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 991px) {
+    .profile-card {
+        margin-bottom: 2rem;
+        position: static !important;
+    }
 }

@@ -5,6 +5,7 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
+using SmartPharmacySystem.Application.DTOs.Barcode;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -13,13 +14,15 @@ namespace SmartPharmacySystem.Application.Services
         IMapper mapper,
         ILogger<SalesReturnService> logger,
         IStockMovementService stockMovementService,
-        IFinancialService financialService) : ISalesReturnService
+        IFinancialService financialService,
+        IBarcodeService barcodeService) : ISalesReturnService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
         private readonly ILogger<SalesReturnService> _logger = logger;
         private readonly IStockMovementService _stockMovementService = stockMovementService;
         private readonly IFinancialService _financialService = financialService;
+        private readonly IBarcodeService _barcodeService = barcodeService;
 
         public async Task<SalesReturnDto> CreateAsync(CreateSalesReturnDto dto, int userId)
         {
@@ -325,6 +328,26 @@ namespace SmartPharmacySystem.Application.Services
         {
             var entities = await _unitOfWork.SalesReturns.GetAllAsync();
             return _mapper.Map<IEnumerable<SalesReturnDto>>(entities);
+        }
+
+        public async Task<BarcodeResultDto> ProcessBarcodeItemAsync(string barcode, int userId)
+        {
+            _logger.LogInformation("Processing barcode {Barcode} for sales return by user {UserId}", barcode, userId);
+
+            var query = new GetProductForTransactionByBarcodeQuery
+            {
+                Barcode = barcode,
+                TransactionType = TransactionType.Return
+            };
+
+            var result = await _barcodeService.GetProductByBarcodeAsync(query, userId)
+                ?? throw new KeyNotFoundException("الصنف غير موجود في قاعدة البيانات.");
+
+            // For Sales Return, we don't necessarily check stock (returning items TO stock)
+            // But we might want to ensure it's not expired or something if it's being returned for resale
+            // Or just return the data and let the FE handle linking it to an invoice if needed
+            
+            return result;
         }
     }
 }

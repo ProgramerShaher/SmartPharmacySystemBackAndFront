@@ -17,6 +17,8 @@ namespace SmartPharmacySystem.Application.DTOs.SupplierPayments
         [MaxLength(50)]
         public string? ReferenceNo { get; set; }
 
+        public int? PurchaseInvoiceId { get; set; }
+
         public string? Notes { get; set; }
     }
 

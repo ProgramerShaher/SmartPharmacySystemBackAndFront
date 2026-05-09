@@ -47,10 +47,30 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task DeleteMedicineAsync(int id)
         {
-            var exists = await _unitOfWork.Medicines.ExistsAsync(id);
-            if (!exists)
+            var medicine = await _unitOfWork.Medicines.GetByIdAsync(id);
+            if (medicine == null)
                 throw new KeyNotFoundException($"الدواء برقم {id} غير موجود");
 
+            // 1. التحقق من وجود مخزون
+            var batches = await _unitOfWork.Medicines.GetBatchesByFEFOAsync(id);
+            var totalStock = batches.Sum(b => b.RemainingQuantity);
+            if (totalStock > 0)
+                throw new InvalidOperationException($"لا يمكن حذف الدواء '{medicine.Name}' لوجود مخزون حالي ({totalStock})");
+
+            // 2. التحقق من وجود عمليات سابقة (مبيعات أو مشتريات)
+            // يمكن التحقق من حركات المخزون كمرجع شامل
+            var movements = await _unitOfWork.InventoryMovements.GetStockCardMovementsAsync(id);
+            if (movements.Any())
+            {
+                // بدلاً من الحذف، نقوم بتغيير الحالة إلى غير نشط
+                medicine.Status = "Inactive";
+                medicine.UpdatedAt = DateTime.UtcNow;
+                await _unitOfWork.Medicines.UpdateAsync(medicine);
+                await _unitOfWork.SaveChangesAsync();
+                return;
+            }
+
+            // 3. الحذف المنطقي النهائي إذا لم تكن هناك قيود
             await _unitOfWork.Medicines.SoftDeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -60,13 +80,57 @@ namespace SmartPharmacySystem.Application.Services
             var medicine = await _unitOfWork.Medicines.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"الدواء برقم {id} غير موجود");
 
-            return _mapper.Map<MedicineDto>(medicine);
+            var dto = _mapper.Map<MedicineDto>(medicine);
+            
+            // حساب المخزون الكلي
+            var batches = await _unitOfWork.Medicines.GetBatchesByFEFOAsync(id);
+            dto.TotalStock = batches.Sum(b => b.RemainingQuantity);
+            dto.PurchasePrice = medicine.DefaultPurchasePrice;
+            dto.SalePrice = medicine.DefaultSalePrice;
+
+            return dto;
+        }
+
+        public async Task<MedicineDetailsDto> GetMedicineDetailsAsync(int id)
+        {
+            var medicine = await _unitOfWork.Medicines.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"الدواء برقم {id} غير موجود");
+
+            var dto = _mapper.Map<MedicineDetailsDto>(medicine);
+            
+            var batches = await _unitOfWork.Medicines.GetBatchesByFEFOAsync(id);
+            dto.TotalStock = batches.Sum(b => b.RemainingQuantity);
+            dto.PurchasePrice = medicine.DefaultPurchasePrice;
+            dto.SalePrice = medicine.DefaultSalePrice;
+
+            dto.Batches = batches.Select(b => new MedicineBatchDetailDto
+            {
+                BatchNumber = b.CompanyBatchNumber,
+                ExpiryDate = b.ExpiryDate,
+                RemainingQuantity = b.RemainingQuantity,
+                AlertStatus = (b.ExpiryDate - DateTime.Now).TotalDays <= 30 ? "قريب الانتهاء" : "صالح",
+                StatusColor = (b.ExpiryDate - DateTime.Now).TotalDays <= 30 ? "danger" : "success"
+            }).ToList();
+
+            return dto;
         }
 
         public async Task<IEnumerable<MedicineDto>> GetAllMedicinesAsync()
         {
             var medicines = await _unitOfWork.Medicines.GetAllAsync();
-            return _mapper.Map<IEnumerable<MedicineDto>>(medicines);
+            var dtos = _mapper.Map<IEnumerable<MedicineDto>>(medicines);
+            
+            foreach (var dto in dtos)
+            {
+                var batches = await _unitOfWork.Medicines.GetBatchesByFEFOAsync(dto.Id);
+                dto.TotalStock = batches.Sum(b => b.RemainingQuantity);
+                
+                var med = medicines.First(m => m.Id == dto.Id);
+                dto.PurchasePrice = med.DefaultPurchasePrice;
+                dto.SalePrice = med.DefaultSalePrice;
+            }
+
+            return dtos;
         }
 
         public async Task<PagedResult<MedicineDto>> SearchAsync(MedicineQueryDto query)
@@ -83,6 +147,17 @@ namespace SmartPharmacySystem.Application.Services
             );
 
             var mappedItems = _mapper.Map<IEnumerable<MedicineDto>>(items);
+            
+            foreach (var dto in mappedItems)
+            {
+                var batches = await _unitOfWork.Medicines.GetBatchesByFEFOAsync(dto.Id);
+                dto.TotalStock = batches.Sum(b => b.RemainingQuantity);
+                
+                var med = items.First(m => m.Id == dto.Id);
+                dto.PurchasePrice = med.DefaultPurchasePrice;
+                dto.SalePrice = med.DefaultSalePrice;
+            }
+
             return new PagedResult<MedicineDto>(mappedItems, totalCount, query.Page, query.PageSize);
         }
 

@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
@@ -63,6 +64,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private masterDashboardService = inject(MasterDashboardService);
     private router = inject(Router);
     private messageService = inject(MessageService);
+    private platformId = inject(PLATFORM_ID);
 
     private refreshSubscription?: Subscription;
 
@@ -187,9 +189,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
 
     ngOnInit() {
-        this.initializeCharts();
-        this.loadAllDashboardData();
-        this.startAutoRefresh();
+        if (isPlatformBrowser(this.platformId)) {
+            this.initializeCharts();
+            this.loadAllDashboardData();
+            this.startAutoRefresh();
+        }
     }
 
     ngOnDestroy() {

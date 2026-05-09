@@ -6,6 +6,8 @@ namespace SmartPharmacySystem.Application.DTOs.Dashboard;
 /// </summary>
 public class MasterDashboardStatsDto
 {
+    public SystemOverviewDto SystemOverview { get; set; } = new();
+
     // ============================================
     // 1. رادار الرخاء المالي (Financial Intelligence Hub)
     // ============================================
@@ -65,6 +67,12 @@ public class FinancialIntelligenceDto
     /// المصاريف اليوم
     /// </summary>
     public decimal TodayExpenses { get; set; }
+
+    public decimal TotalSalesLast30Days { get; set; }
+    public decimal TotalPurchasesLast30Days { get; set; }
+    public decimal TotalReturnsLast30Days { get; set; }
+    public decimal TotalExpensesLast30Days { get; set; }
+    public decimal NetProfitLast30Days { get; set; }
 
     /// <summary>
     /// السيولة النقدية (Cash + Bank)
@@ -145,6 +153,13 @@ public class InventoryIntelligenceDto
     /// Total inventory value at cost price
     /// </summary>
     public decimal TotalInventoryValue { get; set; }
+    public int TotalMedicines { get; set; }
+    public int TotalBatches { get; set; }
+    public int ActiveBatches { get; set; }
+    public int ExpiredBatches { get; set; }
+    public int NearExpiryBatches { get; set; }
+    public int TotalStockQuantity { get; set; }
+    public int ActiveAlerts { get; set; }
 
     /// <summary>
     /// توزيع المخزون حسب الموردين
@@ -244,6 +259,21 @@ public class OperationalPulseDto
     public List<HourlyHeatMapDto> HourlyHeatMap { get; set; } = new();
 }
 
+public class SystemOverviewDto
+{
+    public int SalesInvoicesCount { get; set; }
+    public int PurchaseInvoicesCount { get; set; }
+    public int SalesReturnsCount { get; set; }
+    public int PurchaseReturnsCount { get; set; }
+    public int MedicinesCount { get; set; }
+    public int CustomersCount { get; set; }
+    public int SuppliersCount { get; set; }
+    public int UsersCount { get; set; }
+    public int ActiveAlertsCount { get; set; }
+    public int CriticalStockCount { get; set; }
+    public int TodayDocumentsCount { get; set; }
+}
+
 /// <summary>
 /// Activity Stream Item
 /// </summary>
@@ -256,6 +286,8 @@ public class ActivityStreamItemDto
     public DateTime Timestamp { get; set; }
     public int ReferenceId { get; set; }
     public string Description { get; set; } = string.Empty;
+    public string SourceRoute { get; set; } = string.Empty;
+    public string EntityName { get; set; } = string.Empty;
 }
 
 /// <summary>

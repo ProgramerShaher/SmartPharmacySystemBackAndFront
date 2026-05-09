@@ -1,5 +1,5 @@
-import { Component, HostListener, HostBinding, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, HostListener, HostBinding, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, DOCUMENT, CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
@@ -64,7 +64,9 @@ export class TopbarComponent {
         private router: Router,
         public themeService: ThemeService,
         private authService: AuthService,
-        public alertService: AlertService
+        public alertService: AlertService,
+        @Inject(PLATFORM_ID) private platformId: Object,
+        @Inject(DOCUMENT) private document: Document
     ) { }
 
     ngOnInit() {
@@ -91,9 +93,11 @@ export class TopbarComponent {
     }
 
     toggleSidebar() {
-        // Emit event to parent component
-        const event = new CustomEvent('toggleSidebar');
-        window.dispatchEvent(event);
+        if (isPlatformBrowser(this.platformId)) {
+            // Emit event to parent component
+            const event = new CustomEvent('toggleSidebar');
+            window.dispatchEvent(event);
+        }
     }
 
     onSearch() {
@@ -203,15 +207,19 @@ export class TopbarComponent {
 
     @HostListener('window:scroll', [])
     onWindowScroll() {
-        this.isScrolled = window.scrollY > 20;
+        if (isPlatformBrowser(this.platformId)) {
+            this.isScrolled = window.scrollY > 20;
+        }
     }
 
     @HostListener('document:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
+        if (!isPlatformBrowser(this.platformId)) return;
+        
         // Ctrl + K للبحث
         if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
             event.preventDefault();
-            const searchInput = document.querySelector('.search-omnibox input') as HTMLInputElement;
+            const searchInput = this.document.querySelector('.search-omnibox input') as HTMLInputElement;
             searchInput?.focus();
         }
     }

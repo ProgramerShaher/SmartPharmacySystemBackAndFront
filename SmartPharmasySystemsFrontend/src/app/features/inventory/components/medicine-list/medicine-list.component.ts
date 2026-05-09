@@ -20,6 +20,7 @@ import { MedicineService } from '../../services/medicine.service';
 import { Medicine, MedicineQueryDto } from '../../../../core/models/medicine.interface';
 import { MedicineAddEditComponent } from '../medicine-add-edit/medicine-add-edit.component';
 import { BatchAddEditComponent } from '../batch-add-edit/batch-add-edit.component';
+import { MedicineDetailsModalComponent } from '../medicine-details-modal/medicine-details-modal.component';
 
 @Component({
     selector: 'app-medicine-list',
@@ -39,7 +40,8 @@ import { BatchAddEditComponent } from '../batch-add-edit/batch-add-edit.componen
         DialogModule,
         ToastModule,
         MedicineAddEditComponent,
-        BatchAddEditComponent
+        BatchAddEditComponent,
+        MedicineDetailsModalComponent
     ],
     templateUrl: './medicine-list.component.html',
     styleUrls: ['./medicine-list.component.scss'],
@@ -59,8 +61,10 @@ export class MedicineListComponent implements OnInit {
     // UI State
     showMedicineDialog = signal(false);
     showBatchDialog = signal(false);
+    showDetailsDialog = signal(false);
 
     selectedMedicine: Medicine | null = null;
+    selectedMedicineId = signal<number | null>(null);
     selectedMedicineIdForBatch = 0;
     selectedMedicineNameForBatch = '';
 
@@ -158,7 +162,9 @@ export class MedicineListComponent implements OnInit {
                         this.loadMedicines(this.lastLazyEvent);
                     },
                     error: (err) => {
-                        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'لا يمكن حذف الدواء لارتباطه بسجلات أخرى' });
+                        // عرض رسالة الخطأ القادمة من الباك اند
+                        const errorMsg = err.error?.message || 'لا يمكن حذف الدواء لارتباطه بسجلات أخرى أو وجود مخزون';
+                        this.messageService.add({ severity: 'error', summary: 'خطأ في الحذف', detail: errorMsg });
                     }
                 });
             }
@@ -174,15 +180,13 @@ export class MedicineListComponent implements OnInit {
     }
 
     onBatchSaved() {
-        // Maybe refresh list to show updated stock if backend updates it?
-        // Or just show success. 
-        // Ideally, reloading medicines might update the 'Stock' or 'TotalQuantity' column if computed by backend.
         this.loadMedicines(this.lastLazyEvent);
     }
 
     // --- View Details ---
-    viewDetails(medicine: Medicine) {
-        this.router.navigate(['/inventory/medicines/details', medicine.id]);
+    viewDetails(medicine: any) {
+        this.selectedMedicineId.set(medicine.id);
+        this.showDetailsDialog.set(true);
     }
 
     getStatusSeverity(status: string): 'success' | 'danger' | 'warning' | 'info' {

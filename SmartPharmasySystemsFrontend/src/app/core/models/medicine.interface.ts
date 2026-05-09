@@ -105,6 +105,9 @@ export interface MedicineDto {
     movingAverageCost: number;
     defaultPurchasePrice: number;
     defaultSalePrice: number;
+    purchasePrice?: number;
+    salePrice?: number;
+    totalStock?: number;
     minAlertQuantity: number;
     reorderLevel: number;
     soldByUnit: boolean;
@@ -115,4 +118,16 @@ export interface MedicineDto {
     createdAt?: string;
     updatedAt?: string;
     description?: string;
+}
+
+export interface MedicineDetailsDto extends MedicineDto {
+    batches: MedicineBatchDetailDto[];
+}
+
+export interface MedicineBatchDetailDto {
+    batchNumber: string;
+    expiryDate: string;
+    remainingQuantity: number;
+    alertStatus: string;
+    statusColor: string;
 }

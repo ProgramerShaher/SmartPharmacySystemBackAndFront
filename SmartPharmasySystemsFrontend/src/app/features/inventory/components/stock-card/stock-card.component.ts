@@ -85,15 +85,21 @@ export class StockCardComponent implements OnInit {
   }
 
   getTotalIn(): number {
-    return this.stockCard.reduce((sum, card) => sum + card.quantityIn, 0);
+    return this.stockCard.reduce((sum, card) => sum + (card.quantityChange > 0 ? card.quantityChange : 0), 0);
   }
 
   getTotalOut(): number {
-    return this.stockCard.reduce((sum, card) => sum + card.quantityOut, 0);
+    return this.stockCard.reduce((sum, card) => sum + (card.quantityChange < 0 ? Math.abs(card.quantityChange) : 0), 0);
   }
 
-  getMovementTypeSeverity(type: number): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
-    return this.movementService.getMovementTypeSeverity(type);
+  getMovementTypeSeverity(type: any): 'success' | 'info' | 'warning' | 'danger' | 'secondary' {
+    // Basic mapping for StockCardDto movement types
+    const typeStr = String(type).toLowerCase();
+    if (typeStr.includes('purchase') || typeStr.includes('in')) return 'success';
+    if (typeStr.includes('sale') || typeStr.includes('out') || typeStr.includes('damage')) return 'danger';
+    if (typeStr.includes('return')) return 'info';
+    if (typeStr.includes('adjustment')) return 'warning';
+    return 'secondary';
   }
 
   goBack() {

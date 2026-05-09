@@ -1,145 +1,282 @@
-<div class="supplier-detail-container animate-fade-in" dir="rtl" *ngIf="supplier && !loading">
-    <!-- Top Actions & Navigation -->
-    <div class="detail-navbar flex justify-content-between align-items-center mb-6">
-        <p-button icon="pi pi-arrow-right" (click)="goBack()"
-            styleClass="p-button-rounded p-button-text p-button-plain surface-100 shadow-1 hover:surface-200 transition-all"
-            pTooltip="العودة للقائمة">
-        </p-button>
-        <div class="flex gap-2">
-            <p-button label="تعديل بيانات المورد" icon="pi pi-pencil" (click)="editSupplier()"
-                styleClass="p-button-warning p-button-rounded shadow-4 px-4 h-3rem font-bold">
-            </p-button>
-            <p-button label="حذف" icon="pi pi-trash" (click)="deleteSupplier($event)"
-                styleClass="p-button-danger p-button-rounded p-button-text hover:bg-red-50 px-4 h-3rem font-bold">
-            </p-button>
+<div class="supplier-detail-page fadein" dir="rtl" *ngIf="supplier && !loading">
+    <!-- Action Navbar -->
+    <div class="detail-navbar mb-4 no-print">
+        <div class="flex justify-content-between align-items-center bg-white p-3 border-round-xl border-1 border-200 shadow-sm">
+            <div class="flex align-items-center gap-3">
+                <button pButton icon="pi pi-arrow-right" (click)="goBack()"
+                    class="p-button-rounded p-button-text p-button-secondary hover:bg-gray-100"></button>
+                <div class="navbar-title">
+                    <h1 class="text-xl font-bold m-0 text-900">ملف المورد</h1>
+                    <span class="text-xs text-500 font-mono">#SUP-{{ supplier.id }}</span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button pButton label="تعديل البيانات" icon="pi pi-pencil" (click)="editSupplier()"
+                    class="p-button-warning p-button-sm font-bold border-round-lg shadow-2 px-3"></button>
+                <button pButton label="حذف المورد" icon="pi pi-trash" (click)="deleteSupplier($event)"
+                    class="p-button-danger p-button-text p-button-sm font-bold border-round-lg hover:bg-red-50 px-3"></button>
+            </div>
         </div>
     </div>
 
-    <!-- Main Profile Header Section -->
-    <div class="grid profile-section mb-3">
-        <!-- Compact Sidebar Profile -->
-        <div class="col-12 xl:col-3">
-            <div class="surface-card p-3 border-round-xl border-1 border-200 shadow-sm h-full">
-                <div class="flex flex-column align-items-center text-center">
-                    <div class="w-5rem h-5rem border-circle text-xl font-bold text-white flex align-items-center justify-content-center mb-2 shadow-2"
-                        [style.background]="getRandomColor(supplier.name)">
+    <div class="grid">
+        <!-- Sidebar: Supplier Card -->
+        <div class="col-12 lg:col-4 xl:col-3">
+            <div class="profile-card bg-white border-round-2xl border-1 border-200 shadow-sm overflow-hidden sticky top-0">
+                <!-- Card Header with Gradient Background -->
+                <div class="card-header-bg p-4 flex flex-column align-items-center relative" 
+                     [style.background]="getRandomColor(supplier.name)">
+                    <div class="avatar-large shadow-4 mb-3 border-3 border-white">
                         {{ supplier.name.charAt(0) }}
                     </div>
-                    <h1 class="text-xl font-bold text-900 m-0 mb-1 line-height-2">{{ supplier.name }}</h1>
-                    <div class="text-600 text-sm mb-3">#SUP-{{ supplier.id }}</div>
-                    <p-tag [severity]="supplier.isActive ? 'success' : 'danger'" [value]="supplier.isActive ? 'نشط' : 'غير نشط'"
-                        styleClass="text-xs px-2 mb-3"></p-tag>
-                    
-                    <div class="w-full border-top-1 border-100 pt-3 text-right">
-                        <div class="flex align-items-center justify-content-between mb-2">
-                            <span class="text-600 text-xs"><i class="pi pi-phone ml-1"></i>الهاتف</span>
-                            <span class="text-800 text-sm font-medium dir-ltr">{{ supplier.phoneNumber }}</span>
-                        </div>
-                        <div class="flex align-items-center justify-content-between mb-2">
-                            <span class="text-600 text-xs"><i class="pi pi-user ml-1"></i>المسؤول</span>
-                            <span class="text-800 text-sm font-medium">{{ supplier.contactPerson }}</span>
-                        </div>
-                        <div class="flex align-items-center justify-content-between">
-                            <span class="text-600 text-xs"><i class="pi pi-map-marker ml-1"></i>العنوان</span>
-                            <span class="text-800 text-sm font-medium white-space-nowrap overflow-hidden text-overflow-ellipsis"
-                                style="max-width: 8rem;">
-                                {{ supplier.address }}
-                            </span>
-                        </div>
-                        </div>
-                        </div>
-                        </div>
-        </div>
-<!-- Stats & Content -->
-<div class="col-12 xl:col-9">
-    <!-- Compact KPI Cards -->
-    <div class="grid mb-3">
-        <div class="col-12 md:col-4">
-            <div
-                class="surface-card p-3 border-round-xl border-1 border-200 h-full flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-500 font-medium text-xs mb-1">الرصيد الحالي</div>
-                    <div class="text-xl font-bold text-900" [class.text-red-600]="supplier.Balance > 0"
-                        [class.text-green-600]="supplier.Balance <= 0">
-                        {{ supplier.Balance | number }} <span class="text-xs text-600">ر.ي</span>
-                            </div>
-                        </div>
-                        <div class="w-2_5rem h-2_5rem bg-blue-50 text-blue-600 border-round-lg flex align-items-center justify-content-center">
-                            <i class="pi pi-wallet text-lg"></i>
-                        </div>
-                        </div>
+                    <p-tag [severity]="supplier.isActive ? 'success' : 'danger'" 
+                           [value]="supplier.isActive ? 'نشط' : 'غير نشط'"
+                           class="absolute top-0 right-0 m-3 shadow-2"></p-tag>
                 </div>
-                <div class="col-12 md:col-4">
-                    <div
-                        class="surface-card p-3 border-round-xl border-1 border-200 h-full flex justify-content-between align-items-center">
-                        <div>
-                            <div class="text-500 font-medium text-xs mb-1">إجمالي المشتريات</div>
-                            <div class="text-xl font-bold text-900">{{ getTotalPurchases() | number }} <span
-                                    class="text-xs text-600">ر.ي</span></div>
-                        </div>
-                        <div
-                            class="w-2_5rem h-2_5rem bg-green-50 text-green-600 border-round-lg flex align-items-center justify-content-center">
-                            <i class="pi pi-shopping-bag text-lg"></i>
-                        </div>
-                    </div>
-                    </div>
-                <div class="col-12 md:col-4">
-                    <div class="surface-card p-3 border-round-xl border-1 border-200 h-full flex justify-content-between align-items-center cursor-pointer hover:bg-gray-50 transition-colors"
-                        [routerLink]="['/partners/suppliers/statement', supplier.id]">
-                        <div>
-                            <div class="text-500 font-medium text-xs mb-1">كشف الحساب</div>
-                            <div class="text-blue-600 font-bold text-sm underline">عرض التفاصيل</div>
-                        </div>
-                        <div
-                            class="w-2_5rem h-2_5rem bg-indigo-50 text-indigo-600 border-round-lg flex align-items-center justify-content-center">
-                            <i class="pi pi-book text-lg"></i>
-                        </div>
-                    </div>
-                    </div>
+
+                <!-- Card Info -->
+                <div class="p-4 pt-5 relative">
+                    <div class="text-center mb-5">
+                        <h2 class="text-2xl font-black text-900 m-0 mb-1 line-height-1">{{ supplier.name }}</h2>
+                        <div class="text-500 text-sm font-medium">{{ supplier.contactPerson || 'لا يوجد مسؤول تواصل' }}</div>
                     </div>
 
-            <!-- Compact Invoice Table -->
-            <div class="surface-card border-round-xl border-1 border-200 overflow-hidden shadow-sm">
-                <div class="flex align-items-center justify-content-between p-3 border-bottom-1 border-100 bg-gray-50">
-                    <span class="text-900 font-bold text-sm">آخر الفواتير</span>
+                    <div class="info-list">
+                        <div class="info-item">
+                            <div class="info-icon bg-blue-50 text-blue-600"><i class="pi pi-phone"></i></div>
+                            <div class="info-content">
+                                <span class="info-label">رقم الهاتف</span>
+                                <span class="info-value dir-ltr">{{ supplier.phoneNumber || 'غير متوفر' }}</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon bg-purple-50 text-purple-600"><i class="pi pi-envelope"></i></div>
+                            <div class="info-content">
+                                <span class="info-label">البريد الإلكتروني</span>
+                                <span class="info-value">{{ supplier.email || 'غير متوفر' }}</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon bg-orange-50 text-orange-600"><i class="pi pi-map-marker"></i></div>
+                            <div class="info-content">
+                                <span class="info-label">العنوان</span>
+                                <span class="info-value text-wrap line-height-3">{{ supplier.address || 'غير محدد' }}</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon bg-green-50 text-green-600"><i class="pi pi-calendar"></i></div>
+                            <div class="info-content">
+                                <span class="info-label">تاريخ الانضمام</span>
+                                <span class="info-value font-mono text-xs">{{ supplier.createdAt | date:'yyyy/MM/dd' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p-divider></p-divider>
+
+                    <!-- Quick Navigation -->
+                    <div class="flex flex-column gap-2 mt-4">
+                        <button pButton label="عرض كشف الحساب" icon="pi pi-book" 
+                            [routerLink]="['/partners/suppliers/statement', supplier.id]"
+                            class="p-button-outlined p-button-info w-full border-round-xl font-bold"></button>
+                        <button pButton label="إضافة سند صرف" icon="pi pi-money-bill"
+                            [routerLink]="['/partners/suppliers/payments']"
+                            class="p-button-text p-button-success w-full border-round-xl font-bold"></button>
+                    </div>
                 </div>
-                <p-table [value]="(supplier.purchaseInvoices || []) | slice:0:5" styleClass="p-datatable-sm text-sm"
-                    responsiveLayout="scroll" [rowHover]="true">
-                    <ng-template pTemplate="header">
-                        <tr class="bg-gray-50 text-xs">
-                            <th class="p-2 w-6rem">رقم الفاتورة</th>
-                            <th class="p-2">التاريخ</th>
-                            <th class="p-2">المبلغ</th>
-                            <th class="p-2 text-center w-6rem">الحالة</th>
-                            <th class="p-2 w-3rem"></th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-invoice>
-                        <tr>
-                            <td class="p-2 font-medium">#{{ invoice.invoiceNumber || invoice.id }}</td>
-                            <td class="p-2 text-600">{{ invoice.invoiceDate | date:'yyyy/MM/dd' }}</td>
-                            <td class="p-2 font-bold">{{ invoice.totalAmount | number }}</td>
-                            <td class="p-2 text-center">
-                                <p-tag [severity]="getInvoiceStatusSeverity(invoice.status)" [value]="getInvoiceStatusLabel(invoice.status)"
-                                    styleClass="text-xs px-2 py-0 h-1_5rem"></p-tag>
-                            </td>
-                            <td class="p-2">
-                                <button pButton icon="pi pi-eye" class="p-button-text p-button-sm w-2rem h-2rem p-0"
-                                    [routerLink]="['/purchases/invoices/detail', invoice.id]"></button>
-                            </td>
-                            </tr>
-                    </ng-template>
-                </p-table>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-12 lg:col-8 xl:col-9">
+            <!-- KPIs Row -->
+            <div class="grid mb-4">
+                <div class="col-12 md:col-4">
+                    <div class="kpi-card bg-white p-4 border-round-2xl border-1 border-200 shadow-sm">
+                        <div class="flex justify-content-between align-items-start">
+                            <div>
+                                <span class="block text-500 font-bold text-xs mb-1">الرصيد الحالي</span>
+                                <span class="text-3xl font-black" [ngClass]="supplier.Balance > 0 ? 'text-red-600' : 'text-green-600'">
+                                    {{ supplier.Balance | number }} <small class="text-xs">ر.ي</small>
+                                </span>
+                            </div>
+                            <div class="kpi-icon bg-red-50 text-red-600"><i class="pi pi-wallet text-xl"></i></div>
+                        </div>
+                        <div class="mt-2 text-xs text-500 font-medium">
+                            <i class="pi pi-info-circle ml-1"></i>
+                            {{ supplier.Balance > 0 ? 'علينا للمورد' : 'للمورد رصيد عندنا' }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="kpi-card bg-white p-4 border-round-2xl border-1 border-200 shadow-sm">
+                        <div class="flex justify-content-between align-items-start">
+                            <div>
+                                <span class="block text-500 font-bold text-xs mb-1">إجمالي المشتريات</span>
+                                <span class="text-3xl font-black text-blue-600">
+                                    {{ getTotalPurchases() | number }} <small class="text-xs">ر.ي</small>
+                                </span>
+                            </div>
+                            <div class="kpi-icon bg-blue-50 text-blue-600"><i class="pi pi-shopping-cart text-xl"></i></div>
+                        </div>
+                        <div class="mt-2 text-xs text-500 font-medium">
+                            إجمالي المسحوبات من هذا المورد
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-4">
+                    <div class="kpi-card bg-white p-4 border-round-2xl border-1 border-200 shadow-sm">
+                        <div class="flex justify-content-between align-items-start">
+                            <div>
+                                <span class="block text-500 font-bold text-xs mb-1">إجمالي المرتجعات</span>
+                                <span class="text-3xl font-black text-orange-600">
+                                    {{ getTotalReturns() | number }} <small class="text-xs">ر.ي</small>
+                                </span>
+                            </div>
+                            <div class="kpi-icon bg-orange-50 text-orange-600"><i class="pi pi-refresh text-xl"></i></div>
+                        </div>
+                        <div class="mt-2 text-xs text-500 font-medium">
+                            القيمة الإجمالية للمرتجعات
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Tabs Section -->
+            <div class="content-tabs-card bg-white border-round-2xl border-1 border-200 shadow-sm overflow-hidden min-h-30rem">
+                <p-tabView styleClass="premium-tabview">
+                    <!-- Tab 1: Recent Invoices -->
+                    <p-tabPanel leftIcon="pi pi-file-invoice ml-2">
+                        <ng-template pTemplate="header">
+                            <span class="font-bold">فواتير الشراء</span>
+                        </ng-template>
+                        <div class="p-2">
+                            <p-table [value]="supplier.purchaseInvoices || []" 
+                                     styleClass="p-datatable-sm custom-table"
+                                     [rows]="10" [paginator]="true" [rowHover]="true"
+                                     responsiveLayout="scroll">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th class="w-3rem">#</th>
+                                        <th>رقم الفاتورة</th>
+                                        <th>تاريخ الشراء</th>
+                                        <th class="text-center">طريقة الدفع</th>
+                                        <th class="text-center">إجمالي الفاتورة</th>
+                                        <th class="text-center">الحالة</th>
+                                        <th class="w-4rem"></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-inv let-i="rowIndex">
+                                    <tr>
+                                        <td class="font-mono text-xs text-400">{{ i + 1 }}</td>
+                                        <td class="font-bold text-800">#{{ inv.purchaseInvoiceNumber || inv.id }}</td>
+                                        <td class="text-600 text-sm font-mono">{{ inv.purchaseDate | date:'yyyy/MM/dd' }}</td>
+                                        <td class="text-center">
+                                            <span class="badge-pill" [ngClass]="inv.paymentMethod === 1 ? 'badge-pill-green' : 'badge-pill-orange'">
+                                                {{ inv.paymentMethod === 1 ? 'نقداً' : 'آجل' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center font-bold text-blue-700">
+                                            {{ inv.totalAmount | number }}
+                                        </td>
+                                        <td class="text-center">
+                                            <p-tag [severity]="getInvoiceStatusSeverity(inv.status)" 
+                                                   [value]="getInvoiceStatusLabel(inv.status)"
+                                                   class="text-xs"></p-tag>
+                                        </td>
+                                        <td class="text-center">
+                                            <button pButton icon="pi pi-eye" 
+                                                [routerLink]="['/purchases/invoices/detail', inv.id]"
+                                                class="p-button-text p-button-rounded p-button-sm"></button>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-500">
+                                            لا توجد فواتير مسجلة حالياً
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </p-tabPanel>
+
+                    <!-- Tab 2: Returns -->
+                    <p-tabPanel leftIcon="pi pi-undo ml-2">
+                        <ng-template pTemplate="header">
+                            <span class="font-bold">مرتجع المشتريات</span>
+                        </ng-template>
+                        <div class="p-2">
+                            <p-table [value]="supplier.purchaseReturns || []" 
+                                     styleClass="p-datatable-sm custom-table"
+                                     [rows]="10" [paginator]="true" [rowHover]="true">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th class="w-3rem">#</th>
+                                        <th>رقم المرتجع</th>
+                                        <th>التاريخ</th>
+                                        <th class="text-center">المبلغ المسترد</th>
+                                        <th class="text-center">الحالة</th>
+                                        <th class="w-4rem"></th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-ret let-i="rowIndex">
+                                    <tr>
+                                        <td class="font-mono text-xs text-400">{{ i + 1 }}</td>
+                                        <td class="font-bold text-800">#{{ ret.id }}</td>
+                                        <td class="text-600 text-sm font-mono">{{ ret.returnDate | date:'yyyy/MM/dd' }}</td>
+                                        <td class="text-center font-bold text-red-600">
+                                            {{ ret.totalAmount | number }}
+                                        </td>
+                                        <td class="text-center">
+                                            <p-tag [severity]="ret.status === 'Approved' ? 'success' : 'warning'" 
+                                                   [value]="ret.status === 'Approved' ? 'معتمد' : 'مسودة'"></p-tag>
+                                        </td>
+                                        <td class="text-center">
+                                            <button pButton icon="pi pi-eye" 
+                                                class="p-button-text p-button-rounded p-button-sm"></button>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-500">
+                                            لا توجد مرتجعات مسجلة لهذا المورد
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+                    </p-tabPanel>
+
+                    <!-- Tab 3: Detailed Notes -->
+                    <p-tabPanel leftIcon="pi pi-info-circle ml-2">
+                        <ng-template pTemplate="header">
+                            <span class="font-bold">ملاحظات إضافية</span>
+                        </ng-template>
+                        <div class="p-4 line-height-4 text-700 bg-gray-50 border-round-xl m-2">
+                            <div *ngIf="supplier.notes">
+                                {{ supplier.notes }}
+                            </div>
+                            <div *ngIf="!supplier.notes" class="text-center text-400 py-4 italic">
+                                <i class="pi pi-comment text-3xl mb-3 block"></i>
+                                لا توجد ملاحظات مسجلة لهذا المورد
+                            </div>
+                        </div>
+                    </p-tabPanel>
+                </p-tabView>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Loading & Error States -->
-<div class="flex flex-column justify-content-center align-items-center p-8 min-h-[60vh]" *ngIf="loading">
-    <div class="premium-loader mb-4"></div>
-    <h3 class="text-2xl font-bold text-700 animate-pulse">جاري جلب تفاصيل المورد...</h3>
+<!-- Loading State -->
+<div *ngIf="loading" class="flex flex-column align-items-center justify-content-center min-h-screen">
+    <div class="premium-spinner"></div>
+    <div class="mt-4 text-xl font-bold text-600">جاري جلب تفاصيل المورد الكاملة...</div>
 </div>
 
-<p-confirmDialog [style]="{width: '450px'}" styleClass="premium-confirm-dialog"></p-confirmDialog>
+<!-- Footer Components -->
+<p-confirmDialog [style]="{width: '450px'}" dir="rtl"></p-confirmDialog>
 <p-toast position="top-left"></p-toast>

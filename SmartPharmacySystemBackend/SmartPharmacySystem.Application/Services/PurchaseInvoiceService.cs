@@ -6,6 +6,7 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
+using SmartPharmacySystem.Application.DTOs.Barcode;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -18,6 +19,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IInvoiceNumberGenerator _invoiceNumberGenerator;
         private readonly IFinancialService _financialService;
         private readonly IAlertService _alertService;
+        private readonly IBarcodeService _barcodeService;
         private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
 
         public PurchaseInvoiceService(
@@ -28,6 +30,7 @@ namespace SmartPharmacySystem.Application.Services
             IInvoiceNumberGenerator invoiceNumberGenerator,
             IFinancialService financialService,
             IAlertService alertService,
+            IBarcodeService barcodeService,
             Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
@@ -37,6 +40,7 @@ namespace SmartPharmacySystem.Application.Services
             _invoiceNumberGenerator = invoiceNumberGenerator;
             _financialService = financialService;
             _alertService = alertService;
+            _barcodeService = barcodeService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -486,6 +490,30 @@ namespace SmartPharmacySystem.Application.Services
                 SupplierDistribution = distribution,
                 Last7DaysPurchases = last7DaysPurchases
             };
+        }
+
+        public async Task<BarcodeResultDto> ProcessBarcodeItemAsync(string barcode, int userId)
+        {
+            _logger.LogInformation("Processing barcode {Barcode} for purchase by user {UserId}", barcode, userId);
+
+            var query = new GetProductForTransactionByBarcodeQuery
+            {
+                Barcode = barcode,
+                TransactionType = TransactionType.Purchase
+            };
+
+            var result = await _barcodeService.GetProductByBarcodeAsync(query, userId)
+                ?? throw new KeyNotFoundException("الصنف غير موجود في قاعدة البيانات. يرجى إضافة الصنف في شاشة الأدوية أولاً.");
+
+            // For Purchase, we usually allow scanning even if out of stock
+            // But we can check if it's expired in existing batches to warn
+            if (result.ExpiryDate < DateTime.Today && result.BatchId > 0)
+            {
+                _logger.LogWarning("Scanned batch for purchase is already expired: {Name}", result.TradeName);
+                // We don't block purchase because they might be buying a NEW batch of the same medicine
+            }
+
+            return result;
         }
     }
 }

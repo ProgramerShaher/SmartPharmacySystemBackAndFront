@@ -1,25 +1,31 @@
-<div class="card p-4 shadow-2 border-round-xl" dir="rtl">
-    <p-toolbar styleClass="mb-4 border-round-xl shadow-1" [style]="{'background': 'var(--surface-hover)'}">
+<div class="card p-3 shadow-1 border-round-xl" dir="rtl">
+    <p-toolbar styleClass="mb-3 border-round-xl shadow-none border-1 border-100 bg-white">
         <ng-template pTemplate="left">
-            <h2 class="text-2xl font-bold text-color m-0">قائمة الفئات</h2>
+            <div class="flex align-items-center gap-2">
+                <i class="pi pi-tags text-teal-600 font-bold"></i>
+                <h2 class="text-xl font-bold text-900 m-0">قائمة الفئات</h2>
+            </div>
         </ng-template>
 
         <ng-template pTemplate="right">
-            <span class="p-input-icon-left mr-3">
-                <i class="pi pi-search"></i>
-                <input pInputText type="text" (input)="onSearch($event)" placeholder="بحث عن فئة..."
-                    class="border-round-xl p-2" />
-            </span>
-            <p-button label="إضافة فئة" icon="pi pi-plus" styleClass="p-button-success border-round-xl shadow-2"
-                (onClick)="showAddModal()"></p-button>
+            <div class="flex align-items-center gap-2">
+                <span class="p-input-icon-left p-inputtext-sm">
+                    <i class="pi pi-search text-400"></i>
+                    <input pInputText type="text" (input)="onSearch($event)" placeholder="بحث سريع..."
+                        class="border-round-lg w-12rem" />
+                </span>
+                <p-button label="إضافة فئة" icon="pi pi-plus" 
+                    styleClass="p-button-teal border-round-lg shadow-1 p-button-sm font-bold"
+                    (onClick)="showAddModal()"></p-button>
+            </div>
         </ng-template>
     </p-toolbar>
 
     <p-table [value]="categories" [lazy]="true" (onLazyLoad)="loadCategories($event)" [paginator]="true" [rows]="10"
         [totalRecords]="totalRecords" [loading]="loading" [showCurrentPageReport]="true"
-        currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} فئة"
-        styleClass="p-datatable-striped p-datatable-gridlines border-round-xl overflow-hidden shadow-1"
-        [rowsPerPageOptions]="[5, 10, 25, 50]">
+        currentPageReportTemplate="{first}-{last} من {totalRecords}"
+        styleClass="p-datatable-sm p-datatable-striped border-round-lg overflow-hidden border-1 border-100"
+        [rowsPerPageOptions]="[10, 25, 50]">
         <ng-template pTemplate="header">
             <tr [style]="{'background': 'var(--table-header-bg)'}">
                 <th pSortableColumn="id" class="text-center w-5rem">ID <p-sortIcon field="id"></p-sortIcon></th>

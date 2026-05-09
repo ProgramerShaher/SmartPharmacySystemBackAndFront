@@ -15,7 +15,6 @@ using SmartPharmacySystem.Infrastructure.Repositories;
 using SmartPharmacySystem.Infrastructure.Workers;
 using SmartPharmacySystem.Infrastructure.Hubs;
 using SmartPharmacySystem.Middleware;
-using System.Text;
 using SmartPharmacySystem.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,6 +100,7 @@ builder.Services.AddScoped<IAlertService, AlertService>();
 builder.Services.AddScoped<IFinancialService, FinancialService>();
 builder.Services.AddScoped<IInvoiceNumberGenerator, InvoiceNumberGenerator>();
 builder.Services.AddScoped<IBarcodeResolverService, BarcodeResolverService>();
+builder.Services.AddScoped<IBarcodeService, BarcodeService>();
 builder.Services.AddScoped<ISupplierPaymentService, SupplierPaymentService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerReceiptService, CustomerReceiptService>();

@@ -40,6 +40,11 @@ public class PurchaseInvoice
     public decimal TotalAmount { get; set; }
 
     /// <summary>
+    /// The amount that has been paid towards this invoice.
+    /// </summary>
+    public decimal PaidAmount { get; set; } = 0;
+
+    /// <summary>
     /// Payment method used (Cash/Credit).
     /// </summary>
     [Required]

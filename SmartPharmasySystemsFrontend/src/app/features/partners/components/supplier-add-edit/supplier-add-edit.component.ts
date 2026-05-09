@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -7,218 +7,205 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { RippleModule } from 'primeng/ripple';
-import { CardModule } from 'primeng/card';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToastModule } from 'primeng/toast';
-import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SupplierService } from '../../services/supplier.service';
 import { Supplier } from '../../../../core/models/supplier.models';
 import { finalize } from 'rxjs/operators';
 
 @Component({
-    selector: 'app-supplier-add-edit',
-    standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterModule,
-        ButtonModule,
-        InputTextModule,
-        InputTextareaModule,
-        InputNumberModule,
-        RippleModule,
-        CardModule,
-        ProgressSpinnerModule,
-        ToastModule,
-        TooltipModule
-    ],
-    templateUrl: './supplier-add-edit.component.html',
-    styleUrl: './supplier-add-edit.component.scss',
-    providers: [MessageService]
+  selector: 'app-supplier-add-edit',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ButtonModule,
+    InputTextModule,
+    InputTextareaModule,
+    InputNumberModule,
+    RippleModule,
+    ToastModule,
+    ProgressSpinnerModule
+  ],
+  templateUrl: './supplier-add-edit.component.html',
+  styleUrl: './supplier-add-edit.component.scss',
+  providers: [MessageService]
 })
-export class SupplierAddEditComponent implements OnInit {
-    supplierForm: FormGroup;
-    isEditMode: boolean = false;
-    supplierId?: number;
-    loading: boolean = false;
-    saving: boolean = false;
+export class SupplierAddEditComponent implements OnInit, OnChanges {
+  @Input() dialogMode = false;
+  @Input() editSupplierId?: number | null;
+  @Output() closed = new EventEmitter<void>();
+  @Output() saved = new EventEmitter<void>();
 
-    constructor(
-        private fb: FormBuilder,
-        private supplierService: SupplierService,
-        private messageService: MessageService,
-        private route: ActivatedRoute,
-        private router: Router
-    ) {
-        this.supplierForm = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-            contactPerson: ['', [Validators.required, Validators.maxLength(50)]],
-            phoneNumber: ['', [Validators.required, Validators.pattern(/^[\d\s\+\-\(\)]{7,15}$/)]],
-            email: ['', [Validators.email, Validators.maxLength(100)]],
-            address: ['', [Validators.required, Validators.maxLength(200)]],
-            notes: ['', [Validators.maxLength(500)]],
-            balance: [0, [Validators.min(0)]]
-        });
+  supplierForm: FormGroup;
+  isEditMode = false;
+  supplierId?: number;
+  loading = false;
+  savingState = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private supplierService: SupplierService,
+    private messageService: MessageService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.supplierForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
+      contactPerson: ['', [Validators.required, Validators.maxLength(50)]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^[\d\s\+\-\(\)]{7,15}$/)]],
+      email: ['', [Validators.email, Validators.maxLength(100)]],
+      address: ['', [Validators.required, Validators.maxLength(200)]],
+      notes: ['', [Validators.maxLength(500)]],
+      balance: [0, [Validators.min(0)]]
+    });
+  }
+
+  ngOnInit(): void {
+    if (this.dialogMode) {
+      this.initDialogMode();
+      return;
     }
 
-    ngOnInit(): void {
-        console.log('🚀 Supplier Add/Edit Component Initialized');
-        this.route.params.subscribe(params => {
-            if (params['id']) {
-                this.isEditMode = true;
-                this.supplierId = +params['id'];
-                console.log(`📝 Edit mode activated for supplier ID: ${this.supplierId}`);
-                this.loadSupplier(this.supplierId);
-            } else {
-                console.log('🆕 Create new supplier mode activated');
-            }
-        });
+    this.route.params.subscribe(params => {
+      if (params['id']) {
+        this.isEditMode = true;
+        this.supplierId = +params['id'];
+        this.loadSupplier(this.supplierId);
+      }
+    });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!this.dialogMode || !changes['editSupplierId']) return;
+    this.initDialogMode();
+  }
+
+  private initDialogMode(): void {
+    this.supplierForm.reset({
+      name: '',
+      contactPerson: '',
+      phoneNumber: '',
+      email: '',
+      address: '',
+      notes: '',
+      balance: 0
+    });
+
+    this.isEditMode = !!this.editSupplierId;
+    this.supplierId = this.editSupplierId || undefined;
+
+    if (this.supplierId) {
+      this.loadSupplier(this.supplierId);
     }
+  }
 
-    loadSupplier(id: number): void {
-        this.loading = true;
-        console.log(`⏳ Loading supplier data for ID: ${id}`);
+  get saving(): boolean {
+    return this.savingState;
+  }
 
-        this.supplierService.getById(id)
-            .pipe(finalize(() => {
-                this.loading = false;
-                console.log(`✅ Finished loading supplier ID: ${id}`);
-            }))
-            .subscribe({
-                next: (supplier: Supplier) => {
-                    console.log(`📋 Supplier data loaded successfully:`, supplier);
-                    this.supplierForm.patchValue({
-                        name: supplier.name,
-                        contactPerson: supplier.contactPerson || '',
-                        phoneNumber: supplier.phoneNumber,
-                        email: supplier.email || '',
-                        address: supplier.address,
-                        notes: supplier.notes || '',
-                        balance: supplier.Balance || 0
-                    });
-                },
-                error: (error) => {
-                    console.error(`❌ Failed to load supplier ID ${id}:`, error);
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'خطأ',
-                        detail: 'فشل في تحميل بيانات المورد'
-                    });
-                    this.router.navigate(['/partners/suppliers']);
-                }
-            });
-    }
-
-    onSubmit(): void {
-        console.log('📤 Form submission started');
-
-        if (this.supplierForm.invalid) {
-            console.warn('⚠️ Form is invalid, showing validation errors');
-            console.log('📊 Form validation errors:', this.supplierForm.errors);
-            this.markFormGroupTouched(this.supplierForm);
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'تحذير',
-                detail: 'يرجى تعبئة جميع الحقول المطلوبة بشكل صحيح'
-            });
-            return;
-        }
-
-        this.saving = true;
-        const formValue = this.supplierForm.value;
-        const supplierData = {
-            ...formValue,
-            contactPerson: formValue.contactPerson || '',
-            email: formValue.email || '',
-            notes: formValue.notes || '',
-            Balance: formValue.balance || 0
-        };
-
-        console.log(`📝 Submitting supplier data:`, supplierData);
-
-        const request = this.isEditMode && this.supplierId
-            ? this.supplierService.update(this.supplierId, supplierData)
-            : this.supplierService.create(supplierData);
-
-        const operation = this.isEditMode ? 'تحديث' : 'إضافة';
-        console.log(`🔄 ${operation} supplier operation started`);
-
-        request
-            .pipe(finalize(() => {
-                this.saving = false;
-                console.log(`✅ ${operation} operation completed`);
-            }))
-            .subscribe({
-                next: (result) => {
-                    console.log(`🎉 Supplier ${operation} successful:`, result);
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'تم بنجاح',
-                        detail: this.isEditMode ? 'تم تحديث بيانات المورد بنجاح' : 'تم إضافة المورد بنجاح'
-                    });
-                    setTimeout(() => {
-                        console.log('🔄 Redirecting to suppliers list');
-                        this.router.navigate(['/partners/suppliers']);
-                    }, 1500);
-                },
-                error: (error) => {
-                    console.error(`❌ Failed to ${operation} supplier:`, error);
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'خطأ',
-                        detail: this.isEditMode ? 'فشل في تحديث بيانات المورد' : 'فشل في إضافة المورد'
-                    });
-                }
-            });
-    }
-
-    private markFormGroupTouched(formGroup: FormGroup): void {
-        console.log('🔍 Marking form fields as touched');
-        Object.values(formGroup.controls).forEach(control => {
-            control.markAsTouched();
-            if (control instanceof FormGroup) {
-                this.markFormGroupTouched(control);
-            }
-        });
-    }
-
-    onCancel(): void {
-        console.log('↩️ Cancel button clicked');
-
-        if (this.supplierForm.dirty) {
-            console.log('⚠️ Form has unsaved changes, asking for confirmation');
-            if (confirm('هل أنت متأكد من الخروج؟ سيتم فقدان التغييرات غير المحفوظة.')) {
-                console.log('✅ User confirmed cancellation, navigating back');
-                this.router.navigate(['/partners/suppliers']);
-            } else {
-                console.log('❌ User cancelled the cancellation');
-            }
-        } else {
-            console.log('✅ No unsaved changes, navigating back');
+  loadSupplier(id: number): void {
+    this.loading = true;
+    this.supplierService.getById(id)
+      .pipe(finalize(() => { this.loading = false; }))
+      .subscribe({
+        next: (supplier: Supplier) => {
+          this.supplierForm.patchValue({
+            name: supplier.name,
+            contactPerson: supplier.contactPerson || '',
+            phoneNumber: supplier.phoneNumber,
+            email: supplier.email || '',
+            address: supplier.address,
+            notes: supplier.notes || '',
+            balance: supplier.Balance || 0
+          });
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل بيانات المورد' });
+          if (!this.dialogMode) {
             this.router.navigate(['/partners/suppliers']);
+          }
         }
-    }
+      });
+  }
 
-    getFieldError(fieldName: string): string {
-        const field = this.supplierForm.get(fieldName);
+  // supplier-add-edit.component.ts
 
-        if (!field?.touched || !field?.errors) return '';
+ onSubmit(): void {
+  if (this.supplierForm.invalid) {
+    this.markFormGroupTouched(this.supplierForm);
+    this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'يرجى تعبئة الحقول المطلوبة بشكل صحيح' });
+    return;
+  }
 
-        const errors = field.errors;
+  this.savingState = true;
+  const formValue = this.supplierForm.value;
+  
+  // بناء الـ Payload مع إضافة الـ id في حالة التعديل
+  const payload: any = {
+    ...formValue,
+    contactPerson: formValue.contactPerson || '',
+    email: formValue.email || '',
+    notes: formValue.notes || '',
+    Balance: formValue.balance || 0
+  };
 
-        if (errors['required']) return 'هذا الحقل مطلوب';
-        if (errors['minlength']) return `يجب أن يكون ${errors['minlength'].requiredLength} أحرف على الأقل`;
-        if (errors['maxlength']) return `يجب أن يكون ${errors['maxlength'].requiredLength} أحرف كحد أقصى`;
-        if (errors['email']) return 'البريد الإلكتروني غير صالح';
-        if (errors['pattern']) {
-            if (fieldName === 'phoneNumber') {
-                return 'رقم الهاتف غير صالح. استخدم أرقامًا فقط (7-15 رقم)';
-            }
-            return 'صيغة غير صالحة';
+  // إضافة الـ id هنا ليرسل مع البيانات في الـ Body
+  if (this.isEditMode && this.supplierId) {
+    payload.id = this.supplierId; 
+  }
+
+  const request = this.isEditMode && this.supplierId
+    ? this.supplierService.update(this.supplierId, payload)
+    : this.supplierService.create(payload);
+
+  request.pipe(finalize(() => { this.savingState = false; }))
+    .subscribe({
+      next: () => {
+        this.messageService.add({ severity: 'success', summary: 'تم بنجاح', detail: this.isEditMode ? 'تم تحديث المورد' : 'تم إضافة المورد' });
+        this.saved.emit();
+        if (this.dialogMode) {
+          this.closed.emit();
+        } else {
+          this.router.navigate(['/partners/suppliers']);
         }
-        if (errors['min']) return 'القيمة يجب أن تكون أكبر من أو تساوي 0';
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: this.isEditMode ? 'فشل تحديث المورد' : 'فشل إضافة المورد' });
+      }
+    });
+}
 
-        return 'قيمة غير صالحة';
+  onCancel(): void {
+    if (this.supplierForm.dirty && !confirm('هل أنت متأكد من الخروج؟ سيتم فقدان التغييرات غير المحفوظة.')) return;
+
+    if (this.dialogMode) {
+      this.closed.emit();
+    } else {
+      this.router.navigate(['/partners/suppliers']);
     }
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+      if (control instanceof FormGroup) this.markFormGroupTouched(control);
+    });
+  }
+
+  getFieldError(fieldName: string): string {
+    const field = this.supplierForm.get(fieldName);
+    if (!field?.touched || !field?.errors) return '';
+
+    const errors = field.errors;
+    if (errors['required']) return 'هذا الحقل مطلوب';
+    if (errors['minlength']) return `يجب ألا يقل عن ${errors['minlength'].requiredLength} أحرف`;
+    if (errors['maxlength']) return `الحد الأقصى ${errors['maxlength'].requiredLength} حرف`; 
+    if (errors['email']) return 'البريد الإلكتروني غير صالح';
+    if (errors['pattern']) return fieldName === 'phoneNumber' ? 'رقم الهاتف غير صالح' : 'صيغة غير صالحة';
+    if (errors['min']) return 'القيمة يجب أن تكون 0 أو أكبر';
+    return 'قيمة غير صالحة';
+  }
 }

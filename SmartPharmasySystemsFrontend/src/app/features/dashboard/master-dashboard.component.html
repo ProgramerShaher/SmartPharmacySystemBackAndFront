@@ -1,227 +1,226 @@
-<div class="master-dashboard-container">
-  <!-- Header -->
-  <div class="dashboard-header">
-    <div class="header-content">
-      <h1 class="dashboard-title">
-        <i class="pi pi-chart-line"></i>
-        لوحة التحكم الرئيسية
-      </h1>
-      <button pButton icon="pi pi-refresh" label="تحديث" class="p-button-sm p-button-outlined"
-        (click)="refreshDashboard()" [loading]="isLoading()">
-      </button>
-    </div>
-  </div>
-
-  <!-- Loading State -->
-  @if (isLoading()) {
-  <div class="loading-container">
-    <p-skeleton height="100px" styleClass="mb-2"></p-skeleton>
-    <p-skeleton height="200px" styleClass="mb-2"></p-skeleton>
-    <p-skeleton height="150px"></p-skeleton>
-  </div>
-  }
-
-  <!-- Dashboard Grid -->
-  @if (!isLoading() && financialData() && inventoryData() && operationalData()) {
-  <div class="dashboard-grid">
-
-    <!-- ============================================ -->
-    <!-- Row 1: Financial KPI Cards -->
-    <!-- ============================================ -->
-    <div class="financial-kpis">
-
-      <!-- Net Profit Card -->
-      <div class="kpi-card profit-card" (click)="navigateToFinancialReport()">
-        <div class="kpi-header">
-          <i class="pi pi-chart-bar kpi-icon"></i>
-          <h3 class="kpi-title">صافي الربح اليوم</h3>
-        </div>
-        <div class="kpi-value">{{ formatCurrency(financialData()!.todayNetProfit) }}</div>
-        <div class="kpi-formula">
-          ({{ formatCurrency(financialData()!.todayApprovedSales) }} -
-          {{ formatCurrency(financialData()!.todayReturns) }}) -
-          {{ formatCurrency(financialData()!.todayCOGS) }} -
-          {{ formatCurrency(financialData()!.todayExpenses) }}
-        </div>
+<div class="master-dashboard-container" dir="rtl">
+  <div class="dashboard-shell">
+    <header class="dashboard-header">
+      <div>
+        <div class="eyebrow">لوحة التحكم الرئيسية</div>
+        <h1 class="dashboard-title">
+          <i class="pi pi-chart-line"></i>
+          مركز متابعة النظام
+        </h1>
+        <p class="dashboard-subtitle">
+          ملخص مباشر للمبيعات، المشتريات، المخزون، العملاء، الموردين، التنبيهات وآخر العمليات من قاعدة البيانات.
+        </p>
       </div>
 
-      <!-- Liquidity Card -->
-      <div class="kpi-card liquidity-card" (click)="navigateToFinancialReport()">
-        <div class="kpi-header">
-          <i class="pi pi-wallet kpi-icon"></i>
-          <h3 class="kpi-title">السيولة النقدية</h3>
-        </div>
-        <div class="kpi-value">{{ formatCurrency(financialData()!.totalLiquidity) }}</div>
-        <div class="kpi-breakdown">
-          <span>صندوق: {{ formatCurrency(financialData()!.cashBalance) }}</span>
-          <span>بنك: {{ formatCurrency(financialData()!.bankBalance) }}</span>
-        </div>
+      <div class="header-actions">
+        <button
+          pButton
+          type="button"
+          icon="pi pi-chart-bar"
+          label="التقارير"
+          class="p-button-sm p-button-text action-button"
+          (click)="navigateToRoute('/reports')">
+        </button>
+        <button
+          pButton
+          type="button"
+          icon="pi pi-refresh"
+          label="تحديث"
+          class="p-button-sm action-button refresh-button"
+          (click)="refreshDashboard()"
+          [loading]="isLoading()">
+        </button>
       </div>
+    </header>
 
-      <!-- Net Debt Card -->
-      <div class="kpi-card debt-card" (click)="navigateToFinancialReport()">
-        <div class="kpi-header">
-          <i class="pi pi-money-bill kpi-icon"></i>
-          <h3 class="kpi-title">المديونية الصافية</h3>
-        </div>
-        <div class="kpi-value" [class.positive]="financialData()!.netDebt > 0"
-          [class.negative]="financialData()!.netDebt < 0">
-          {{ formatCurrency(financialData()!.netDebt) }}
-        </div>
-        <div class="kpi-comparison">
-          <span class="receivable">لنا: {{ formatCurrency(financialData()!.customerReceivables) }}</span>
-          <span class="payable">علينا: {{ formatCurrency(financialData()!.supplierPayables) }}</span>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ============================================ -->
-    <!-- Row 2: Cash Flow Chart + Branch Revenue -->
-    <!-- ============================================ -->
-    <div class="chart-row">
-
-      <!-- Cash Flow Area Chart -->
-      <div class="chart-card cash-flow-card">
-        <div class="chart-header">
-          <h3>تدفقات السيولة (30 يوم)</h3>
-        </div>
-        <div class="chart-body">
-          <p-chart type="line" [data]="cashFlowChartData" [options]="cashFlowChartOptions" height="200px"></p-chart>
-        </div>
-      </div>
-
-      <!-- Cashier Performance Chart -->
-      <div class="chart-card performance-card">
-        <div class="chart-header">
-          <h3>أداء الكاشيرات (اليوم)</h3>
-        </div>
-        <div class="chart-body">
-          <p-chart type="bar" [data]="cashierPerformanceData" [options]="cashierPerformanceOptions"
-            height="200px"></p-chart>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ============================================ -->
-    <!-- Row 3: Inventory Intelligence -->
-    <!-- ============================================ -->
-    <div class="inventory-row">
-
-      <!-- Inventory Distribution Donut -->
-      <div class="chart-card inventory-dist-card">
-        <div class="chart-header">
-          <h3>توزيع المخزون ({{ formatCurrency(inventoryData()!.totalInventoryValue) }})</h3>
-        </div>
-        <div class="chart-body">
-          <p-chart type="doughnut" [data]="inventoryDistributionData" [options]="inventoryDistributionOptions"
-            height="180px"></p-chart>
-        </div>
-      </div>
-
-      <!-- Expiry Radar -->
-      <div class="expiry-radar-card">
-        <div class="radar-header">
-          <h3>رادار الصلاحية</h3>
-        </div>
-        <div class="radar-body">
-          <div class="radar-item danger">
-            <label>&lt; 3 أشهر</label>
-            <p-progressBar [value]="inventoryData()!.expiryRadar.percentageLessThan3Months"
-              [showValue]="true"></p-progressBar>
-          </div>
-          <div class="radar-item warning">
-            <label>3-6 أشهر</label>
-            <p-progressBar [value]="inventoryData()!.expiryRadar.percentage3To6Months"
-              [showValue]="true"></p-progressBar>
-          </div>
-          <div class="radar-item yellow">
-            <label>6-12 شهر</label>
-            <p-progressBar [value]="inventoryData()!.expiryRadar.percentage6To12Months"
-              [showValue]="true"></p-progressBar>
-          </div>
-          <div class="radar-item success">
-            <label>&gt; سنة</label>
-            <p-progressBar [value]="inventoryData()!.expiryRadar.percentageMoreThan12Months"
-              [showValue]="true"></p-progressBar>
-          </div>
-        </div>
-      </div>
-
-      <!-- Critical Stock Table -->
-      <div class="critical-stock-card">
-        <div class="stock-header">
-          <h3>مخزون حرج</h3>
-        </div>
-        <div class="stock-body">
-          <p-table [value]="inventoryData()!.criticalStockItems" [scrollable]="true" scrollHeight="150px"
-            styleClass="compact-table">
-            <ng-template pTemplate="header">
-              <tr>
-                <th>الصنف</th>
-                <th>المتاح</th>
-                <th>عند</th>
-                <th>طلب</th>
-              </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item>
-              <tr>
-                <td>{{ item.medicineName }}</td>
-                <td><span class="stock-badge danger">{{ item.currentStock }}</span></td>
-                <td>{{ item.reorderPoint }}</td>
-                <td>{{ item.suggestedOrderQuantity }}</td>
-              </tr>
-            </ng-template>
-          </p-table>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ============================================ -->
-    <!-- Row 4: Operational Pulse -->
-    <!-- ============================================ -->
-    <div class="operational-row">
-
-      <!-- Activity Stream -->
-      <div class="activity-stream-card">
-        <div class="stream-header">
-          <h3>نبض النظام</h3>
-        </div>
-        <div class="stream-body">
-          @for (activity of operationalData()!.activityStream; track activity.referenceId) {
-          <div class="activity-item" (click)="navigateToDocument(activity.operationType, activity.referenceId)">
-            <i [class]="'pi ' + getActivityIcon(activity.operationType)"
-              [style.color]="getActivityColor(activity.operationType)"></i>
-            <div class="activity-content">
-              <div class="activity-desc">{{ activity.description }}</div>
-              <div class="activity-meta">
-                <span>{{ activity.username }}</span>
-                <span>{{ formatTime(activity.timestamp) }}</span>
-              </div>
-            </div>
-            <div class="activity-amount">{{ formatCurrency(activity.amount) }}</div>
-          </div>
+    @if (isLoading()) {
+      <div class="loading-grid">
+        <p-skeleton height="84px" styleClass="border-round-lg"></p-skeleton>
+        <div class="metrics-loading">
+          @for (item of [1, 2, 3, 4]; track item) {
+            <p-skeleton height="112px" styleClass="border-round-lg"></p-skeleton>
           }
         </div>
+        <p-skeleton height="320px" styleClass="border-round-lg"></p-skeleton>
       </div>
+    }
 
-      <!-- Heat Map -->
-      <div class="chart-card heatmap-card">
-        <div class="chart-header">
-          <h3>الخريطة الحرارية (ساعات الذروة)</h3>
-        </div>
-        <div class="chart-body">
-          <p-chart type="bar" [data]="heatMapChartData" [options]="heatMapChartOptions" height="180px"></p-chart>
-        </div>
-      </div>
+    @if (!isLoading() && financialData() && inventoryData() && operationalData() && systemOverview()) {
+      <main class="dashboard-grid">
+        <section class="metrics-grid">
+          @for (metric of topMetrics(); track metric.title) {
+            <button type="button" class="metric-card" [ngClass]="'tone-' + metric.tone" (click)="navigateToRoute(metric.route)">
+              <span class="metric-icon">
+                <i [class]="metric.icon"></i>
+              </span>
+              <span class="metric-content">
+                <span class="metric-title">{{ metric.title }}</span>
+                <strong class="metric-value">{{ metric.value }}</strong>
+                <span class="metric-hint">{{ metric.hint }}</span>
+              </span>
+            </button>
+          }
+        </section>
 
-    </div>
+        <section class="system-grid">
+          @for (card of systemCards(); track card.title) {
+            <button type="button" class="system-card" [ngClass]="'tone-' + card.tone" (click)="navigateToRoute(card.route)">
+              <i [class]="card.icon"></i>
+              <span>{{ card.title }}</span>
+              <strong>{{ card.value }}</strong>
+            </button>
+          }
+        </section>
 
+        <section class="insights-strip">
+          <div class="mini-panel">
+            <div class="mini-panel-title">المشهد المالي</div>
+            <div class="mini-stat-list">
+              @for (item of financeSnapshot(); track item.label) {
+                <div class="mini-stat" [ngClass]="'tone-' + item.tone">
+                  <span>{{ item.label }}</span>
+                  <strong>{{ item.value }}</strong>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">حالة الصلاحية</div>
+            <div class="mini-stat-list compact-grid">
+              @for (item of inventoryHealth(); track item.label) {
+                <div class="mini-stat" [ngClass]="'tone-' + item.tone">
+                  <span>{{ item.label }}</span>
+                  <strong>{{ item.value }}</strong>
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+
+        <section class="charts-grid">
+          <article class="panel chart-panel wide">
+            <div class="panel-head">
+              <div>
+                <h3>تدفق السيولة خلال 30 يوم</h3>
+                <p>الدخل والمصروفات من الحركات المالية الفعلية.</p>
+              </div>
+              <button pButton type="button" icon="pi pi-list" label="دفتر الأستاذ" class="p-button-sm p-button-text inline-action" (click)="navigateToRoute('/financial/ledger')"></button>
+            </div>
+            <div class="chart-wrap lg">
+              <p-chart type="line" [data]="cashFlowChartData" [options]="cashFlowChartOptions"></p-chart>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <h3>أداء الموظفين اليوم</h3>
+                <p>حسب إجمالي مبيعات كل مستخدم.</p>
+              </div>
+              <button pButton type="button" icon="pi pi-users" label="التقرير" class="p-button-sm p-button-text inline-action" (click)="navigateToRoute('/reports/employee-performance')"></button>
+            </div>
+            <div class="chart-wrap md">
+              <p-chart type="bar" [data]="cashierPerformanceChartData" [options]="cashierPerformanceChartOptions"></p-chart>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <h3>توزيع قيمة المخزون</h3>
+                <p>حسب الموردين أو التصنيفات المتاحة.</p>
+              </div>
+              <button pButton type="button" icon="pi pi-box" label="المخزون" class="p-button-sm p-button-text inline-action" (click)="navigateToInventoryReport()"></button>
+            </div>
+            <div class="chart-wrap sm">
+              <p-chart type="doughnut" [data]="inventoryDistributionData" [options]="inventoryDistributionOptions"></p-chart>
+            </div>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-head">
+              <div>
+                <h3>زخم العمليات حسب الساعة</h3>
+                <p>عدد فواتير البيع المعتمدة خلال اليوم.</p>
+              </div>
+            </div>
+            <div class="chart-wrap sm">
+              <p-chart type="bar" [data]="hourlyActivityChartData" [options]="hourlyActivityChartOptions"></p-chart>
+            </div>
+          </article>
+        </section>
+
+        <section class="detail-grid">
+          <article class="panel activity-panel">
+            <div class="panel-head">
+              <div>
+                <h3>آخر العمليات من النظام</h3>
+                <p>اضغط على أي عملية للانتقال إلى مصدرها.</p>
+              </div>
+            </div>
+
+            <div class="activity-list">
+              @for (activity of fullActivity(); track activity.operationType + '-' + activity.referenceId + '-' + activity.timestamp) {
+                <button
+                  type="button"
+                  class="activity-item"
+                  (click)="activity.sourceRoute ? navigateToRoute(activity.sourceRoute) : navigateToDocument(activity.operationType, activity.referenceId)">
+                  <span class="activity-icon" [style.color]="getActivityColor(activity.operationType)">
+                    <i [class]="'pi ' + getActivityIcon(activity.operationType)"></i>
+                  </span>
+                  <span class="activity-body">
+                    <strong>{{ activity.description }}</strong>
+                    <small>{{ activity.entityName }} • {{ activity.username }} • {{ formatTime(activity.timestamp) }}</small>
+                  </span>
+                  <span class="activity-amount">{{ formatCurrency(activity.amount) }}</span>
+                </button>
+              }
+            </div>
+          </article>
+
+          <article class="panel stock-panel">
+            <div class="panel-head">
+              <div>
+                <h3>تنبيهات المخزون</h3>
+                <p>الأصناف التي وصلت أو اقتربت من حد إعادة الطلب.</p>
+              </div>
+              <button pButton type="button" icon="pi pi-bell" label="كل التنبيهات" class="p-button-sm p-button-text inline-action" (click)="navigateToRoute('/system-alerts')"></button>
+            </div>
+
+            <p-table
+              [value]="criticalStockPreview()"
+              styleClass="p-datatable-sm compact-table"
+              [scrollable]="true"
+              scrollHeight="360px">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>الصنف</th>
+                  <th class="text-center">الرصيد</th>
+                  <th class="text-center">حد الطلب</th>
+                  <th class="text-center">الحالة</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-item>
+                <tr class="clickable-row" (click)="navigateToRoute('/inventory/medicines/details/' + item.medicineId)">
+                  <td>
+                    <div class="stock-name">{{ item.medicineName }}</div>
+                  </td>
+                  <td class="text-center stock-number">{{ item.currentStock }}</td>
+                  <td class="text-center">{{ item.reorderPoint }}</td>
+                  <td class="text-center">
+                    <span class="severity-badge" [ngClass]="stockSeverityClass(item)">
+                      {{ getStockSeverity(item) }}
+                    </span>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </article>
+        </section>
+      </main>
+    }
   </div>
-  }
 
-  <!-- Toast Notifications -->
   <p-toast position="top-left"></p-toast>
 </div>

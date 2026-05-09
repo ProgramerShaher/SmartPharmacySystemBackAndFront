@@ -16,7 +16,7 @@ public class BarcodeResultDto
     public string BatchNumber { get; set; } = string.Empty;
     public decimal SalePrice { get; set; }
     public int AvailableQuantity { get; set; }
-    public DateTime ExpiryDate { get; set; }
+    public DateTime? ExpiryDate { get; set; }
     public bool IsNearExpiry { get; set; }
 
     // Alternatives

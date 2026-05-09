@@ -22,6 +22,11 @@ namespace SmartPharmacySystem.Core.Entities
         [MaxLength(50)]
         public string? ReferenceNo { get; set; } // Paper Receipt No
 
+        public int? PurchaseInvoiceId { get; set; }
+
+        [ForeignKey("PurchaseInvoiceId")]
+        public virtual PurchaseInvoice? PurchaseInvoice { get; set; }
+
         [MaxLength(500)]
         public string? Notes { get; set; }
 

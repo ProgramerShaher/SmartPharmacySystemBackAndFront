@@ -1,106 +1,112 @@
-<div class="card p-4 shadow-2 border-round-xl" dir="rtl" *ngIf="batch">
-    <!-- Header -->
-    <div
-        class="flex flex-column md:flex-row md:align-items-center justify-content-between mb-5 gap-3 border-bottom-1 border-gray-100 pb-4">
+<div class="batch-details-elite p-3" dir="rtl" *ngIf="batch">
+    <!-- Compact Top Bar -->
+    <div class="flex justify-content-between align-items-center mb-3">
         <div class="flex align-items-center gap-3">
-            <div
-                class="w-4rem h-4rem border-circle bg-blue-50 flex align-items-center justify-content-center shadow-sm">
-                <i class="pi pi-info-circle text-blue-600 text-2xl"></i>
+            <button pButton icon="pi pi-arrow-right" (click)="goBack()" class="p-button-text p-button-secondary p-button-sm"></button>
+            <div class="flex flex-column">
+                <h1 class="text-xl font-bold text-900 m-0">{{ batch.medicineName }}</h1>
+                <span class="text-sm text-500 font-bold">رقم الدفعة: <span class="text-teal-700">{{ batch.companyBatchNumber }}</span></span>
             </div>
-            <div>
-                <h2 class="text-3xl font-bold m-0 text-gray-900">{{ batch.medicineName }}</h2>
-                <div class="flex gap-3 text-secondary font-medium">
-                    <span><i class="pi pi-hashtag mr-1"></i> رقم الدفعة: <span class="text-gray-900 font-mono">{{
-                            batch.companyBatchNumber }}</span></span>
-                    <span><i class="pi pi-barcode mr-1"></i> باركود: <span class="text-gray-900 font-mono">{{
-                            batch.batchBarcode }}</span></span>
+        </div>
+        <button pButton label="تسوية يدوية" icon="pi pi-sliders-h" 
+                class="p-button-raised p-button-warning p-button-sm border-round-lg font-bold shadow-2" (click)="showActionDialog()"></button>
+    </div>
+
+    <!-- Info Dashboard Card -->
+    <div class="surface-card p-3 border-round-xl shadow-2 border-1 border-50 mb-4">
+        <div class="grid align-items-center">
+            <!-- Quantities Column -->
+            <div class="col-12 md:col-7">
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex flex-column">
+                        <span class="text-xs font-bold text-500 uppercase mb-1">الكمية الكلية</span>
+                        <span class="text-2xl font-bold text-900">{{ batch.quantity }}</span>
+                    </div>
+                    <div class="flex flex-column border-right-1 border-100 pr-4">
+                        <span class="text-xs font-bold text-500 uppercase mb-1">المباعة</span>
+                        <span class="text-2xl font-bold text-900">{{ batch.soldQuantity }}</span>
+                    </div>
+                    <div class="flex flex-column border-right-1 border-100 pr-4">
+                        <span class="text-xs font-bold text-500 uppercase mb-1">المتبقي</span>
+                        <span class="text-2xl font-bold" [style.color]="batch.remainingQuantity === 0 ? '#ef4444' : '#0d9488'">{{ batch.remainingQuantity }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Expiry Column -->
+            <div class="col-12 md:col-5 md:border-right-1 border-100 md:pr-4">
+                <div class="flex flex-column gap-2">
+                    <div class="flex align-items-center gap-2">
+                        <span class="text-xs font-bold text-500">تاريخ الانتهاء:</span>
+                        <span class="text-sm font-bold text-900">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                    <div class="flex align-items-center gap-2">
+                        <span class="text-xs font-bold text-500">حالة الصلاحية:</span>
+                        <span class="px-2 py-1 border-round-lg text-xs font-bold shadow-1"
+                              [style.background-color]="batch.daysUntilExpiry! <= 0 ? '#ef4444' : (batch.daysUntilExpiry! <= 30 ? '#f59e0b' : '#10b981')"
+                              [style.color]="'white'">
+                            {{ getExpiryLabel(batch.daysUntilExpiry!) }}
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="flex gap-2">
-            <button pButton label="تسجيل تلف/تعديل" icon="pi pi-exclamation-triangle"
-                class="p-button-warning border-round-xl px-4 shadow-1" (click)="showActionDialog()"></button>
-            <button pButton label="عودة" icon="pi pi-arrow-left"
-                class="p-button-text p-button-secondary border-round-xl" (click)="goBack()"></button>
-        </div>
     </div>
 
-    <!-- Stats Grid -->
-    <div class="grid mb-5">
-        <div class="col-12 md:col-3">
-            <div class="p-4 border-round-xl bg-gray-50 border-1 border-gray-100 text-center shadow-sm">
-                <span class="block text-secondary mb-2 font-medium">الكمية الكلية</span>
-                <span class="text-4xl font-bold text-gray-800">{{ batch.quantity }}</span>
-            </div>
+    <!-- Table Section -->
+    <div class="surface-card p-3 border-round-xl shadow-1 border-1 border-50">
+        <div class="flex align-items-center gap-2 mb-3 px-1">
+            <i class="pi pi-history text-teal-600 font-bold"></i>
+            <h3 class="text-base font-bold text-800 m-0">سجل حركات المخزون</h3>
         </div>
-        <div class="col-12 md:col-3">
-            <div class="p-4 border-round-xl bg-blue-50 border-1 border-blue-100 text-center shadow-sm">
-                <span class="block text-blue-800 mb-2 font-medium">الكمية المباعة</span>
-                <span class="text-4xl font-bold text-blue-900">{{ batch.soldQuantity }}</span>
-            </div>
-        </div>
-        <div class="col-12 md:col-3">
-            <div class="p-4 border-round-xl bg-green-50 border-1 border-green-100 text-center shadow-sm">
-                <span class="block text-green-800 mb-2 font-medium">الرصيد المتبقي</span>
-                <span class="text-4xl font-bold text-green-900">{{ batch.remainingQuantity }}</span>
-            </div>
-        </div>
-        <div class="col-12 md:col-3">
-            <div class="p-4 border-round-xl bg-orange-50 border-1 border-orange-100 text-center shadow-sm">
-                <span class="block text-orange-800 mb-2 font-medium">تاريخ الانتهاء</span>
-                <span class="text-xl font-bold text-orange-900">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</span>
-            </div>
-        </div>
-    </div>
 
-    <!-- Stock Card Table -->
-    <div class="mb-4">
-        <h3 class="flex align-items-center gap-2 text-gray-800 mb-3 px-2">
-            <i class="pi pi-list text-primary"></i> بطاقة الصنف (سجل الحركات)
-        </h3>
         <p-table [value]="stockCard" [loading]="loading" responsiveLayout="scroll"
-            styleClass="p-datatable-sm p-datatable-gridlines border-round-xl overflow-hidden shadow-1 custom-table">
+            styleClass="p-datatable-sm elite-table">
             <ng-template pTemplate="header">
                 <tr>
-                    <th class="bg-primary text-white font-bold text-center p-3">التاريخ والوقت</th>
-                    <th class="bg-primary text-white font-bold p-3">النوع</th>
-                    <th class="bg-primary text-white font-bold text-center p-3">المرجع</th>
-                    <th class="bg-primary text-white font-bold text-center p-3">الكمية (+/-)</th>
-                    <th class="bg-primary text-white font-bold text-center p-3">الرصيد بعد الحركة</th>
-                    <th class="bg-primary text-white font-bold p-3">ملاحظات</th>
+                    <th class="text-center" style="width: 15%">التاريخ</th>
+                    <th style="width: 15%">النوع</th>
+                    <th class="text-center" style="width: 15%">المرجع</th>
+                    <th class="text-center" style="width: 15%">الكمية</th>
+                    <th class="text-center" style="width: 15%">الرصيد بعدها</th>
+                    <th>ملاحظات</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-movement>
-                <tr class="transition-colors hover:bg-gray-50">
-                    <td class="text-center p-3">{{ movement.date | date:'dd/MM/yyyy HH:mm' }}</td>
-                    <td class="p-3">
-                        <p-tag [severity]="getMovementSeverity(movement.movementType)" [value]="movement.movementType"
-                            [rounded]="true" styleClass="px-3"></p-tag>
+                <tr>
+                    <td class="text-center text-600 text-xs font-bold">{{ movement.date | date:'dd/MM HH:mm' }}</td>
+                    <td>
+                        <span class="px-2 py-0-5 border-round-lg font-bold text-xs"
+                              [ngClass]="{
+                                'bg-green-50 text-green-700': movement.movementType === 'Purchase' || movement.movementType === 'StockIn' || movement.quantityChange > 0,
+                                'bg-red-50 text-red-700': movement.movementType === 'Sale' || movement.movementType === 'StockOut' || movement.movementType === 'Damage' || movement.quantityChange < 0,
+                                'bg-blue-50 text-blue-700': movement.movementType === 'Return' || movement.movementType === 'SalesReturn',
+                                'bg-orange-50 text-orange-700': movement.movementType === 'Adjustment'
+                              }">
+                            {{ getMovementTypeLabel(movement.movementType) }}
+                        </span>
                     </td>
-                    <td class="text-center p-3 font-mono text-sm">{{ movement.referenceNumber || '---' }}</td>
-                    <td class="text-center p-3 font-extrabold text-lg" [class.text-green-600]="movement.quantity > 0"
-                        [class.text-red-600]="movement.quantity < 0">
-                        {{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}
+                    <td class="text-center font-mono text-xs text-400">{{ movement.referenceNumber || '---' }}</td>
+                    <td class="text-center font-bold" 
+                        [ngClass]="movement.quantityChange > 0 ? 'text-green-600' : 'text-red-600'">
+                        {{ movement.quantityChange > 0 ? '+' : '' }}{{ movement.quantityChange }}
                     </td>
-                    <td class="text-center p-3 font-bold text-lg">{{ movement.balanceAfter }}</td>
-                    <td class="p-3 text-secondary">{{ movement.notes || '---' }}</td>
+                    <td class="text-center font-bold text-900">{{ movement.runningBalance }}</td>
+                    <td class="text-500 text-xs truncate max-w-10rem" [pTooltip]="movement.notes">{{ movement.notes || '---' }}</td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="6" class="text-center p-8 text-secondary">
-                        <i class="pi pi-history text-5xl mb-3 block text-300"></i>
-                        لا توجد حركات مسجلة لهذه الدفعة.
-                    </td>
+                    <td colspan="6" class="text-center p-5 text-400 font-bold">لا توجد حركات مسجلة لهذه الدفعة</td>
                 </tr>
             </ng-template>
         </p-table>
     </div>
 </div>
 
-<div class="card p-8 text-center" *ngIf="loading">
-    <i class="pi pi-spin pi-spinner text-4xl text-primary mb-3"></i>
-    <p class="text-secondary font-medium">جاري تحميل تفاصيل الدفعة وسجل الحركات...</p>
+<!-- Loading Overlay -->
+<div class="fixed top-0 left-0 w-full h-full bg-white-alpha-70 z-5 flex flex-column align-items-center justify-content-center" *ngIf="loading">
+    <p-progressSpinner strokeWidth="4" animationDuration=".6s"></p-progressSpinner>
 </div>
 
 <!-- Actions Dialog -->

@@ -111,7 +111,7 @@ export class BatchListComponent implements OnInit {
     }
 
     getExpiryLabel(days: number): string {
-        if (days <= 0) return 'منتهية';
+        if (days <= 0) return 'منتهية الصلاحية';
         if (days <= 30) return `تنتهي خلال ${days} يوم`;
         return `صالحة (${days} يوم)`;
     }

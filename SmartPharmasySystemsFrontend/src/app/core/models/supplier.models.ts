@@ -1,4 +1,6 @@
 import { DocumentStatus } from './stock-movement.enums';
+import { PurchaseInvoice } from './purchase-invoice.interface';
+import { PurchaseReturn } from './purchase-return.interface';
 
 export interface Supplier {
     id: number;
@@ -21,8 +23,8 @@ export interface Supplier {
     actionByName?: string;
     actionDate?: string;
 
-    purchaseInvoices?: any[];
-    purchaseReturns?: any[];
+    purchaseInvoices?: PurchaseInvoice[];
+    purchaseReturns?: PurchaseReturn[];
 }
 
 export interface SupplierPayment {
@@ -32,6 +34,7 @@ export interface SupplierPayment {
     amount: number;
     paymentDate: string;
     referenceNo?: string;
+    purchaseInvoiceId?: number;
     notes?: string;
     createdBy: number;
     isDeleted: boolean;
@@ -42,6 +45,7 @@ export interface CreateSupplierPaymentDto {
     amount: number;
     paymentDate: Date | string;
     referenceNo?: string;
+    purchaseInvoiceId?: number;
     notes?: string;
 }
 

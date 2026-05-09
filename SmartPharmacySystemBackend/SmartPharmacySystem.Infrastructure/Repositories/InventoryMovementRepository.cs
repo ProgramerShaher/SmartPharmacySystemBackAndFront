@@ -51,7 +51,7 @@ public class InventoryMovementRepository : IInventoryMovementRepository
             .Include(m => m.Batch)
             .AsQueryable();
 
-        // ... ãäØŞ ÇáÈÍË (Search) íÙá ßãÇ åæ ...
+        // ... ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ (Search) ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ...
 
         var totalCount = await query.CountAsync();
 
@@ -70,10 +70,10 @@ public class InventoryMovementRepository : IInventoryMovementRepository
                     .Take(pageSize)
                     .ToListAsync();
 
-        // äŞæã ÈäŞá ÇáæÕİ ÇáãÇáí Åáì ÍŞá ãÄŞÊ İí ÇáÜ Entity (Ãæ ÏãÌ ãÄŞÊ İí ÇáÜ Notes)
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ Entity (ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ Notes)
         foreach (var item in results)
         {
-            // äÓÊÎÏã ÍŞá ÇáÜ Notes áäŞá ÇáÈíÇäÇÊ ááÜ Mapper ãÚ İÇÕá ããíÒ
+            // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Notes ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ Mapper ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (!string.IsNullOrEmpty(item.FinDesc))
                 item.Movement.Notes = $"{item.Movement.Notes}[FIN_DESC]{item.FinDesc}";
         }

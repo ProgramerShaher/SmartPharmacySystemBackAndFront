@@ -1,0 +1,113 @@
+:host ::ng-deep {
+    .imperial-modal {
+        border-radius: 1.5rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: none;
+
+        .p-dialog-content {
+            padding: 0;
+            overflow-y: auto;
+            max-height: 80vh;
+            scrollbar-width: thin;
+            scrollbar-color: var(--teal-200) transparent;
+
+            &::-webkit-scrollbar {
+                width: 6px;
+            }
+            &::-webkit-scrollbar-thumb {
+                background: var(--teal-200);
+                border-radius: 10px;
+            }
+        }
+    }
+
+    .imperial-table {
+        .p-datatable-thead > tr > th {
+            background: transparent;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1.25rem 1rem;
+            border-bottom: 2px solid var(--gray-100);
+        }
+
+        .p-datatable-tbody > tr {
+            border-bottom: 1px solid var(--gray-50);
+            
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+}
+
+.header-container {
+    background: linear-gradient(135deg, #134e4a 0%, #0f766e 100%);
+    min-height: 120px;
+}
+
+.header-overlay {
+    background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+    background-size: 24px 24px;
+}
+
+.icon-box {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.price-card {
+    border-left: 4px solid var(--blue-500);
+    transition: transform 0.3s ease;
+    &:hover { transform: translateY(-5px); }
+}
+
+.stock-card {
+    border-left: 4px solid var(--teal-500);
+    transition: transform 0.3s ease;
+    &:hover { transform: translateY(-5px); }
+}
+
+.category-card {
+    border-left: 4px solid var(--purple-500);
+    transition: transform 0.3s ease;
+    &:hover { transform: translateY(-5px); }
+}
+
+.alert-banner {
+    background: linear-gradient(90deg, #ef4444 0%, #b91c1c 100%);
+}
+
+.pulse-ring {
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    top: -150px;
+    left: -150px;
+    animation: pulse 4s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.8); opacity: 0.3; }
+    50% { transform: scale(1.2); opacity: 0.1; }
+    100% { transform: scale(0.8); opacity: 0.3; }
+}
+
+.fadein {
+    animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

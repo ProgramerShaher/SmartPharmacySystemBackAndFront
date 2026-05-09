@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
     ApiResponse,
@@ -111,12 +112,20 @@ export class SupplierService {
         let params = new HttpParams()
             .set('supplierId', supplierId.toString())
             .set('status', '2') // Approved
-            .set('paymentMethod', '1'); // Credit
-            
-        return this.http.get<ApiResponse<PurchaseInvoice[]>>(`${environment.apiUrl}/PurchaseInvoices`, { params })
+            .set('paymentMethod', '2'); // Credit
+
+        return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/PurchaseInvoices`, { params })
             .pipe(
-                map(res => res.data || []),
-                map(invoices => invoices.filter(inv => !inv.isPaid))
+                map(res => {
+                    const data = res.data;
+                    const invoices: PurchaseInvoice[] = Array.isArray(data) ? data : (data?.items || []);
+                    return invoices;
+                }),
+                map(invoices => invoices.filter(inv => {
+                    const isCredit = inv.paymentMethod === 2 || inv.paymentMethod === 'Credit' as any;
+                    const isApproved = inv.status === 2 || inv.status === 'Approved' as any;
+                    return inv.supplierId === supplierId && isCredit && !inv.isPaid && isApproved;
+                }))
             );
     }
 
@@ -126,5 +135,23 @@ export class SupplierService {
     checkVaultBalance(amount: number): Observable<boolean> {
         return this.http.get<ApiResponse<any>>(`${environment.apiUrl}/Financial/accounts/1`)
             .pipe(map(res => (res.data.balance || 0) >= amount));
+    }
+
+    /**
+     * Get the total outstanding debt across ALL suppliers (not just the current page).
+     * Fetches suppliers with a large pageSize to compute accurate totals.
+     */
+    getTotalDebt(): Observable<number> {
+        const params = new HttpParams()
+            .set('pageSize', '1000')
+            .set('page', '1');
+        return this.http.get<ApiResponse<PagedResult<Supplier>>>(this.apiUrl, { params })
+            .pipe(
+                map(res => {
+                    const items = res.data?.items || [];
+                    return items.reduce((sum, s) => sum + (s.Balance || 0), 0);
+                }),
+                catchError(() => of(0))
+            );
     }
 }

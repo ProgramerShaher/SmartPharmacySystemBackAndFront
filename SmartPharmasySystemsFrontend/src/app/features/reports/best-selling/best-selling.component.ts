@@ -52,6 +52,6 @@ export class BestSellingComponent implements OnInit {
   }
 
   applyFilter(): void { this.loadReport(); }
-  formatCurrency(v: number): string { return v.toLocaleString('ar-SA', { minimumFractionDigits: 2 }); }
+  formatCurrency(v: number): string { return v.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
   printReport(): void { window.print(); }
 }

@@ -1,41 +1,45 @@
-    <p-table
-      [value]="movements"
-      [loading]="loading"
-      styleClass="p-datatable-sm p-datatable-striped shadow-1 border-round overflow-hidden"
-    >
-      <ng-template pTemplate="header">
-        <tr>
-          <th class="text-right">تاريخ الحركة</th>
-          <th class="text-center">النوع</th>
-          <th class="text-center">انتاج</th>
-          <th class="text-center">استهلاك</th>
-          <th class="text-center">رصيد قبل</th>
-          <th class="text-center">رصيد بعد</th>
-          <th class="text-right">ملاحظات</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-m>
-        <tr>
-          <td class="text-right font-semibold">
-            {{ m.movementDate | date : 'dd/MM/yyyy HH:mm' }}
-          </td>
-          <td class="text-center">
-            <span
-              class="px-2 py-1 border-round text-xs font-bold bg-gray-100"
-              >{{ m.movementType }}</span
-            >
-          </td>
-          <td class="text-center text-green-600 font-bold">
-            {{ m.quantityIn > 0 ? m.quantityIn : '---' }}
-          </td>
-          <td class="text-center text-red-600 font-bold">
-            {{ m.quantityOut > 0 ? m.quantityOut : '---' }}
-          </td>
-          <td class="text-center font-mono">{{ m.quantityBefore }}</td>
-          <td class="text-center font-extrabold text-primary">
-            {{ m.quantityAfter }}
-          </td>
-          <td class="text-sm text-secondary">{{ m.notes }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
+<p-table
+  [value]="movements"
+  [loading]="loading"
+  styleClass="p-datatable-sm p-datatable-striped shadow-1 border-round overflow-hidden"
+>
+  <ng-template pTemplate="header">
+    <tr>
+      <th class="text-right">تاريخ الحركة</th>
+      <th class="text-center">النوع</th>
+      <th class="text-center">زيادة</th>
+      <th class="text-center">نقص</th>
+      <th class="text-center">رصيد قبل</th>
+      <th class="text-center">رصيد بعد</th>
+      <th class="text-right">ملاحظات</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-m>
+    <tr>
+      <td class="text-right font-semibold text-xs">
+        {{ m.date | date : 'dd/MM HH:mm' }}
+      </td>
+      <td class="text-center">
+        <span class="px-2 py-0-5 border-round text-xs font-bold bg-blue-50 text-blue-700">
+          {{ getMovementTypeLabel(m.movementType) }}
+        </span>
+      </td>
+      <td class="text-center text-green-600 font-bold">
+        {{ m.quantityChange > 0 ? m.quantityChange : '---' }}
+      </td>
+      <td class="text-center text-red-600 font-bold">
+        {{ m.quantityChange < 0 ? -m.quantityChange : '---' }}
+      </td>
+      <td class="text-center font-mono text-400 text-xs">{{ m.runningBalance - m.quantityChange }}</td>
+      <td class="text-center font-bold text-primary">
+        {{ m.runningBalance }}
+      </td>
+      <td class="text-xs text-500 truncate max-w-10rem">{{ m.notes }}</td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="7" class="text-center p-4 text-400">لا توجد حركات لهذه الدفعة</td>
+    </tr>
+  </ng-template>
+</p-table>

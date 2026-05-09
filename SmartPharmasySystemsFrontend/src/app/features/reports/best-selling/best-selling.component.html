@@ -1,8 +1,9 @@
-<div class="report-container">
+<div class="report-container animate-fade-in">
+  <!-- Header Section -->
   <p-card styleClass="header-card">
     <div class="header-content">
       <div class="header-right">
-        <h2><i class="pi pi-star"></i> الأدوية الأكثر مبيعاً</h2>
+        <h2><i class="pi pi-star-fill"></i> الأدوية الأكثر مبيعاً</h2>
       </div>
       <div class="header-left">
         <div class="filter-group">
@@ -15,25 +16,40 @@
         </div>
         <div class="filter-group">
           <span>عدد:</span>
-          <p-inputNumber [(ngModel)]="topCount" [min]="1" [max]="100" [showButtons]="true"></p-inputNumber>
+          <p-inputNumber [(ngModel)]="topCount" [min]="1" [max]="100" [showButtons]="false" styleClass="compact-input"></p-inputNumber>
         </div>
-        <p-button icon="pi pi-search" label="عرض" (click)="applyFilter()"></p-button>
-        <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" (click)="printReport()"></p-button>
+        <p-button icon="pi pi-sync" label="تحديث" styleClass="p-button-sm p-button-raised" (click)="applyFilter()"></p-button>
+        <p-button icon="pi pi-print" label="طباعة" styleClass="p-button-sm p-button-info" [outlined]="true" (click)="printReport()"></p-button>
       </div>
     </div>
   </p-card>
 
+  <!-- Loading State -->
   <div class="loading-container" *ngIf="loading()">
-    <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+    <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
+  <!-- Summary Cards Section -->
   <div class="summary-cards" *ngIf="report() && !loading()">
-    <div class="summary-card items"><div class="summary-icon"><i class="pi pi-box"></i></div><div class="summary-content"><span class="label">إجمالي المباع</span><span class="value">{{ summary().totalSold }}</span></div></div>
-    <div class="summary-card revenue"><div class="summary-icon"><i class="pi pi-dollar"></i></div><div class="summary-content"><span class="label">إجمالي الإيراد</span><span class="value">{{ formatCurrency(summary().totalRevenue) }}</span></div></div>
+    <div class="summary-card total-qty">
+      <div class="summary-icon"><i class="pi pi-box"></i></div>
+      <div class="summary-content">
+        <span class="label">إجمالي الكمية المباعة</span>
+        <span class="value">{{ summary().totalSold }}</span>
+      </div>
+    </div>
+    <div class="summary-card total-rev">
+      <div class="summary-icon"><i class="pi pi-wallet"></i></div>
+      <div class="summary-content">
+        <span class="label">إجمالي الإيرادات</span>
+        <span class="value">{{ formatCurrency(summary().totalRevenue) }}</span>
+      </div>
+    </div>
   </div>
 
+  <!-- Detailed Table -->
   <p-card styleClass="table-card" *ngIf="report() && !loading()">
-    <p-table [value]="report()!.medicines" [rowHover]="true" styleClass="p-datatable-sm">
+    <p-table [value]="report()!.medicines" [rowHover]="true" styleClass="p-datatable-sm" [responsive]="true">
       <ng-template pTemplate="header">
         <tr>
           <th style="width: 3rem">#</th>
@@ -43,18 +59,20 @@
           <th class="text-center">الكمية</th>
           <th class="text-center">الإيراد</th>
           <th class="text-center">الربح</th>
-          <th class="text-center">هامش الربح</th>
+          <th class="text-center">الهامش</th>
         </tr>
       </ng-template>
-      <ng-template pTemplate="body" let-item>
+      <ng-template pTemplate="body" let-item let-i="rowIndex">
         <tr>
-          <td><span class="rank-badge">{{ item.rank }}</span></td>
-          <td class="font-bold">{{ item.medicineName }}</td>
-          <td>{{ item.scientificName || '-' }}</td>
-          <td><p-tag [value]="item.categoryName" severity="info" *ngIf="item.categoryName"></p-tag></td>
-          <td class="text-center font-bold">{{ item.quantitySold }}</td>
-          <td class="text-center">{{ formatCurrency(item.totalRevenue) }}</td>
-          <td class="text-center text-success">{{ formatCurrency(item.totalProfit) }}</td>
+          <td><div class="rank-badge" [ngClass]="'rank-' + (i+1)">{{ i+1 }}</div></td>
+          <td style="font-weight: 700; color: #1e293b;">{{ item.medicineName }}</td>
+          <td style="font-size: 0.85rem; color: #64748b;">{{ item.scientificName || '-' }}</td>
+          <td><p-tag [value]="item.categoryName" severity="info" [rounded]="true" *ngIf="item.categoryName"></p-tag></td>
+          <td class="text-center">
+             <p-tag [value]="item.quantitySold" severity="success" [rounded]="true"></p-tag>
+          </td>
+          <td class="text-center" style="font-weight: 800;">{{ formatCurrency(item.totalRevenue) }}</td>
+          <td class="text-center text-success" style="font-weight: 700;">{{ formatCurrency(item.totalProfit) }}</td>
           <td class="text-center">
             <p-tag [value]="(item.profitMargin ? item.profitMargin.toFixed(1) : 0) + '%'" 
                    [severity]="item.profitMargin > 20 ? 'success' : 'warning'">

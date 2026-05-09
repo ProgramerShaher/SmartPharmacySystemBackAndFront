@@ -18,6 +18,10 @@ import { DividerModule } from 'primeng/divider';
 import { CalendarModule } from 'primeng/calendar';
 import { InvoiceItemDialogComponent } from '../../../../shared/components/invoice-item-dialog/invoice-item-dialog.component';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog/confirmation-dialog.component';
+import { BarcodeService } from '../../../../core/services/barcode.service';
+import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
+import { TransactionType } from '../../../../core/models/barcode.interface';
+import { HostListener } from '@angular/core';
 
 @Component({
     selector: 'app-purchase-invoice-create',
@@ -36,7 +40,8 @@ import { ConfirmationDialogComponent } from '../../../../shared/components/confi
         DividerModule,
         CalendarModule,
         InvoiceItemDialogComponent,
-        ConfirmationDialogComponent
+        ConfirmationDialogComponent,
+        BarcodeSimulatorComponent
     ],
     templateUrl: './purchase-create.component.html',
     styleUrls: ['./purchase-create.component.scss'],
@@ -66,11 +71,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private barcodeService: BarcodeService
     ) {
         this.purchaseForm = this.fb.group({
             supplierId: [null, Validators.required],
-            supplierInvoiceNumber: [''],
+            supplierInvoiceNumber: ['', null],
             purchaseDate: [new Date(), Validators.required],
             paymentMethod: [1, Validators.required],
             notes: [''],
@@ -86,6 +92,91 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             this.currentInvoiceId = +id;
             this.loadInvoice(id);
         }
+    }
+
+    // 🔍 BARCODE SCANNER ENGINE
+    private barcodeBuffer = '';
+    private lastKeyTime = 0;
+    simulatorVisible = false;
+    readonly transactionType = TransactionType.Purchase;
+
+    @HostListener('window:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        const currentTime = new Date().getTime();
+
+        if (currentTime - this.lastKeyTime > 50) {
+            this.barcodeBuffer = '';
+        }
+
+        if (event.key === 'Enter') {
+            if (this.barcodeBuffer.length > 3) {
+                this.processScannedBarcode(this.barcodeBuffer);
+                this.barcodeBuffer = '';
+                event.preventDefault();
+            }
+        } else if (event.key.length === 1) {
+            this.barcodeBuffer += event.key;
+        }
+
+        this.lastKeyTime = currentTime;
+    }
+
+    processScannedBarcode(barcode: string) {
+        this.messageService.add({ severity: 'info', summary: 'جاري البحث', detail: `تم مسح الباركود: ${barcode}` });
+
+        this.barcodeService.processBarcode({
+            barcode: barcode,
+            transactionType: TransactionType.Purchase
+        }).subscribe({
+            next: (res) => {
+                if (res.success && res.data) {
+                    this.addBarcodeItemToInvoice(res.data);
+                } else {
+                    this.messageService.add({ severity: 'error', summary: 'فشل', detail: res.message || 'الصنف غير موجود' });
+                }
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'خطأ',
+                    detail: err.error?.message || 'حدث خطأ أثناء معالجة الباركود'
+                });
+            }
+        });
+    }
+
+    private addBarcodeItemToInvoice(data: any) {
+        // Check if item already exists in form
+        const existingDetails = this.details.controls;
+        const existingIndex = existingDetails.findIndex(ctrl => ctrl.get('medicineId')?.value === data.medicineId && ctrl.get('companyBatchNumber')?.value === data.batchNumber);
+
+        if (existingIndex !== -1) {
+            const ctrl = this.details.at(existingIndex);
+            const currentQty = ctrl.get('quantity')?.value || 0;
+            ctrl.patchValue({
+                quantity: currentQty + 1,
+                total: (currentQty + 1) * (ctrl.get('purchasePrice')?.value || 0)
+            });
+            this.messageService.add({ severity: 'success', summary: 'تحديث الكمية', detail: `تم زيادة كمية ${data.tradeName}` });
+        } else {
+            const detail = {
+                medicineId: data.medicineId,
+                medicineName: data.tradeName,
+                companyBatchNumber: data.batchNumber || 'جديد',
+                expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
+                quantity: 1,
+                bonusQuantity: 0,
+                purchasePrice: data.salePrice || 0, // Using sale price as fallback for purchase price
+                salePrice: data.salePrice || 0,
+                total: data.salePrice || 0
+            };
+            this.addDetailToForm(detail);
+            this.messageService.add({ severity: 'success', summary: 'إضافة صنف', detail: `تم إضافة ${data.tradeName} للفاتورة` });
+        }
+    }
+
+    toggleSimulator() {
+        this.simulatorVisible = !this.simulatorVisible;
     }
 
     loadSuppliers() {
@@ -216,7 +307,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
         const payload = {
             supplierId: formValue.supplierId,
-            supplierInvoiceNumber: formValue.supplierInvoiceNumber,
+            supplierInvoiceNumber: formValue.supplierInvoiceNumber || null,
             purchaseDate: formValue.purchaseDate,
             paymentMethod: formValue.paymentMethod,
             notes: formValue.notes,
@@ -262,7 +353,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
         const payload = {
             supplierId: formValue.supplierId,
-            supplierInvoiceNumber: formValue.supplierInvoiceNumber,
+            supplierInvoiceNumber: formValue.supplierInvoiceNumber || null,
             purchaseDate: formValue.purchaseDate,
             paymentMethod: formValue.paymentMethod,
             notes: formValue.notes,

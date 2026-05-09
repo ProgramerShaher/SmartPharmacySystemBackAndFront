@@ -1,0 +1,39 @@
+.simulator-container {
+    padding: 1rem 0;
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        label {
+            font-weight: 600;
+            color: var(--text-color-secondary);
+        }
+    }
+}
+
+:host ::ng-deep {
+    .p-dialog-header {
+        background: var(--primary-color);
+        color: white;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+
+        .p-dialog-header-icon {
+            color: white;
+        }
+    }
+
+    .p-inputtext {
+        border-radius: 8px;
+        &:focus {
+            box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.2);
+        }
+    }
+
+    .p-button {
+        border-radius: 8px;
+        font-family: 'Inter', 'Roboto', sans-serif;
+    }
+}

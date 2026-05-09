@@ -1,6 +1,5 @@
 :host {
     display: block;
-    margin-bottom: 2rem;
 }
 
 .bg-red-50 {
@@ -12,11 +11,7 @@
 }
 
 ::ng-deep {
-    .p-datatable .p-datatable-tbody>tr>td {
-        padding: 0.75rem 1rem;
+    .p-datatable-sm .p-datatable-tbody > tr > td {
+        padding: 0.5rem 0.75rem !important;
     }
-}
-
-.list-container {
-    padding: 20px;
 }

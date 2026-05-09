@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using SmartPharmacySystem.Application.DTOs.Barcode;
 using SmartPharmacySystem.Application.DTOs.SalesInvoices;
 
 namespace SmartPharmacySystem.Application.Interfaces
@@ -15,5 +18,6 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task CancelAsync(int id, int userId);
         Task ReceiveCreditPaymentAsync(int invoiceId, int accountId = 1);
         Task<DTOs.Dashboard.SalesDashboardStatsDto> GetDashboardStatsAsync();
+        Task<BarcodeResultDto> ProcessBarcodeItemAsync(string barcode, int userId);
     }
 }

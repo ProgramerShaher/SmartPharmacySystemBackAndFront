@@ -20,6 +20,9 @@ public class SupplierRepository : ISupplierRepository
     public async Task<Supplier> GetByIdAsync(int id)
     {
         return await _context.Suppliers
+            .Include(s => s.PurchaseInvoices.Where(i => !i.IsDeleted))
+            .Include(s => s.PurchaseReturns.Where(r => !r.IsDeleted))
+            .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
     }
 

@@ -1,0 +1,212 @@
+<p-dialog [(visible)]="visible" [modal]="true" [style]="{width: '65vw'}" [breakpoints]="{'960px': '95vw'}"
+    [draggable]="false" [resizable]="false" [showHeader]="false" styleClass="imperial-modal overflow-hidden" (onHide)="close()">
+
+    <!-- Premium Custom Header -->
+    <div class="header-container p-4 flex align-items-center justify-content-between relative overflow-hidden">
+        <div class="header-overlay absolute top-0 left-0 w-full h-full z-0"></div>
+        
+        <div class="flex align-items-center gap-3 z-1">
+            <div class="icon-box w-4rem h-4rem border-circle flex align-items-center justify-content-center shadow-3">
+                <i class="pi pi-briefcase text-3xl"></i>
+            </div>
+            <div class="flex flex-column">
+                <h1 class="text-2xl font-bold m-0 text-white line-height-1">{{medicineDetails()?.name || 'تفاصيل المنتج'}}</h1>
+                <span class="text-white-alpha-70 mt-1 font-medium">{{medicineDetails()?.scientificName || 'بدون اسم علمي'}}</span>
+            </div>
+        </div>
+
+        <div class="flex align-items-center gap-2 z-1">
+            <div class="status-badge px-3 py-1 border-round-3xl flex align-items-center gap-2 shadow-2" 
+                 [ngClass]="medicineDetails()?.status === 'Active' ? 'bg-green-500' : 'bg-red-500'">
+                <div class="w-2 h-2 border-circle bg-white opacity-80 scalein animation-iteration-infinite animation-duration-1000"></div>
+                <span class="text-white font-bold text-sm">{{medicineDetails()?.status === 'Active' ? 'نشط' : 'غير نشط'}}</span>
+            </div>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-plain text-white hover:bg-white-alpha-20" (click)="close()"></button>
+        </div>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-body p-4 bg-gray-50" dir="rtl">
+        
+        <!-- Loading State -->
+        <div *ngIf="loading()" class="flex flex-column align-items-center justify-content-center p-8 gap-3">
+            <p-progressSpinner strokeWidth="4" animationDuration=".8s"></p-progressSpinner>
+            <span class="text-teal-600 font-bold text-xl">جاري استرجاع البيانات...</span>
+        </div>
+
+        <!-- Error State -->
+        <div *ngIf="!loading() && errorOccurred()" class="p-6 text-center flex flex-column align-items-center gap-4 border-round-xl bg-white shadow-2">
+            <div class="w-5rem h-5rem border-circle bg-red-100 flex align-items-center justify-content-center shadow-1">
+                <i class="pi pi-bolt text-red-600 text-4xl"></i>
+            </div>
+            <div>
+                <h2 class="text-900 font-bold m-0">خطأ في الاتصال</h2>
+                <p class="text-600 mt-2">{{errorMessage()}}</p>
+            </div>
+            <button pButton label="إعادة المحاولة" icon="pi pi-refresh" class="p-button-raised p-button-danger px-5 border-round-xl" (click)="loadDetails()"></button>
+        </div>
+
+        <!-- Data Content -->
+        <div *ngIf="!loading() && !errorOccurred() && medicineDetails()" class="fadein animation-duration-500">
+            
+            <!-- Info Cards Grid -->
+            <div class="grid mb-4 mt-1">
+                <!-- Summary Card 1: Prices -->
+                <div class="col-12 md:col-4">
+                    <div class="price-card p-4 border-round-xl shadow-2 h-full relative overflow-hidden bg-white">
+                        <div class="flex align-items-center gap-3 mb-4">
+                            <div class="w-3rem h-3rem border-circle bg-blue-50 flex align-items-center justify-content-center text-blue-600">
+                                <i class="pi pi-wallet text-xl"></i>
+                            </div>
+                            <h3 class="text-900 font-bold m-0">التسعير</h3>
+                        </div>
+                        <div class="flex flex-column gap-3">
+                            <div class="flex justify-content-between align-items-center">
+                                <span class="text-600 font-medium">سعر الشراء:</span>
+                                <span class="font-bold text-900 text-xl">{{(medicineDetails()?.purchasePrice || 0) | currency:'YER':'':'1.0-0'}}</span>
+                            </div>
+                            <div class="flex justify-content-between align-items-center">
+                                <span class="text-600 font-medium">سعر البيع:</span>
+                                <span class="font-bold text-teal-600 text-2xl">{{(medicineDetails()?.salePrice || 0) | currency:'YER':'':'1.0-0'}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Card 2: Stock Status -->
+                <div class="col-12 md:col-4">
+                    <div class="stock-card p-4 border-round-xl shadow-2 h-full bg-white">
+                        <div class="flex align-items-center gap-3 mb-4">
+                            <div class="w-3rem h-3rem border-circle bg-teal-50 flex align-items-center justify-content-center text-teal-600">
+                                <i class="pi pi-database text-xl"></i>
+                            </div>
+                            <h3 class="text-900 font-bold m-0">المخزون</h3>
+                        </div>
+                        <div class="flex flex-column gap-3">
+                            <div class="flex justify-content-between align-items-center">
+                                <span class="text-600 font-medium">المخزون الكلي:</span>
+                                <div class="flex align-items-baseline gap-1">
+                                    <span class="text-3xl font-bold" [ngClass]="isLowStock() ? 'text-red-600' : 'text-teal-700'">{{medicineDetails()?.totalStock || 0}}</span>
+                                    <span class="text-500 font-medium text-xs">وحدة</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-content-between align-items-center">
+                                <span class="text-600 font-medium">حد الأمان:</span>
+                                <span class="font-bold text-orange-600">{{medicineDetails()?.reorderLevel}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Card 3: Categorization -->
+                <div class="col-12 md:col-4">
+                    <div class="category-card p-4 border-round-xl shadow-2 h-full bg-white">
+                        <div class="flex align-items-center gap-3 mb-4">
+                            <div class="w-3rem h-3rem border-circle bg-purple-50 flex align-items-center justify-content-center text-purple-600">
+                                <i class="pi pi-tag text-xl"></i>
+                            </div>
+                            <h3 class="text-900 font-bold m-0">التصنيف</h3>
+                        </div>
+                        <div class="flex flex-column gap-3">
+                            <div class="flex justify-content-between align-items-center">
+                                <span class="text-600 font-medium">القسم:</span>
+                                <span class="font-bold text-900">{{medicineDetails()?.categoryName || 'غير محدد'}}</span>
+                            </div>
+                            <div class="flex justify-content-between align-items-center">
+                                <span class="text-600 font-medium">الشركة:</span>
+                                <span class="font-medium text-700 truncate w-8rem text-left">{{medicineDetails()?.manufacturer || '---'}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Batches Table Section -->
+            <div class="surface-0 p-4 border-round-2xl shadow-3 border-1 border-50 mb-3">
+                <div class="flex justify-content-between align-items-center mb-4 border-bottom-1 border-50 pb-3">
+                    <div class="flex align-items-center gap-3">
+                        <div class="w-2-5rem h-2-5rem border-circle bg-orange-100 flex align-items-center justify-content-center">
+                            <i class="pi pi-box text-orange-600"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-900 font-bold m-0">تتبع الدفعات وتواريخ الصلاحية</h3>
+                            <span class="text-500 text-sm">تفصيل الدفعات النشطة في المخازن</span>
+                        </div>
+                    </div>
+                    <p-tag [value]="(medicineDetails()?.batches?.length || 0) + ' دفعة'" severity="info" styleClass="px-3 border-round-xl"></p-tag>
+                </div>
+
+                <p-table [value]="medicineDetails()?.batches || []" [responsive]="true" 
+                         styleClass="p-datatable-sm imperial-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 25%">رقم التشغيلة (Batch)</th>
+                            <th class="text-center" style="width: 25%">تاريخ الانتهاء</th>
+                            <th class="text-center" style="width: 25%">الكمية المتبقية</th>
+                            <th class="text-center" style="width: 25%">الحالة والتقييم</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-batch>
+                        <tr class="hover:bg-gray-50 transition-duration-150">
+                            <td>
+                                <div class="flex align-items-center gap-2">
+                                    <i class="pi pi-hashtag text-400"></i>
+                                    <span class="font-mono font-bold text-900 text-lg">{{batch.batchNumber}}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="font-medium px-3 py-1 border-round-2xl bg-gray-100 text-700">
+                                    {{batch.expiryDate | date:'yyyy-MM-dd'}}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <span class="text-xl font-bold text-900">{{batch.remainingQuantity}}</span>
+                            </td>
+                            <td class="text-center">
+                                <span class="px-3 py-1 border-round-3xl font-bold text-xs uppercase tracking-wider shadow-1"
+                                      [ngClass]="{
+                                        'bg-green-100 text-green-700': batch.statusColor === 'success',
+                                        'bg-red-100 text-red-700': batch.statusColor === 'danger',
+                                        'bg-orange-100 text-orange-700': batch.statusColor === 'warning'
+                                      }">
+                                    {{batch.alertStatus}}
+                                </span>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="4" class="text-center p-6 bg-gray-50">
+                                <div class="flex flex-column align-items-center gap-3">
+                                    <div class="w-4rem h-4rem border-circle bg-white shadow-1 flex align-items-center justify-content-center">
+                                        <i class="pi pi-inbox text-300 text-4xl"></i>
+                                    </div>
+                                    <span class="text-500 font-medium text-lg">لا توجد دفعات نشطة لهذا الصنف</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <!-- Critical Alerts Container -->
+            <div *ngIf="isLowStock()" class="alert-banner p-4 border-round-2xl flex align-items-center gap-4 mt-4 shadow-3 relative overflow-hidden">
+                <div class="pulse-ring absolute"></div>
+                <div class="w-4rem h-4rem border-circle bg-white-alpha-20 flex align-items-center justify-content-center flex-shrink-0 z-1">
+                    <i class="pi pi-exclamation-triangle text-white text-2xl"></i>
+                </div>
+                <div class="z-1">
+                    <h4 class="m-0 text-white font-bold text-xl">تنبيه حرج بالمخزون!</h4>
+                    <p class="m-0 text-white-alpha-80 mt-1">لقد تجاوزت الحد المسموح به للمخزون الآمن. الرصيد الحالي هو ({{medicineDetails()?.totalStock}}) فقط.</p>
+                </div>
+                <button pButton label="إنشاء طلب شراء" icon="pi pi-shopping-cart" class="p-button-raised p-button-secondary ml-auto border-round-xl px-4"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimal Footer -->
+    <div class="footer-bar px-4 py-3 bg-white flex justify-content-end border-top-1 border-50">
+        <button pButton label="إغلاق النافذة" icon="pi pi-times" 
+                class="p-button-text p-button-secondary font-bold px-4 hover:bg-gray-100 transition-all" (click)="close()"></button>
+    </div>
+</p-dialog>

@@ -101,22 +101,46 @@ namespace SmartPharmacySystem.Controllers
         }
 
         /// <summary>
-        /// Delete a medicine (soft delete)
+        /// Delete a medicine (soft delete or set Inactive based on movements)
         /// </summary>
         /// <access>Admin</access>
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            try
+            {
+                if (id <= 0)
+                    return BadRequest(ApiResponse<object>.Failed("Invalid medicine ID provided"));
+
+                await _medicineService.DeleteMedicineAsync(id);
+                return Ok(ApiResponse<object>.Succeeded(null, "Medicine deleted successfully"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponse<object>.Failed(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting medicine {Id}", id);
+                return StatusCode(500, ApiResponse<object>.Failed("An error occurred while deleting the medicine"));
+            }
+        }
+
+        /// <summary>
+        /// Get full medicine details with batches and stock metrics
+        /// </summary>
+        [HttpGet("{id}/details")]
+        public async Task<IActionResult> GetDetails(int id)
+        {
             if (id <= 0)
                 return BadRequest(ApiResponse<object>.Failed("Invalid medicine ID provided"));
 
-            var existing = await _medicineService.GetMedicineByIdAsync(id);
-            if (existing == null)
+            var details = await _medicineService.GetMedicineDetailsAsync(id);
+            if (details == null)
                 return NotFound(ApiResponse<object>.Failed($"Medicine with ID {id} not found", 404));
 
-            await _medicineService.DeleteMedicineAsync(id);
-            return Ok(ApiResponse<object>.Succeeded(null, "Medicine deleted successfully"));
+            return Ok(ApiResponse<MedicineDetailsDto>.Succeeded(details, "Medicine details retrieved successfully"));
         }
 
         /// <summary>

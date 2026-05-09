@@ -1,147 +1,106 @@
-.payments-container {
-    background: radial-gradient(circle at bottom left, #f1f5f9 0%, #ffffff 100%);
-    min-height: 100vh;
+/* supplier-payments.component.scss */
+
+.payments-shell {
+  padding: 0.5rem;
 }
 
-.icon-square {
-    width: 60px;
-    height: 60px;
-    border-radius: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+/* --- Imperial Form Overrides --- */
+.imperial-form {
+  .field-box {
+    margin-bottom: 1.25rem;
+    padding: 0 0.5rem;
+  }
 
-.premium-payment-btn {
-    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-    border: none !important;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  .imperial-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 0.4rem;
+  }
+
+  ::ng-deep {
+    .imperial-input, 
+    .imperial-input-number .p-inputtext,
+    .p-inputtext {
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.85rem;
+      background: #ffffff;
+      transition: all 0.2s;
+      width: 100%;
+
+      &:enabled:focus, &:enabled:hover {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      }
+    }
+    
+    .p-calendar .p-inputtext {
+      border-radius: 0 8px 8px 0;
+    }
+    .p-calendar .p-button {
+      border-radius: 8px 0 0 8px;
+    }
+    
+    .imperial-inputgroup {
+      .p-inputnumber .p-inputtext {
+        border-radius: 0 8px 8px 0;
+      }
+      .p-inputgroup-addon {
+        border-radius: 8px 0 0 8px;
+        border: 1px solid #cbd5e1;
+        border-right: none;
+      }
+    }
+  }
+
+  .imperial-btn-primary {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
 
     &:hover {
-        transform: translateY(-4px) scale(1.02) !important;
-        box-shadow: 0 15px 30px rgba(79, 70, 229, 0.4) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
     }
+  }
 }
 
-.premium-execution-btn {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    border: none !important;
-    border-radius: 16px !important;
-}
+/* --- Ultra Compact Table --- */
+::ng-deep .imperial-table {
+  .p-datatable-thead > tr > th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
 
-.glass-morphism {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-}
-
-.premium-payments-table {
-    ::ng-deep {
-        .p-datatable-header {
-            background: transparent;
-            border: none;
-        }
-
-        .p-datatable-thead>tr>th {
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-bottom: 2px solid #f1f5f9;
-        }
-
-        .p-datatable-tbody>tr {
-            transition: all 0.2s ease;
-
-            &:hover {
-                background: #f5f8ff !important;
-                transform: scale(1.002);
-            }
-        }
-
-        .p-paginator {
-            background: transparent;
-            border-top: 1px solid #f1f5f9;
-            padding: 1.25rem;
-        }
-    }
-}
-
-.id-badge {
-    background: #eef2ff;
-    color: #4f46e5;
-    padding: 0.4rem 0.8rem;
-    border-radius: 10px;
-    font-family: monospace;
-    font-weight: 800;
-}
-
-.small-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
+  .p-datatable-tbody > tr > td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
     font-size: 0.85rem;
+  }
 }
 
-.huge-amount-input {
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-}
-
-.amount-glow {
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    height: 20px;
-    background: radial-gradient(ellipse at center, rgba(239, 68, 68, 0.15) 0%, transparent 70%);
-    pointer-events: none;
-}
-
-.premium-payment-dialog {
-    ::ng-deep {
-        .p-dialog-content {
-            border-bottom-left-radius: 28px !important;
-            border-bottom-right-radius: 28px !important;
-        }
-
-        .p-dialog-header {
-            background: #f8fafc;
-            border-top-left-radius: 28px !important;
-            border-top-right-radius: 28px !important;
-            padding: 1.5rem;
-        }
-    }
-}
-
-.avatar-tiny {
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.7rem;
-    font-weight: bold;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(15px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+/* Dialog Overrides */
+::ng-deep .imperial-dialog {
+  .p-dialog-header {
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 1rem 1.5rem;
+    .p-dialog-title { font-weight: 800; color: #0f172a; }
+  }
+  .p-dialog-content {
+    padding: 1.5rem;
+  }
 }

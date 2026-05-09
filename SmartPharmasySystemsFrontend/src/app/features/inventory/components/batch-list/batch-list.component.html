@@ -1,104 +1,131 @@
-<div class="list-container">
-    <h2>Batches</h2>
-    <div class="card p-4 shadow-2 border-round-xl" dir="rtl">
-        <div class="flex flex-column md:flex-row md:align-items-center justify-content-between mb-4 gap-3">
-            <div class="flex align-items-center gap-3">
-                <div
-                    class="w-3rem h-3rem border-circle bg-primary-reverse flex align-items-center justify-content-center">
-                    <i class="pi pi-box text-primary text-xl"></i>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold m-0 text-primary">إدارة دفعات الأدوية</h2>
-                    <small class="text-secondary">متابعة المخزون، تواريخ الصلاحية، وحركات الدفعات</small>
-                </div>
+<div class="card p-4 shadow-2 border-round-xl border-none surface-card" dir="rtl">
+    <!-- Header -->
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
+        <div class="flex align-items-center gap-3">
+            <div class="w-4rem h-4rem border-circle bg-bluegray-50 flex align-items-center justify-content-center">
+                <i class="pi pi-box text-bluegray-600 text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-900 m-0">إدارة دفعات الأدوية</h1>
+                <p class="text-500 m-0 mt-1">متابعة المخزون، تواريخ الصلاحية، وحركات الدفعات</p>
             </div>
         </div>
+        <div class="flex gap-2">
+            <button pButton label="تحديث البيانات" icon="pi pi-refresh"
+                class="p-button-outlined p-button-secondary border-round-lg px-4" (click)="loadBatches()"></button>
+        </div>
+    </div>
 
-        <!-- Filters Section -->
-        <div class="grid mb-4 p-fluid">
+    <!-- Filters Section -->
+    <div class="surface-50 p-3 border-round-xl mb-4">
+        <div class="grid p-fluid align-items-center">
             <div class="col-12 md:col-4">
                 <span class="p-input-icon-left w-full">
-                    <i class="pi pi-search"></i>
+                    <i class="pi pi-search text-500"></i>
                     <input pInputText type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
-                        placeholder="ابحث بالاسم، الكود، أو الباركود..." class="border-round-xl" />
+                        placeholder="ابحث بالاسم، الكود، أو الباركود..." class="border-round-lg w-full" />
                 </span>
             </div>
             <div class="col-12 md:col-3">
                 <p-dropdown [options]="sellableOptions" [(ngModel)]="sellableFilter" (onChange)="applyFilters()"
-                    placeholder="حالة البيع" styleClass="border-round-xl"></p-dropdown>
+                    placeholder="حالة البيع" styleClass="w-full border-round-lg" appendTo="body"></p-dropdown>
             </div>
             <div class="col-12 md:col-3">
                 <p-dropdown [options]="expiryOptions" [(ngModel)]="expiryFilter" (onChange)="applyFilters()"
-                    placeholder="الصلاحية" styleClass="border-round-xl"></p-dropdown>
+                    placeholder="الصلاحية" styleClass="w-full border-round-lg" appendTo="body"></p-dropdown>
             </div>
             <div class="col-12 md:col-2">
-                <button pButton label="إعادة تعيين" icon="pi pi-refresh" class="p-button-outlined border-round-xl"
+                <button pButton label="إعادة تعيين" icon="pi pi-filter-slash" class="p-button-text p-button-danger border-round-lg"
                     (click)="searchTerm=''; sellableFilter=null; expiryFilter='all'; applyFilters()"></button>
             </div>
         </div>
+    </div>
 
-        <p-table [value]="filteredBatches" [loading]="loading" [paginator]="true" [rows]="10" responsiveLayout="scroll"
-            styleClass="p-datatable-sm p-datatable-gridlines border-round-xl overflow-hidden shadow-1">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th class="bg-gray-50 font-bold">الدواء</th>
-                    <th class="bg-gray-50 font-bold text-center">رقم الدفعة</th>
-                    <th class="bg-gray-50 font-bold text-center">الباركود</th>
-                    <th class="bg-gray-50 font-bold text-center">الكمية الكلية</th>
-                    <th class="bg-gray-50 font-bold text-center">المتبقي</th>
-                    <th class="bg-gray-50 font-bold text-center">المباع</th>
-                    <th class="bg-gray-50 font-bold text-center">تاريخ الانتهاء</th>
-                    <th class="bg-gray-50 font-bold text-center">الحالة</th>
-                    <th class="bg-gray-50 font-bold text-center">الإجراءات</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-batch>
-                <tr [class.bg-red-50]="batch.daysUntilExpiry <= 0"
-                    [class.bg-orange-50]="batch.daysUntilExpiry > 0 && batch.daysUntilExpiry <= 30">
-                    <td>
-                        <div class="font-bold text-blue-800">{{ batch.medicineName }}</div>
-                        <small class="text-secondary"><i class="pi pi-map-marker mr-1"></i> {{ batch.storageLocation ||
-                            'غير محدد' }}</small>
-                    </td>
-                    <td class="text-center font-mono text-sm">{{ batch.companyBatchNumber }}</td>
-                    <td class="text-center font-mono text-sm">{{ batch.batchBarcode }}</td>
-                    <td class="text-center">{{ batch.quantity }}</td>
-                    <td class="text-center">
-                        <span class="font-bold" [class.text-red-600]="batch.remainingQuantity === 0"
-                            [class.text-green-600]="batch.remainingQuantity > 0">
-                            {{ batch.remainingQuantity }}
-                        </span>
-                    </td>
-                    <td class="text-center">{{ batch.soldQuantity }}</td>
-                    <td class="text-center">
-                        <p-tag [severity]="getExpirySeverity(batch.daysUntilExpiry)"
-                            [value]="getExpiryLabel(batch.daysUntilExpiry)" [rounded]="true" styleClass="px-3"></p-tag>
-                        <div class="mt-1 text-xs text-secondary">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</div>
-                    </td>
-                    <td class="text-center">
-                        <p-tag [severity]="batch.isSellable ? 'success' : 'danger'"
-                            [value]="batch.isSellable ? 'للبيع' : 'موقف'" [rounded]="true"></p-tag>
-                    </td>
-                    <td class="text-center">
-                        <div class="flex justify-content-center gap-2">
-                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-info p-button-text"
-                                pTooltip="عرض التفاصيل والسجل" (click)="viewBatch(batch.id)"></button>
-                            <button pButton icon="pi pi-exclamation-triangle"
-                                class="p-button-rounded p-button-warning p-button-text" pTooltip="تسجيل تلف أو تعديل"
-                                (click)="showAction(batch)"></button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="9" class="text-center p-5 text-secondary">
-                        <i class="pi pi-info-circle text-4xl mb-3 block"></i>
-                        لا توجد دفعات مطابقة لمعايير البحث.
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+    <!-- Data Table -->
+    <div class="grid">
+        <div class="col-12">
+            <p-table [value]="filteredBatches" [loading]="loading" [paginator]="true" [rows]="10" [rowHover]="true"
+                styleClass="p-datatable-sm p-datatable-gridlines border-round-lg overflow-hidden shadow-1">
+                <ng-template pTemplate="header">
+                    <tr class="bg-bluegray-50 text-800">
+                        <th style="width: 250px">الدواء / الموقع</th>
+                        <th class="text-center" style="width: 120px">رقم الدفعة</th>
+                        <th class="text-center" style="width: 130px">الباركود</th>
+                        <th class="text-center" style="width: 80px">الكلية</th>
+                        <th class="text-center" style="width: 80px">المتبقي</th>
+                        <th class="text-center" style="width: 80px">المباع</th>
+                        <th class="text-center" style="width: 150px">تاريخ الانتهاء</th>
+                        <th class="text-center" style="width: 80px">الحالة</th>
+                        <th class="text-center" style="width: 120px">الإجراءات</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-batch>
+                    <tr [class.bg-red-50]="batch.daysUntilExpiry <= 0"
+                        [class.bg-orange-50]="batch.daysUntilExpiry > 0 && batch.daysUntilExpiry <= 30"
+                        class="transition-colors transition-duration-200">
+                        <td>
+                            <div class="flex flex-column">
+                                <span class="font-bold text-900 line-height-2">{{ batch.medicineName }}</span>
+                                <small class="text-500">
+                                    <i class="pi pi-map-marker text-xs"></i> {{ batch.storageLocation || 'غير محدد' }}
+                                </small>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="font-mono text-xs bg-gray-100 px-2 py-1 border-round font-bold">{{ batch.companyBatchNumber }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="font-mono text-xs text-600">{{ batch.batchBarcode || '---' }}</span>
+                        </td>
+                        <td class="text-center font-bold text-700">{{ batch.quantity }}</td>
+                        <td class="text-center">
+                            <span class="font-bold text-lg" 
+                                  [ngClass]="batch.remainingQuantity === 0 ? 'text-red-600' : 'text-teal-700'">
+                                {{ batch.remainingQuantity }}
+                            </span>
+                        </td>
+                        <td class="text-center text-500 font-medium">{{ batch.soldQuantity }}</td>
+                        <td class="text-center">
+                            <div class="flex flex-column align-items-center gap-1">
+                                <span class="px-2 py-1 border-round-xl text-xs font-bold shadow-1"
+                                      [style.background-color]="batch.daysUntilExpiry <= 0 ? '#ef4444' : (batch.daysUntilExpiry > 0 && batch.daysUntilExpiry <= 30 ? '#f59e0b' : '#10b981')"
+                                      [style.color]="'white'">
+                                    {{ getExpiryLabel(batch.daysUntilExpiry) }}
+                                </span>
+                                <span class="text-sm font-bold text-700">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="text-xs px-2 py-1 border-round font-bold"
+                                  [ngClass]="batch.isSellable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                                {{ batch.isSellable ? 'للبيع' : 'موقف' }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <div class="flex justify-content-center gap-1">
+                                <button pButton icon="pi pi-eye" class="p-button-text p-button-sm p-button-secondary p-0 w-2rem h-2rem"
+                                    (click)="viewBatch(batch.id)" pTooltip="التفاصيل والسجل"></button>
+                                <button pButton icon="pi pi-exclamation-triangle"
+                                    class="p-button-text p-button-sm p-button-warning p-0 w-2rem h-2rem" 
+                                    (click)="showAction(batch)" pTooltip="تسجيل تلف أو تعديل"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="9" class="text-center p-6 text-secondary">
+                            <div class="flex flex-column align-items-center">
+                                <i class="pi pi-inbox text-4xl mb-3 opacity-50"></i>
+                                <span class="font-bold">لا توجد دفعات مطابقة لمعايير البحث</span>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
     </div>
 </div>
 

@@ -31,7 +31,7 @@ export interface StockMovementDto {
     medicineId: number;
     medicineName: string;
     batchId?: number | null;
-    batchNumber?: string;  // Changed from companyBatchNumber
+    batchNumber?: string;
     movementType: StockMovementType;
     movementTypeLabel: string;
     referenceType: ReferenceType;
@@ -41,7 +41,7 @@ export interface StockMovementDto {
     referenceId: number;
     referenceNumber: string;
     createdBy: number;
-    createdByName?: string;  // This already exists
+    createdByName?: string;
     notes: string;
     financialDescription?: string;
 }
@@ -68,17 +68,14 @@ export interface StockCategoryDistribution {
 }
 
 /**
- * Stock Card DTO - for displaying stock ledger
+ * Stock Card DTO - for displaying stock ledger (Matches backend StockCardDto)
  */
 export interface StockCardDto {
-    id: number;
     date: string;
-    movementType: StockMovementType;
-    movementTypeLabel: string;
+    movementType: string;
     referenceNumber: string;
-    quantityIn: number;
-    quantityOut: number;
-    balance: number;
+    quantityChange: number;
+    runningBalance: number;
     notes: string;
 }
 
@@ -88,9 +85,9 @@ export interface StockCardDto {
 export interface CreateManualMovementDto {
     medicineId: number;
     batchId?: number | null;
-    movementType: StockMovementType; // Only Adjustment, Damage, or Expiry
+    movementType: StockMovementType;
     quantity: number;
-    notes: string; // Required for manual movements
+    notes: string;
 }
 
 /**

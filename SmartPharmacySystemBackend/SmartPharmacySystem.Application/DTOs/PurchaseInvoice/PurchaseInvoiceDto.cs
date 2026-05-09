@@ -43,6 +43,10 @@ public class PurchaseInvoiceDto
     /// </summary>
     public decimal TotalAmount { get; set; }
 
+    public decimal PaidAmount { get; set; }
+    public decimal RemainingAmount => TotalAmount - PaidAmount;
+    public bool IsPaid { get; set; }
+
     /// <summary>
     /// طريقة الدفع
     /// </summary>

@@ -11,7 +11,7 @@ export interface PurchaseInvoice {
     id: number;
     supplierId: number;
     supplierName: string;
-    supplierInvoiceNumber: string;
+    supplierInvoiceNumber?: string | null;
     purchaseInvoiceNumber: string;
     purchaseDate: string; // ISO Date
     totalAmount: number;
@@ -25,6 +25,8 @@ export interface PurchaseInvoice {
     status: DocumentStatus;
 
     // Payment Status
+    paidAmount?: number;
+    remainingAmount?: number;
     isPaid?: boolean;
 
     // Status Tracking & Dynamic Colors
@@ -48,7 +50,7 @@ export interface PurchaseInvoice {
  */
 export interface CreatePurchaseInvoiceDto {
     supplierId: number;
-    supplierInvoiceNumber: string;
+    supplierInvoiceNumber?: string | null;
     purchaseDate: string; // ISO date string
     paymentMethod: PaymentType;
     notes?: string;
@@ -62,7 +64,7 @@ export interface CreatePurchaseInvoiceDto {
 export interface UpdatePurchaseInvoiceDto {
     id: number;
     supplierId: number;
-    supplierInvoiceNumber: string;
+    supplierInvoiceNumber?: string | null;
     purchaseDate: string;
     paymentMethod: PaymentType;
     notes?: string;

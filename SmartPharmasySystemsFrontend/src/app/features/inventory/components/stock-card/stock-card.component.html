@@ -101,22 +101,22 @@
               </td>
               <td class="text-center">
                 <span 
-                  *ngIf="card.quantityIn > 0"
+                  *ngIf="card.quantityChange > 0"
                   class="font-bold text-green-600 text-lg">
-                  +{{ card.quantityIn }}
+                  +{{ card.quantityChange }}
                 </span>
-                <span *ngIf="card.quantityIn === 0" class="text-400">---</span>
+                <span *ngIf="card.quantityChange <= 0" class="text-400">---</span>
               </td>
               <td class="text-center">
                 <span 
-                  *ngIf="card.quantityOut > 0"
+                  *ngIf="card.quantityChange < 0"
                   class="font-bold text-red-600 text-lg">
-                  -{{ card.quantityOut }}
+                  {{ card.quantityChange }}
                 </span>
-                <span *ngIf="card.quantityOut === 0" class="text-400">---</span>
+                <span *ngIf="card.quantityChange >= 0" class="text-400">---</span>
               </td>
               <td class="text-center">
-                <span class="font-bold text-primary text-xl">{{ card.balance }}</span>
+                <span class="font-bold text-primary text-xl">{{ card.runningBalance }}</span>
               </td>
               <td>
                 <span class="text-sm text-600">{{ card.notes || '---' }}</span>

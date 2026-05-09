@@ -6,6 +6,7 @@ using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
 using Microsoft.AspNetCore.Http;
+using SmartPharmacySystem.Application.DTOs.Barcode;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -17,6 +18,7 @@ namespace SmartPharmacySystem.Application.Services
         IInvoiceNumberGenerator invoiceNumberGenerator,
         IFinancialService financialService,
         IAlertService alertService,
+        IBarcodeService barcodeService,
         Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor) : ISaleInvoiceService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -26,6 +28,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IInvoiceNumberGenerator _invoiceNumberGenerator = invoiceNumberGenerator;
         private readonly IFinancialService _financialService = financialService;
         private readonly IAlertService _alertService = alertService;
+        private readonly IBarcodeService _barcodeService = barcodeService;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<SaleInvoiceDto> CreateAsync(CreateSaleInvoiceDto dto, int userId)
@@ -610,6 +613,39 @@ namespace SmartPharmacySystem.Application.Services
                 CashPercentage = cashPercentage,
                 Last7DaysSales = last7DaysSales
             };
+        }
+
+        public async Task<BarcodeResultDto> ProcessBarcodeItemAsync(string barcode, int userId)
+        {
+            _logger.LogInformation("Processing barcode {Barcode} for sale by user {UserId}", barcode, userId);
+
+            var query = new GetProductForTransactionByBarcodeQuery
+            {
+                Barcode = barcode,
+                TransactionType = TransactionType.Sale
+            };
+
+            var result = await _barcodeService.GetProductByBarcodeAsync(query, userId)
+                ?? throw new KeyNotFoundException("الصنف غير موجود في قاعدة البيانات.");
+
+            // Validation logic for Sales
+            if (result.AvailableQuantity <= 0)
+            {
+                throw new InvalidOperationException($"عذراً، الصنف ({result.TradeName}) غير متوفر في المخزن حالياً.");
+            }
+
+            if (result.ExpiryDate < DateTime.Today)
+            {
+                throw new InvalidOperationException($"فشل المسح: الصنف ({result.TradeName}) منتهي الصلاحية بتاريخ {result.ExpiryDate:yyyy-MM-dd}.");
+            }
+
+            if (result.IsNearExpiry)
+            {
+                _logger.LogWarning("Scanned item is near expiry: {Name}", result.TradeName);
+                // We allow scanning but maybe add a warning in the result if needed
+            }
+
+            return result;
         }
     }
 }

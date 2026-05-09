@@ -4,9 +4,24 @@
  */
 
 export interface MasterDashboardStats {
+  systemOverview: SystemOverview;
   financialIntelligence: FinancialIntelligence;
   inventoryIntelligence: InventoryIntelligence;
   operationalPulse: OperationalPulse;
+}
+
+export interface SystemOverview {
+  salesInvoicesCount: number;
+  purchaseInvoicesCount: number;
+  salesReturnsCount: number;
+  purchaseReturnsCount: number;
+  medicinesCount: number;
+  customersCount: number;
+  suppliersCount: number;
+  usersCount: number;
+  activeAlertsCount: number;
+  criticalStockCount: number;
+  todayDocumentsCount: number;
 }
 
 // ============================================
@@ -24,6 +39,11 @@ export interface FinancialIntelligence {
   todayCOGS: number;
   /** المصاريف اليوم */
   todayExpenses: number;
+  totalSalesLast30Days: number;
+  totalPurchasesLast30Days: number;
+  totalReturnsLast30Days: number;
+  totalExpensesLast30Days: number;
+  netProfitLast30Days: number;
   /** رصيد الصندوق */
   cashBalance: number;
   /** رصيد البنك */
@@ -61,6 +81,13 @@ export interface BranchRevenue {
 export interface InventoryIntelligence {
   /** قيمة المخزون الإجمالية */
   totalInventoryValue: number;
+  totalMedicines: number;
+  totalBatches: number;
+  activeBatches: number;
+  expiredBatches: number;
+  nearExpiryBatches: number;
+  totalStockQuantity: number;
+  activeAlerts: number;
   /** توزيع المخزون حسب الموردين */
   inventoryBySupplier: SupplierInventory[];
   /** رادار الصلاحية */
@@ -112,7 +139,7 @@ export interface OperationalPulse {
 
 export interface ActivityStreamItem {
   /** نوع العملية */
-  operationType: 'SaleInvoice' | 'PurchaseInvoice' | 'SalesReturn' | 'Payment';
+  operationType: 'SaleInvoice' | 'PurchaseInvoice' | 'SalesReturn' | 'PurchaseReturn' | 'SupplierPayment' | 'CustomerReceipt' | 'Expense' | 'InventoryMovement' | 'Payment';
   /** رقم المستند */
   documentNumber: string;
   /** المبلغ */
@@ -125,6 +152,8 @@ export interface ActivityStreamItem {
   referenceId: number;
   /** الوصف */
   description: string;
+  sourceRoute: string;
+  entityName: string;
 }
 
 export interface CashierPerformance {

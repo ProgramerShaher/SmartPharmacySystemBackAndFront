@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Application.DTOs.Customers;
 using SmartPharmacySystem.Application.DTOs.Alerts;
@@ -39,12 +39,14 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<Medicine, MedicineDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
                 .ReverseMap();
+            CreateMap<Medicine, MedicineDetailsDto>()
+                .IncludeBase<Medicine, MedicineDto>();
 
             // Supplier Mappings
             CreateMap<CreateSupplierDto, Supplier>();
             CreateMap<UpdateSupplierDto, Supplier>();
             CreateMap<Supplier, SupplierDto>()
-                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Balance == 0 ? "خالص" : "مديونية"))
+                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Balance == 0 ? "خالص" : "دائن"))
                 .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src => src.Balance == 0 ? "success" : "#fd7e14"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src => src.Balance == 0 ? "fas fa-check" : "fas fa-hand-holding-usd"))
                 .ReverseMap();

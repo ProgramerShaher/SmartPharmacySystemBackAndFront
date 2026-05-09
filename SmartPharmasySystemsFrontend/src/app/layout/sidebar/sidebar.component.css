@@ -352,6 +352,7 @@
 .master-dashboard-item:hover .new-badge {
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.5);
 }
+
 .menu-item .item-label {
     font-size: 0.9rem;
     font-weight: 600;
@@ -469,7 +470,9 @@
 
 .submenu-items {
     max-height: 0;
-    overflow: hidden;
+    overflow-y: auto;
+    /* تمكين التمرير العمودي */
+    overflow-x: hidden;
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
     opacity: 0;
     padding-right: 1rem;
@@ -477,8 +480,27 @@
 }
 
 .submenu-items.open {
-    max-height: 300px;
+    max-height: 250px;
+    /* تحديد ارتفاع أقصى لبدء التمرير */
     opacity: 1;
+}
+
+/* تنسيق شريط التمرير داخل القوائم الفرعية */
+.submenu-items::-webkit-scrollbar {
+    width: 4px;
+}
+
+.submenu-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.submenu-items::-webkit-scrollbar-thumb {
+    background: rgba(var(--primary-rgb), 0.2);
+    border-radius: 10px;
+}
+
+.submenu-items::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--primary-rgb), 0.4);
 }
 
 .submenu-item {

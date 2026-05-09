@@ -1,24 +1,262 @@
-.report-container { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; direction: rtl; }
-:host ::ng-deep .header-card { background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%); border-radius: 12px; }
-:host ::ng-deep .header-card .p-card-body { padding: 1.5rem; }
-.header-content { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-.header-content h2 { color: #fff; margin: 0; display: flex; align-items: center; gap: 0.5rem; }
-.header-left { display: flex; gap: 0.5rem; align-items: center; }
-.loading-container { display: flex; justify-content: center; padding: 3rem; }
-.summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-.summary-card { background: var(--surface-card); border-radius: 10px; padding: 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-.summary-icon { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; color: #fff; }
-.summary-card.sales .summary-icon { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
-.summary-card.profit .summary-icon { background: linear-gradient(135deg, #10b981, #34d399); }
-.summary-card.invoices .summary-icon { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
-.summary-card.items .summary-icon { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-.summary-content { display: flex; flex-direction: column; gap: 0.25rem; }
-.summary-content .label { font-size: 0.8rem; color: var(--text-color-secondary); }
-.summary-content .value { font-size: 1.25rem; font-weight: 700; }
-.text-success { color: #22c55e !important; }
-.charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
-:host ::ng-deep .chart-card, :host ::ng-deep .top-items-card { border-radius: 10px; }
-.chart-card h3, .top-items-card h3 { margin-top: 0; font-size: 1rem; color: var(--text-color-secondary); }
-.text-center { text-align: center; }
-@media (max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
-@media print { .header-left { display: none !important; } }
+.report-container {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    direction: rtl;
+    background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- Header Section (The Royal Look) --- */
+:host ::ng-deep .header-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    position: relative;
+    overflow: hidden;
+}
+
+:host ::ng-deep .header-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+:host ::ng-deep .header-card .p-card-body {
+    padding: 1rem 2rem;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+}
+
+.header-content h2 {
+    color: #ffffff;
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.header-content h2 i {
+    background: linear-gradient(135deg, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.5rem;
+}
+
+.header-left {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* --- Premium Inputs & Buttons --- */
+:host ::ng-deep .p-calendar .p-inputtext {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s;
+}
+
+:host ::ng-deep .p-calendar .p-inputtext:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+}
+
+:host ::ng-deep .p-button.p-button-sm {
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:host ::ng-deep .p-button-info.p-outlined {
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.5);
+}
+
+:host ::ng-deep .p-button-info.p-outlined:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: #38bdf8;
+    transform: translateY(-1px);
+}
+
+/* --- Summary Cards (Jewel Aesthetic) --- */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
+.summary-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 4px;
+    height: 100%;
+}
+
+.summary-card.sales::after { background: #0ea5e9; }
+.summary-card.profit::after { background: #10b981; }
+.summary-card.invoices::after { background: #6366f1; }
+.summary-card.items::after { background: #f59e0b; }
+
+.summary-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+}
+
+.summary-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    position: relative;
+}
+
+.summary-icon i { position: relative; z-index: 1; }
+
+.summary-card.sales .summary-icon { background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0369a1; }
+.summary-card.profit .summary-icon { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; }
+.summary-card.invoices .summary-icon { background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: #4338ca; }
+.summary-card.items .summary-icon { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #b45309; }
+
+.summary-icon::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: inherit;
+    filter: blur(10px);
+    opacity: 0.5;
+    border-radius: inherit;
+}
+
+.summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.summary-content .label {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+}
+
+.summary-content .value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1;
+}
+
+/* --- Charts & Data Section --- */
+.charts-row {
+    display: grid;
+    grid-template-columns: 1.8fr 1.2fr;
+    gap: 1.5rem;
+}
+
+:host ::ng-deep .chart-card, 
+:host ::ng-deep .top-items-card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.chart-card h3, .top-items-card h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chart-card h3::before {
+    content: '';
+    width: 4px;
+    height: 18px;
+    background: #38bdf8;
+    border-radius: 10px;
+}
+
+/* --- Table (Premium Compact) --- */
+:host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
+    background-color: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    padding: 1rem 0.75rem;
+    border: none;
+}
+
+:host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-tbody > tr {
+    transition: all 0.2s;
+}
+
+:host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-tbody > tr:hover {
+    background-color: #f8fafc !important;
+    transform: scale(1.002);
+}
+
+:host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-tbody > tr > td {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.text-success { color: #10b981 !important; font-weight: 700; }
+
+@media (max-width: 1200px) {
+    .summary-cards { grid-template-columns: repeat(2, 1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+}

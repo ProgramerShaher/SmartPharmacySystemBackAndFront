@@ -124,7 +124,7 @@ export class EmployeePerformanceComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return value.toLocaleString('ar-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 
   formatDateTime(value: string): string {

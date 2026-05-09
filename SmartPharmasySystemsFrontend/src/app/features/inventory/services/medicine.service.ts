@@ -8,7 +8,8 @@ import {
     Medicine, 
     CreateMedicineDto,
     UpdateMedicineDto, 
-    MedicineQueryDto
+    MedicineQueryDto,
+    MedicineDetailsDto
 } from '../../../core/models/medicine.interface';
 
 @Injectable({
@@ -45,6 +46,15 @@ export class MedicineService {
    */
     getById(id: number): Observable<Medicine> {
         return this.http.get<ApiResponse<Medicine>>(`${this.apiUrl}/${id}`).pipe(
+            map(response => response.data!)
+        );
+    }
+
+    /**
+     * Get full medicine details with batches
+     */
+    getDetails(id: number): Observable<MedicineDetailsDto> {
+        return this.http.get<ApiResponse<MedicineDetailsDto>>(`${this.apiUrl}/${id}/details`).pipe(
             map(response => response.data!)
         );
     }

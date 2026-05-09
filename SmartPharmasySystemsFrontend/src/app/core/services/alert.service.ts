@@ -1,7 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, interval, timer } from 'rxjs';
-import { map, tap, switchMap, catchError, retry, shareReplay } from 'rxjs/operators';
+import { Observable, BehaviorSubject, interval, of } from 'rxjs';
+import { map, tap, catchError, retry, switchMap, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
     Alert,
@@ -25,22 +26,30 @@ export class AlertService {
     // Signal for unread count
     public unreadCount = signal(0);
 
-    // Polling interval (60 seconds - less aggressive)
+    // Polling interval (60 seconds)
     private pollingInterval = 60000;
 
     // Track if polling is active
     private isPollingActive = false;
 
-    constructor(private http: HttpClient) {
-        this.startPolling();
+    constructor(
+        private http: HttpClient,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {
+        if (isPlatformBrowser(this.platformId)) {
+            this.startPolling();
+        }
     }
+
+    // ─────────────────────────────────────────────────────────
+    // Polling
+    // ─────────────────────────────────────────────────────────
 
     /**
      * Start polling for new alerts every 60 seconds
      */
-    private startPolling() {
+    private startPolling(): void {
         if (this.isPollingActive) return;
-
         this.isPollingActive = true;
 
         // Initial fetch
@@ -50,17 +59,17 @@ export class AlertService {
         interval(this.pollingInterval)
             .pipe(
                 switchMap(() => this.fetchUnreadAlerts()),
-                retry({ count: 3, delay: 5000 }), // Retry 3 times with 5s delay
+                retry({ count: 3, delay: 5000 }),
                 catchError(() => {
                     console.warn('⚠️ Alert polling failed, will retry on next interval');
-                    return [];
+                    return of([] as Alert[]);
                 })
             )
             .subscribe();
     }
 
     /**
-     * Fetch unread alerts
+     * Fetch unread (Pending) alerts and update the shared state
      */
     private fetchUnreadAlerts(): Observable<Alert[]> {
         const query: AlertQueryDto = {
@@ -74,22 +83,23 @@ export class AlertService {
                 this.unreadAlertsSubject.next(alerts);
                 this.unreadCount.set(alerts.length);
             }),
-            catchError(() => {
-                // Silent fail for polling
-                return [];
-            })
+            catchError(() => of([] as Alert[]))
         );
     }
 
     /**
-     * Force refresh unread alerts
+     * Force refresh unread alerts (call after any state change)
      */
-    refreshUnreadAlerts() {
+    refreshUnreadAlerts(): void {
         this.fetchUnreadAlerts().subscribe();
     }
 
+    // ─────────────────────────────────────────────────────────
+    // CRUD — Alerts
+    // ─────────────────────────────────────────────────────────
+
     /**
-     * Get all alerts with filters - handles both Alert[] and PagedResult<Alert>
+     * Get all alerts with optional filters – returns flat Alert[]
      */
     getAllAlerts(query?: AlertQueryDto): Observable<Alert[]> {
         let params = new HttpParams();
@@ -105,12 +115,8 @@ export class AlertService {
         return this.http.get<ApiResponse<Alert[] | PagedResult<Alert>>>(`${this.apiUrl}`, { params })
             .pipe(
                 map(res => {
-                    // Handle both response types
-                    if (Array.isArray(res.data)) {
-                        return res.data;
-                    } else if (res.data && 'items' in res.data) {
-                        return (res.data as PagedResult<Alert>).items;
-                    }
+                    if (Array.isArray(res.data)) return res.data;
+                    if (res.data && 'items' in res.data) return (res.data as PagedResult<Alert>).items;
                     return [];
                 }),
                 shareReplay(1)
@@ -118,7 +124,7 @@ export class AlertService {
     }
 
     /**
-     * Get alerts with pagination support
+     * Get alerts with pagination support – returns PagedResult<Alert>
      */
     getAlerts(query: AlertQueryDto): Observable<PagedResult<Alert>> {
         let params = new HttpParams();
@@ -134,7 +140,6 @@ export class AlertService {
         return this.http.get<ApiResponse<Alert[] | PagedResult<Alert>>>(`${this.apiUrl}`, { params })
             .pipe(
                 map(res => {
-                    // Convert to PagedResult if it's an array
                     if (Array.isArray(res.data)) {
                         return {
                             items: res.data,
@@ -179,7 +184,7 @@ export class AlertService {
     }
 
     /**
-     * Mark alert as read - POST /api/Alerts/{id}/read
+     * Mark alert as read
      */
     markAsRead(id: number): Observable<void> {
         return this.http.post<ApiResponse<void>>(`${this.apiUrl}/${id}/read`, {})
@@ -193,9 +198,7 @@ export class AlertService {
      * Mark multiple alerts as read
      */
     markMultipleAsRead(ids: number[]): Observable<void> {
-        // Execute all mark as read operations in parallel
         const requests = ids.map(id => this.markAsRead(id));
-
         return new Observable(observer => {
             Promise.all(requests.map(req => req.toPromise()))
                 .then(() => {
@@ -208,7 +211,7 @@ export class AlertService {
     }
 
     /**
-     * Dismiss alert
+     * Dismiss an alert
      */
     dismissAlert(id: number): Observable<Alert> {
         return this.updateAlert(id, { id, status: AlertStatus.Dismissed });
@@ -219,7 +222,6 @@ export class AlertService {
      */
     dismissMultipleAlerts(ids: number[]): Observable<void> {
         const requests = ids.map(id => this.dismissAlert(id));
-
         return new Observable(observer => {
             Promise.all(requests.map(req => req.toPromise()))
                 .then(() => {
@@ -242,58 +244,38 @@ export class AlertService {
             );
     }
 
-    /**
-     * Generate expiry alerts - POST /api/Alerts/generate-expiry
-     */
+    // ─────────────────────────────────────────────────────────
+    // Alert Generation
+    // ─────────────────────────────────────────────────────────
+
     generateExpiryAlerts(): Observable<void> {
         return this.http.post<ApiResponse<void>>(`${this.apiUrl}/generate-expiry`, {})
-            .pipe(
-                map(res => res.data),
-                tap(() => this.refreshUnreadAlerts())
-            );
+            .pipe(map(res => res.data), tap(() => this.refreshUnreadAlerts()));
     }
 
-    /**
-     * Generate low stock alerts - POST /api/Alerts/generate-low-stock
-     */
     generateLowStockAlerts(): Observable<void> {
         return this.http.post<ApiResponse<void>>(`${this.apiUrl}/generate-low-stock`, {})
-            .pipe(
-                map(res => res.data),
-                tap(() => this.refreshUnreadAlerts())
-            );
+            .pipe(map(res => res.data), tap(() => this.refreshUnreadAlerts()));
     }
 
-    /**
-     * Sync medicine alerts - POST /api/Alerts/sync/{medicineId}
-     * Called after purchase invoice approval to update stock alerts
-     */
     syncMedicineAlerts(medicineId: number): Observable<void> {
         return this.http.post<ApiResponse<void>>(`${this.apiUrl}/sync/${medicineId}`, {})
-            .pipe(
-                map(res => res.data),
-                tap(() => this.refreshUnreadAlerts())
-            );
+            .pipe(map(res => res.data), tap(() => this.refreshUnreadAlerts()));
     }
 
-    /**
-     * Get alerts by status
-     */
+    // ─────────────────────────────────────────────────────────
+    // Helpers
+    // ─────────────────────────────────────────────────────────
+
     getAlertsByStatus(status: number): Observable<Alert[]> {
         return this.getAllAlerts({ status });
     }
 
-    /**
-     * Get alerts by batch ID
-     */
     getAlertsByBatchId(batchId: number): Observable<Alert[]> {
         return this.http.get<ApiResponse<Alert[]>>(`${this.apiUrl}/batch/${batchId}`)
             .pipe(map(res => res.data));
     }
 
-    /**
-     * Get alerts statistics
-     */
     getStatistics(): Observable<{
         totalAlerts: number;
         pendingAlerts: number;
@@ -305,9 +287,7 @@ export class AlertService {
     }> {
         return this.getAllAlerts().pipe(
             map(alerts => {
-                const now = new Date();
-                const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
                 return {
                     totalAlerts: alerts.length,
                     pendingAlerts: alerts.filter(a => a.status === AlertStatus.Pending).length,
@@ -317,17 +297,12 @@ export class AlertService {
                     criticalAlerts: alerts.filter(a =>
                         a.alertType?.includes('OneWeek') || a.alertType?.includes('TwoWeeks')
                     ).length,
-                    recentAlerts: alerts.filter(a =>
-                        new Date(a.createdAt) > yesterday
-                    ).slice(0, 10)
+                    recentAlerts: alerts.filter(a => new Date(a.createdAt) > yesterday).slice(0, 10)
                 };
             })
         );
     }
 
-    /**
-     * Get urgency level for an alert
-     */
     getAlertUrgency(alert: Alert): 'critical' | 'high' | 'medium' | 'low' {
         if (alert.alertType?.includes('OneWeek')) return 'critical';
         if (alert.alertType?.includes('TwoWeeks')) return 'high';

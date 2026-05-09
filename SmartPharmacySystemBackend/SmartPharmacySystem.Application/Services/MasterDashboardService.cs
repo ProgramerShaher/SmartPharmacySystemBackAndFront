@@ -1,23 +1,18 @@
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.Dashboard;
 using SmartPharmacySystem.Application.Interfaces;
+using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Core.Interfaces;
 
 namespace SmartPharmacySystem.Application.Services;
 
-/// <summary>
-/// Master Dashboard Service - Optimized for <100ms response time
-/// Uses parallel async queries with .AsNoTracking() for maximum performance
-/// </summary>
 public class MasterDashboardService : IMasterDashboardService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<MasterDashboardService> _logger;
 
-    public MasterDashboardService(
-        IUnitOfWork unitOfWork,
-        ILogger<MasterDashboardService> logger)
+    public MasterDashboardService(IUnitOfWork unitOfWork, ILogger<MasterDashboardService> logger)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
@@ -29,25 +24,72 @@ public class MasterDashboardService : IMasterDashboardService
 
         try
         {
-            // NOTE: Changed to sequential execution because Entity Framework DbContext
-            // does NOT support concurrent operations on the same instance
-            // This prevents: "A second operation was started on this context instance before a previous operation completed"
-            
-            _logger.LogInformation("[MasterDashboard] Starting sequential data fetch...");
-            
-            var financial = await GetFinancialIntelligenceAsync();
-            var inventory = await GetInventoryIntelligenceAsync();
-            var operational = await GetOperationalPulseAsync();
+            var today = DateTime.UtcNow.Date;
+            var thirtyDaysAgo = today.AddDays(-30);
+
+            var sales = ((await _unitOfWork.SaleInvoices.GetAllAsync()) ?? Enumerable.Empty<SaleInvoice>()).Where(x => !x.IsDeleted).ToList();
+            var purchases = ((await _unitOfWork.PurchaseInvoices.GetAllAsync()) ?? Enumerable.Empty<PurchaseInvoice>()).Where(x => !x.IsDeleted).ToList();
+            var salesReturns = ((await _unitOfWork.SalesReturns.GetAllAsync()) ?? Enumerable.Empty<SalesReturn>()).Where(x => !x.IsDeleted).ToList();
+            var purchaseReturns = ((await _unitOfWork.PurchaseReturns.GetAllAsync()) ?? Enumerable.Empty<PurchaseReturn>()).Where(x => !x.IsDeleted).ToList();
+            var medicines = ((await _unitOfWork.Medicines.GetAllAsync()) ?? Enumerable.Empty<Medicine>()).Where(x => !x.IsDeleted).ToList();
+            var batches = ((await _unitOfWork.MedicineBatches.GetAllAsync()) ?? Enumerable.Empty<MedicineBatch>()).Where(x => !x.IsDeleted).ToList();
+            var customers = ((await _unitOfWork.Customers.GetAllAsync()) ?? Enumerable.Empty<Customer>()).ToList();
+            var suppliers = ((await _unitOfWork.Suppliers.GetAllAsync()) ?? Enumerable.Empty<Supplier>()).Where(x => !x.IsDeleted).ToList();
+            var users = ((await _unitOfWork.Users.GetAllAsync()) ?? Enumerable.Empty<User>()).Where(x => !x.IsDeleted).ToList();
+            var expenses = ((await _unitOfWork.Expenses.GetAllAsync()) ?? Enumerable.Empty<Expense>()).Where(x => !x.IsDeleted).ToList();
+            var alerts = ((await _unitOfWork.Alerts.GetAllAsync()) ?? Enumerable.Empty<Alert>()).Where(x => !x.IsDeleted).ToList();
+            var supplierPayments = ((await _unitOfWork.SupplierPayments.GetAllAsync()) ?? Enumerable.Empty<SupplierPayment>()).Where(x => !x.IsDeleted).ToList();
+            var customerReceiptsPage = await _unitOfWork.CustomerReceipts.GetPagedAsync(null, 1, 100000, null, null);
+            var customerReceipts = customerReceiptsPage.Items.Where(x => !x.IsCancelled).ToList();
+            var movements = ((await _unitOfWork.InventoryMovements.GetAllAsync()) ?? Enumerable.Empty<InventoryMovement>()).ToList();
+            var financialTransactions = (await GetFinancialTransactionsSafeAsync(thirtyDaysAgo, today.AddDays(1))).ToList();
+            var mainAccount = await GetMainAccountSafeAsync();
+
+            var inventory = BuildInventoryIntelligence(batches, medicines, purchases, suppliers, alerts);
+
+            var result = new MasterDashboardStatsDto
+            {
+                SystemOverview = BuildSystemOverview(
+                    today,
+                    sales,
+                    purchases,
+                    salesReturns,
+                    purchaseReturns,
+                    medicines,
+                    customers,
+                    suppliers,
+                    users,
+                    alerts,
+                    inventory.CriticalStockItems.Count),
+                FinancialIntelligence = BuildFinancialIntelligence(
+                    today,
+                    thirtyDaysAgo,
+                    sales,
+                    purchases,
+                    salesReturns,
+                    purchaseReturns,
+                    expenses,
+                    customers,
+                    suppliers,
+                    financialTransactions,
+                    mainAccount),
+                InventoryIntelligence = inventory,
+                OperationalPulse = BuildOperationalPulse(
+                    today,
+                    sales,
+                    purchases,
+                    salesReturns,
+                    purchaseReturns,
+                    supplierPayments,
+                    customerReceipts,
+                    expenses,
+                    movements,
+                    users)
+            };
 
             stopwatch.Stop();
-            _logger.LogInformation("[MasterDashboard] Query completed in {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
-
-            return new MasterDashboardStatsDto
-            {
-                FinancialIntelligence = financial,
-                InventoryIntelligence = inventory,
-                OperationalPulse = operational
-            };
+            _logger.LogInformation("[MasterDashboard] Built real dashboard payload in {ElapsedMs}ms", stopwatch.ElapsedMilliseconds);
+            return result;
         }
         catch (Exception ex)
         {
@@ -57,397 +99,468 @@ public class MasterDashboardService : IMasterDashboardService
         }
     }
 
-    // ============================================
-    // 1. Financial Intelligence Hub
-    // ============================================
-    private async Task<FinancialIntelligenceDto> GetFinancialIntelligenceAsync()
+    private static SystemOverviewDto BuildSystemOverview(
+        DateTime today,
+        List<SaleInvoice> sales,
+        List<PurchaseInvoice> purchases,
+        List<SalesReturn> salesReturns,
+        List<PurchaseReturn> purchaseReturns,
+        List<Medicine> medicines,
+        List<Customer> customers,
+        List<Supplier> suppliers,
+        List<User> users,
+        List<Alert> alerts,
+        int criticalStockCount)
     {
-        var today = DateTime.UtcNow.Date;
-        var thirtyDaysAgo = today.AddDays(-30);
+        return new SystemOverviewDto
+        {
+            SalesInvoicesCount = sales.Count,
+            PurchaseInvoicesCount = purchases.Count,
+            SalesReturnsCount = salesReturns.Count,
+            PurchaseReturnsCount = purchaseReturns.Count,
+            MedicinesCount = medicines.Count,
+            CustomersCount = customers.Count,
+            SuppliersCount = suppliers.Count,
+            UsersCount = users.Count,
+            ActiveAlertsCount = alerts.Count(x => !x.IsRead),
+            CriticalStockCount = criticalStockCount,
+            TodayDocumentsCount =
+                sales.Count(x => IsSameDay(x.InvoiceDate, today)) +
+                purchases.Count(x => IsSameDay(x.PurchaseDate, today)) +
+                salesReturns.Count(x => IsSameDay(x.ReturnDate, today)) +
+                purchaseReturns.Count(x => IsSameDay(x.ReturnDate, today))
+        };
+    }
 
-        // Sequential queries to avoid DbContext threading issues
-        var salesData = await GetTodaySalesDataAsync(today);
-        var returnsData = await GetTodayReturnsDataAsync(today);
-        var expenses = await GetTodayExpensesAsync(today);
-        var liquidity = await GetLiquidityDataAsync();
-        var debts = await GetDebtDataAsync();
-        var cashFlow = await GetCashFlowDataAsync(thirtyDaysAgo, today);
+    private FinancialIntelligenceDto BuildFinancialIntelligence(
+        DateTime today,
+        DateTime thirtyDaysAgo,
+        List<SaleInvoice> sales,
+        List<PurchaseInvoice> purchases,
+        List<SalesReturn> salesReturns,
+        List<PurchaseReturn> purchaseReturns,
+        List<Expense> expenses,
+        List<Customer> customers,
+        List<Supplier> suppliers,
+        List<FinancialTransaction> transactions,
+        PharmacyAccount? mainAccount)
+    {
+        var approvedSales = sales.Where(x => x.Status == DocumentStatus.Approved).ToList();
+        var approvedPurchases = purchases.Where(x => x.Status == DocumentStatus.Approved).ToList();
+        var approvedSalesReturns = salesReturns.Where(x => x.Status == DocumentStatus.Approved).ToList();
+        var approvedPurchaseReturns = purchaseReturns.Where(x => x.Status == DocumentStatus.Approved).ToList();
 
-        var netProfit = salesData.TotalSales - returnsData - salesData.TotalCOGS - expenses;
+        var todaySales = approvedSales.Where(x => IsSameDay(x.InvoiceDate, today)).ToList();
+        var todayReturns = approvedSalesReturns.Where(x => IsSameDay(x.ReturnDate, today)).ToList();
+        var todayExpenses = expenses.Where(x => IsSameDay(x.ExpenseDate, today)).ToList();
+
+        var last30Sales = approvedSales.Where(x => IsInRange(x.InvoiceDate, thirtyDaysAgo, today.AddDays(1))).ToList();
+        var last30Purchases = approvedPurchases.Where(x => IsInRange(x.PurchaseDate, thirtyDaysAgo, today.AddDays(1))).ToList();
+        var last30SalesReturns = approvedSalesReturns.Where(x => IsInRange(x.ReturnDate, thirtyDaysAgo, today.AddDays(1))).ToList();
+        var last30PurchaseReturns = approvedPurchaseReturns.Where(x => IsInRange(x.ReturnDate, thirtyDaysAgo, today.AddDays(1))).ToList();
+        var last30Expenses = expenses.Where(x => IsInRange(x.ExpenseDate, thirtyDaysAgo, today.AddDays(1))).ToList();
+
+        var todaySalesAmount = todaySales.Sum(x => x.TotalAmount);
+        var todayCOGS = todaySales.Sum(x => x.TotalCost);
+        var todayReturnsAmount = todayReturns.Sum(x => x.TotalAmount);
+        var todayExpensesAmount = todayExpenses.Sum(x => x.Amount);
+
+        var last30ReturnsAmount = last30SalesReturns.Sum(x => x.TotalAmount) + last30PurchaseReturns.Sum(x => x.TotalAmount);
+        var last30ExpensesAmount = last30Expenses.Sum(x => x.Amount);
+        var last30NetProfit = last30Sales.Sum(x => x.TotalAmount) -
+                              last30SalesReturns.Sum(x => x.TotalAmount) -
+                              last30Sales.Sum(x => x.TotalCost) -
+                              last30ExpensesAmount;
+
+        var receivables = customers.Where(x => x.Balance > 0).Sum(x => x.Balance);
+        var payables = suppliers.Where(x => x.Balance > 0).Sum(x => x.Balance);
 
         return new FinancialIntelligenceDto
         {
-            TodayApprovedSales = salesData.TotalSales,
-            TodayReturns = returnsData,
-            TodayCOGS = salesData.TotalCOGS,
-            TodayExpenses = expenses,
-            TodayNetProfit = netProfit,
-            
-            CashBalance = liquidity.CashBalance,
-            BankBalance = liquidity.BankBalance,
-            TotalLiquidity = liquidity.TotalLiquidity,
-            
-            CustomerReceivables = debts.CustomerReceivables,
-            SupplierPayables = debts.SupplierPayables,
-            NetDebt = debts.NetDebt,
-            
-            CashFlowInLast30Days = cashFlow.CashFlowIn,
-            CashFlowOutLast30Days = cashFlow.CashFlowOut,
-            BranchRevenues = new List<BranchRevenueDto>() // TODO: Implement if multi-branch support exists
+            TodayApprovedSales = todaySalesAmount,
+            TodayReturns = todayReturnsAmount,
+            TodayCOGS = todayCOGS,
+            TodayExpenses = todayExpensesAmount,
+            TodayNetProfit = todaySalesAmount - todayReturnsAmount - todayCOGS - todayExpensesAmount,
+            TotalSalesLast30Days = last30Sales.Sum(x => x.TotalAmount),
+            TotalPurchasesLast30Days = last30Purchases.Sum(x => x.TotalAmount),
+            TotalReturnsLast30Days = last30ReturnsAmount,
+            TotalExpensesLast30Days = last30ExpensesAmount,
+            NetProfitLast30Days = last30NetProfit,
+            CashBalance = mainAccount?.Balance ?? 0,
+            BankBalance = 0,
+            TotalLiquidity = mainAccount?.Balance ?? 0,
+            CustomerReceivables = receivables,
+            SupplierPayables = payables,
+            NetDebt = receivables - payables,
+            CashFlowInLast30Days = BuildCashFlow(transactions, FinancialTransactionType.Income, thirtyDaysAgo, today),
+            CashFlowOutLast30Days = BuildCashFlow(transactions, FinancialTransactionType.Expense, thirtyDaysAgo, today),
+            BranchRevenues = new List<BranchRevenueDto>
+            {
+                new() { BranchName = "الصيدلية الرئيسية", Revenue = last30Sales.Sum(x => x.TotalAmount) }
+            }
         };
     }
 
-    private async Task<(decimal TotalSales, decimal TotalCOGS)> GetTodaySalesDataAsync(DateTime today)
+    private static InventoryIntelligenceDto BuildInventoryIntelligence(
+        List<MedicineBatch> batches,
+        List<Medicine> medicines,
+        List<PurchaseInvoice> purchases,
+        List<Supplier> suppliers,
+        List<Alert> alerts)
     {
-        try
+        var now = DateTime.UtcNow;
+        var inventoryBySupplier = batches
+            .Where(x => x.PurchaseInvoiceId.HasValue && x.RemainingQuantity > 0)
+            .Join(purchases, b => b.PurchaseInvoiceId!.Value, p => p.Id, (b, p) => new { Batch = b, p.SupplierId })
+            .Join(suppliers, x => x.SupplierId, s => s.Id, (x, s) => new { x.Batch, Supplier = s })
+            .GroupBy(x => new { x.Supplier.Id, x.Supplier.Name })
+            .Select(g => new SupplierInventoryDto
+            {
+                SupplierId = g.Key.Id,
+                SupplierName = g.Key.Name,
+                InventoryValue = g.Sum(x => x.Batch.RemainingQuantity * x.Batch.UnitPurchasePrice),
+                ItemCount = g.Select(x => x.Batch.MedicineId).Distinct().Count()
+            })
+            .OrderByDescending(x => x.InventoryValue)
+            .Take(8)
+            .ToList();
+
+        if (!inventoryBySupplier.Any())
         {
-            var invoices = (await _unitOfWork.SaleInvoices.GetAllAsync())?.ToList() ?? new List<Core.Entities.SaleInvoice>();
-            
-            var todayApproved = invoices
-                .Where(s => s.Status == DocumentStatus.Approved && 
-                           (s.InvoiceDate.Date == today || s.InvoiceDate.Date == DateTime.Today))
+            inventoryBySupplier = batches
+                .Where(x => x.RemainingQuantity > 0)
+                .Join(medicines, b => b.MedicineId, m => m.Id, (b, m) => new { Batch = b, Medicine = m })
+                .GroupBy(x => x.Medicine.CategoryId)
+                .Select(g => new SupplierInventoryDto
+                {
+                    SupplierId = g.Key ?? 0,
+                    SupplierName = g.Key.HasValue ? $"تصنيف {g.Key}" : "غير مصنف",
+                    InventoryValue = g.Sum(x => x.Batch.RemainingQuantity * x.Batch.UnitPurchasePrice),
+                    ItemCount = g.Select(x => x.Batch.MedicineId).Distinct().Count()
+                })
+                .OrderByDescending(x => x.InventoryValue)
+                .Take(8)
                 .ToList();
-
-            return (
-                TotalSales: todayApproved.Any() ? todayApproved.Sum(s => s.TotalAmount) : 0,
-                TotalCOGS: todayApproved.Any() ? todayApproved.Sum(s => s.TotalCost) : 0
-            );
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[MasterDashboard] Error getting today sales data");
-            return (TotalSales: 0, TotalCOGS: 0);
-        }
-    }
-
-    private async Task<decimal> GetTodayReturnsDataAsync(DateTime today)
-    {
-        try
-        {
-            var returns = (await _unitOfWork.SalesReturns.GetAllAsync())?.ToList() ?? new List<Core.Entities.SalesReturn>();
-            
-            var todayReturns = returns
-                .Where(r => r.Status == DocumentStatus.Approved && r.ReturnDate.Date == today)
-                .ToList();
-            
-            return todayReturns.Any() ? todayReturns.Sum(r => r.TotalAmount) : 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[MasterDashboard] Error getting today returns data");
-            return 0;
-        }
-    }
-
-    private async Task<decimal> GetTodayExpensesAsync(DateTime today)
-    {
-        try
-        {
-            var expenses = (await _unitOfWork.Expenses.GetAllAsync())?.ToList() ?? new List<Core.Entities.Expense>();
-            
-            var todayExpenses = expenses
-                .Where(e => e.ExpenseDate.Date == today)
-                .ToList();
-            
-            return todayExpenses.Any() ? todayExpenses.Sum(e => e.Amount) : 0;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[MasterDashboard] Error getting today expenses");
-            return 0;
-        }
-    }
-
-    private async Task<(decimal CashBalance, decimal BankBalance, decimal TotalLiquidity)> GetLiquidityDataAsync()
-    {
-        // Use IFinancialService to get balance
-        // Note: This requires injecting IFinancialService into this service
-        // For now, we'll return default values - this should be properly implemented
-        return (CashBalance: 0, BankBalance: 0, TotalLiquidity: 0);
-    }
-
-    private async Task<(decimal CustomerReceivables, decimal SupplierPayables, decimal NetDebt)> GetDebtDataAsync()
-    {
-        try
-        {
-            var customers = (await _unitOfWork.Customers.GetAllAsync())?.ToList() ?? new List<Core.Entities.Customer>();
-            var suppliers = (await _unitOfWork.Suppliers.GetAllAsync())?.ToList() ?? new List<Core.Entities.Supplier>();
-
-
-            var customerReceivables = customers.Where(c => c.Balance > 0).Sum(c => c.Balance);
-            var supplierPayables = suppliers.Where(s => s.Balance > 0).Sum(s => s.Balance);
-
-            return (
-                CustomerReceivables: customerReceivables,
-                SupplierPayables: supplierPayables,
-                NetDebt: customerReceivables - supplierPayables
-            );
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "[MasterDashboard] Error getting debt data");
-            return (CustomerReceivables: 0, SupplierPayables: 0, NetDebt: 0);
-        }
-    }
-
-    private async Task<(List<DailyCashFlowDto> CashFlowIn, List<DailyCashFlowDto> CashFlowOut)> GetCashFlowDataAsync(DateTime startDate, DateTime endDate)
-    {
-        // Note: This requires access to FinancialTransactions repository
-        // For now, returning empty lists - should be properly implemented using IFinancialService
-        var cashFlowIn = new List<DailyCashFlowDto>();
-        var cashFlowOut = new List<DailyCashFlowDto>();
-
-        // Fill with zeros for each day
-        for (var date = startDate; date <= endDate; date = date.AddDays(1))
-        {
-            cashFlowIn.Add(new DailyCashFlowDto { Date = date, Amount = 0 });
-            cashFlowOut.Add(new DailyCashFlowDto { Date = date, Amount = 0 });
-        }
-
-        return (CashFlowIn: cashFlowIn, CashFlowOut: cashFlowOut);
-    }
-
-    // ============================================
-    // 2. Inventory Intelligence
-    // ============================================
-    private async Task<InventoryIntelligenceDto> GetInventoryIntelligenceAsync()
-    {
-        var batches = ((await _unitOfWork.MedicineBatches.GetAllAsync()) ?? Enumerable.Empty<Core.Entities.MedicineBatch>()).ToList();
-        var medicines = ((await _unitOfWork.Medicines.GetAllAsync()) ?? Enumerable.Empty<Core.Entities.Medicine>()).ToList();
-
-        // Calculate total inventory value
-        var totalValue = batches.Sum(b => b.RemainingQuantity * b.UnitPurchasePrice);
-
-        // Group by medicine (since MedicineBatch doesn't have SupplierId directly)
-        // We'll show distribution by medicine category instead
-        var inventoryBySupplier = new List<SupplierInventoryDto>();
-
-        // Calculate expiry radar
-        var expiryRadar = CalculateExpiryRadar(batches);
-
-        // Get critical stock items
-        var criticalStockItems = GetCriticalStockItems(batches, medicines);
 
         return new InventoryIntelligenceDto
         {
-            TotalInventoryValue = totalValue,
+            TotalInventoryValue = batches.Sum(x => x.RemainingQuantity * x.UnitPurchasePrice),
+            TotalMedicines = medicines.Count,
+            TotalBatches = batches.Count,
+            ActiveBatches = batches.Count(x => x.Status == "Active" && x.RemainingQuantity > 0),
+            ExpiredBatches = batches.Count(x => x.ExpiryDate.Date < now.Date),
+            NearExpiryBatches = batches.Count(x => x.ExpiryDate.Date >= now.Date && x.ExpiryDate.Date <= now.AddMonths(3).Date),
+            TotalStockQuantity = batches.Sum(x => x.RemainingQuantity),
+            ActiveAlerts = alerts.Count(x => !x.IsRead),
             InventoryBySupplier = inventoryBySupplier,
-            ExpiryRadar = expiryRadar,
-            CriticalStockItems = criticalStockItems
+            ExpiryRadar = CalculateExpiryRadar(batches),
+            CriticalStockItems = GetCriticalStockItems(batches, medicines)
         };
     }
 
-    private ExpiryRadarDto CalculateExpiryRadar(List<Core.Entities.MedicineBatch> batches)
+    private OperationalPulseDto BuildOperationalPulse(
+        DateTime today,
+        List<SaleInvoice> sales,
+        List<PurchaseInvoice> purchases,
+        List<SalesReturn> salesReturns,
+        List<PurchaseReturn> purchaseReturns,
+        List<SupplierPayment> supplierPayments,
+        List<CustomerReceipt> customerReceipts,
+        List<Expense> expenses,
+        List<InventoryMovement> movements,
+        List<User> users)
+    {
+        var userNames = users.ToDictionary(x => x.Id, x => string.IsNullOrWhiteSpace(x.FullName) ? x.Username : x.FullName);
+        var approvedSalesToday = sales
+            .Where(x => x.Status == DocumentStatus.Approved && IsSameDay(x.InvoiceDate, today))
+            .ToList();
+
+        return new OperationalPulseDto
+        {
+            ActivityStream = BuildActivityStream(
+                sales,
+                purchases,
+                salesReturns,
+                purchaseReturns,
+                supplierPayments,
+                customerReceipts,
+                expenses,
+                movements,
+                userNames),
+            CashierPerformance = approvedSalesToday
+                .GroupBy(x => x.CreatedBy)
+                .Select(g => new CashierPerformanceDto
+                {
+                    UserId = g.Key,
+                    Username = GetUserName(userNames, g.Key),
+                    TotalSales = g.Sum(x => x.TotalAmount),
+                    InvoiceCount = g.Count(),
+                    AverageInvoiceValue = g.Count() == 0 ? 0 : g.Average(x => x.TotalAmount)
+                })
+                .OrderByDescending(x => x.TotalSales)
+                .Take(10)
+                .ToList(),
+            HourlyHeatMap = BuildHourlyHeatMap(approvedSalesToday)
+        };
+    }
+
+    private static List<ActivityStreamItemDto> BuildActivityStream(
+        List<SaleInvoice> sales,
+        List<PurchaseInvoice> purchases,
+        List<SalesReturn> salesReturns,
+        List<PurchaseReturn> purchaseReturns,
+        List<SupplierPayment> supplierPayments,
+        List<CustomerReceipt> customerReceipts,
+        List<Expense> expenses,
+        List<InventoryMovement> movements,
+        Dictionary<int, string> userNames)
+    {
+        var activities = new List<ActivityStreamItemDto>();
+
+        activities.AddRange(sales.Where(x => x.Status == DocumentStatus.Approved).Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "SaleInvoice",
+            DocumentNumber = x.SaleInvoiceNumber,
+            Amount = x.TotalAmount,
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.ApprovedAt ?? x.CreatedAt,
+            ReferenceId = x.Id,
+            Description = $"فاتورة مبيعات #{x.SaleInvoiceNumber}",
+            SourceRoute = $"/sales/{x.Id}",
+            EntityName = x.CustomerName ?? "عميل نقدي"
+        }));
+
+        activities.AddRange(purchases.Where(x => x.Status == DocumentStatus.Approved).Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "PurchaseInvoice",
+            DocumentNumber = x.PurchaseInvoiceNumber,
+            Amount = x.TotalAmount,
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.ApprovedAt ?? x.CreatedAt,
+            ReferenceId = x.Id,
+            Description = $"فاتورة مشتريات #{x.PurchaseInvoiceNumber}",
+            SourceRoute = $"/purchases/{x.Id}",
+            EntityName = x.SupplierInvoiceNumber ?? "مورد"
+        }));
+
+        activities.AddRange(salesReturns.Where(x => x.Status == DocumentStatus.Approved).Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "SalesReturn",
+            DocumentNumber = x.Id.ToString(),
+            Amount = x.TotalAmount,
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.ApprovedAt ?? x.CreatedAt,
+            ReferenceId = x.Id,
+            Description = $"مردود مبيعات #{x.Id}",
+            SourceRoute = $"/sales/returns/{x.Id}",
+            EntityName = x.Reason ?? "مرتجع"
+        }));
+
+        activities.AddRange(purchaseReturns.Where(x => x.Status == DocumentStatus.Approved).Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "PurchaseReturn",
+            DocumentNumber = x.Id.ToString(),
+            Amount = x.TotalAmount,
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.ApprovedAt ?? x.CreatedAt,
+            ReferenceId = x.Id,
+            Description = $"مردود مشتريات #{x.Id}",
+            SourceRoute = $"/purchases/returns/{x.Id}",
+            EntityName = x.Reason ?? "مرتجع"
+        }));
+
+        activities.AddRange(supplierPayments.Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "SupplierPayment",
+            DocumentNumber = x.ReferenceNo ?? x.Id.ToString(),
+            Amount = x.Amount,
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.PaymentDate,
+            ReferenceId = x.Id,
+            Description = $"سند صرف مورد #{x.ReferenceNo ?? x.Id.ToString()}",
+            SourceRoute = "/partners/suppliers/payments",
+            EntityName = "مورد"
+        }));
+
+        activities.AddRange(customerReceipts.Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "CustomerReceipt",
+            DocumentNumber = x.ReferenceNo ?? x.Id.ToString(),
+            Amount = x.Amount,
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.ReceiptDate,
+            ReferenceId = x.Id,
+            Description = $"سند قبض عميل #{x.ReferenceNo ?? x.Id.ToString()}",
+            SourceRoute = "/customers/receipts",
+            EntityName = "عميل"
+        }));
+
+        activities.AddRange(expenses.Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "Expense",
+            DocumentNumber = x.Id.ToString(),
+            Amount = x.Amount,
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.ExpenseDate,
+            ReferenceId = x.Id,
+            Description = $"مصروف #{x.Id}",
+            SourceRoute = $"/finance/expenses/edit/{x.Id}",
+            EntityName = x.Notes ?? "مصروف"
+        }));
+
+        activities.AddRange(movements.Select(x => new ActivityStreamItemDto
+        {
+            OperationType = "InventoryMovement",
+            DocumentNumber = x.ReferenceNumber,
+            Amount = Math.Abs(x.Quantity),
+            Username = GetUserName(userNames, x.CreatedBy),
+            Timestamp = x.Date,
+            ReferenceId = x.Id,
+            Description = $"حركة مخزون #{x.ReferenceNumber}",
+            SourceRoute = $"/inventory/movements/{x.Id}",
+            EntityName = x.Notes
+        }));
+
+        return activities
+            .OrderByDescending(x => x.Timestamp)
+            .Take(18)
+            .ToList();
+    }
+
+    private static ExpiryRadarDto CalculateExpiryRadar(List<MedicineBatch> batches)
     {
         var now = DateTime.UtcNow;
-        var totalBatches = batches.Count;
+        var activeBatches = batches.Where(x => x.RemainingQuantity > 0).ToList();
+        var total = activeBatches.Count;
 
-        if (totalBatches == 0)
+        if (total == 0)
         {
             return new ExpiryRadarDto();
         }
 
-        var lessThan3Months = batches.Count(b => b.ExpiryDate <= now.AddMonths(3));
-        var between3And6Months = batches.Count(b => b.ExpiryDate > now.AddMonths(3) && b.ExpiryDate <= now.AddMonths(6));
-        var between6And12Months = batches.Count(b => b.ExpiryDate > now.AddMonths(6) && b.ExpiryDate <= now.AddMonths(12));
-        var moreThan12Months = batches.Count(b => b.ExpiryDate > now.AddMonths(12));
-
         return new ExpiryRadarDto
         {
-            PercentageLessThan3Months = (decimal)lessThan3Months / totalBatches * 100,
-            Percentage3To6Months = (decimal)between3And6Months / totalBatches * 100,
-            Percentage6To12Months = (decimal)between6And12Months / totalBatches * 100,
-            PercentageMoreThan12Months = (decimal)moreThan12Months / totalBatches * 100
+            PercentageLessThan3Months = Math.Round(activeBatches.Count(x => x.ExpiryDate <= now.AddMonths(3)) * 100m / total, 2),
+            Percentage3To6Months = Math.Round(activeBatches.Count(x => x.ExpiryDate > now.AddMonths(3) && x.ExpiryDate <= now.AddMonths(6)) * 100m / total, 2),
+            Percentage6To12Months = Math.Round(activeBatches.Count(x => x.ExpiryDate > now.AddMonths(6) && x.ExpiryDate <= now.AddMonths(12)) * 100m / total, 2),
+            PercentageMoreThan12Months = Math.Round(activeBatches.Count(x => x.ExpiryDate > now.AddMonths(12)) * 100m / total, 2)
         };
     }
 
-    private List<CriticalStockItemDto> GetCriticalStockItems(
-        List<Core.Entities.MedicineBatch> batches,
-        List<Core.Entities.Medicine> medicines)
+    private static List<CriticalStockItemDto> GetCriticalStockItems(List<MedicineBatch> batches, List<Medicine> medicines)
     {
-        var medicineStocks = batches
-            .GroupBy(b => b.MedicineId)
-            .Select(g => new
-            {
-                MedicineId = g.Key,
-                TotalStock = g.Sum(b => b.RemainingQuantity)
-            })
+        var stocks = batches
+            .Where(x => x.RemainingQuantity > 0)
+            .GroupBy(x => x.MedicineId)
+            .Select(x => new { MedicineId = x.Key, Quantity = x.Sum(b => b.RemainingQuantity) })
             .ToList();
 
-        var criticalItems = new List<CriticalStockItemDto>();
-
-        foreach (var stock in medicineStocks)
-        {
-            var medicine = medicines.FirstOrDefault(m => m.Id == stock.MedicineId);
-            if (medicine == null) continue;
-
-            var reorderPoint = medicine.ReorderLevel > 0 ? medicine.ReorderLevel : 10; // Default to 10 if not set
-
-            if (stock.TotalStock <= reorderPoint)
+        return medicines
+            .GroupJoin(stocks, m => m.Id, s => s.MedicineId, (medicine, stockGroup) => new { medicine, stock = stockGroup.FirstOrDefault() })
+            .Select(x => new
             {
-                criticalItems.Add(new CriticalStockItemDto
+                x.medicine,
+                Quantity = x.stock?.Quantity ?? 0,
+                ReorderLevel = x.medicine.ReorderLevel > 0 ? x.medicine.ReorderLevel : Math.Max(x.medicine.MinAlertQuantity, 10)
+            })
+            .Where(x => x.Quantity <= x.ReorderLevel)
+            .OrderBy(x => x.Quantity)
+            .Take(12)
+            .Select(x => new CriticalStockItemDto
+            {
+                MedicineId = x.medicine.Id,
+                MedicineName = x.medicine.Name,
+                CurrentStock = x.Quantity,
+                ReorderPoint = x.ReorderLevel,
+                SuggestedOrderQuantity = Math.Max(x.ReorderLevel * 3 - x.Quantity, x.ReorderLevel)
+            })
+            .ToList();
+    }
+
+    private static List<HourlyHeatMapDto> BuildHourlyHeatMap(List<SaleInvoice> todaySales)
+    {
+        var map = todaySales
+            .GroupBy(x => x.InvoiceDate.Hour)
+            .ToDictionary(
+                x => x.Key,
+                x => new HourlyHeatMapDto
                 {
-                    MedicineId = stock.MedicineId,
-                    MedicineName = medicine.Name,
-                    CurrentStock = stock.TotalStock,
-                    ReorderPoint = reorderPoint,
-                    SuggestedOrderQuantity = reorderPoint * 3, // Order 3x the reorder point
-                    PreferredSupplierId = null,
-                    PreferredSupplierName = null
+                    Hour = x.Key,
+                    TotalSales = x.Sum(i => i.TotalAmount),
+                    TransactionCount = x.Count()
                 });
-            }
-        }
 
-        return criticalItems.OrderBy(c => c.CurrentStock).Take(10).ToList();
+        return Enumerable.Range(0, 24)
+            .Select(hour => map.TryGetValue(hour, out var item)
+                ? item
+                : new HourlyHeatMapDto { Hour = hour, TotalSales = 0, TransactionCount = 0 })
+            .ToList();
     }
 
-    // ============================================
-    // 3. Operational Pulse
-    // ============================================
-    private async Task<OperationalPulseDto> GetOperationalPulseAsync()
+    private static List<DailyCashFlowDto> BuildCashFlow(
+        List<FinancialTransaction> transactions,
+        FinancialTransactionType type,
+        DateTime start,
+        DateTime end)
     {
-        var activityStream = await GetActivityStreamAsync();
-        var cashierPerformance = await GetCashierPerformanceAsync();
-        var heatMap = await GetHourlyHeatMapAsync();
+        var byDate = transactions
+            .Where(x => x.Type == type && IsInRange(x.TransactionDate, start, end.AddDays(1)))
+            .GroupBy(x => x.TransactionDate.Date)
+            .ToDictionary(x => x.Key, x => x.Sum(t => t.Amount));
 
-        return new OperationalPulseDto
-        {
-            ActivityStream = activityStream,
-            CashierPerformance = cashierPerformance,
-            HourlyHeatMap = heatMap
-        };
-    }
-
-    private async Task<List<ActivityStreamItemDto>> GetActivityStreamAsync()
-    {
-        var activities = new List<ActivityStreamItemDto>();
-
-        // Get recent sales invoices
-        var saleInvoices = await _unitOfWork.SaleInvoices.GetAllAsync();
-        var recentSales = saleInvoices
-            .Where(s => s.Status == DocumentStatus.Approved)
-            .OrderByDescending(s => s.ApprovedAt ?? s.CreatedAt)
-            .Take(5)
-            .Select(s => new ActivityStreamItemDto
+        return Enumerable.Range(0, (end - start).Days + 1)
+            .Select(offset =>
             {
-                OperationType = "SaleInvoice",
-                DocumentNumber = s.SaleInvoiceNumber,
-                Amount = s.TotalAmount,
-                Username = s.CreatedBy.ToString(), // Use ID since navigation property might not be loaded
-                Timestamp = s.ApprovedAt ?? s.CreatedAt,
-                ReferenceId = s.Id,
-                Description = $"فاتورة مبيعات #{s.SaleInvoiceNumber}"
-            })
-            .ToList();
-
-        activities.AddRange(recentSales);
-
-        // Get recent purchase invoices
-        var purchaseInvoices = await _unitOfWork.PurchaseInvoices.GetAllAsync();
-        var recentPurchases = purchaseInvoices
-            .Where(p => p.Status == DocumentStatus.Approved)
-            .OrderByDescending(p => p.ApprovedAt ?? p.CreatedAt)
-            .Take(3)
-            .Select(p => new ActivityStreamItemDto
-            {
-                OperationType = "PurchaseInvoice",
-                DocumentNumber = p.PurchaseInvoiceNumber,
-                Amount = p.TotalAmount,
-                Username = p.CreatedBy.ToString(), // Use ID since navigation property might not be loaded
-                Timestamp = p.ApprovedAt ?? p.CreatedAt,
-                ReferenceId = p.Id,
-                Description = $"فاتورة مشتريات #{p.PurchaseInvoiceNumber}"
-            })
-            .ToList();
-
-        activities.AddRange(recentPurchases);
-
-        // Get recent returns - using correct property name
-        var salesReturns = await _unitOfWork.SalesReturns.GetAllAsync();
-        var recentReturns = salesReturns
-            .Where(r => r.Status == DocumentStatus.Approved)
-            .OrderByDescending(r => r.ApprovedAt ?? r.CreatedAt)
-            .Take(2)
-            .Select(r => new ActivityStreamItemDto
-            {
-                OperationType = "SalesReturn",
-                DocumentNumber = r.Id.ToString(), // Use ID since there's no ReturnNumber property
-                Amount = r.TotalAmount,
-                Username = r.CreatedBy.ToString(), // Use ID since navigation property might not be loaded
-                Timestamp = r.ApprovedAt ?? r.CreatedAt,
-                ReferenceId = r.Id,
-                Description = $"مردود مبيعات #{r.Id}"
-            })
-            .ToList();
-
-        activities.AddRange(recentReturns);
-
-        return activities.OrderByDescending(a => a.Timestamp).Take(10).ToList();
-    }
-
-    private async Task<List<CashierPerformanceDto>> GetCashierPerformanceAsync()
-    {
-        // Get today's approved invoices
-        var today = DateTime.UtcNow.Date;
-        var invoices = await _unitOfWork.SaleInvoices.GetAllAsync();
-
-        var todayInvoices = invoices
-            .Where(s => s.Status == DocumentStatus.Approved && 
-                       (s.InvoiceDate.Date == today || s.InvoiceDate.Date == DateTime.Today))
-            .ToList();
-
-        var performance = todayInvoices
-            .GroupBy(s => s.CreatedBy)
-            .Select(g => new CashierPerformanceDto
-            {
-                UserId = g.Key,
-                Username = g.Key.ToString(), // Use ID as string since navigation property might not be loaded
-                TotalSales = g.Sum(s => s.TotalAmount),
-                InvoiceCount = g.Count(),
-                AverageInvoiceValue = g.Average(s => s.TotalAmount)
-            })
-            .OrderByDescending(p => p.TotalSales)
-            .Take(10)
-            .ToList();
-
-        return performance;
-    }
-
-    private async Task<List<HourlyHeatMapDto>> GetHourlyHeatMapAsync()
-    {
-        var today = DateTime.UtcNow.Date;
-        var invoices = await _unitOfWork.SaleInvoices.GetAllAsync();
-
-        var todayInvoices = invoices
-            .Where(s => s.Status == DocumentStatus.Approved && 
-                       (s.InvoiceDate.Date == today || s.InvoiceDate.Date == DateTime.Today))
-            .ToList();
-
-        var heatMap = todayInvoices
-            .GroupBy(s => s.InvoiceDate.Hour)
-            .Select(g => new HourlyHeatMapDto
-            {
-                Hour = g.Key,
-                TotalSales = g.Sum(s => s.TotalAmount),
-                TransactionCount = g.Count()
-            })
-            .OrderBy(h => h.Hour)
-            .ToList();
-
-        // Fill missing hours with zero
-        for (int hour = 0; hour < 24; hour++)
-        {
-            if (!heatMap.Any(h => h.Hour == hour))
-            {
-                heatMap.Add(new HourlyHeatMapDto
+                var date = start.AddDays(offset).Date;
+                return new DailyCashFlowDto
                 {
-                    Hour = hour,
-                    TotalSales = 0,
-                    TransactionCount = 0
-                });
-            }
-        }
+                    Date = date,
+                    Amount = byDate.TryGetValue(date, out var amount) ? amount : 0
+                };
+            })
+            .ToList();
+    }
 
-        return heatMap.OrderBy(h => h.Hour).ToList();
+    private async Task<IEnumerable<FinancialTransaction>> GetFinancialTransactionsSafeAsync(DateTime start, DateTime end)
+    {
+        try
+        {
+            return await _unitOfWork.Financials.GetTransactionsAsync(start, end, null, 0, 100000);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[MasterDashboard] Could not load financial transactions");
+            return Enumerable.Empty<FinancialTransaction>();
+        }
+    }
+
+    private async Task<PharmacyAccount?> GetMainAccountSafeAsync()
+    {
+        try
+        {
+            return await _unitOfWork.Financials.GetMainAccountAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[MasterDashboard] Could not load main pharmacy account");
+            return null;
+        }
+    }
+
+    private static bool IsSameDay(DateTime date, DateTime day) => date.Date == day.Date || date.Date == DateTime.Today;
+
+    private static bool IsInRange(DateTime date, DateTime startInclusive, DateTime endExclusive)
+    {
+        var value = date.Date;
+        return value >= startInclusive.Date && value < endExclusive.Date;
+    }
+
+    private static string GetUserName(Dictionary<int, string> users, int userId)
+    {
+        return users.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name)
+            ? name
+            : $"مستخدم #{userId}";
     }
 }

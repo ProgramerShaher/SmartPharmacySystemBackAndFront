@@ -1,0 +1,42 @@
+<p-dialog 
+    [(visible)]="visible" 
+    [header]="'محاكي ماسح الباركود'" 
+    [modal]="true" 
+    [style]="{width: '350px'}"
+    (onHide)="close()">
+    
+    <div class="simulator-container">
+        <div class="field">
+            <label for="barcode">رقم الباركود</label>
+            <input 
+                id="barcode" 
+                type="text" 
+                pInputText 
+                [(ngModel)]="barcodeValue" 
+                (keyup.enter)="simulateScan()"
+                placeholder="أدخل رقم الباركود هنا..."
+                class="w-full"
+                autofocus>
+        </div>
+
+        <div class="field mt-3">
+            <label for="type">نوع العملية</label>
+            <p-dropdown 
+                id="type"
+                [options]="transactionTypes" 
+                [(ngModel)]="currentTransactionType" 
+                class="w-full"
+                [style]="{'width':'100%'}">
+            </p-dropdown>
+        </div>
+
+        <div class="flex justify-content-end mt-4">
+            <p-button 
+                label="محاكاة المسح" 
+                icon="pi pi-barcode" 
+                (onClick)="simulateScan()"
+                [disabled]="!barcodeValue.trim()">
+            </p-button>
+        </div>
+    </div>
+</p-dialog>

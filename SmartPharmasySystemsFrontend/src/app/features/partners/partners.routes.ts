@@ -12,11 +12,13 @@ export const PARTNERS_ROUTES: Routes = [
     },
     {
         path: 'suppliers/create',
-        loadComponent: () => import('./components/supplier-add-edit/supplier-add-edit.component').then(m => m.SupplierAddEditComponent)
+        redirectTo: 'suppliers',
+        pathMatch: 'full'
     },
     {
         path: 'suppliers/edit/:id',
-        loadComponent: () => import('./components/supplier-add-edit/supplier-add-edit.component').then(m => m.SupplierAddEditComponent)
+        redirectTo: 'suppliers',
+        pathMatch: 'full'
     },
     {
         path: 'suppliers/detail/:id',
@@ -24,7 +26,8 @@ export const PARTNERS_ROUTES: Routes = [
     },
     {
         path: 'suppliers/payments',
-        loadComponent: () => import('./components/supplier-payments/supplier-payments.component').then(m => m.SupplierPaymentsComponent)
+        redirectTo: 'suppliers',
+        pathMatch: 'full'
     },
     {
         path: 'suppliers/statement/:id',

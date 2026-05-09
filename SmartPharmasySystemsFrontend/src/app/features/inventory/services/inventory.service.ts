@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ApiResponse, Category, InventoryMovement, Medicine, MedicineBatch, PagedResult, CategoryQueryDto, MedicineQueryDto, StockMovementQueryDto } from '../../../core/models';
+import { ApiResponse, Category, InventoryMovement, Medicine, MedicineBatch, PagedResult, CategoryQueryDto, MedicineQueryDto, StockMovementQueryDto, StockCardDto } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -117,8 +117,10 @@ export class InventoryService {
         return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/StockMovements/${id}`).pipe(map(res => res.data));
     }
 
-    getStockCard(batchId: number): Observable<InventoryMovement[]> {
-        return this.http.get<ApiResponse<InventoryMovement[]>>(`${environment.apiUrl}/StockMovements/stock-card/${batchId}`).pipe(map(res => res.data));
+    getStockCard(medicineId: number, batchId?: number): Observable<StockCardDto[]> {
+        const params: any = { medicineId };
+        if (batchId) params.batchId = batchId;
+        return this.http.get<ApiResponse<StockCardDto[]>>(`${environment.apiUrl}/Movements/stock-card`, { params }).pipe(map(res => res.data));
     }
 
     /**

@@ -86,4 +86,25 @@ export class SupplierStatementComponent implements OnInit {
     print() {
         window.print();
     }
+
+    /** إجمالي فواتير الشراء الآجلة (دين علينا للمورد) */
+    getCreditTotal(): number {
+        return this.statement()?.transactions
+            ?.filter(t => t.type === 'فاتورة شراء')
+            ?.reduce((s, t) => s + (t.credit || 0), 0) ?? 0;
+    }
+
+    /** إجمالي سندات الصرف المدفوعة */
+    getPaymentTotal(): number {
+        return this.statement()?.transactions
+            ?.filter(t => t.type === 'سند صرف')
+            ?.reduce((s, t) => s + (t.debit || 0), 0) ?? 0;
+    }
+
+    /** إجمالي المرتجعات (دين على المورد لنا) */
+    getReturnTotal(): number {
+        return this.statement()?.transactions
+            ?.filter(t => t.type === 'مرتجع شراء')
+            ?.reduce((s, t) => s + (t.debit || 0), 0) ?? 0;
+    }
 }

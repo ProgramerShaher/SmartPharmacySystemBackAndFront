@@ -11,6 +11,8 @@
                 </div>
             </div>
             <div class="header-actions">
+                <p-button label="محاكاة باركود" icon="pi pi-barcode" styleClass="simulator-btn" [outlined]="true" (onClick)="toggleSimulator()"
+                    severity="info"></p-button>
                 <p-button label="حفظ كمسودة" icon="pi pi-save" styleClass="draft-btn" [outlined]="true" (onClick)="saveDraft()"
                     [loading]="saving"></p-button>
                 <p-button label="اعتماد وترحيل المخزن" icon="pi pi-check-circle" styleClass="approve-btn"
@@ -34,34 +36,36 @@
                         <p-inputSwitch [(ngModel)]="isCashCustomer" (onChange)="toggleCashCustomer()"></p-inputSwitch>
                         <span class="toggle-label">عميل نقدي طيار ✈️</span>
                     </div>
-<div class="form-row">
-    <!-- 1. حالة العميل الطيار -->
-    <div class="form-field" *ngIf="isCashCustomer">
-        <label>اسم العميل</label>
-        <input pInputText [(ngModel)]="flyingCustomerName" placeholder="أدخل اسم العميل..." class="w-full" />
-        <div class="flying-notice">
-            <i class="pi pi-info-circle"></i>
-            <strong>العميل الطيار: دفع نقدي</strong>
-        </div>
+
+
+                    <div class="form-row">
+                        <!-- 1. حالة العميل الطيار -->
+                        <div class="form-field" *ngIf="isCashCustomer">
+                            <label>اسم العميل</label>
+                            <input pInputText [(ngModel)]="flyingCustomerName" placeholder="أدخل اسم العميل..." class="w-full" />
+                            <div class="flying-notice">
+                                <i class="pi pi-info-circle"></i>
+                                <strong>العميل الطيار: دفع نقدي</strong>
+                            </div>
                         </div>
-<!-- 2. حالة العميل المسجل - Dropdown مع Filter -->
-<div class="form-field" *ngIf="!isCashCustomer">
-    <label>اختر العميل</label>
-    <p-dropdown [options]="customers" [(ngModel)]="selectedCustomer" optionLabel="name" placeholder="ابحث عن العميل..."
-        [filter]="true" filterBy="name" [showClear]="true" appendTo="body" styleClass="w-full">
-        <ng-template let-customer pTemplate="item">
-            <div class="customer-dropdown-item">
-                <span class="customer-name">{{ customer.name }}</span>
-                <span class="customer-phone">{{ customer.phone }}</span>
-            </div>
+                        <!-- 2. حالة العميل المسجل - Dropdown مع Filter -->
+                        <div class="form-field" *ngIf="!isCashCustomer">
+                            <label>اختر العميل</label>
+                            <p-dropdown [options]="customers" [(ngModel)]="selectedCustomer" optionLabel="name" placeholder="ابحث عن العميل..."
+                                [filter]="true" filterBy="name" [showClear]="true" appendTo="body" styleClass="w-full">
+                                <ng-template let-customer pTemplate="item">
+                                    <div class="customer-dropdown-item">
+                                        <span class="customer-name">{{ customer.name }}</span>
+                                        <span class="customer-phone">{{ customer.phone }}</span>
+                                    </div>
                                 </ng-template>
-                                </p-dropdown>
-                                </div>
-                                <!-- تاريخ الفاتورة -->
-                                <div class="form-field">
-                                    <label>تاريخ الفاتورة</label>
-                                    <p-calendar [(ngModel)]="invoiceDate" [showIcon]="true" dateFormat="dd/mm/yy" appendTo="body"
-                                        styleClass="w-full"></p-calendar>
+                            </p-dropdown>
+                        </div>
+                        <!-- تاريخ الفاتورة -->
+                        <div class="form-field">
+                            <label>تاريخ الفاتورة</label>
+                            <p-calendar [(ngModel)]="invoiceDate" [showIcon]="true" dateFormat="dd/mm/yy" appendTo="body"
+                                styleClass="w-full"></p-calendar>
                         </div>
 
                         <!-- طريقة السداد (مخفية للطيار) -->
@@ -70,9 +74,9 @@
                             <p-dropdown [options]="paymentMethods" [(ngModel)]="selectedPaymentMethod" optionLabel="label" optionValue="value"
                                 appendTo="body" styleClass="w-full"></p-dropdown>
                         </div>
-                        </div>
-                        </div>
-                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Items Table Card -->
             <div class="table-card">
@@ -251,13 +255,20 @@
             </div>
 
     </div>
-<ng-template pTemplate="footer">
-    <div class="modal-footer">
-        <p-button label="إلغاء" icon="pi pi-times" [outlined]="true" (onClick)="closeAddItemDialog()"></p-button>
-        <p-button label="إضافة للفاتورة" icon="pi pi-check" styleClass="add-to-invoice-btn"
-            (onClick)="addItemFromModal()" [disabled]="!selectedBatchForModal || !modalQuantity"></p-button>
-    </div>
+    <ng-template pTemplate="footer">
+        <div class="modal-footer">
+            <p-button label="إلغاء" icon="pi pi-times" [outlined]="true" (onClick)="closeAddItemDialog()"></p-button>
+            <p-button label="إضافة للفاتورة" icon="pi pi-check" styleClass="add-to-invoice-btn"
+                (onClick)="addItemFromModal()" [disabled]="!selectedBatchForModal || !modalQuantity"></p-button>
+        </div>
     </ng-template>
-    </p-dialog>
+</p-dialog>
 
 <p-toast position="top-left"></p-toast>
+
+<!-- Barcode Simulator -->
+<app-barcode-simulator 
+    [(visible)]="simulatorVisible" 
+    [currentTransactionType]="transactionType"
+    (onScan)="processScannedBarcode($event)">
+</app-barcode-simulator>

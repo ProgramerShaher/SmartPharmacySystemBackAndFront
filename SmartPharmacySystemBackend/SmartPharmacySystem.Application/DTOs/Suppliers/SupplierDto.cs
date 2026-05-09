@@ -1,3 +1,7 @@
+using SmartPharmacySystem.Application.DTOs.PurchaseInvoice;
+using SmartPharmacySystem.Application.DTOs.PurchaseReturns;
+using System.Text.Json.Serialization;
+
 namespace SmartPharmacySystem.Application.DTOs.Suppliers;
 
 /// <summary>
@@ -12,8 +16,10 @@ public class SupplierDto
     public string Address { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
+    public DateTime CreatedAt { get; set; }
 
-    [System.Text.Json.Serialization.JsonPropertyName("Balance")]
+    [JsonPropertyName("Balance")]
     public decimal Balance { get; set; }
 
     // Status Tracking & Dynamic Colors
@@ -24,4 +30,8 @@ public class SupplierDto
     // Action Tracking (Last Action)
     public string ActionByName { get; set; } = string.Empty;
     public DateTime ActionDate { get; set; }
+
+    // Relationships
+    public ICollection<PurchaseInvoiceQueryDto> PurchaseInvoices { get; set; } = new List<PurchaseInvoiceQueryDto>();
+    public ICollection<PurchaseReturnDto> PurchaseReturns { get; set; } = new List<PurchaseReturnDto>();
 }

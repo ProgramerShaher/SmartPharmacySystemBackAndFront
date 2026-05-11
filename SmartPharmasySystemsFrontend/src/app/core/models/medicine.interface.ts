@@ -22,6 +22,7 @@ export interface Medicine {
     reorderLevel: number;
     soldByUnit: boolean;
     status: string; // "Active" | "Inactive"
+    imageUrl?: string;
     notes?: string;
     createdAt: string;
     updatedAt?: string;
@@ -52,6 +53,7 @@ export interface CreateMedicineDto {
     minAlertQuantity: number;
     reorderLevel: number;
     soldByUnit: boolean;
+    imageUrl?: string;
     notes?: string;
 }
 
@@ -72,6 +74,7 @@ export interface UpdateMedicineDto {
     reorderLevel?: number;
     soldByUnit?: boolean;
     status?: string;
+    imageUrl?: string;
     notes?: string;
 }
 
@@ -112,6 +115,7 @@ export interface MedicineDto {
     reorderLevel: number;
     soldByUnit: boolean;
     status: string;
+    imageUrl?: string;
     notes?: string;
     totalQuantity?: number;
     stock?: number;

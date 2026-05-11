@@ -98,7 +98,7 @@ export class SalesReturnCreateComponent implements OnInit {
         const query = (event?.query ?? '').toString().trim();
 
         // SaleInvoiceService.getAll expects an object (search/page/...) not a raw string
-        this.salesService.getAll({ search: query }).subscribe({
+        this.salesService.getAll(query).subscribe({
             next: (invoices) => {
                 // Only show approved invoices
                 this.filteredInvoices = invoices.filter(

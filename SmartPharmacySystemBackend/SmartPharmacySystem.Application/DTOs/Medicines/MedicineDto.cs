@@ -87,6 +87,11 @@ public class MedicineDto
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
+    /// رابط الصورة
+    /// </summary>
+    public string? ImageUrl { get; set; }
+
+    /// <summary>
     /// ملاحظات
     /// </summary>
     public string Notes { get; set; } = string.Empty;

@@ -1,3 +1,4 @@
+using SmartPharmacySystem.Application.IServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Swashbuckle.AspNetCore.ReDoc;
 using Microsoft.IdentityModel.Tokens;
@@ -107,6 +108,10 @@ builder.Services.AddScoped<ICustomerReceiptService, CustomerReceiptService>();
 builder.Services.AddScoped<IReportService, ReportService>(); // Central Reporting Engine
 builder.Services.AddScoped<IMasterDashboardService, MasterDashboardService>(); // Master Dashboard - Single Source of Truth
 
+// -------------------- Mobile App Services --------------------
+builder.Services.AddScoped<IOnlineOrderService, OnlineOrderService>();
+builder.Services.AddScoped<IMobileAuthService, MobileAuthService>();
+
 // -------------------- HttpContextAccessor --------------------
 builder.Services.AddHttpContextAccessor();
 
@@ -122,14 +127,14 @@ builder.Services.AddHostedService<ExpiryCheckWorker>();
 // -------------------- CORS --------------------
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAngular",
+    // Global CORS Policy for Development
+    options.AddPolicy("AllowAll",
         policy =>
         {
             policy
-                .WithOrigins("http://localhost:4200")
+                .AllowAnyOrigin()
                 .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
+                .AllowAnyMethod();
         });
 });
 
@@ -204,8 +209,9 @@ if (app.Environment.IsDevelopment())
 
 app.MapHub<NotificationHub>("/notificationHub");
 
-app.UseHttpsRedirection();
-app.UseCors("AllowAngular");
+app.UseStaticFiles(); // Serve images from wwwroot/images/medicines/
+// app.UseHttpsRedirection(); // Disabled for mobile testing on local network
+app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();  // مهم جداً قبل Authorization
 app.UseAuthorization();

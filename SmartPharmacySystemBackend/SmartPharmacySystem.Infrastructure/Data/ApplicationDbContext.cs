@@ -45,6 +45,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<CustomerReceipt> CustomerReceipts { get; set; } = null!;
     public DbSet<Customer> Customers { get; set; } = null!;
     public DbSet<SupplierPayment> SupplierPayments { get; set; } = null!;
+    public DbSet<OnlineOrder> OnlineOrders { get; set; } = null!;
+    public DbSet<OnlineOrderItem> OnlineOrderItems { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -718,6 +720,45 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<Alert>()
             .HasIndex(a => a.CreatedAt)
             .HasDatabaseName("IX_Alerts_CreatedAt");
+
+        // ==================== OnlineOrder Configuration ====================
+        modelBuilder.Entity<OnlineOrder>(entity =>
+        {
+            entity.Property(o => o.OrderNumber).IsRequired().HasMaxLength(30);
+            entity.Property(o => o.TotalAmount).HasPrecision(18, 2);
+            entity.Property(o => o.DeliveryAddress).IsRequired().HasMaxLength(500);
+            entity.Property(o => o.CustomerNotes).HasMaxLength(1000);
+            entity.Property(o => o.Status).HasConversion<int>();
+            entity.Property(o => o.PaymentMethod).HasConversion<int>();
+            entity.HasIndex(o => o.OrderNumber).IsUnique();
+            entity.HasIndex(o => o.Status);
+            entity.HasIndex(o => o.OrderDate);
+
+            entity.HasOne(o => o.Customer)
+                  .WithMany()
+                  .HasForeignKey(o => o.CustomerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(o => o.Handler)
+                  .WithMany()
+                  .HasForeignKey(o => o.HandledBy)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<OnlineOrderItem>(entity =>
+        {
+            entity.Property(oi => oi.UnitPrice).HasPrecision(18, 2);
+
+            entity.HasOne(oi => oi.OnlineOrder)
+                  .WithMany(o => o.OrderItems)
+                  .HasForeignKey(oi => oi.OnlineOrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(oi => oi.Medicine)
+                  .WithMany()
+                  .HasForeignKey(oi => oi.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
     }
 
     public override int SaveChanges()

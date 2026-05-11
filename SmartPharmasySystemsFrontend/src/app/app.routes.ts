@@ -60,6 +60,10 @@ export const routes: Routes = [
             {
                 path: 'reports',
                 loadChildren: () => import('./features/reports/reports.routes').then(m => m.REPORTS_ROUTES)
+            },
+            {
+                path: 'online-orders',
+                loadChildren: () => import('./features/online-orders/online-orders.routes').then(m => m.ONLINE_ORDERS_ROUTES)
             }
         ]
     },

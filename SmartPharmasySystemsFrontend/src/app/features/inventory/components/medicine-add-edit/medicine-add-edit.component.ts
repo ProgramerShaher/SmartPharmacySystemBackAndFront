@@ -14,6 +14,7 @@ import { CategoryService } from '../../services/category.service';
 import { MedicineDto, CreateMedicineDto, UpdateMedicineDto, CategoryDto } from '../../../../core/models';
 import { TagModule } from "primeng/tag";
 import { DialogModule } from "primeng/dialog";
+import { UploadService } from '../../../../core/services/upload.service';
 
 @Component({
     selector: 'app-medicine-add-edit',
@@ -42,6 +43,7 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
 
     medicineForm: FormGroup;
     loading = signal(false);
+    uploading = signal(false);
     categories = signal<CategoryDto[]>([]);
 
     statusOptions = [
@@ -53,7 +55,8 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
         private fb: FormBuilder,
         private medicineService: MedicineService,
         private categoryService: CategoryService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private uploadService: UploadService
     ) {
         this.medicineForm = this.fb.group({
             internalCode: [''],
@@ -69,8 +72,43 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
             reorderLevel: [10, Validators.min(0)],
             soldByUnit: [true],
             status: ['Active'],
+            imageUrl: [''],
             notes: ['']
         }, { validators: this.priceValidator });
+    }
+
+    onFileSelected(event: any) {
+        const file: File = event.target.files[0];
+        if (!file) return;
+
+        // التحقق من الحجم (الحد الأقصى 2 ميجابايت) لمنع تعليق الجهاز
+        if (file.size > 2 * 1024 * 1024) {
+            this.messageService.add({ 
+                severity: 'warn', 
+                summary: 'تنبيه', 
+                detail: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت' 
+            });
+            return;
+        }
+
+        this.uploading.set(true);
+        this.uploadService.uploadMedicineImage(
+            file, 
+            this.medicineForm.get('categoryId')?.value || 'other',
+            'general',
+            this.medicineForm.get('name')?.value || 'medicine'
+        ).subscribe({
+            next: (res: any) => {
+                // نحن نخزن المسار فقط كما طلبت
+                this.medicineForm.patchValue({ imageUrl: res.imageUrl });
+                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ مسار الصورة بنجاح' });
+                this.uploading.set(false);
+            },
+            error: (err) => {
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل الرفع، تأكد من تشغيل السيرفر' });
+                this.uploading.set(false);
+            }
+        });
     }
 
     ngOnInit() {

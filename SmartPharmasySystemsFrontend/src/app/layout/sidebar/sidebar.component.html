@@ -33,7 +33,7 @@
           <div class="item-glow"></div>
         </a>
       </div>
-      </div>
+    </div>
 
     <div class="menu-separator"></div>
 
@@ -50,21 +50,21 @@
           </div>
           <span class="item-label">الأدوية والمنتجات</span>
           <div class="item-glow"></div>
-          </a>
+        </a>
         <a routerLink="/inventory/categories" routerLinkActive="active-route" class="menu-item">
           <div class="item-icon icon-categories">
             <i class="pi pi-tags"></i>
           </div>
           <span class="item-label">التصنيفات</span>
           <div class="item-glow"></div>
-          </a>
+        </a>
         <a routerLink="/inventory/movements" routerLinkActive="active-route" class="menu-item">
           <div class="item-icon icon-movements">
             <i class="pi pi-history"></i>
           </div>
           <span class="item-label">حركات المخزون</span>
           <div class="item-glow"></div>
-          </a>
+        </a>
         <a routerLink="/inventory/batches" routerLinkActive="active-route" class="menu-item">
           <div class="item-icon icon-batches">
             <i class="pi pi-list"></i>
@@ -72,7 +72,7 @@
           <span class="item-label">الدفعات</span>
           <div class="item-glow"></div>
         </a>
-        </div>
+      </div>
     </div>
 
     <!-- Sales Group -->
@@ -82,21 +82,30 @@
         <span>المبيعات</span>
       </div>
       <div class="menu-items">
-        <a routerLink="/sales" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }" class="menu-item">
+        <a routerLink="/sales" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
+          class="menu-item">
           <div class="item-icon icon-sales">
             <i class="pi pi-shopping-cart"></i>
           </div>
           <span class="item-label">فواتير المبيعات</span>
           <div class="item-glow"></div>
-          </a>
+        </a>
         <a routerLink="/sales/returns" routerLinkActive="active-route" class="menu-item">
           <div class="item-icon icon-returns">
             <i class="pi pi-replay"></i>
           </div>
           <span class="item-label">مرتجع المبيعات</span>
           <div class="item-glow"></div>
-          </a>
+        </a>
+        <a routerLink="/online-orders" routerLinkActive="active-route" class="menu-item online-orders-item">
+          <div class="item-icon icon-online-orders">
+            <i class="pi pi-globe"></i>
           </div>
+          <span class="item-label">طلبات الأونلاين</span>
+          <span class="new-badge">جديد</span>
+          <div class="item-glow"></div>
+        </a>
+      </div>
     </div>
 
     <!-- Purchases Group -->
@@ -112,41 +121,42 @@
           </div>
           <span class="item-label">فواتير الشراء</span>
           <div class="item-glow"></div>
-          </a>
-          <a routerLink="/purchases/returns" routerLinkActive="active-route" class="menu-item">
-            <div class="item-icon icon-purchase-returns">
-              <i class="pi pi-refresh"></i>
-            </div>
-            <span class="item-label">مرتجع المشتريات</span>
-            <div class="item-glow"></div>
-            </a>
-            </div>
+        </a>
+        <a routerLink="/purchases/returns" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-purchase-returns">
+            <i class="pi pi-refresh"></i>
           </div>
-          <!-- Partners Group -->
-          <div class="menu-group">
-            <div class="group-title">
-              <i class="pi pi-users"></i>
-              <span>الشركاء</span>
-            </div>
-            <div class="menu-items">
-              <a routerLink="/partners" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
-                class="menu-item">
-                <div class="item-icon icon-partners">
-                  <i class="pi pi-users"></i>
-                </div>
-                <span class="item-label">الموردين</span>
-                <div class="item-glow"></div>
-                </a>
-              <a routerLink="/customers" routerLinkActive="active-route" class="menu-item">
-                <div class="item-icon icon-customers">
-                  <i class="pi pi-user-plus"></i>
-                </div>
-                <span class="item-label">العملاء</span>
-                <div class="item-glow"></div>
-                </a>
+          <span class="item-label">مرتجع المشتريات</span>
+          <div class="item-glow"></div>
+        </a>
       </div>
     </div>
-    
+
+    <!-- Partners Group -->
+    <div class="menu-group">
+      <div class="group-title">
+        <i class="pi pi-users"></i>
+        <span>الشركاء</span>
+      </div>
+      <div class="menu-items">
+        <a routerLink="/partners" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
+          class="menu-item">
+          <div class="item-icon icon-partners">
+            <i class="pi pi-users"></i>
+          </div>
+          <span class="item-label">الموردين</span>
+          <div class="item-glow"></div>
+        </a>
+        <a routerLink="/customers" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-customers">
+            <i class="pi pi-user-plus"></i>
+          </div>
+          <span class="item-label">العملاء</span>
+          <div class="item-glow"></div>
+        </a>
+      </div>
+    </div>
+
     <!-- Financial Group -->
     <div class="menu-group">
       <div class="group-title">
@@ -161,123 +171,125 @@
           <span class="item-label">الخزينة والأرصدة</span>
           <div class="item-glow"></div>
         </a>
-          <a routerLink="/financial/ledger" routerLinkActive="active-route" class="menu-item">
-            <div class="item-icon icon-ledger">
-              <i class="pi pi-book"></i>
-            </div>
-            <span class="item-label">دفتر الأستاذ</span>
-            <div class="item-glow"></div>
-            </a>
-            
-            <!-- Expenses Submenu -->
-            <div class="submenu-wrapper">
-              <a (click)="toggleExpenseMenu()" class="menu-item submenu-trigger"
-                [class.active]="expenseMenuOpen || currentRoute.includes('/finance/expense')">
-                <div class="item-icon icon-expenses">
-                  <i class="pi pi-money-bill"></i>
-              </div>
-              <span class="item-label">المصروفات</span>
-              <i class="pi submenu-arrow" [class.pi-chevron-down]="!expenseMenuOpen" [class.pi-chevron-up]="expenseMenuOpen"></i>
-              <div class="item-glow"></div>
-              </a>
-            
-            <div class="submenu-items" [class.open]="expenseMenuOpen">
-              <a routerLink="/finance/expenses" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
-                class="submenu-item">
-                <i class="pi pi-list"></i>
-                <span>قائمة المصروفات</span>
-              </a>
-              <a routerLink="/finance/expenses/add" routerLinkActive="active-route" class="submenu-item">
-                <i class="pi pi-plus-circle"></i>
-                <span>إضافة مصروف</span>
-              </a>
-              <a routerLink="/finance/expense-categories" routerLinkActive="active-route" class="submenu-item">
-                <i class="pi pi-tag"></i>
-                <span>فئات المصروفات</span>
-              </a>
-            </div>
-            </div>
-            </div>
-            </div>
-<!-- Reports Group - التقارير -->
-<div class="menu-group">
-  <div class="group-title">
-    <i class="pi pi-chart-bar"></i>
-    <span>التقارير</span>
-  </div>
-  <div class="menu-items">
-    <!-- Reports Submenu -->
-    <div class="submenu-wrapper">
-      <a (click)="toggleReportsMenu()" class="menu-item submenu-trigger"
-        [class.active]="reportsMenuOpen || currentRoute.includes('/reports')">
-        <div class="item-icon icon-reports">
-          <i class="pi pi-file-edit"></i>
-        </div>
-        <span class="item-label">تقارير مالية</span>
-        <i class="pi submenu-arrow" [class.pi-chevron-down]="!reportsMenuOpen"
-          [class.pi-chevron-up]="reportsMenuOpen"></i>
-        <div class="item-glow"></div>
-      </a>
+        <a routerLink="/financial/ledger" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-ledger">
+            <i class="pi pi-book"></i>
+          </div>
+          <span class="item-label">دفتر الأستاذ</span>
+          <div class="item-glow"></div>
+        </a>
 
-      <div class="submenu-items" [class.open]="reportsMenuOpen">
-        <a routerLink="/reports/daily-sales" routerLinkActive="active-route" class="submenu-item">
-          <i class="pi pi-calendar"></i>
-          <span>المبيعات اليومية</span>
-        </a>
-        <a routerLink="/reports/employee-performance" routerLinkActive="active-route" class="submenu-item">
-          <i class="pi pi-id-card"></i>
-          <span>تقرير أداء الموظفين</span>
-        </a>
-        <a routerLink="/reports/best-selling" routerLinkActive="active-route" class="submenu-item">
-          <i class="pi pi-star"></i>
-          <span>الأكثر مبيعاً</span>
-        </a>
-        <a routerLink="/reports/customer-debts" routerLinkActive="active-route" class="submenu-item">
-          <i class="pi pi-users"></i>
-          <span>ديون العملاء</span>
-        </a>
-        <a routerLink="/reports/supplier-debts" routerLinkActive="active-route" class="submenu-item">
-          <i class="pi pi-truck"></i>
-          <span>ديون الموردين</span>
-        </a>
-        <a routerLink="/reports/net-profit" routerLinkActive="active-route" class="submenu-item">
-          <i class="pi pi-dollar"></i>
-          <span>صافي الأرباح</span>
-        </a>
-        <a routerLink="/reports/inventory-valuation" routerLinkActive="active-route" class="submenu-item">
-          <i class="pi pi-box"></i>
-          <span>تقييم المخزون</span>
-        </a>
+        <!-- Expenses Submenu -->
+        <div class="submenu-wrapper">
+          <a (click)="toggleExpenseMenu()" class="menu-item submenu-trigger"
+            [class.active]="expenseMenuOpen || currentRoute.includes('/finance/expense')">
+            <div class="item-icon icon-expenses">
+              <i class="pi pi-money-bill"></i>
+            </div>
+            <span class="item-label">المصروفات</span>
+            <i class="pi submenu-arrow" [class.pi-chevron-down]="!expenseMenuOpen"
+              [class.pi-chevron-up]="expenseMenuOpen"></i>
+            <div class="item-glow"></div>
+          </a>
+
+          <div class="submenu-items" [class.open]="expenseMenuOpen">
+            <a routerLink="/finance/expenses" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
+              class="submenu-item">
+              <i class="pi pi-list"></i>
+              <span>قائمة المصروفات</span>
+            </a>
+            <a routerLink="/finance/expenses/add" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-plus-circle"></i>
+              <span>إضافة مصروف</span>
+            </a>
+            <a routerLink="/finance/expense-categories" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-tag"></i>
+              <span>فئات المصروفات</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+
+    <!-- Reports Group - التقارير -->
+    <div class="menu-group">
+      <div class="group-title">
+        <i class="pi pi-chart-bar"></i>
+        <span>التقارير</span>
+      </div>
+      <div class="menu-items">
+        <!-- Reports Submenu -->
+        <div class="submenu-wrapper">
+          <a (click)="toggleReportsMenu()" class="menu-item submenu-trigger"
+            [class.active]="reportsMenuOpen || currentRoute.includes('/reports')">
+            <div class="item-icon icon-reports">
+              <i class="pi pi-file-edit"></i>
+            </div>
+            <span class="item-label">تقارير مالية</span>
+            <i class="pi submenu-arrow" [class.pi-chevron-down]="!reportsMenuOpen"
+              [class.pi-chevron-up]="reportsMenuOpen"></i>
+            <div class="item-glow"></div>
+          </a>
+
+          <div class="submenu-items" [class.open]="reportsMenuOpen">
+            <a routerLink="/reports/daily-sales" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-calendar"></i>
+              <span>المبيعات اليومية</span>
+            </a>
+            <a routerLink="/reports/employee-performance" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-id-card"></i>
+              <span>تقرير أداء الموظفين</span>
+            </a>
+            <a routerLink="/reports/best-selling" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-star"></i>
+              <span>الأكثر مبيعاً</span>
+            </a>
+            <a routerLink="/reports/customer-debts" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-users"></i>
+              <span>ديون العملاء</span>
+            </a>
+            <a routerLink="/reports/supplier-debts" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-truck"></i>
+              <span>ديون الموردين</span>
+            </a>
+            <a routerLink="/reports/net-profit" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-dollar"></i>
+              <span>صافي الأرباح</span>
+            </a>
+            <a routerLink="/reports/inventory-valuation" routerLinkActive="active-route" class="submenu-item">
+              <i class="pi pi-box"></i>
+              <span>تقييم المخزون</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Admin Group -->
     <div class="menu-group">
       <div class="group-title">
         <i class="pi pi-cog"></i>
         <span>الإدارة</span>
-        </div>
-        <div class="menu-items">
-          <a routerLink="/users" routerLinkActive="active-route" class="menu-item">
-            <div class="item-icon icon-users">
-              <i class="pi pi-id-card"></i>
-            </div>
-            <span class="item-label">المستخدمين والصلاحيات</span>
-            <div class="item-glow"></div>
-          </a>
-          <a routerLink="/system-alerts" routerLinkActive="active-route" class="menu-item alerts-menu-item">
-            <div class="item-icon icon-alerts">
-              <i class="pi pi-bell"></i>
-            </div>
-            <span class="item-label">التنبيهات</span>
-            <span class="alert-pill" *ngIf="unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
-            <div class="item-glow"></div>
-          </a>
-        </div>
-        </div>
-        </div>
+      </div>
+      <div class="menu-items">
+        <a routerLink="/users" routerLinkActive="active-route" class="menu-item">
+          <div class="item-icon icon-users">
+            <i class="pi pi-id-card"></i>
+          </div>
+          <span class="item-label">المستخدمين والصلاحيات</span>
+          <div class="item-glow"></div>
+        </a>
+        <a routerLink="/system-alerts" routerLinkActive="active-route" class="menu-item alerts-menu-item">
+          <div class="item-icon icon-alerts">
+            <i class="pi pi-bell"></i>
+          </div>
+          <span class="item-label">التنبيهات</span>
+          <span class="alert-pill" *ngIf="unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
+          <div class="item-glow"></div>
+        </a>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <div class="sidebar-footer">
@@ -288,4 +300,4 @@
       </div>
     </div>
   </div>
-  </div>
+</div>

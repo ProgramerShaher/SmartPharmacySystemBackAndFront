@@ -20,6 +20,21 @@
         <!-- Form Content -->
         <div class="p-4 overflow-y-auto" style="max-height: 60vh;">
             <form [formGroup]="categoryForm" class="grid p-fluid">
+                <!-- Image Upload Section -->
+                <div class="col-12 flex flex-column align-items-center mb-4">
+                    <div class="relative">
+                        <div class="w-8rem h-8rem border-circle border-3 border-primary-100 shadow-3 overflow-hidden bg-white flex align-items-center justify-content-center">
+                            <img *ngIf="categoryForm.get('imageUrl')?.value" [src]="categoryForm.get('imageUrl')?.value" class="w-full h-full object-cover" />
+                            <i *ngIf="!categoryForm.get('imageUrl')?.value" class="pi pi-briefcase text-4xl text-200"></i>
+                        </div>
+                        <label for="categoryImageUpload" class="absolute bottom-0 right-0 w-2.5rem h-2.5rem border-circle bg-primary text-white flex align-items-center justify-content-center cursor-pointer shadow-3 hover:bg-primary-600 transition-colors">
+                            <i class="pi" [ngClass]="uploading ? 'pi-spin pi-spinner' : 'pi-camera'"></i>
+                        </label>
+                        <input type="file" id="categoryImageUpload" class="hidden" accept="image/*" (change)="onFileSelected($event)" [disabled]="uploading" />
+                    </div>
+                    <span class="text-xs text-500 mt-2 font-medium">أيقونة الصنف</span>
+                </div>
+
                 <!-- Basic Info -->
                 <div class="col-12">
                     <label class="block font-bold mb-2 required-label">اسم الفئة</label>

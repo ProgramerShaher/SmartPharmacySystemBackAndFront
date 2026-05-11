@@ -20,6 +20,27 @@
         <div class="flex-grow-1 overflow-y-auto px-4 py-3 custom-scrollbar">
             <form [formGroup]="medicineForm" class="grid p-fluid">
     
+                <!-- Image Section -->
+                <div class="col-12 flex flex-column align-items-center mb-3">
+                    <div class="relative group">
+                        <div class="w-10rem h-10rem border-round-xl overflow-hidden shadow-2 border-2 border-teal-100 bg-white flex align-items-center justify-content-center">
+                            <img *ngIf="medicineForm.get('imageUrl')?.value" [src]="medicineForm.get('imageUrl')?.value" 
+                                class="w-full h-full object-cover" />
+                            <div *ngIf="!medicineForm.get('imageUrl')?.value" class="flex flex-column align-items-center text-400">
+                                <i class="pi pi-image text-4xl mb-2"></i>
+                                <span class="text-xs">بدون صورة</span>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-0 right-0 p-1">
+                            <label for="imageUpload" class="w-2.5rem h-2.5rem border-circle bg-teal-600 text-white flex align-items-center justify-content-center cursor-pointer shadow-3 hover:bg-teal-700 transition-colors">
+                                <i class="pi" [ngClass]="uploading() ? 'pi-spin pi-spinner' : 'pi-camera'"></i>
+                            </label>
+                            <input type="file" id="imageUpload" class="hidden" accept="image/*" (change)="onFileSelected($event)" [disabled]="uploading()" />
+                        </div>
+                    </div>
+                    <span class="text-xs text-500 mt-2">انقر على الكاميرا لرفع صورة المنتج</span>
+                </div>
+
                 <!-- Basic Info Section -->
                 <div class="col-12 text-xs text-500 font-bold mb-1 mt-1 uppercase tracking-wider">📌 المعلومات الأساسية</div>
     

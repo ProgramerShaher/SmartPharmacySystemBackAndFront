@@ -91,6 +91,11 @@ public class Medicine
     public string? Notes { get; set; }
 
     /// <summary>
+    /// Image URL for the medicine (used in mobile app catalog).
+    /// </summary>
+    public string? ImageUrl { get; set; }
+
+    /// <summary>
     /// Date and time when the medicine was created.
     /// </summary>
     public DateTime CreatedAt { get; set; }

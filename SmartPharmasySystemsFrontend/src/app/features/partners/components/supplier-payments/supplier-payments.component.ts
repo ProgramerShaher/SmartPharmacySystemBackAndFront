@@ -16,7 +16,14 @@ import { ToastModule } from 'primeng/toast';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
-
+type UnpaidInvoiceAllocation = {
+  invoiceId: number;
+  invoiceRef: string;
+  invoiceDate: string;
+  invoiceTotal: number;
+  allocated: number;
+  remaining: number;
+};
 
 @Component({
   selector: 'app-supplier-payments',
@@ -60,6 +67,7 @@ export class SupplierPaymentsComponent implements OnInit {
   // Data: unpaid invoices from backend (credit approved invoices)
   unpaidInvoices = signal<(PurchaseInvoice & { displayText?: string; remainingAmount?: number })[]>([]);
   filteredInvoices: any[] = [];
+  allocations = signal<UnpaidInvoiceAllocation[]>([]);
   selectedInvoiceId: number | null = null;
 
   constructor(
@@ -77,6 +85,8 @@ export class SupplierPaymentsComponent implements OnInit {
       purchaseInvoiceId: [null],
       notes: ['']
     });
+
+    this.paymentForm.get('amount')?.valueChanges.subscribe(() => this.recomputeAllocations());
   }
 
   ngOnInit(): void {
@@ -132,7 +142,7 @@ export class SupplierPaymentsComponent implements OnInit {
           remainingAmount: inv.totalAmount - (inv.paidAmount || 0),
           displayText: `${inv.purchaseInvoiceNumber || inv.id} (المتبقي: ${inv.totalAmount - (inv.paidAmount || 0)})`
         })).filter(inv => inv.remainingAmount > 0).sort((a, b) => +new Date(a.purchaseDate) - +new Date(b.purchaseDate));
-        
+
         this.unpaidInvoices.set(mapped);
       },
       error: () => {
@@ -143,8 +153,8 @@ export class SupplierPaymentsComponent implements OnInit {
 
   searchInvoices(event: any) {
     const query = event.query.toLowerCase();
-    this.filteredInvoices = this.unpaidInvoices().filter(inv => 
-      inv.displayText?.toLowerCase().includes(query) || 
+    this.filteredInvoices = this.unpaidInvoices().filter(inv =>
+      inv.displayText?.toLowerCase().includes(query) ||
       inv.purchaseInvoiceNumber?.toLowerCase().includes(query)
     );
   }
@@ -152,10 +162,10 @@ export class SupplierPaymentsComponent implements OnInit {
   onInvoiceSelect(event: any) {
     const inv = event.value;
     this.selectedInvoiceId = inv.id;
-    this.paymentForm.patchValue({ 
+    this.paymentForm.patchValue({
       amount: inv.remainingAmount,
       purchaseInvoiceId: inv.id,
-      referenceNo: inv.purchaseInvoiceNumber || String(inv.id) 
+      referenceNo: inv.purchaseInvoiceNumber || String(inv.id)
     });
   }
 
@@ -163,6 +173,7 @@ export class SupplierPaymentsComponent implements OnInit {
     this.selectedSupplier = event.value;
     this.paymentForm.patchValue({ supplierId: this.selectedSupplier });
     this.unpaidInvoices.set([]);
+    this.allocations.set([]);
 
     if (this.selectedSupplier?.id) {
       this.loadUnpaidInvoices(this.selectedSupplier.id);
@@ -189,7 +200,57 @@ export class SupplierPaymentsComponent implements OnInit {
     if (this.dialogMode) this.closed.emit();
   }
 
+  private recomputeAllocations() {
+    const amountRaw = this.paymentForm.get('amount')?.value;
+    const amount = Number(amountRaw || 0);
+    if (!this.unpaidInvoices().length) {
+      this.allocations.set([]);
+      return;
+    }
 
+    if (!Number.isFinite(amount) || amount <= 0) {
+      this.allocations.set(
+        this.unpaidInvoices().map(inv => ({
+          invoiceId: inv.id,
+          invoiceRef: inv.purchaseInvoiceNumber || String(inv.id),
+          invoiceDate: inv.purchaseDate,
+          invoiceTotal: inv.totalAmount,
+          allocated: 0,
+          remaining: inv.totalAmount
+        }))
+      );
+      return;
+    }
+
+    let remainingPayment = amount;
+
+    const next = this.unpaidInvoices().map(inv => {
+      const invoiceTotal = Number(inv.totalAmount || 0);
+      const allocated = Math.min(invoiceTotal, remainingPayment);
+      const invoiceRemaining = invoiceTotal - allocated;
+      remainingPayment -= allocated;
+
+      return {
+        invoiceId: inv.id,
+        invoiceRef: inv.purchaseInvoiceNumber || String(inv.id),
+        invoiceDate: inv.purchaseDate,
+        invoiceTotal,
+        allocated,
+        remaining: invoiceRemaining
+      };
+    }).filter(row => row.remaining > 0);
+
+    this.allocations.set(next);
+  }
+
+  get totalUnpaidDebtFull(): number {
+    // "الرصيد المستحق كامل" = sum of unpaid invoices totals
+    return this.unpaidInvoices().reduce((s, inv) => s + (inv.totalAmount || 0), 0);
+  }
+
+  get totalRemainingAfterEntry(): number {
+    return this.allocations().reduce((s, a) => s + a.remaining, 0);
+  }
 
   savePayment() {
     if (this.paymentForm.invalid || !this.paymentForm.value.supplierId?.id) {

@@ -16,6 +16,9 @@ namespace SmartPharmacySystem.Core.Entities
         [MaxLength(20)]
         public string? PhoneNumber { get; set; }
 
+        [MaxLength(150)]
+        public string? Email { get; set; }
+
         [MaxLength(500)]
         public string? Address { get; set; }
 
@@ -28,6 +31,12 @@ namespace SmartPharmacySystem.Core.Entities
         public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        // Mobile App Auth
+        [MaxLength(500)]
+        public string? PasswordHash { get; set; }
+
+        public bool IsDeleted { get; set; } = false;
 
         // Navigation
         public virtual ICollection<SaleInvoice> SaleInvoices { get; set; } = new List<SaleInvoice>();

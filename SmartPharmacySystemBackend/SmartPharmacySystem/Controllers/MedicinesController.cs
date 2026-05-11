@@ -21,10 +21,8 @@ namespace SmartPharmacySystem.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Search and paginate medicines with optional filters (category, manufacturer, status)
-        /// </summary>
-        /// <access>Admin | Pharmacist</access>
+        /// <access>Public | Admin | Pharmacist</access>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] MedicineQueryDto query)
         {

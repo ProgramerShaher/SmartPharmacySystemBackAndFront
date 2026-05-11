@@ -5,6 +5,7 @@ export interface Category {
     id: number;
     name: string;
     description?: string;
+    imageUrl?: string;
     createdAt?: string;
     isDeleted?: boolean;
 }
@@ -13,6 +14,7 @@ export interface CategoryDto {
     id: number;
     name: string;
     description?: string;
+    imageUrl?: string;
     createdAt: string;
     medicinesCount?: number;
 }
@@ -20,12 +22,14 @@ export interface CategoryDto {
 export interface CreateCategoryDto {
     name: string;
     description?: string;
+    imageUrl?: string;
 }
 
 export interface UpdateCategoryDto {
     id: number;
     name: string;
     description?: string;
+    imageUrl?: string;
 }
 
 export interface CategoryQueryDto {

@@ -20,10 +20,8 @@ namespace SmartPharmacySystem.Controllers
             _logger = logger;
         }
 
-        /// <summary>
-        /// Search and paginate categories with optional filters
-        /// </summary>
-        /// <access>Admin | Pharmacist</access>
+        /// <access>Public | Admin | Pharmacist</access>
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] CategoryQueryDto query)
         {

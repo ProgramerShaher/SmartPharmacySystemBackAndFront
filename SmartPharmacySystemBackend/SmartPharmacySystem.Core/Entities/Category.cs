@@ -25,6 +25,11 @@ public class Category
     public string? Description { get; set; }
 
     /// <summary>
+    /// URL of the category image.
+    /// </summary>
+    public string? ImageUrl { get; set; }
+
+    /// <summary>
     /// Date and time when the category was created.
     /// </summary>
     public DateTime CreatedAt { get; set; }

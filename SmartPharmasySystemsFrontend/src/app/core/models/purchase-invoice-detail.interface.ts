@@ -26,7 +26,7 @@ export interface PurchaseInvoiceDetail {
     expiryDate?: string | null; // ISO date string
     daysUntilExpiry: number;
     canSell: boolean;
-    expiryStatus: string; // 'Valid' | 'Expiring Soon' | 'Expired'
+    expiryStatus?: string; // 'Valid' | 'Expiring Soon' | 'Expired'
 
     // Navigation Properties
     purchaseInvoice?: PurchaseInvoice;

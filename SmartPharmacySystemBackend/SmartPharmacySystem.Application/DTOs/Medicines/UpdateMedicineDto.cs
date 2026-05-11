@@ -77,6 +77,11 @@ public class UpdateMedicineDto
     public string Status { get; set; } = string.Empty;
 
     /// <summary>
+    /// رابط صورة الدواء
+    /// </summary>
+    public string? ImageUrl { get; set; }
+
+    /// <summary>
     /// ملاحظات
     /// </summary>
     public string Notes { get; set; } = string.Empty;

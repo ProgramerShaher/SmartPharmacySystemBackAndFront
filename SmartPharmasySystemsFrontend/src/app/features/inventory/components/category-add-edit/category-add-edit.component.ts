@@ -11,6 +11,8 @@ import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CategoryDto, CreateCategoryDto, UpdateCategoryDto } from '../../../../core/models';
 
+import { UploadService } from '../../../../core/services/upload.service';
+
 @Component({
     selector: 'app-category-add-edit',
     standalone: true,
@@ -35,6 +37,7 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
     categoryForm: FormGroup;
     editMode = false;
     saving = false;
+    uploading = false;
 
     // بيانات الفئة
     categoryData: CategoryDto | null = null;
@@ -42,9 +45,39 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
     constructor(
         private fb: FormBuilder,
         private categoryService: CategoryService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private uploadService: UploadService
     ) {
         this.categoryForm = this.createForm();
+    }
+
+    onFileSelected(event: any) {
+        const file: File = event.target.files[0];
+        if (!file) return;
+
+        // التحقق من الحجم (الحد الأقصى 2 ميجابايت) لمنع تعليق الجهاز
+        if (file.size > 2 * 1024 * 1024) {
+            this.messageService.add({ 
+                severity: 'warn', 
+                summary: 'تنبيه', 
+                detail: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت' 
+            });
+            return;
+        }
+
+        this.uploading = true;
+        this.uploadService.uploadCategoryImage(file, this.categoryForm.get('name')?.value || 'category').subscribe({
+            next: (res: any) => {
+                // نخزن المسار فقط في قاعدة البيانات
+                this.categoryForm.patchValue({ imageUrl: res.imageUrl });
+                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ مسار الأيقونة بنجاح' });
+                this.uploading = false;
+            },
+            error: (err) => {
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل الرفع، تأكد من تشغيل السيرفر' });
+                this.uploading = false;
+            }
+        });
     }
 
     ngOnInit(): void {
@@ -69,7 +102,8 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
                 Validators.minLength(2),
                 Validators.maxLength(100)
             ]],
-            description: ['', Validators.maxLength(500)]
+            description: ['', Validators.maxLength(500)],
+            imageUrl: ['']
         });
     }
 
@@ -95,14 +129,16 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
     private patchFormValues(data: CategoryDto): void {
         this.categoryForm.patchValue({
             name: data.name,
-            description: data.description || ''
+            description: data.description || '',
+            imageUrl: data.imageUrl || ''
         });
     }
 
     private resetForm(): void {
         this.categoryForm.reset({
             name: '',
-            description: ''
+            description: '',
+            imageUrl: ''
         });
         this.categoryData = null;
     }
@@ -120,7 +156,8 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
             const updateDto: UpdateCategoryDto = {
                 id: this.categoryId,
                 name: formValue.name,
-                description: formValue.description
+                description: formValue.description,
+                imageUrl: formValue.imageUrl
             };
 
             this.categoryService.update(this.categoryId, updateDto).subscribe({
@@ -139,7 +176,8 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
         } else {
             const createDto: CreateCategoryDto = {
                 name: formValue.name,
-                description: formValue.description
+                description: formValue.description,
+                imageUrl: formValue.imageUrl
             };
 
             this.categoryService.create(createDto).subscribe({

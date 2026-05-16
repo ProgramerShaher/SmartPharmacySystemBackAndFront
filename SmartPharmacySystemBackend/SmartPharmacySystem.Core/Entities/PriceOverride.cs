@@ -6,10 +6,8 @@ namespace SmartPharmacySystem.Core.Entities
     /// <summary>
     /// Logs instances where a medicine was sold below its purchase cost.
     /// </summary>
-    public class PriceOverride
+    public class PriceOverride : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
 
         public int SaleInvoiceId { get; set; }
         public int MedicineId { get; set; }
@@ -26,7 +24,6 @@ namespace SmartPharmacySystem.Core.Entities
         [Required]
         public string Reason { get; set; } = string.Empty;
         
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
         public SaleInvoice SaleInvoice { get; set; } = null!;

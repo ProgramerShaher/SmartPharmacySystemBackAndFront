@@ -6,10 +6,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// Represents a financial transaction (Income or Expense) affecting the pharmacy balance.
 /// </summary>
-public class FinancialTransaction
+public class FinancialTransaction : BaseEntity
 {
-    [Key]
-    public int Id { get; set; }
 
     /// <summary>
     /// معرف الحساب المرتبط بهذه الحركة
@@ -58,10 +56,6 @@ public class FinancialTransaction
     /// </summary>
     public DateTime TransactionDate { get; set; }
 
-    /// <summary>
-    /// Date and time when the transaction was created in the system.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
 
     /// <summary>
     /// Navigation property to the pharmacy account.

@@ -31,7 +31,7 @@ public class EmployeePerformanceReportDto
 
 public class EmployeePerformanceSummaryDto
 {
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public int RoleId { get; set; }
@@ -51,7 +51,7 @@ public class EmployeeSalesInvoiceDto
     public string InvoiceNumber { get; set; } = string.Empty;
     public DateTime InvoiceDate { get; set; }
     public DateTime CreatedAt { get; set; }
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
     public string RoleName { get; set; } = string.Empty;
     public string? CustomerName { get; set; }
@@ -68,7 +68,7 @@ public class EmployeeSalesReturnDto
     public string SaleInvoiceNumber { get; set; } = string.Empty;
     public DateTime ReturnDate { get; set; }
     public DateTime CreatedAt { get; set; }
-    public int EmployeeId { get; set; }
+    public int? EmployeeId { get; set; }
     public string EmployeeName { get; set; } = string.Empty;
     public string RoleName { get; set; } = string.Empty;
     public string? CustomerName { get; set; }

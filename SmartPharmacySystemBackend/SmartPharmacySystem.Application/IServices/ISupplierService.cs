@@ -1,5 +1,6 @@
 using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.DTOs.Suppliers;
+using SmartPharmacySystem.Application.DTOs.SupplierPayments;
 
 namespace SmartPharmacySystem.Application.Interfaces
 {
@@ -11,5 +12,6 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<SupplierDto?> GetByIdAsync(int id);
         Task<IEnumerable<SupplierDto>> GetAllAsync();
         Task<PagedResult<SupplierDto>> SearchAsync(SupplierQueryDto query);
+        Task<SupplierStatementDto> GetStatementAsync(int supplierId);
     }
 }

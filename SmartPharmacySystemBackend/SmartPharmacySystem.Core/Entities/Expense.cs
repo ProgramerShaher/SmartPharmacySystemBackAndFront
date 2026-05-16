@@ -7,12 +7,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents expenses in the pharmacy system.
 /// Tracks all non-medicine related expenditures.
 /// </summary>
-public class Expense
+public class Expense : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the expense.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// معرف فئة المصروف
@@ -53,20 +49,6 @@ public class Expense
     /// </summary>
     public bool IsPaid { get; set; } = false;
 
-    /// <summary>
-    /// Date and time when the expense was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
-    /// User ID who created the expense.
-    /// </summary>
-    public int CreatedBy { get; set; }
 
     /// <summary>
     /// Navigation property for the category.

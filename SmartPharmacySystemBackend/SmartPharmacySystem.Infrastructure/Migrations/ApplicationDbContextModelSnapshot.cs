@@ -22,6 +22,280 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Account", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CurrentBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsMainAccount")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("ParentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("Accounts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "1",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "الأصول",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Code = "11",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "الأصول المتداولة",
+                            ParentId = 1,
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 1101,
+                            Code = "1101",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "الصندوق الرئيسي",
+                            ParentId = 11,
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 1102,
+                            Code = "1102",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "البنك - حساب جاري",
+                            ParentId = 11,
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 1301,
+                            Code = "1301",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "مخزون الأدوية",
+                            ParentId = 11,
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "2",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "الخصوم",
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Code = "21",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "الخصوم المتداولة",
+                            ParentId = 2,
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = 2101,
+                            Code = "2101",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "ذمم الموردين",
+                            ParentId = 21,
+                            Type = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "3",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "حقوق الملكية",
+                            Type = 3
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Code = "31",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "رأس المال",
+                            ParentId = 3,
+                            Type = 3
+                        },
+                        new
+                        {
+                            Id = 3101,
+                            Code = "3101",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "رأس مال الشركاء",
+                            ParentId = 31,
+                            Type = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Code = "4",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "الإيرادات",
+                            Type = 4
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Code = "41",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "إيرادات المبيعات",
+                            ParentId = 4,
+                            Type = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Code = "5",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = true,
+                            Name = "المصروفات",
+                            Type = 5
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Code = "51",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "تكلفة المشتريات",
+                            ParentId = 5,
+                            Type = 5
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Code = "52",
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CurrentBalance = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMainAccount = false,
+                            Name = "مصروفات تشغيلية",
+                            ParentId = 5,
+                            Type = 5
+                        });
+                });
+
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Alert", b =>
                 {
                     b.Property<int>("Id")
@@ -39,6 +313,15 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("ExpiryDateSnapshot")
                         .HasColumnType("datetime2");
 
@@ -53,6 +336,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -77,6 +366,15 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -90,9 +388,120 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "أدوية علاج الالتهابات البكتيرية",
+                            IsDeleted = false,
+                            Name = "مضادات حيوية"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "أدوية تخفيف الألم وخافضات الحرارة",
+                            IsDeleted = false,
+                            Name = "مسكنات"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Description = "مكملات غذائية وفيتامينات",
+                            IsDeleted = false,
+                            Name = "فيتامينات"
+                        });
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Cheque", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ChequeNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("JournalEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PersonName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.HasIndex("ChequeNumber");
+
+                    b.HasIndex("DueDate");
+
+                    b.HasIndex("JournalEntryId");
+
+                    b.ToTable("Cheques");
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Customer", b =>
@@ -102,6 +511,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Address")
                         .HasMaxLength(500)
@@ -116,9 +528,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("CreditLimit")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18, 2)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasMaxLength(150)
@@ -143,11 +564,32 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("Name");
 
                     b.ToTable("Customers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Balance = 0m,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreditLimit = 0m,
+                            IsActive = true,
+                            IsDeleted = false,
+                            Name = "عميل نقدي عام",
+                            PhoneNumber = "000000000"
+                        });
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.CustomerReceipt", b =>
@@ -171,13 +613,22 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<int?>("CreatedBy")
                         .HasColumnType("int");
 
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsCancelled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Notes")
@@ -194,6 +645,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<string>("ReferenceNo")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -225,7 +682,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("ExpenseDate")
@@ -241,6 +704,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -260,8 +729,20 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .HasMaxLength(250)
@@ -275,7 +756,15 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.ToTable("ExpenseCategories");
 
@@ -283,7 +772,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 141, DateTimeKind.Utc).AddTicks(8874),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(4368),
                             Description = "رواتب الموظفين والبدلات",
                             IsDeleted = false,
                             Name = "رواتب"
@@ -291,7 +780,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1595),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6903),
                             Description = "إيجار مقر الصيدلية والمخازن",
                             IsDeleted = false,
                             Name = "إيجار"
@@ -299,7 +788,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1624),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6908),
                             Description = "فواتير الكهرباء",
                             IsDeleted = false,
                             Name = "كهرباء"
@@ -307,7 +796,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1626),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6911),
                             Description = "فواتير المياه",
                             IsDeleted = false,
                             Name = "مياه"
@@ -315,7 +804,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1627),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6913),
                             Description = "فواتير الهاتف والاشتراكات",
                             IsDeleted = false,
                             Name = "اتصالات وانترنت"
@@ -323,7 +812,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1633),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6915),
                             Description = "أدوات مكتبية ومطبوعات",
                             IsDeleted = false,
                             Name = "قرطاسية وأدوات مكتبية"
@@ -331,7 +820,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1640),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6918),
                             Description = "صيانة المعدات والمباني",
                             IsDeleted = false,
                             Name = "صيانة"
@@ -339,7 +828,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 8,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1859),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6920),
                             Description = "أدوات ومواد نظافة",
                             IsDeleted = false,
                             Name = "نظافة"
@@ -347,7 +836,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 9,
-                            CreatedAt = new DateTime(2026, 5, 11, 1, 32, 42, 142, DateTimeKind.Utc).AddTicks(1867),
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6922),
                             Description = "مصاريف متنوعة",
                             IsDeleted = false,
                             Name = "أخرى"
@@ -372,10 +861,22 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<int>("ReferenceId")
                         .HasColumnType("int");
@@ -387,6 +888,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -413,11 +920,23 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<int?>("BatchId")
                         .HasColumnType("int");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<int>("MedicineId")
                         .HasColumnType("int");
@@ -442,6 +961,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<int>("ReferenceType")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BatchId");
@@ -459,12 +984,33 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("LastNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("Prefix")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.Property<int>("Year")
                         .HasColumnType("int");
@@ -475,6 +1021,177 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("InvoiceSequences");
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.JournalEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("EntryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPosted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PostedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReferenceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReferenceType")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalCredit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalDebit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VoucherNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntryDate");
+
+                    b.HasIndex("VoucherNumber")
+                        .IsUnique();
+
+                    b.ToTable("JournalEntries");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            CreatedBy = 1,
+                            Description = "قيد افتتاحي - رصيد الصندوق",
+                            EntryDate = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            IsPosted = true,
+                            TotalCredit = 50000m,
+                            TotalDebit = 50000m,
+                            Type = 4,
+                            VoucherNumber = "OB-2025-001"
+                        });
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.JournalEntryLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Credit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Debit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("JournalEntryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.HasIndex("JournalEntryId");
+
+                    b.ToTable("JournalEntryLines");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            AccountId = 1101,
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 940, DateTimeKind.Utc).AddTicks(6767),
+                            Credit = 0m,
+                            Debit = 50000m,
+                            Description = "إيداع رصيد افتتاحي",
+                            IsDeleted = false,
+                            JournalEntryId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            AccountId = 3101,
+                            CreatedAt = new DateTime(2026, 5, 14, 16, 52, 4, 940, DateTimeKind.Utc).AddTicks(9999),
+                            Credit = 50000m,
+                            Debit = 0m,
+                            Description = "إثبات رأس المال",
+                            IsDeleted = false,
+                            JournalEntryId = 1
+                        });
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Medicine", b =>
@@ -494,6 +1211,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("DefaultBarcode")
                         .HasColumnType("nvarchar(450)");
 
@@ -504,6 +1224,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<decimal>("DefaultSalePrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
@@ -547,6 +1273,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DefaultBarcode")
@@ -562,6 +1291,42 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasDatabaseName("IX_Medicines_CategoryId_Status");
 
                     b.ToTable("Medicines");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CategoryId = 2,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DefaultBarcode = "5011309100010",
+                            DefaultPurchasePrice = 10.00m,
+                            DefaultSalePrice = 15.00m,
+                            IsDeleted = false,
+                            MinAlertQuantity = 0,
+                            MovingAverageCost = 0m,
+                            Name = "Panadol Advance",
+                            ReorderLevel = 10,
+                            ScientificName = "Paracetamol",
+                            SoldByUnit = false,
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CategoryId = 1,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DefaultBarcode = "5011309100020",
+                            DefaultPurchasePrice = 60.00m,
+                            DefaultSalePrice = 85.00m,
+                            IsDeleted = false,
+                            MinAlertQuantity = 0,
+                            MovingAverageCost = 0m,
+                            Name = "Augmentin 1g",
+                            ReorderLevel = 10,
+                            ScientificName = "Amoxicillin",
+                            SoldByUnit = false,
+                            Status = "Active"
+                        });
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.MedicineBatch", b =>
@@ -581,7 +1346,16 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("EntryDate")
@@ -623,6 +1397,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<decimal>("UnitPurchasePrice")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BatchBarcode")
@@ -651,12 +1431,24 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
                     b.Property<string>("CustomerNotes")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("DeliveryAddress")
                         .IsRequired()
@@ -690,6 +1482,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerId");
@@ -714,6 +1512,21 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MedicineId")
                         .HasColumnType("int");
 
@@ -726,6 +1539,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -751,16 +1570,31 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -776,8 +1610,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Balance = 0m,
                             CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             IsActive = true,
-                            LastUpdated = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Name = "الخزينة الرئيسية"
+                            IsDeleted = false,
+                            Name = "الخزينة الرئيسية",
+                            UpdatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 
@@ -799,6 +1634,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<int>("MedicineId")
                         .HasColumnType("int");
 
@@ -812,6 +1659,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<decimal>("SoldPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -852,7 +1705,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -891,6 +1750,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ApprovedBy");
@@ -925,6 +1790,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<int>("BonusQuantity")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -952,6 +1829,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<decimal>("TrueUnitCost")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -987,7 +1870,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -1011,6 +1900,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<decimal>("TotalAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1038,6 +1933,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<int>("BatchId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1057,6 +1964,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<decimal>("TotalReturn")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1080,14 +1993,32 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -1102,6 +2033,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "مدير النظام - صلاحيات كاملة",
+                            IsDeleted = false,
                             Name = "Admin"
                         },
                         new
@@ -1109,6 +2041,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Id = 2,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "صيدلي - صلاحيات البيع والشراء",
+                            IsDeleted = false,
                             Name = "Pharmacist"
                         });
                 });
@@ -1136,7 +2069,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<int?>("CreatedBy")
                         .HasColumnType("int");
 
                     b.Property<int?>("CustomerId")
@@ -1144,6 +2077,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.Property<string>("CustomerName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("InvoiceDate")
                         .HasColumnType("datetime2");
@@ -1177,6 +2116,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ApprovedBy");
@@ -1207,6 +2152,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BatchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -1244,6 +2201,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BatchId");
@@ -1278,10 +2241,16 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<int?>("CreatedBy")
                         .HasColumnType("int");
 
                     b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -1311,6 +2280,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ApprovedBy");
@@ -1335,6 +2310,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BatchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -1373,6 +2360,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BatchId");
@@ -1392,6 +2385,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AccountId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Address")
                         .HasColumnType("nvarchar(max)");
 
@@ -1401,6 +2397,15 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -1421,7 +2426,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("IX_Suppliers_Name_Performance");
@@ -1430,6 +2440,17 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasDatabaseName("IX_Suppliers_PhoneNumber");
 
                     b.ToTable("Suppliers");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Balance = 0m,
+                            CreatedAt = new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsDeleted = false,
+                            Name = "شركة الأدوية العالمية",
+                            PhoneNumber = "011223344"
+                        });
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.SupplierPayment", b =>
@@ -1444,7 +2465,10 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int>("CreatedBy")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -1473,6 +2497,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<int>("SupplierId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("PaymentDate");
@@ -1496,6 +2526,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
@@ -1535,6 +2571,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -1559,7 +2601,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "admin@pharmacy.com",
                             FullName = "مدير النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$KFdn0eZZ0M3qM.woAwvEaeEqYThljAwmuXxfXuCvxNMLiM2dOULp6",
+                            PasswordHash = "$2a$11$NVYzryB8fGgw7herjOYl1uH6wpPWK/aLulVgm2T0iPmuf8uEmQ1Bq",
                             RoleId = 1,
                             Status = 1,
                             Username = "admin"
@@ -1572,11 +2614,21 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "pharmacist@pharmacy.com",
                             FullName = "صيدلي النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$KFdn0eZZ0M3qM.woAwvEaeEqYThljAwmuXxfXuCvxNMLiM2dOULp6",
+                            PasswordHash = "$2a$11$NVYzryB8fGgw7herjOYl1uH6wpPWK/aLulVgm2T0iPmuf8uEmQ1Bq",
                             RoleId = 2,
                             Status = 1,
                             Username = "pharmacist"
                         });
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Account", b =>
+                {
+                    b.HasOne("SmartPharmacySystem.Core.Entities.Account", "Parent")
+                        .WithMany("Children")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Alert", b =>
@@ -1588,6 +2640,30 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Batch");
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Cheque", b =>
+                {
+                    b.HasOne("SmartPharmacySystem.Core.Entities.Account", "BankAccount")
+                        .WithMany()
+                        .HasForeignKey("BankAccountId");
+
+                    b.HasOne("SmartPharmacySystem.Core.Entities.JournalEntry", "JournalEntry")
+                        .WithMany()
+                        .HasForeignKey("JournalEntryId");
+
+                    b.Navigation("BankAccount");
+
+                    b.Navigation("JournalEntry");
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Customer", b =>
+                {
+                    b.HasOne("SmartPharmacySystem.Core.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.CustomerReceipt", b =>
@@ -1620,6 +2696,15 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.ExpenseCategory", b =>
+                {
+                    b.HasOne("SmartPharmacySystem.Core.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.FinancialTransaction", b =>
                 {
                     b.HasOne("SmartPharmacySystem.Core.Entities.PharmacyAccount", "Account")
@@ -1649,6 +2734,25 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Navigation("Medicine");
                 });
 
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.JournalEntryLine", b =>
+                {
+                    b.HasOne("SmartPharmacySystem.Core.Entities.Account", "Account")
+                        .WithMany("JournalEntryLines")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SmartPharmacySystem.Core.Entities.JournalEntry", "JournalEntry")
+                        .WithMany("Lines")
+                        .HasForeignKey("JournalEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+
+                    b.Navigation("JournalEntry");
+                });
+
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Medicine", b =>
                 {
                     b.HasOne("SmartPharmacySystem.Core.Entities.Category", "Category")
@@ -1664,8 +2768,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.HasOne("SmartPharmacySystem.Core.Entities.User", "CreatedByUser")
                         .WithMany("CreatedBatches")
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SmartPharmacySystem.Core.Entities.Medicine", "Medicine")
                         .WithMany("MedicineBatches")
@@ -1765,8 +2868,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.HasOne("SmartPharmacySystem.Core.Entities.User", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SmartPharmacySystem.Core.Entities.Supplier", "Supplier")
                         .WithMany("PurchaseInvoices")
@@ -1825,8 +2927,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.HasOne("SmartPharmacySystem.Core.Entities.User", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SmartPharmacySystem.Core.Entities.PurchaseInvoice", "PurchaseInvoice")
                         .WithMany()
@@ -1893,8 +2994,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.HasOne("SmartPharmacySystem.Core.Entities.User", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SmartPharmacySystem.Core.Entities.Customer", "Customer")
                         .WithMany("SaleInvoices")
@@ -1952,8 +3052,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.HasOne("SmartPharmacySystem.Core.Entities.User", "Creator")
                         .WithMany()
                         .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SmartPharmacySystem.Core.Entities.Customer", "Customer")
                         .WithMany()
@@ -2003,6 +3102,15 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Navigation("SalesReturn");
                 });
 
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Supplier", b =>
+                {
+                    b.HasOne("SmartPharmacySystem.Core.Entities.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.SupplierPayment", b =>
                 {
                     b.HasOne("SmartPharmacySystem.Core.Entities.PurchaseInvoice", "PurchaseInvoice")
@@ -2038,6 +3146,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Account", b =>
+                {
+                    b.Navigation("Children");
+
+                    b.Navigation("JournalEntryLines");
+                });
+
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Category", b =>
                 {
                     b.Navigation("Medicines");
@@ -2053,6 +3168,11 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.ExpenseCategory", b =>
                 {
                     b.Navigation("Expenses");
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.JournalEntry", b =>
+                {
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Medicine", b =>

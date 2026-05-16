@@ -4,12 +4,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a medicine in the pharmacy management system.
 /// Medicines are the core products managed in the system.
 /// </summary>
-public class Medicine
+public class Medicine : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the medicine.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Internal code for the medicine used within the system.
@@ -95,20 +91,6 @@ public class Medicine
     /// </summary>
     public string? ImageUrl { get; set; }
 
-    /// <summary>
-    /// Date and time when the medicine was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// Date and time when the medicine was last updated.
-    /// </summary>
-    public DateTime? UpdatedAt { get; set; }
-
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Navigation property to the category.

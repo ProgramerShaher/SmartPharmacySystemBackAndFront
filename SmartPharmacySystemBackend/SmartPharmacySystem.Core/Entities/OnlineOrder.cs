@@ -8,9 +8,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// Represents an online order placed by a customer from the mobile application.
 /// </summary>
-public class OnlineOrder
+public class OnlineOrder : BaseEntity
 {
-    public int Id { get; set; }
     
     public string OrderNumber { get; set; } = string.Empty;
     
@@ -30,7 +29,6 @@ public class OnlineOrder
     
     // Status
     public OnlineOrderStatus Status { get; set; } = OnlineOrderStatus.Pending;
-    public bool IsDeleted { get; set; }
 
     // Action tracking
     public int? HandledBy { get; set; } // Pharmacist who approved/rejected

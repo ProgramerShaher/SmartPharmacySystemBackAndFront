@@ -4,10 +4,8 @@ using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Entities
 {
-    public class CustomerReceipt
+    public class CustomerReceipt : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
 
         public int CustomerId { get; set; }
 
@@ -29,12 +27,10 @@ namespace SmartPharmacySystem.Core.Entities
         [MaxLength(500)]
         public string? Notes { get; set; }
 
-        public int CreatedBy { get; set; }
 
         public bool IsCancelled { get; set; } = false;
         public DateTime? CancelledAt { get; set; }
         public int? CancelledBy { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

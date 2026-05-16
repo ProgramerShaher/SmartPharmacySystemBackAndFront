@@ -1,0 +1,137 @@
+<div class="financial-container animate-fade-in" dir="rtl">
+    <!-- Slim Header -->
+    <div class="compact-header shadow-sm">
+        <div class="d-flex align-items-center">
+            <i class="pi pi-file-pdf me-2 text-primary" style="font-size: 1.2rem;"></i>
+            <h1 style="font-size: 14px; font-weight: 800; margin: 0;">القوائم المالية الإمبراطورية الموحدة</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <button pButton label="تصدير" icon="pi pi-file-excel" class="p-button-sm p-button-success p-button-outlined"
+                (click)="exportToExcel()"></button>
+            <button pButton label="طباعة القوائم" icon="pi pi-print"
+                class="p-button-sm p-button-secondary p-button-outlined" (click)="printReport()"></button>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold" style="font-size: 11px;">فترة التقرير من - إلى:</span>
+            <p-calendar [(ngModel)]="dateRange" selectionMode="range" [showIcon]="true" dateFormat="dd/mm/yy"
+                styleClass="p-inputtext-sm" (onSelect)="loadStatements()">
+            </p-calendar>
+        </div>
+        <button pButton label="تحديث القوائم" class="p-button-sm" icon="pi pi-sync" (click)="loadStatements()"
+            [loading]="loading()"></button>
+    </div>
+
+    <!-- Main Grid Content -->
+    <div class="statements-grid" *ngIf="!loading() && incomeStatement() && balanceSheet()">
+
+        <!-- Column 1: Income Statement -->
+        <div class="statement-card">
+            <div class="card-header">
+                <span><i class="pi pi-chart-line me-2"></i>قائمة الدخل (Income Statement)</span>
+                <span class="text-muted" style="font-size: 10px;">{{dateRange()[0] | date:'yyyy/MM/dd'}} -
+                    {{dateRange()[1] | date:'yyyy/MM/dd'}}</span>
+            </div>
+
+            <div class="section-title">الإيرادات والنشاط (Revenues)</div>
+            <table class="micro-table">
+                <tr *ngFor="let item of incomeStatement()!.revenues" class="revenue-row">
+                    <td class="account-name">{{item.accountName}}</td>
+                    <td class="amount">{{formatCurrency(item.amount)}}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>إجمالي الإيرادات</td>
+                    <td class="amount text-primary">{{formatCurrency(incomeStatement()!.totalRevenue)}}</td>
+                </tr>
+            </table>
+
+            <div class="section-title">المصروفات التشغيلية (Expenses)</div>
+            <table class="micro-table">
+                <tr *ngFor="let item of incomeStatement()!.expenses" class="expense-row">
+                    <td class="account-name">{{item.accountName}}</td>
+                    <td class="amount text-danger">({{formatCurrency(item.amount)}})</td>
+                </tr>
+                <tr class="total-row">
+                    <td>إجمالي المصروفات</td>
+                    <td class="amount text-danger">({{formatCurrency(incomeStatement()!.totalExpense)}})</td>
+                </tr>
+            </table>
+
+            <div class="result-banner" [ngClass]="incomeStatement()!.netProfit >= 0 ? 'profit' : 'loss'">
+                <span>صافي الربح / (الخسارة): </span>
+                <span class="ms-2" style="font-size: 16px;">{{formatCurrency(incomeStatement()!.netProfit)}}</span>
+            </div>
+        </div>
+
+        <!-- Column 2: Balance Sheet -->
+        <div class="statement-card">
+            <div class="card-header">
+                <span><i class="pi pi-building me-2"></i>الميزانية العمومية (Balance Sheet)</span>
+                <span class="text-muted" style="font-size: 10px;">كما في تاريخ {{dateRange()[1] |
+                    date:'yyyy/MM/dd'}}</span>
+            </div>
+
+            <div class="section-title">الأصول (Assets)</div>
+            <table class="micro-table">
+                <tr *ngFor="let item of balanceSheet()!.assets" class="asset-row">
+                    <td class="account-name">{{item.accountName}}</td>
+                    <td class="amount">{{formatCurrency(item.amount)}}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>إجمالي الأصول</td>
+                    <td class="amount text-success">{{formatCurrency(balanceSheet()!.totalAssets)}}</td>
+                </tr>
+            </table>
+
+            <div class="section-title">الخصوم وحقوق الملكية (Liabilities & Equity)</div>
+            <table class="micro-table">
+                <tr *ngFor="let item of balanceSheet()!.liabilities" class="liability-row">
+                    <td class="account-name">{{item.accountName}}</td>
+                    <td class="amount">{{formatCurrency(item.amount)}}</td>
+                </tr>
+                <tr *ngFor="let item of balanceSheet()!.equity" class="equity-row">
+                    <td class="account-name">{{item.accountName}}</td>
+                    <td class="amount">{{formatCurrency(item.amount)}}</td>
+                </tr>
+                <tr class="total-row">
+                    <td>إجمالي الخصوم والملكبة</td>
+                    <td class="amount text-warning">{{formatCurrency(totalLiabilitiesAndEquity())}}</td>
+                </tr>
+            </table>
+
+            <div class="result-banner" style="background: #f1f5f9; color: #1e3c72; border-top: 1px solid #e2e8f0;">
+                <span>رأس المال العامل: </span>
+                <span class="ms-2">{{formatCurrency(balanceSheet()!.totalAssets -
+                    balanceSheet()!.totalLiabilities)}}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Equation Check Bar -->
+    <div class="equation-bar" *ngIf="balanceSheet()">
+        <div class="d-flex align-items-center gap-2">
+            <i class="pi status-icon"
+                [ngClass]="isBalanced() ? 'pi-check-circle balanced' : 'pi-exclamation-triangle unbalanced'"></i>
+            <span [ngClass]="isBalanced() ? 'balanced' : 'unbalanced'">{{isBalanced() ? 'المعادلة المحاسبية متزنة' :
+                'يوجد خلل في توازن الميزانية'}}</span>
+        </div>
+        <div class="d-flex gap-4" style="font-size: 12px; font-family: monospace;">
+            <span>الأصول: {{formatCurrency(balanceSheet()!.totalAssets)}}</span>
+            <span class="text-muted">=</span>
+            <span>الخصوم: {{formatCurrency(balanceSheet()!.totalLiabilities)}}</span>
+            <span class="text-muted">+</span>
+            <span>الملكية: {{formatCurrency(balanceSheet()!.totalEquity)}}</span>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center p-5" *ngIf="loading()">
+        <p-progressSpinner strokeWidth="4" fill="transparent" styleClass="w-3rem h-3rem"></p-progressSpinner>
+        <p class="mt-2 text-muted" style="font-size: 11px;">جاري تدقيق المراكز المالية وتوليد القوائم النهائية...</p>
+    </div>
+</div>
+
+<p-toast position="bottom-left"></p-toast>

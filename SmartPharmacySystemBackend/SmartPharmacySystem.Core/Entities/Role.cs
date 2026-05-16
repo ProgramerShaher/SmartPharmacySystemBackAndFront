@@ -6,14 +6,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// يمثل دور المستخدم في النظام
 /// Represents a user role in the system
 /// </summary>
-public class Role
+public class Role : BaseEntity
 {
-    /// <summary>
-    /// معرف الدور
-    /// Role identifier
-    /// </summary>
-    [Key]
-    public int Id { get; set; }
 
     /// <summary>
     /// اسم الدور (Admin, Pharmacist)
@@ -30,11 +24,6 @@ public class Role
     [MaxLength(200)]
     public string? Description { get; set; }
 
-    /// <summary>
-    /// تاريخ إنشاء الدور
-    /// Role creation date
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
 
     /// <summary>
     /// مجموعة المستخدمين المرتبطين بهذا الدور

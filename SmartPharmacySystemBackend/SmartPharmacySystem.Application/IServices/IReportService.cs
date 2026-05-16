@@ -113,6 +113,11 @@ public interface IReportService
     /// Get quick reports summary (for dashboard)
     /// </summary>
     Task<ReportsSummaryDto> GetReportsSummaryAsync();
+
+    // ===================== القوائم المالية النهائية - Financial Statements =====================
+    Task<TrialBalanceDto> GetTrialBalanceAsync(DateTime fromDate, DateTime toDate);
+    Task<IncomeStatementDto> GetIncomeStatementAsync(DateTime fromDate, DateTime toDate);
+    Task<BalanceSheetDto> GetBalanceSheetAsync(DateTime date);
 }
 
 /// <summary>

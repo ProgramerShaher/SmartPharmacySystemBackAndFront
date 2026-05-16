@@ -1,142 +1,172 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
-
-:host {
-    font-family: 'Cairo', sans-serif !important;
-}
-
-.page-container {
-    padding: 0.75rem !important;
-    background: #f8fafc;
+.royal-container {
+    background: #fdfdfd;
     min-height: 100vh;
+    font-size: 12px; /* تصغير الخط العام */
 }
 
-/* 👑 Imperial Header - Slim */
-.page-header {
+/* 📊 Compact Header */
+.compact-header {
     background: white;
-    padding: 0.4rem 0.75rem;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    border-right: 4px solid #1e293b;
-    margin-bottom: 0.75rem !important;
-}
-
-.header-content {
+    padding: 6px 12px;
+    border-bottom: 2px solid #e2e8f0;
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-}
-
-.title-section {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 0;
-}
-
-.text-wrapper {
-    min-width: 0;
-
-    h1 {
-        line-height: 1.15;
-    }
-
-    p {
-        font-size: 0.85rem;
-        line-height: 1.2;
-    }
-}
-
-.action-section {
     align-items: center;
 }
 
-.icon-wrapper.ledger {
-    width: 2.1rem;
-    height: 2.1rem;
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.05rem;
+.page-title-mini {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0;
 }
 
-/* 📊 Filters - Compact */
-.filters-panel {
-    padding: 0.5rem 0.75rem !important;
-    background: white;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    margin-bottom: 0.75rem !important;
-}
-
-/* 📋 Table Styles - Micro */
-::ng-deep {
-    .p-datatable-sm {
-        .p-datatable-thead > tr > th {
-            background: #f1f5f9 !important;
-            color: #1e293b !important;
-            font-weight: 800 !important;
-            font-size: 0.75rem !important;
-            padding: 0.6rem 0.4rem !important;
-            border-bottom: 2px solid #1e293b !important;
-            text-align: center !important;
-        }
-
-        .p-datatable-tbody > tr > td {
-            padding: 0.4rem 0.35rem !important;
-            font-size: 0.8rem !important;
-            border-bottom: 1px solid #f1f5f9 !important;
-        }
-    }
-
-    .p-tag {
-        font-weight: 800 !important;
-        padding: 0.2rem 0.5rem !important;
-        border-radius: 4px !important;
-        font-size: 0.65rem !important;
-        
-        &.tag-income { background: #10b981 !important; color: white !important; }
-        &.tag-expense { background: #ef4444 !important; color: white !important; }
-    }
-
-    .p-paginator {
-        padding: 0.5rem !important;
-        font-size: 0.75rem !important;
-    }
-}
-
-.balance-cell {
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+/* 🔍 Filters Bar - Ultra Slim */
+.filters-bar {
     background: #f8fafc;
+    padding: 4px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* 📁 Account Section */
+.account-section {
+    background: white;
+    margin-bottom: 15px;
     border: 1px solid #e2e8f0;
-    display: inline-block;
-    min-width: 100px;
-    
-    &.negative {
-        background: #fef2f2;
-        border-color: #fecaca;
-        color: #dc2626;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.account-header-ribbon {
+    padding: 4px 10px;
+    color: white;
+    font-weight: 700;
+    font-size: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.account-summary-strip {
+    background: #f1f5f9;
+    padding: 2px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* 📋 Micro Table */
+::ng-deep .micro-table {
+    .p-datatable-thead > tr > th {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        padding: 4px 6px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        text-align: center !important;
     }
-    
-    &.positive {
-        background: #f0fdf4;
-        border-color: #bbf7d0;
-        color: #15803d;
+
+    .p-datatable-tbody > tr > td {
+        padding: 3px 6px !important;
+        font-size: 11px !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        color: #334155;
+    }
+
+    .p-datatable-footer {
+        background: #f8fafc !important;
+        padding: 4px 8px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
     }
 }
 
-.text-debit { color: #dc2626 !important; font-weight: 800 !important; }
-.text-credit { color: #16a34a !important; font-weight: 800 !important; }
+.text-debit { color: #dc2626; font-weight: 700; }
+.text-credit { color: #15803d; font-weight: 700; }
+.text-balance { color: #1e40af; font-weight: 800; }
 
-.animate-fade-in {
-    animation: fadeIn 0.4s ease-out;
+.badge-id {
+    background: rgba(0,0,0,0.1);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10px;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Scrollbar */
+.custom-scroll {
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+.empty-state {
+    padding: 40px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+/* تصغير حقل التاريخ وقائمته */
+::ng-deep {
+    .p-calendar {
+        height: 26px !important; /* تقليل الارتفاع */
+        width: 220px !important; /* تقليل العرض */
+        
+        .p-inputtext {
+            padding: 2px 8px !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+        }
+
+        .p-datepicker-trigger {
+            width: 26px !important;
+            height: 26px !important;
+            span { font-size: 10px !important; }
+        }
+    }
+
+    /* تصغير قائمة اختيار التاريخ (Overlay) */
+    .p-datepicker {
+        padding: 5px !important;
+        font-size: 11px !important;
+        transform: scale(0.85); /* تصغير القائمة بالكامل بنسبة 15% */
+        transform-origin: top right;
+
+        table {
+            font-size: 11px !important;
+            th, td { padding: 2px !important; }
+            td > span {
+                width: 24px !important;
+                height: 24px !important;
+                line-height: 24px !important;
+            }
+        }
+
+        .p-datepicker-header {
+            padding: 4px !important;
+            font-size: 11px !important;
+            .p-datepicker-title { line-height: 1.5 !important; }
+        }
+    }
+
+    /* تصغير الأزرار بالكامل */
+    .p-button.p-button-sm, 
+    .p-button.p-button-icon-only.p-button-sm {
+        height: 26px !important;
+        padding: 2px 8px !important;
+        font-size: 11px !important;
+
+        .p-button-icon {
+            font-size: 10px !important;
+        }
+
+        .p-button-label {
+            font-size: 11px !important;
+            font-weight: 700 !important;
+        }
+    }
 }

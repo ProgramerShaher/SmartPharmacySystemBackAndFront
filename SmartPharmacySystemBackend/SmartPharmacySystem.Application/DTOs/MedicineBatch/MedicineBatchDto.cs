@@ -69,7 +69,7 @@ public class MedicineBatchDto
     /// <summary>
     /// معرف المستخدم الذي أنشأ السجل
     /// </summary>
-    public int CreatedBy { get; set; }
+    public int? CreatedBy { get; set; }
 
     /// <summary>
     /// هل محذوف

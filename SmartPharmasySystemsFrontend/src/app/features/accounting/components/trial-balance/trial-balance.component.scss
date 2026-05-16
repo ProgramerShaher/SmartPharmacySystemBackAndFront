@@ -1,0 +1,116 @@
+.trial-container {
+    background: #fdfdfd;
+    min-height: 100vh;
+    font-size: 11px;
+}
+
+/* 📊 Header & Filters */
+.compact-header {
+    background: white;
+    padding: 6px 12px;
+    border-bottom: 2px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.filters-bar {
+    background: #f8fafc;
+    padding: 4px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* 📋 Micro Grid */
+::ng-deep .micro-grid {
+    .p-datatable-thead > tr > th {
+        background: #1e3c72 !important;
+        color: white !important;
+        padding: 4px 6px !important;
+        font-size: 10px !important;
+        font-weight: 800 !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+        text-align: center !important;
+        text-transform: uppercase;
+    }
+
+    .p-datatable-tbody > tr > td {
+        padding: 6px 8px !important; /* زيادة الحشو قليلاً للوضوح */
+        font-size: 11px !important;
+        border: 1px solid #f1f5f9 !important;
+        color: #334155;
+        text-align: center !important; /* توسيط كافة البيانات */
+        vertical-align: middle !important;
+    }
+
+    .account-name-cell {
+        text-align: right !important; /* اسم الحساب يفضل أن يبقى لليمين قليلاً لكن بوضوح أكبر */
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        font-size: 12px !important;
+        padding-right: 15px !important;
+    }
+
+    .p-datatable-footer {
+        background: #f8fafc !important;
+        padding: 8px 10px !important;
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        border-top: 2px solid #1e3c72 !important;
+    }
+
+    /* Account Type Colors */
+    .type-asset { border-right: 4px solid #10b981 !important; }
+    .type-liability { border-right: 4px solid #ef4444 !important; }
+    .type-equity { border-right: 4px solid #8b5cf6 !important; }
+    .type-revenue { border-right: 4px solid #3b82f6 !important; }
+    .type-expense { border-right: 4px solid #f59e0b !important; }
+
+    .group-header {
+        background: #f1f5f9 !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+    }
+
+    .text-debit { color: #059669; font-weight: 700; }
+    .text-credit { color: #dc2626; font-weight: 700; }
+    .text-total { color: #1e3c72; font-weight: 800; font-size: 12px; }
+}
+
+/* 📌 Components Overrides */
+::ng-deep {
+    .p-calendar {
+        height: 26px !important;
+        width: 220px !important;
+        .p-inputtext { padding: 2px 8px !important; font-size: 11px !important; }
+    }
+    
+    .p-button.p-button-sm {
+        height: 26px !important;
+        padding: 2px 8px !important;
+        font-size: 11px !important;
+    }
+
+    /* Print Optimization */
+    @media print {
+        .filters-bar, .compact-header button { display: none !important; }
+        .trial-container { background: white !important; padding: 0 !important; }
+        .p-datatable { width: 100% !important; }
+    }
+}
+
+.type-badge {
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 9px;
+    color: white;
+    font-weight: 800;
+    
+    &.Asset { background: #10b981; }
+    &.Liability { background: #ef4444; }
+    &.Equity { background: #8b5cf6; }
+    &.Revenue { background: #3b82f6; }
+    &.Expense { background: #f59e0b; }
+}

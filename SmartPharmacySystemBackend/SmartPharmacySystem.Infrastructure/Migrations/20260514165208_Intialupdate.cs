@@ -6,209 +6,210 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPharmacySystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class updatePurchesInvoicetoaddedIsPaid : Migration
+    public partial class Intialupdate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<int>(
-                name: "PurchaseInvoiceId",
-                table: "SupplierPayments",
-                type: "int",
-                nullable: true);
-
-            migrationBuilder.AddColumn<decimal>(
-                name: "PaidAmount",
-                table: "PurchaseInvoices",
-                type: "decimal(18,2)",
-                nullable: false,
-                defaultValue: 0m);
-
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 266, DateTimeKind.Utc).AddTicks(8661));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(4368));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1550));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6903));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1555));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6908));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1556));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6911));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1616));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6913));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1618));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6915));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1619));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6918));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 8,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1620));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6920));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 9,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 8, 21, 41, 2, 267, DateTimeKind.Utc).AddTicks(1622));
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 172, DateTimeKind.Utc).AddTicks(6922));
+
+            migrationBuilder.UpdateData(
+                table: "JournalEntries",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "IsPosted",
+                value: true);
+
+            migrationBuilder.UpdateData(
+                table: "JournalEntryLines",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "CreatedAt",
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 940, DateTimeKind.Utc).AddTicks(6767));
+
+            migrationBuilder.UpdateData(
+                table: "JournalEntryLines",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "CreatedAt",
+                value: new DateTime(2026, 5, 14, 16, 52, 4, 940, DateTimeKind.Utc).AddTicks(9999));
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "PasswordHash",
-                value: "$2a$11$qW59dIuFs7CS/tCVjsefkuN1124X11Er6bCKxGckxYoIvhnc44SGO");
+                value: "$2a$11$NVYzryB8fGgw7herjOYl1uH6wpPWK/aLulVgm2T0iPmuf8uEmQ1Bq");
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "PasswordHash",
-                value: "$2a$11$qW59dIuFs7CS/tCVjsefkuN1124X11Er6bCKxGckxYoIvhnc44SGO");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SupplierPayments_PurchaseInvoiceId",
-                table: "SupplierPayments",
-                column: "PurchaseInvoiceId");
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_SupplierPayments_PurchaseInvoices_PurchaseInvoiceId",
-                table: "SupplierPayments",
-                column: "PurchaseInvoiceId",
-                principalTable: "PurchaseInvoices",
-                principalColumn: "Id");
+                value: "$2a$11$NVYzryB8fGgw7herjOYl1uH6wpPWK/aLulVgm2T0iPmuf8uEmQ1Bq");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_SupplierPayments_PurchaseInvoices_PurchaseInvoiceId",
-                table: "SupplierPayments");
-
-            migrationBuilder.DropIndex(
-                name: "IX_SupplierPayments_PurchaseInvoiceId",
-                table: "SupplierPayments");
-
-            migrationBuilder.DropColumn(
-                name: "PurchaseInvoiceId",
-                table: "SupplierPayments");
-
-            migrationBuilder.DropColumn(
-                name: "PaidAmount",
-                table: "PurchaseInvoices");
-
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(7502));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(5705));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9401));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7249));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9406));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7252));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9466));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7254));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7256));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7257));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9468));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7259));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 8,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9469));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7261));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 9,
                 column: "CreatedAt",
-                value: new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9470));
+                value: new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7262));
+
+            migrationBuilder.UpdateData(
+                table: "JournalEntries",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "IsPosted",
+                value: false);
+
+            migrationBuilder.UpdateData(
+                table: "JournalEntryLines",
+                keyColumn: "Id",
+                keyValue: 1,
+                column: "CreatedAt",
+                value: new DateTime(2026, 5, 14, 16, 0, 29, 1, DateTimeKind.Utc).AddTicks(5449));
+
+            migrationBuilder.UpdateData(
+                table: "JournalEntryLines",
+                keyColumn: "Id",
+                keyValue: 2,
+                column: "CreatedAt",
+                value: new DateTime(2026, 5, 14, 16, 0, 29, 1, DateTimeKind.Utc).AddTicks(8566));
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "PasswordHash",
-                value: "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim");
+                value: "$2a$11$uvLLk6uV4bDc6L7Nx8ITBuM91LuLsaJQQPO8/T67avAqK8EMHUeNq");
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "PasswordHash",
-                value: "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim");
+                value: "$2a$11$uvLLk6uV4bDc6L7Nx8ITBuM91LuLsaJQQPO8/T67avAqK8EMHUeNq");
         }
     }
 }

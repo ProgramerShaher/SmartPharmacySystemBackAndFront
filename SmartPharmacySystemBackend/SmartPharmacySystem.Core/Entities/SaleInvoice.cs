@@ -9,12 +9,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a sale invoice in the pharmacy system.
 /// Sale invoices record medicine sales to customers.
 /// </summary>
-public class SaleInvoice
+public class SaleInvoice : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the sale invoice.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Unique number for the sale invoice (Format: SI-YYYY-######).
@@ -69,16 +65,6 @@ public class SaleInvoice
     /// </summary>
     public bool IsPaid { get; set; } = false;
 
-    /// <summary>
-    /// Date and time when the invoice was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// ID of the user who created this invoice.
-    /// معرف المستخدم الذي أنشأ هذه الفاتورة.
-    /// </summary>
-    public int CreatedBy { get; set; }
 
     /// <summary>
     /// ID of the user who approved this invoice.
@@ -100,10 +86,6 @@ public class SaleInvoice
     /// </summary>
     public DateTime? CancelledAt { get; set; }
 
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Status of the document (Draft, Approved, Cancelled).

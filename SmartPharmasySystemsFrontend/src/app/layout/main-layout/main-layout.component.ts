@@ -38,4 +38,8 @@ export class MainLayoutComponent implements OnInit {
     toggleSidebar() {
         this.isSidebarCollapsed = !this.isSidebarCollapsed;
     }
+
+    setSidebarCollapsed(value: boolean) {
+        this.isSidebarCollapsed = value;
+    }
 }

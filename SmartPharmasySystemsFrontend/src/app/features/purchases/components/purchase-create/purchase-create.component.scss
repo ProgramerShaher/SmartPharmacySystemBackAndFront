@@ -189,4 +189,159 @@
         font-size: 0.8rem !important;
         margin-bottom: 0.4rem !important;
     }
-}
+}
+
+/* Compact luxury refresh */
+.pos-container {
+    padding: 0.65rem;
+    background: #f8fafc;
+}
+
+.glass-panel,
+.pos-header,
+.mini-card {
+    border: 1px solid #e8edf3;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.07);
+}
+
+.pos-header {
+    position: relative;
+    overflow: hidden;
+    padding: 0.58rem 0.85rem;
+}
+
+.pos-header::before,
+.pos-main > form > .glass-panel::before {
+    content: '';
+    display: block;
+    height: 4px;
+    background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+}
+
+.pos-header.purchase-accent {
+    border-right: 0;
+}
+
+.pos-header .header-left {
+    gap: 0.65rem;
+}
+
+.pos-header .header-title h1 {
+    font-size: 1.05rem;
+}
+
+.header-subtitle,
+.section-header h3,
+.pos-sidebar .summary-card.purchase .label,
+.pos-sidebar .mini-card .label {
+    font-size: 0.72rem;
+}
+
+.header-right ::ng-deep .p-button {
+    min-height: 2.15rem;
+    padding: 0.42rem 0.7rem;
+    border-radius: 11px;
+    font-size: 0.78rem;
+}
+
+.pos-content-grid {
+    grid-template-columns: minmax(0, 1fr) 245px;
+    gap: 0.7rem;
+}
+
+.pos-main .glass-panel {
+    overflow: hidden;
+    padding: 0 !important;
+}
+
+.pos-main .grid {
+    padding: 0.65rem;
+}
+
+.section-header {
+    padding: 0.58rem 0.75rem;
+}
+
+.section-header h3 {
+    font-weight: 900;
+}
+
+.pos-sidebar .sticky-sidebar {
+    padding: 0.75rem !important;
+    gap: 0.55rem !important;
+}
+
+.pos-sidebar .summary-card {
+    border-radius: 16px;
+    padding: 0.9rem;
+}
+
+.pos-sidebar .summary-card.purchase {
+    background: linear-gradient(135deg, #4f46e5, #0284c7);
+}
+
+.pos-sidebar .summary-card.purchase .value {
+    font-size: 1.5rem;
+}
+
+.pos-sidebar .mini-card {
+    padding: 0.5rem;
+}
+
+.pos-sidebar .mini-card .value {
+    font-size: 0.92rem;
+}
+
+::ng-deep .pos-container .p-inputtext,
+::ng-deep .pos-container .p-dropdown,
+::ng-deep .pos-container .p-calendar .p-inputtext {
+    min-height: 2.15rem !important;
+    border-radius: 10px !important;
+    font-size: 0.78rem !important;
+}
+
+::ng-deep .pos-container .p-datatable-sm .p-datatable-thead > tr > th {
+    padding: 0.48rem 0.62rem !important;
+    background: #f8fafc !important;
+    color: #475569 !important;
+    font-size: 0.72rem !important;
+    font-weight: 900 !important;
+}
+
+::ng-deep .pos-container .p-datatable-sm .p-datatable-tbody > tr > td {
+    padding: 0.42rem 0.62rem !important;
+    font-size: 0.78rem !important;
+}
+
+.batch-tag {
+    border-radius: 999px;
+    padding: 0.18rem 0.5rem;
+}
+
+@media (max-width: 1100px) {
+    .pos-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pos-sidebar .sticky-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 760px) {
+    .pos-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .header-right {
+        flex-wrap: wrap;
+    }
+
+    .header-right ::ng-deep .p-button,
+    .actions ::ng-deep .p-button {
+        width: 100%;
+    }
+}

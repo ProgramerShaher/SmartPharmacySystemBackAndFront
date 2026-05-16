@@ -6,12 +6,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents inventory movements in the pharmacy system.
 /// Tracks all changes to medicine stock levels.
 /// </summary>
-public class InventoryMovement
+public class InventoryMovement : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the inventory movement.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the medicine.
@@ -53,10 +49,6 @@ public class InventoryMovement
     /// </summary>
     public string ReferenceNumber { get; private set; } = string.Empty;
 
-    /// <summary>
-    /// ID of the user who performed the movement.
-    /// </summary>
-    public int CreatedBy { get; private set; }
 
     /// <summary>
     /// Additional notes or reason for manual adjustment.
@@ -65,14 +57,13 @@ public class InventoryMovement
 
     public InventoryMovement() { } // For EF Core
 
-    public InventoryMovement(int medicineId, int? batchId, StockMovementType movementType, ReferenceType referenceType, int quantity, int referenceId, string referenceNumber, int createdBy, string notes)
+    public InventoryMovement(int medicineId, int? batchId, StockMovementType movementType, ReferenceType referenceType, int quantity, int referenceId, string referenceNumber, int? createdBy, string notes)
     {
         MedicineId = medicineId;
         BatchId = batchId;
         MovementType = movementType;
         ReferenceType = referenceType;
         Quantity = quantity;
-        Date = DateTime.UtcNow;
         ReferenceId = referenceId;
         ReferenceNumber = referenceNumber;
         CreatedBy = createdBy;

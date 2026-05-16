@@ -520,3 +520,137 @@
         cursor: not-allowed !important;
     }
 }
+
+/* Compact luxury refresh */
+.sales-container {
+    background: #f8fafc;
+    padding: 0.75rem !important;
+    min-height: auto;
+}
+
+.sales-container > .flex.justify-content-between {
+    position: relative;
+    overflow: hidden;
+    padding: 0.85rem;
+    margin-bottom: 0.85rem !important;
+    border: 1px solid #e8edf3;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+}
+
+.sales-container > .flex.justify-content-between::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 5px;
+    background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+}
+
+.icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+}
+
+.sales-container h1 {
+    font-size: 1.45rem !important;
+}
+
+.sales-container p {
+    font-size: 0.8rem !important;
+}
+
+.sales-container > .grid {
+    margin-bottom: 0.85rem !important;
+}
+
+.imperial-kpi-card {
+    min-height: 118px;
+    padding: 0.85rem;
+    border-radius: 16px;
+    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.09);
+}
+
+.imperial-kpi-card:hover {
+    transform: translateY(-3px);
+}
+
+.kpi-value {
+    font-size: 1.35rem;
+}
+
+.kpi-icon-wrapper {
+    width: 2.2rem;
+    height: 2.2rem;
+}
+
+.glass-panel {
+    border: 1px solid #e8edf3;
+    border-radius: 18px !important;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+    background: #ffffff;
+}
+
+::ng-deep .sales-container .p-datatable .p-datatable-thead > tr > th {
+    padding: 0.58rem 0.65rem !important;
+    font-size: 0.72rem !important;
+    border-bottom: 1px solid #e8edf3 !important;
+}
+
+::ng-deep .sales-container .p-datatable .p-datatable-tbody > tr > td {
+    padding: 0.5rem 0.65rem !important;
+    font-size: 0.78rem !important;
+}
+
+::ng-deep .sales-container .p-tag {
+    padding: 0.24rem 0.55rem !important;
+    border-radius: 999px !important;
+    font-size: 0.68rem !important;
+}
+
+::ng-deep .sales-container .p-button.p-button-rounded {
+    width: 2.1rem;
+    height: 2.1rem;
+}
+
+::ng-deep .sales-container .p-button:not(.p-button-rounded) {
+    min-height: 2.2rem;
+    padding: 0.42rem 0.8rem;
+    border-radius: 11px;
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
+::ng-deep .sales-container .p-inputtext,
+::ng-deep .sales-container .p-dropdown,
+::ng-deep .sales-container .p-calendar .p-inputtext {
+    min-height: 2.15rem !important;
+    border-radius: 10px !important;
+    font-size: 0.78rem !important;
+}
+
+::ng-deep .sales-container .p-paginator {
+    padding: 0.55rem !important;
+    font-size: 0.75rem;
+}
+
+.action-buttons-container {
+    gap: 0.25rem;
+}
+
+@media (max-width: 760px) {
+    .sales-container > .flex.justify-content-between {
+        align-items: stretch !important;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .sales-container > .flex.justify-content-between > .flex:last-child {
+        flex-wrap: wrap;
+    }
+
+    .sales-container > .flex.justify-content-between > .flex:last-child ::ng-deep .p-button {
+        width: 100%;
+    }
+}

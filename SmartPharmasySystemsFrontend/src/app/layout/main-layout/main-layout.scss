@@ -16,6 +16,16 @@
         }
     }
 
+    &.sidebar-collapsed {
+        .layout-main-container {
+            margin-right: var(--sidebar-collapsed-width, 76px);
+
+            @media (max-width: 992px) {
+                margin-right: 0;
+            }
+        }
+    }
+
     .layout-content-scrollable {
         flex: 1;
         overflow-y: auto;

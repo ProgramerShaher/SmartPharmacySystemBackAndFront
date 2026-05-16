@@ -18,6 +18,7 @@ public class SupplierDto
     public string Notes { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }
+    public int? AccountId { get; set; }
 
     [JsonPropertyName("Balance")]
     public decimal Balance { get; set; }

@@ -1,64 +1,61 @@
-<div class="login-wrapper">
-    <div class="animated-bg">
-        <div class="blob"></div>
-        <div class="blob"></div>
-        <div class="blob"></div>
-    </div>
-    
-    <div class="login-container glass-panel animate-fade-in">
-        <p-toast></p-toast>
-    
+<div class="login-wrapper" dir="rtl">
+    <p-toast></p-toast>
+
+    <section class="login-card">
+        <div class="card-accent"></div>
+
         <div class="login-header">
             <div class="logo-box">
                 <i class="pi pi-shield"></i>
             </div>
-            <h1>نظام الصيدلية الذكي</h1>
-            <p>سجل دخولك للمتابعة</p>
+            <div>
+                <h1>تسجيل الدخول</h1>
+                <p>مرحباً بك في الصيدلية الذكية</p>
+            </div>
         </div>
 
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-            <div class="field">
-                <span class="p-input-icon-left w-full">
-                    <i class="pi pi-user"></i>
-                    <input pInputText id="username" formControlName="username" placeholder="اسم المستخدم" class="w-full h-3rem"
-                        autocomplete="username" />
-                </span>
-            </div>
+            <label class="field-label" for="username">اسم المستخدم</label>
+            <span class="p-input-icon-left w-full">
+                <i class="pi pi-user"></i>
+                <input pInputText id="username" formControlName="username" placeholder="مثال: admin"
+                    autocomplete="username" />
+            </span>
 
-            <div class="field mt-3">
-                <span class="p-input-icon-left w-full">
-                    <i class="pi pi-lock"></i>
-                    <p-password formControlName="password" placeholder="كلمة المرور" [toggleMask]="true" [feedback]="false"
-                        styleClass="w-full" inputStyleClass="w-full h-3rem" autocomplete="current-password"></p-password>
-                </span>
-            </div>
+            <label class="field-label" for="password">كلمة المرور</label>
+            <span class="p-input-icon-left w-full">
+                <i class="pi pi-lock"></i>
+                <p-password inputId="password" formControlName="password" placeholder="اكتب كلمة المرور"
+                    [toggleMask]="true" [feedback]="false" styleClass="w-full" inputStyleClass="w-full"
+                    autocomplete="current-password"></p-password>
+            </span>
 
-            <div class="flex align-items-center justify-content-between mt-3 mb-4 text-sm">
-                <div class="flex align-items-center gap-2">
+            <div class="form-row">
+                <div class="remember">
                     <p-checkbox formControlName="rememberMe" [binary]="true" inputId="rem"></p-checkbox>
-                    <label for="rem" class="cursor-pointer opacity-70">تذكرني</label>
+                    <label for="rem">تذكرني</label>
                 </div>
-                <a class="text-primary no-underline font-bold hover:underline">نسيت كلمة المرور؟</a>
+                <a class="muted-link">نسيت كلمة المرور؟</a>
             </div>
 
-            <p-button type="submit" label="دخول" icon="pi pi-sign-in" [loading]="loading" [disabled]="loginForm.invalid"
-                styleClass="w-full p-button-raised p-button-lg h-3rem"></p-button>
-            
-            <div class="divider">
-                <span>أو الدخول السريع</span>
-            </div>
+            <p-button type="submit" label="دخول" icon="pi pi-sign-in" [loading]="loading"
+                [disabled]="loginForm.invalid" styleClass="auth-submit w-full"></p-button>
 
-            <div class="flex gap-2">
+            <div class="quick-actions">
                 <button type="button" class="quick-login-btn admin" (click)="quickLogin('admin')">
-                    <i class="pi pi-user-edit"></i> مدبر
+                    <i class="pi pi-user-edit"></i>
+                    <span>مدير</span>
                 </button>
                 <button type="button" class="quick-login-btn pharmacist" (click)="quickLogin('pharmacist')">
-                    <i class="pi pi-user"></i> صيدلي
+                    <i class="pi pi-user"></i>
+                    <span>صيدلي</span>
                 </button>
             </div>
         </form>
-<div class="login-footer">
-    ليس لديك حساب؟ <a routerLink="/auth/register" class="text-primary font-bold">إنشاء حساب جديد</a>
-</div>
-    </div>
+
+        <div class="login-footer">
+            ليس لديك حساب؟
+            <a routerLink="/auth/register">إنشاء حساب جديد</a>
+        </div>
+    </section>
 </div>

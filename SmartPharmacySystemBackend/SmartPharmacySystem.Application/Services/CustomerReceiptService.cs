@@ -4,6 +4,9 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Core.Interfaces;
 
+using SmartPharmacySystem.Application.IServices;
+using System.Collections.Generic;
+
 namespace SmartPharmacySystem.Application.Services
 {
     public class CustomerReceiptService : ICustomerReceiptService
@@ -11,12 +14,14 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IFinancialService _financialService;
+        private readonly IJournalEntryService _journalEntryService;
 
-        public CustomerReceiptService(IUnitOfWork unitOfWork, IMapper mapper, IFinancialService financialService)
+        public CustomerReceiptService(IUnitOfWork unitOfWork, IMapper mapper, IFinancialService financialService, IJournalEntryService journalEntryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _financialService = financialService;
+            _journalEntryService = journalEntryService;
         }
 
         public async Task<CustomerReceiptDto> CreateAsync(CreateCustomerReceiptDto dto, int userId)
@@ -49,14 +54,46 @@ namespace SmartPharmacySystem.Application.Services
                 // 3. Update Customer Balance (Decrease Debt)
                 await _unitOfWork.Customers.UpdateBalanceAsync(customer.Id, -dto.Amount);
 
-                // 4. Vault Integration (Process Financial Transaction)
+                // ==================== المحرك المحاسبي الاحترافي ====================
+                var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                {
+                    EntryDate = receipt.ReceiptDate,
+                    VoucherNumber = $"REC-{receipt.Id}", // معرّف فريد للسند
+                    Description = $"سند قبض من العميل: {customer.Name} - {dto.Notes}",
+                    Type = SmartPharmacySystem.Core.Enums.VoucherType.ReceiptVoucher,
+                    Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
+                };
+
+                // 1. الطرف المدين (من حـ/ الصندوق)
+                journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                {
+                    AccountId = 1101, // الصندوق الرئيسي
+                    Debit = dto.Amount,
+                    Credit = 0,
+                    Description = $"تحصيل مبلغ بموجب سند قبض رقم {receipt.Id}"
+                });
+
+                // 2. الطرف الدائن (إلى حـ/ العميل)
+                journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                {
+                    AccountId = customer.AccountId ?? 1201, // حساب العميل الخاص أو ذمم العملاء
+                    Debit = 0,
+                    Credit = dto.Amount,
+                    Description = $"سداد دفعة من الحساب - سند رقم {receipt.Id}"
+                });
+
+                // حفظ وترحيل القيد
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
+
+                // الإبقاء على النظام القديم مؤقتاً
                 await _financialService.ProcessTransactionAsync(
                     accountId: 1,
                     amount: dto.Amount,
                     type: FinancialTransactionType.Income,
                     referenceType: ReferenceType.CustomerReceipt,
                     referenceId: receipt.Id,
-                    description: $"سند قبض من العميل: {customer.Name}. {(string.IsNullOrEmpty(dto.ReferenceNo) ? "" : "مرجع: " + dto.ReferenceNo)} - {dto.Notes}");
+                    description: $"[نظام قديم] سند قبض: {customer.Name}. مرجع: {dto.ReferenceNo}");
 
                 // 5. Commit
                 await _unitOfWork.CommitAsync();

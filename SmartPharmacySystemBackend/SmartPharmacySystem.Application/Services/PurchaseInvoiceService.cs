@@ -7,6 +7,8 @@ using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Application.DTOs.Barcode;
+using SmartPharmacySystem.Application.IServices;
+using SmartPharmacySystem.Application.DTOs.Financial;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -18,6 +20,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IStockMovementService _stockMovementService;
         private readonly IInvoiceNumberGenerator _invoiceNumberGenerator;
         private readonly IFinancialService _financialService;
+        private readonly IJournalEntryService _journalEntryService;
         private readonly IAlertService _alertService;
         private readonly IBarcodeService _barcodeService;
         private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
@@ -29,6 +32,7 @@ namespace SmartPharmacySystem.Application.Services
             IStockMovementService stockMovementService,
             IInvoiceNumberGenerator invoiceNumberGenerator,
             IFinancialService financialService,
+            IJournalEntryService journalEntryService,
             IAlertService alertService,
             IBarcodeService barcodeService,
             Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
@@ -39,6 +43,7 @@ namespace SmartPharmacySystem.Application.Services
             _stockMovementService = stockMovementService;
             _invoiceNumberGenerator = invoiceNumberGenerator;
             _financialService = financialService;
+            _journalEntryService = journalEntryService;
             _alertService = alertService;
             _barcodeService = barcodeService;
             _httpContextAccessor = httpContextAccessor;
@@ -57,59 +62,59 @@ namespace SmartPharmacySystem.Application.Services
 
             decimal calculatedTotal = 0;
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            // لا نحتاج transaction هنا لأن الفاتورة مسودة فقط
+            // GetOrCreateBatchIdAsync تحفظ بشكل مستقل لضرورة الحصول على BatchId
+            foreach (var itemDto in dto.Items)
             {
-                foreach (var itemDto in dto.Items)
+                // Validation: Past Expiry Date
+                if (itemDto.ExpiryDate.Date < DateTime.Today)
                 {
-                    // Validation: Past Expiry Date
-                    if (itemDto.ExpiryDate.Date < DateTime.Today)
-                    {
-                        var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
-                        throw new InvalidOperationException($"عذراً، تاريخ الانتهاء ({itemDto.ExpiryDate:yyyy-MM-dd}) للدواء '{med?.Name}' غير صالح (قديم).");
-                    }
-
-                    // Validation: Profit Safeguard
-                    if (itemDto.SalePrice < itemDto.PurchasePrice)
-                    {
-                        var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
-                        throw new InvalidOperationException($"عذراً، سعر البيع ({itemDto.SalePrice}) أقل من سعر الشراء ({itemDto.PurchasePrice}) للدواء '{med?.Name}'.");
-                    }
-
-                    // Resolve Batch (Find or Create Placeholder)
-                    int batchId = await GetOrCreateBatchIdAsync(itemDto.MedicineId, itemDto.BatchBarcode, itemDto.CompanyBatchNumber, itemDto.ExpiryDate, userId);
-
-                    var detail = _mapper.Map<PurchaseInvoiceDetail>(itemDto);
-                    detail.BatchId = batchId;
-                    detail.Total = itemDto.Quantity * itemDto.PurchasePrice;
-
-                    calculatedTotal += detail.Total;
-                    invoice.PurchaseInvoiceDetails.Add(detail);
+                    var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
+                    throw new InvalidOperationException($"عذراً، تاريخ الانتهاء ({itemDto.ExpiryDate:yyyy-MM-dd}) للدواء '{med?.Name}' غير صالح (قديم).");
                 }
 
-                invoice.TotalAmount = calculatedTotal;
-                invoice.PurchaseInvoiceNumber = await _invoiceNumberGenerator.GeneratePurchaseInvoiceNumberAsync();
+                // Validation: Profit Safeguard
+                if (itemDto.SalePrice < itemDto.PurchasePrice)
+                {
+                    var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
+                    throw new InvalidOperationException($"عذراً، سعر البيع ({itemDto.SalePrice}) أقل من سعر الشراء ({itemDto.PurchasePrice}) للدواء '{med?.Name}'.");
+                }
 
-                await _unitOfWork.PurchaseInvoices.AddAsync(invoice);
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                // Resolve Batch (Find or Create Placeholder)
+                int batchId = await GetOrCreateBatchIdAsync(itemDto.MedicineId, itemDto.BatchBarcode, itemDto.CompanyBatchNumber, itemDto.ExpiryDate, userId);
 
-                var createdInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(invoice.Id);
-                return _mapper.Map<PurchaseInvoiceDto>(createdInvoice);
+                var detail = _mapper.Map<PurchaseInvoiceDetail>(itemDto);
+                detail.BatchId = batchId;
+                detail.Total = itemDto.Quantity * itemDto.PurchasePrice;
+
+                calculatedTotal += detail.Total;
+                invoice.PurchaseInvoiceDetails.Add(detail);
             }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
+
+            invoice.TotalAmount = calculatedTotal;
+            invoice.PurchaseInvoiceNumber = await _invoiceNumberGenerator.GeneratePurchaseInvoiceNumberAsync();
+
+            await _unitOfWork.PurchaseInvoices.AddAsync(invoice);
+            await _unitOfWork.SaveChangesAsync();
+
+            var createdInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(invoice.Id);
+            return _mapper.Map<PurchaseInvoiceDto>(createdInvoice);
         }
 
-        private async Task<int> GetOrCreateBatchIdAsync(int medicineId, string? barcode, string? companyBatch, DateTime expiry, int userId)
+        private async Task<int> GetOrCreateBatchIdAsync(int medicineId, string? barcode, string? companyBatch, DateTime expiry, int? userId)
         {
             MedicineBatch? existingBatch = null;
+
+            // 1. البحث بالباركود أولاً
             if (!string.IsNullOrEmpty(barcode))
             {
                 existingBatch = await _unitOfWork.MedicineBatches.GetByBarcodeAsync(barcode);
+            }
+
+            // 2. إذا لم نجد بالباركود، نبحث برقم دفعة الشركة لمنع خطأ التكرار
+            if (existingBatch == null && !string.IsNullOrEmpty(companyBatch))
+            {
+                existingBatch = await _unitOfWork.MedicineBatches.GetByCompanyBatchNumberAsync(companyBatch);
             }
 
             if (existingBatch != null) return existingBatch.Id;
@@ -258,26 +263,58 @@ namespace SmartPharmacySystem.Application.Services
 
                 invoice.TotalAmount = validTotal;
 
-                // Financial Integration
+                // ==================== المحرك المحاسبي الاحترافي ====================
+                var journalEntry = new JournalEntryDto
+                {
+                    EntryDate = invoice.PurchaseDate,
+                    VoucherNumber = invoice.PurchaseInvoiceNumber,
+                    Description = $"قيد مشتريات آلي - فاتورة رقم: {invoice.PurchaseInvoiceNumber} - المورد: {invoice.Supplier?.Name ?? "غير معروف"}",
+                    Type = VoucherType.PurchaseInvoice,
+                    Lines = new List<JournalEntryLineDto>()
+                };
+
+                // 1. الطرف المدين (من حـ/ المخزون)
+                journalEntry.Lines.Add(new JournalEntryLineDto
+                {
+                    AccountId = 1301, // مخزون الصيدلية
+                    Debit = invoice.TotalAmount,
+                    Credit = 0,
+                    Description = $"إضافة للمخزون - فاتورة شراء {invoice.PurchaseInvoiceNumber}"
+                });
+
+                // 2. الطرف الدائن (إلى حـ/)
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
-                    await _financialService.ProcessTransactionAsync(
-                        accountId: 1,
-                        amount: invoice.TotalAmount,
-                        type: FinancialTransactionType.Expense,
-                        referenceType: ReferenceType.PurchaseInvoice,
-                        referenceId: invoice.Id,
-                        description: $"شراء نقدي - فاتورة رقم: {invoice.PurchaseInvoiceNumber}");
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 1101, // الصندوق الرئيسي
+                        Debit = 0,
+                        Credit = invoice.TotalAmount,
+                        Description = $"صرف قيمة مشتريات نقدية - فاتورة {invoice.PurchaseInvoiceNumber}"
+                    });
                     invoice.IsPaid = true;
                 }
                 else
                 {
                     var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId)
                         ?? throw new KeyNotFoundException("المورد غير موجود");
-                    supplier.Balance += invoice.TotalAmount; // Increase Debt
+                    
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = supplier.AccountId ?? 2101, // حساب المورد أو ذمم الموردين
+                        Debit = 0,
+                        Credit = invoice.TotalAmount,
+                        Description = $"مشتريات آجلة - فاتورة {invoice.PurchaseInvoiceNumber}"
+                    });
+                    
+                    supplier.Balance += invoice.TotalAmount; // Increase Debt (Keep old logic for now)
                     await _unitOfWork.Suppliers.UpdateAsync(supplier);
                     invoice.IsPaid = false;
                 }
+
+                // حفظ وترحيل القيد
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
 
                 await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
                 await _unitOfWork.SaveChangesAsync();

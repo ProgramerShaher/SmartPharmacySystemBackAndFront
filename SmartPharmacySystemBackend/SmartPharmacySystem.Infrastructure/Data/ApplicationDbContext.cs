@@ -47,6 +47,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<SupplierPayment> SupplierPayments { get; set; } = null!;
     public DbSet<OnlineOrder> OnlineOrders { get; set; } = null!;
     public DbSet<OnlineOrderItem> OnlineOrderItems { get; set; } = null!;
+    public DbSet<Account> Accounts { get; set; } = null!;
+    public DbSet<JournalEntry> JournalEntries { get; set; } = null!;
+    public DbSet<JournalEntryLine> JournalEntryLines { get; set; } = null!;
+    public DbSet<Cheque> Cheques { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -75,7 +79,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 Balance = 0,
                 IsActive = true,
                 CreatedAt = new DateTime(2025, 1, 1),
-                LastUpdated = new DateTime(2025, 1, 1)
+                UpdatedAt = new DateTime(2025, 1, 1)
             });
         });
 
@@ -635,6 +639,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 Status = UserStatus.Active,
                 Email = "admin@pharmacy.com",
                 CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedBy = null,
                 IsDeleted = false
             },
 
@@ -759,18 +764,228 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(oi => oi.MedicineId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
+
+        // ==================== Accounting System Configuration ====================
+
+        // Account (Chart of Accounts)
+        modelBuilder.Entity<Account>(entity =>
+        {
+            entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CurrentBalance).HasPrecision(18, 2);
+            entity.Property(e => e.Type).HasConversion<int>();
+
+            entity.HasIndex(e => e.Code).IsUnique();
+
+            // Hierarchical relationship
+            entity.HasOne(e => e.Parent)
+                  .WithMany(e => e.Children)
+                  .HasForeignKey(e => e.ParentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // JournalEntry Configuration
+        modelBuilder.Entity<JournalEntry>(entity =>
+        {
+            entity.Property(e => e.VoucherNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.TotalDebit).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCredit).HasPrecision(18, 2);
+            entity.Property(e => e.Type).HasConversion<int>();
+
+            entity.HasIndex(e => e.VoucherNumber).IsUnique();
+            entity.HasIndex(e => e.EntryDate);
+        });
+
+        // JournalEntryLine Configuration
+        modelBuilder.Entity<JournalEntryLine>(entity =>
+        {
+            entity.Property(e => e.Debit).HasPrecision(18, 2);
+            entity.Property(e => e.Credit).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.JournalEntry)
+                  .WithMany(e => e.Lines)
+                  .HasForeignKey(e => e.JournalEntryId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Account)
+                  .WithMany(e => e.JournalEntryLines)
+                  .HasForeignKey(e => e.AccountId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Cheque Configuration
+        modelBuilder.Entity<Cheque>(entity =>
+        {
+            entity.Property(e => e.ChequeNumber).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.BankName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.Status).HasConversion<int>();
+            entity.Property(e => e.Type).HasConversion<int>();
+
+            entity.HasIndex(e => e.ChequeNumber);
+            entity.HasIndex(e => e.DueDate);
+        });
+
+
+
+        // 4. Seed Medicine Categories
+        modelBuilder.Entity<Category>().HasData(
+            new Category { Id = 1, Name = "مضادات حيوية", Description = "أدوية علاج الالتهابات البكتيرية", CreatedAt = new DateTime(2025, 1, 1) },
+            new Category { Id = 2, Name = "مسكنات", Description = "أدوية تخفيف الألم وخافضات الحرارة", CreatedAt = new DateTime(2025, 1, 1) },
+            new Category { Id = 3, Name = "فيتامينات", Description = "مكملات غذائية وفيتامينات", CreatedAt = new DateTime(2025, 1, 1) }
+        );
+
+        // 5. Seed Medicines
+        modelBuilder.Entity<Medicine>().HasData(
+            new Medicine 
+            { 
+                Id = 1, 
+                Name = "Panadol Advance", 
+                ScientificName = "Paracetamol", 
+                CategoryId = 2, 
+                DefaultBarcode = "5011309100010",
+                DefaultSalePrice = 15.00m,
+                DefaultPurchasePrice = 10.00m,
+                Status = "Active",
+                CreatedAt = new DateTime(2025, 1, 1)
+            },
+            new Medicine 
+            { 
+                Id = 2, 
+                Name = "Augmentin 1g", 
+                ScientificName = "Amoxicillin", 
+                CategoryId = 1, 
+                DefaultBarcode = "5011309100020",
+                DefaultSalePrice = 85.00m,
+                DefaultPurchasePrice = 60.00m,
+                Status = "Active",
+                CreatedAt = new DateTime(2025, 1, 1)
+            }
+        );
+
+        // 6. Seed Suppliers & Customers
+        modelBuilder.Entity<Supplier>().HasData(
+            new Supplier { Id = 1, Name = "شركة الأدوية العالمية", PhoneNumber = "011223344", CreatedAt = new DateTime(2025, 1, 1) }
+        );
+        modelBuilder.Entity<Customer>().HasData(
+            new Customer { Id = 1, Name = "عميل نقدي عام", PhoneNumber = "000000000", CreatedAt = new DateTime(2025, 1, 1) }
+        );
+
+
+        // ==================== Full Chart of Accounts Seeding ====================
+        modelBuilder.Entity<Account>().HasData(
+            // 1. الأصول (Assets)
+            new Account { Id = 1, Code = "1", Name = "الأصول", Type = AccountType.Asset, IsMainAccount = true, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 11, Code = "11", Name = "الأصول المتداولة", Type = AccountType.Asset, IsMainAccount = true, ParentId = 1, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            
+            // حسابات النقدية (IDs expected by Service)
+            new Account { Id = 1101, Code = "1101", Name = "الصندوق الرئيسي", Type = AccountType.Asset, IsMainAccount = false, ParentId = 11, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 1102, Code = "1102", Name = "البنك - حساب جاري", Type = AccountType.Asset, IsMainAccount = false, ParentId = 11, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            
+            // حسابات المخزون (ID 1301 expected by Service)
+            new Account { Id = 1301, Code = "1301", Name = "مخزون الأدوية", Type = AccountType.Asset, IsMainAccount = false, ParentId = 11, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+
+            // 2. الخصوم (Liabilities)
+            new Account { Id = 2, Code = "2", Name = "الخصوم", Type = AccountType.Liability, IsMainAccount = true, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 21, Code = "21", Name = "الخصوم المتداولة", Type = AccountType.Liability, IsMainAccount = true, ParentId = 2, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 2101, Code = "2101", Name = "ذمم الموردين", Type = AccountType.Liability, IsMainAccount = false, ParentId = 21, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+
+            // 3. حقوق الملكية (Equity)
+            new Account { Id = 3, Code = "3", Name = "حقوق الملكية", Type = AccountType.Equity, IsMainAccount = true, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 31, Code = "31", Name = "رأس المال", Type = AccountType.Equity, IsMainAccount = true, ParentId = 3, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 3101, Code = "3101", Name = "رأس مال الشركاء", Type = AccountType.Equity, IsMainAccount = false, ParentId = 31, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+
+            // 4. الإيرادات (Revenues)
+            new Account { Id = 4, Code = "4", Name = "الإيرادات", Type = AccountType.Revenue, IsMainAccount = true, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 41, Code = "41", Name = "إيرادات المبيعات", Type = AccountType.Revenue, IsMainAccount = false, ParentId = 4, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+
+            // 5. المصروفات (Expenses)
+            new Account { Id = 5, Code = "5", Name = "المصروفات", Type = AccountType.Expense, IsMainAccount = true, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 51, Code = "51", Name = "تكلفة المشتريات", Type = AccountType.Expense, IsMainAccount = false, ParentId = 5, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 52, Code = "52", Name = "مصروفات تشغيلية", Type = AccountType.Expense, IsMainAccount = false, ParentId = 5, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) }
+        );
+
+
+        // 7. Seed Opening Balance Journal Entry (50,000 Cash) - مرحل مسبقاً
+        modelBuilder.Entity<JournalEntry>().HasData(
+            new JournalEntry 
+            { 
+                Id = 1, 
+                VoucherNumber = "OB-2025-001", 
+                EntryDate = new DateTime(2025, 1, 1), 
+                Description = "قيد افتتاحي - رصيد الصندوق", 
+                Type = VoucherType.AdjustmentEntry,
+                TotalDebit = 50000m,
+                TotalCredit = 50000m,
+                IsPosted = true, // مرحل - هذا قيد تاريخي
+                CreatedBy = 1,
+                CreatedAt = new DateTime(2025, 1, 1)
+            }
+        );
+
+        modelBuilder.Entity<JournalEntryLine>().HasData(
+            new JournalEntryLine 
+            { 
+                Id = 1, 
+                JournalEntryId = 1, 
+                AccountId = 1101, // الصندوق الرئيسي (تم تحديثه)
+                Debit = 50000m, 
+                Credit = 0, 
+                Description = "إيداع رصيد افتتاحي" 
+            },
+            new JournalEntryLine 
+            { 
+                Id = 2, 
+                JournalEntryId = 1, 
+                AccountId = 3101, // رأس مال الشركاء (تم تحديثه)
+                Debit = 0, 
+                Credit = 50000m, 
+                Description = "إثبات رأس المال" 
+            }
+        );
     }
 
     public override int SaveChanges()
     {
+        ApplyBaseEntityAuditLogic();
         HandleInvoiceNumberImmutability();
         return base.SaveChanges();
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        ApplyBaseEntityAuditLogic();
         HandleInvoiceNumberImmutability();
         return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyBaseEntityAuditLogic()
+    {
+        var entries = ChangeTracker.Entries()
+            .Where(e => e.Entity is BaseEntity && 
+                        (e.State == EntityState.Added || e.State == EntityState.Modified || e.State == EntityState.Deleted));
+
+        foreach (var entry in entries)
+        {
+            var entity = (BaseEntity)entry.Entity;
+
+            if (entry.State == EntityState.Added)
+            {
+                entity.CreatedAt = DateTime.UtcNow;
+                entity.IsDeleted = false;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entity.UpdatedAt = DateTime.UtcNow;
+            }
+            else if (entry.State == EntityState.Deleted)
+            {
+                // Soft delete logic
+                entry.State = EntityState.Modified;
+                entity.IsDeleted = true;
+                entity.DeletedAt = DateTime.UtcNow;
+            }
+        }
     }
 
     private void HandleInvoiceNumberImmutability()

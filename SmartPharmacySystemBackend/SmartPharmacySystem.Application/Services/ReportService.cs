@@ -891,20 +891,20 @@ public class ReportService : IReportService
         var salesQuery = _context.SaleInvoices
             .AsNoTracking()
             .Where(i => i.Status == DocumentStatus.Approved
-                && employeeIds.Contains(i.CreatedBy)
+                && i.CreatedBy.HasValue && employeeIds.Contains(i.CreatedBy.Value)
                 && (!fromDate.HasValue || i.InvoiceDate >= fromDate.Value)
                 && (!toDate.HasValue || i.InvoiceDate <= toDate.Value));
 
         var returnsQuery = _context.SalesReturns
             .AsNoTracking()
             .Where(r => r.Status == DocumentStatus.Approved
-                && employeeIds.Contains(r.CreatedBy)
+                && r.CreatedBy.HasValue && employeeIds.Contains(r.CreatedBy.Value)
                 && (!fromDate.HasValue || r.ReturnDate >= fromDate.Value)
                 && (!toDate.HasValue || r.ReturnDate <= toDate.Value));
 
         var salesSummary = includeSales
             ? await salesQuery
-                .GroupBy(i => i.CreatedBy)
+                .GroupBy(i => i.CreatedBy ?? 0)
                 .Select(g => new EmployeePerformanceSummaryDto
                 {
                     EmployeeId = g.Key,
@@ -912,12 +912,12 @@ public class ReportService : IReportService
                     SalesInvoiceCount = g.Count(),
                     ItemsSold = g.Sum(i => i.SaleInvoiceDetails.Sum(d => d.Quantity))
                 })
-                .ToDictionaryAsync(x => x.EmployeeId)
+                .ToDictionaryAsync(x => x.EmployeeId ?? 0)
             : new Dictionary<int, EmployeePerformanceSummaryDto>();
 
         var returnsSummary = includeReturns
             ? await returnsQuery
-                .GroupBy(r => r.CreatedBy)
+                .GroupBy(r => r.CreatedBy ?? 0)
                 .Select(g => new EmployeePerformanceSummaryDto
                 {
                     EmployeeId = g.Key,
@@ -925,7 +925,7 @@ public class ReportService : IReportService
                     SalesReturnCount = g.Count(),
                     ItemsReturned = g.Sum(r => r.SalesReturnDetails.Sum(d => d.Quantity))
                 })
-                .ToDictionaryAsync(x => x.EmployeeId)
+                .ToDictionaryAsync(x => x.EmployeeId ?? 0)
             : new Dictionary<int, EmployeePerformanceSummaryDto>();
 
         result.Employees = employees
@@ -1106,6 +1106,167 @@ public class ReportService : IReportService
 
         return result;
     }
+
+    // ===================== القوائم المالية النهائية - Financial Statements =====================
+
+    /// <inheritdoc/>
+    public async Task<TrialBalanceDto> GetTrialBalanceAsync(DateTime fromDate, DateTime toDate)
+    {
+        _logger.LogInformation("Generating Trial Balance from {From} to {To}", fromDate, toDate);
+
+        var result = new TrialBalanceDto();
+
+        // 1. Get all accounts with their types
+        var accounts = await _context.Accounts
+            .AsNoTracking()
+            .OrderBy(a => a.Code)
+            .ToListAsync();
+
+        // 2. Get balances for the period
+        var balances = await _context.JournalEntryLines
+            .AsNoTracking()
+            .Where(l => l.JournalEntry.EntryDate >= fromDate && l.JournalEntry.EntryDate <= toDate && l.JournalEntry.IsPosted)
+            .GroupBy(l => l.AccountId)
+            .Select(g => new
+            {
+                AccountId = g.Key,
+                Debit = g.Sum(l => l.Debit),
+                Credit = g.Sum(l => l.Credit)
+            })
+            .ToListAsync();
+
+        // 3. Get opening balances (before fromDate)
+        var openingBalances = await _context.JournalEntryLines
+            .AsNoTracking()
+            .Where(l => l.JournalEntry.EntryDate < fromDate && l.JournalEntry.IsPosted)
+            .GroupBy(l => l.AccountId)
+            .Select(g => new
+            {
+                AccountId = g.Key,
+                Balance = g.Sum(l => l.Debit - l.Credit)
+            })
+            .ToListAsync();
+
+        var balanceMap = balances.ToDictionary(b => b.AccountId);
+        var openingMap = openingBalances.ToDictionary(b => b.AccountId);
+
+        foreach (var acc in accounts)
+        {
+            openingMap.TryGetValue(acc.Id, out var opening);
+            balanceMap.TryGetValue(acc.Id, out var movement);
+
+            var openingBal = opening?.Balance ?? 0;
+            var debit = movement?.Debit ?? 0;
+            var credit = movement?.Credit ?? 0;
+            var closingBal = openingBal + debit - credit;
+
+            // Only add accounts that have any activity or balance
+            if (openingBal != 0 || debit != 0 || credit != 0)
+            {
+                result.Lines.Add(new TrialBalanceLineDto
+                {
+                    AccountCode = acc.Code,
+                    AccountName = acc.Name,
+                    AccountType = acc.Type.ToString(),
+                    OpeningDebit = openingBal > 0 ? openingBal : 0,
+                    OpeningCredit = openingBal < 0 ? Math.Abs(openingBal) : 0,
+                    PeriodDebit = debit,
+                    PeriodCredit = credit,
+                    ClosingDebit = closingBal > 0 ? closingBal : 0,
+                    ClosingCredit = closingBal < 0 ? Math.Abs(closingBal) : 0
+                });
+            }
+        }
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IncomeStatementDto> GetIncomeStatementAsync(DateTime fromDate, DateTime toDate)
+    {
+        _logger.LogInformation("Generating Income Statement from {From} to {To}", fromDate, toDate);
+
+        var result = new IncomeStatementDto();
+
+        // 1. Get Revenues (Revenue types)
+        var revenuesData = await GetAccountTypeSummaryAsync(AccountType.Revenue, fromDate, toDate);
+        result.Revenues = revenuesData.Select(r => new IncomeStatementLineDto { AccountName = r.AccountName, Amount = r.Amount }).ToList();
+
+        // 2. Get Expenses (Expense types)
+        var expensesData = await GetAccountTypeSummaryAsync(AccountType.Expense, fromDate, toDate);
+        result.Expenses = expensesData.Select(r => new IncomeStatementLineDto { AccountName = r.AccountName, Amount = r.Amount }).ToList();
+
+        return result;
+    }
+
+    /// <inheritdoc/>
+    public async Task<BalanceSheetDto> GetBalanceSheetAsync(DateTime date)
+    {
+        _logger.LogInformation("Generating Balance Sheet for {Date}", date);
+
+        var result = new BalanceSheetDto();
+
+        // 1. Assets
+        var assetsData = await GetAccountTypeSummaryAsync(AccountType.Asset, null, date);
+        result.Assets = assetsData.Select(r => new BalanceSheetLineDto { AccountName = r.AccountName, Amount = r.Amount }).ToList();
+
+        // 2. Liabilities
+        var liabilitiesData = await GetAccountTypeSummaryAsync(AccountType.Liability, null, date);
+        result.Liabilities = liabilitiesData.Select(r => new BalanceSheetLineDto { AccountName = r.AccountName, Amount = r.Amount }).ToList();
+
+        // 3. Equity
+        var equityData = await GetAccountTypeSummaryAsync(AccountType.Equity, null, date);
+        result.Equity = equityData.Select(r => new BalanceSheetLineDto { AccountName = r.AccountName, Amount = r.Amount }).ToList();
+
+        return result;
+    }
+
+    private async Task<List<(string AccountName, decimal Amount)>> GetAccountTypeSummaryAsync(AccountType type, DateTime? fromDate, DateTime toDate)
+    {
+        var query = _context.JournalEntryLines
+            .AsNoTracking()
+            .Where(l => l.Account.Type == type && l.JournalEntry.IsPosted && l.JournalEntry.EntryDate <= toDate);
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(l => l.JournalEntry.EntryDate >= fromDate.Value);
+        }
+
+        var results = await query
+            .GroupBy(l => new { l.AccountId, l.Account.Name, l.Account.Code })
+            .Select(g => new
+            {
+                AccountName = g.Key.Name,
+                Amount = (type == AccountType.Asset || type == AccountType.Expense)
+                    ? g.Sum(l => l.Debit - l.Credit)
+                    : g.Sum(l => l.Credit - l.Debit)
+            })
+            .Where(x => x.Amount != 0)
+            .ToListAsync();
+
+        return results.Select(r => (r.AccountName, r.Amount)).ToList();
+    }
+
+    private async Task<decimal> CalculateNetIncomeAsync(DateTime? fromDate, DateTime toDate)
+    {
+        var query = _context.JournalEntryLines
+            .AsNoTracking()
+            .Where(l => (l.Account.Type == AccountType.Revenue || l.Account.Type == AccountType.Expense)
+                && l.JournalEntry.IsPosted && l.JournalEntry.EntryDate <= toDate);
+
+        if (fromDate.HasValue)
+        {
+            query = query.Where(l => l.JournalEntry.EntryDate >= fromDate.Value);
+        }
+
+        var totalRevenue = await query
+            .Where(l => l.Account.Type == AccountType.Revenue)
+            .SumAsync(l => l.Credit - l.Debit);
+
+        var totalExpense = await query
+            .Where(l => l.Account.Type == AccountType.Expense)
+            .SumAsync(l => l.Debit - l.Credit);
+
+        return totalRevenue - totalExpense;
+    }
 }
-
-

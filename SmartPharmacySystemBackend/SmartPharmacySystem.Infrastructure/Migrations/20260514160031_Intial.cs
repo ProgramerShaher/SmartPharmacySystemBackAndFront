@@ -8,11 +8,44 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPharmacySystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class FixAdminPasswordHash : Migration
+    public partial class Intial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Accounts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    ParentId = table.Column<int>(type: "int", nullable: true),
+                    IsMainAccount = table.Column<bool>(type: "bit", nullable: false),
+                    CurrentBalance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Accounts", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Accounts_Accounts_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Categories",
                 columns: table => new
@@ -21,47 +54,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Customers",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
-                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    Balance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false, defaultValue: 0m),
-                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Customers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "ExpenseCategories",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ExpenseCategories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -72,11 +76,47 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Prefix = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Year = table.Column<int>(type: "int", nullable: false),
-                    LastNumber = table.Column<int>(type: "int", nullable: false)
+                    LastNumber = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_InvoiceSequences", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "JournalEntries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    VoucherNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    EntryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    TotalDebit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalCredit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    IsPosted = table.Column<bool>(type: "bit", nullable: false),
+                    PostedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReferenceId = table.Column<int>(type: "int", nullable: true),
+                    ReferenceType = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JournalEntries", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -88,8 +128,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Balance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -104,11 +149,77 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Roles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Customers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    Address = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    Balance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false, defaultValue: 0m),
+                    CreditLimit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    AccountId = table.Column<int>(type: "int", nullable: true),
+                    PasswordHash = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Customers_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ExpenseCategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: true),
+                    AccountId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExpenseCategories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExpenseCategories_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -123,13 +234,23 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Balance = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AccountId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Suppliers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Suppliers_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -153,9 +274,14 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     SoldByUnit = table.Column<bool>(type: "bit", nullable: false),
                     Status = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -169,66 +295,78 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CustomerReceipts",
+                name: "Cheques",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    ChequeNumber = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    BankName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ReceiptDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReferenceNo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    PaymentMethod = table.Column<int>(type: "int", maxLength: 100, nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    PersonName = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    BankAccountId = table.Column<int>(type: "int", nullable: true),
+                    JournalEntryId = table.Column<int>(type: "int", nullable: true),
                     Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    IsCancelled = table.Column<bool>(type: "bit", nullable: false),
-                    CancelledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CancelledBy = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CustomerReceipts", x => x.Id);
+                    table.PrimaryKey("PK_Cheques", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CustomerReceipts_Customers_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "Customers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        name: "FK_Cheques_Accounts_BankAccountId",
+                        column: x => x.BankAccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Cheques_JournalEntries_JournalEntryId",
+                        column: x => x.JournalEntryId,
+                        principalTable: "JournalEntries",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Expenses",
+                name: "JournalEntryLines",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    JournalEntryId = table.Column<int>(type: "int", nullable: false),
                     AccountId = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    ExpenseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    PaymentMethod = table.Column<int>(type: "int", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    IsPaid = table.Column<bool>(type: "bit", nullable: false),
+                    Debit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Credit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Expenses", x => x.Id);
+                    table.PrimaryKey("PK_JournalEntryLines", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Expenses_ExpenseCategories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "ExpenseCategories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Expenses_PharmacyAccounts_AccountId",
+                        name: "FK_JournalEntryLines_Accounts_AccountId",
                         column: x => x.AccountId,
-                        principalTable: "PharmacyAccounts",
+                        principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_JournalEntryLines_JournalEntries_JournalEntryId",
+                        column: x => x.JournalEntryId,
+                        principalTable: "JournalEntries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -244,7 +382,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     ReferenceId = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     TransactionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -274,8 +418,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     ResetPasswordCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     LastLogin = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<int>(type: "int", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -295,28 +443,73 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SupplierPayments",
+                name: "CustomerReceipts",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SupplierId = table.Column<int>(type: "int", nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReceiptDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReferenceNo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    PaymentMethod = table.Column<int>(type: "int", maxLength: 100, nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    IsCancelled = table.Column<bool>(type: "bit", nullable: false),
+                    CancelledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CancelledBy = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SupplierPayments", x => x.Id);
+                    table.PrimaryKey("PK_CustomerReceipts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SupplierPayments_Suppliers_SupplierId",
-                        column: x => x.SupplierId,
-                        principalTable: "Suppliers",
+                        name: "FK_CustomerReceipts_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Expenses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CategoryId = table.Column<int>(type: "int", nullable: false),
+                    AccountId = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    ExpenseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsPaid = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Expenses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Expenses_ExpenseCategories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "ExpenseCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Expenses_PharmacyAccounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "PharmacyAccounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -339,9 +532,14 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     StorageLocation = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     EntryDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
+                    SoldQuantity = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    SoldQuantity = table.Column<int>(type: "int", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -361,6 +559,47 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OnlineOrders",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OrderNumber = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
+                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaymentMethod = table.Column<int>(type: "int", nullable: false),
+                    CustomerId = table.Column<int>(type: "int", nullable: false),
+                    DeliveryAddress = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    CustomerNotes = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    HandledBy = table.Column<int>(type: "int", nullable: true),
+                    HandledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OnlineOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OnlineOrders_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OnlineOrders_Users_HandledBy",
+                        column: x => x.HandledBy,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PurchaseInvoices",
                 columns: table => new
                 {
@@ -371,17 +610,22 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     SupplierInvoiceNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PurchaseDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaidAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     PaymentMethod = table.Column<int>(type: "int", nullable: false),
                     Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsPaid = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CancelledBy = table.Column<int>(type: "int", nullable: true),
                     CancelledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -427,14 +671,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     CustomerId = table.Column<int>(type: "int", nullable: true),
                     CustomerName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsPaid = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CancelledBy = table.Column<int>(type: "int", nullable: true),
                     CancelledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -478,7 +726,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     ExpiryDateSnapshot = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsRead = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -505,8 +758,14 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReferenceId = table.Column<int>(type: "int", nullable: false),
                     ReferenceNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -524,6 +783,41 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OnlineOrderItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OnlineOrderId = table.Column<int>(type: "int", nullable: false),
+                    MedicineId = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
+                    UnitPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OnlineOrderItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OnlineOrderItems_Medicines_MedicineId",
+                        column: x => x.MedicineId,
+                        principalTable: "Medicines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OnlineOrderItems_OnlineOrders_OnlineOrderId",
+                        column: x => x.OnlineOrderId,
+                        principalTable: "OnlineOrders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PurchaseInvoiceDetails",
                 columns: table => new
                 {
@@ -538,7 +832,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     SalePrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TrueUnitCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -573,14 +873,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     ReturnDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CancelledBy = table.Column<int>(type: "int", nullable: true),
                     CancelledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -617,6 +921,42 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SupplierPayments",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SupplierId = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaymentDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ReferenceNo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    PurchaseInvoiceId = table.Column<int>(type: "int", nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SupplierPayments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SupplierPayments_PurchaseInvoices_PurchaseInvoiceId",
+                        column: x => x.PurchaseInvoiceId,
+                        principalTable: "PurchaseInvoices",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_SupplierPayments_Suppliers_SupplierId",
+                        column: x => x.SupplierId,
+                        principalTable: "Suppliers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PriceOverrides",
                 columns: table => new
                 {
@@ -629,7 +969,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     ActualCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     UserId = table.Column<int>(type: "int", nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -676,7 +1022,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     TotalCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Profit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     RemainingQtyToReturn = table.Column<int>(type: "int", nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -713,14 +1065,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     TotalCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalProfit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Reason = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedBy = table.Column<int>(type: "int", nullable: false),
                     ApprovedBy = table.Column<int>(type: "int", nullable: true),
                     ApprovedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CancelledBy = table.Column<int>(type: "int", nullable: true),
                     CancelledAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -768,7 +1124,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Quantity = table.Column<int>(type: "int", nullable: false),
                     PurchasePrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalReturn = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -808,7 +1170,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     TotalCost = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Profit = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     TotalReturn = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -833,43 +1201,135 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "ExpenseCategories",
-                columns: new[] { "Id", "CreatedAt", "Description", "IsDeleted", "Name" },
+                table: "Accounts",
+                columns: new[] { "Id", "Code", "CreatedAt", "CreatedBy", "CurrentBalance", "DeletedAt", "DeletedBy", "Description", "IsActive", "IsDeleted", "IsMainAccount", "Name", "ParentId", "Type", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(7502), "رواتب الموظفين والبدلات", false, "رواتب" },
-                    { 2, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9401), "إيجار مقر الصيدلية والمخازن", false, "إيجار" },
-                    { 3, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9406), "فواتير الكهرباء", false, "كهرباء" },
-                    { 4, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9466), "فواتير المياه", false, "مياه" },
-                    { 5, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467), "فواتير الهاتف والاشتراكات", false, "اتصالات وانترنت" },
-                    { 6, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9467), "أدوات مكتبية ومطبوعات", false, "قرطاسية وأدوات مكتبية" },
-                    { 7, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9468), "صيانة المعدات والمباني", false, "صيانة" },
-                    { 8, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9469), "أدوات ومواد نظافة", false, "نظافة" },
-                    { 9, new DateTime(2026, 5, 1, 15, 43, 53, 685, DateTimeKind.Utc).AddTicks(9470), "مصاريف متنوعة", false, "أخرى" }
+                    { 1, "1", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "الأصول", null, 1, null, null },
+                    { 2, "2", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "الخصوم", null, 2, null, null },
+                    { 3, "3", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "حقوق الملكية", null, 3, null, null },
+                    { 4, "4", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "الإيرادات", null, 4, null, null },
+                    { 5, "5", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "المصروفات", null, 5, null, null }
                 });
 
             migrationBuilder.InsertData(
+                table: "Categories",
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "ImageUrl", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, "أدوية علاج الالتهابات البكتيرية", null, false, "مضادات حيوية", null, null },
+                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, "أدوية تخفيف الألم وخافضات الحرارة", null, false, "مسكنات", null, null },
+                    { 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, "مكملات غذائية وفيتامينات", null, false, "فيتامينات", null, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Customers",
+                columns: new[] { "Id", "AccountId", "Address", "CreatedAt", "CreatedBy", "CreditLimit", "DeletedAt", "DeletedBy", "Email", "IsActive", "IsDeleted", "Name", "PasswordHash", "PhoneNumber", "UpdatedAt", "UpdatedBy" },
+                values: new object[] { 1, null, null, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, "عميل نقدي عام", null, "000000000", null, null });
+
+            migrationBuilder.InsertData(
+                table: "ExpenseCategories",
+                columns: new[] { "Id", "AccountId", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { 1, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(5705), null, null, null, "رواتب الموظفين والبدلات", false, "رواتب", null, null },
+                    { 2, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7249), null, null, null, "إيجار مقر الصيدلية والمخازن", false, "إيجار", null, null },
+                    { 3, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7252), null, null, null, "فواتير الكهرباء", false, "كهرباء", null, null },
+                    { 4, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7254), null, null, null, "فواتير المياه", false, "مياه", null, null },
+                    { 5, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7256), null, null, null, "فواتير الهاتف والاشتراكات", false, "اتصالات وانترنت", null, null },
+                    { 6, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7257), null, null, null, "أدوات مكتبية ومطبوعات", false, "قرطاسية وأدوات مكتبية", null, null },
+                    { 7, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7259), null, null, null, "صيانة المعدات والمباني", false, "صيانة", null, null },
+                    { 8, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7261), null, null, null, "أدوات ومواد نظافة", false, "نظافة", null, null },
+                    { 9, null, new DateTime(2026, 5, 14, 16, 0, 28, 279, DateTimeKind.Utc).AddTicks(7262), null, null, null, "مصاريف متنوعة", false, "أخرى", null, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "JournalEntries",
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "EntryDate", "IsDeleted", "IsPosted", "PostedAt", "ReferenceId", "ReferenceType", "TotalCredit", "TotalDebit", "Type", "UpdatedAt", "UpdatedBy", "VoucherNumber" },
+                values: new object[] { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, null, null, "قيد افتتاحي - رصيد الصندوق", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), false, false, null, null, null, 50000m, 50000m, 4, null, null, "OB-2025-001" });
+
+            migrationBuilder.InsertData(
                 table: "PharmacyAccounts",
-                columns: new[] { "Id", "Balance", "CreatedAt", "IsActive", "LastUpdated", "Name" },
-                values: new object[] { 1, 0m, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "الخزينة الرئيسية" });
+                columns: new[] { "Id", "Balance", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "IsActive", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
+                values: new object[] { 1, 0m, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, true, false, "الخزينة الرئيسية", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null });
 
             migrationBuilder.InsertData(
                 table: "Roles",
-                columns: new[] { "Id", "CreatedAt", "Description", "Name" },
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "مدير النظام - صلاحيات كاملة", "Admin" },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "صيدلي - صلاحيات البيع والشراء", "Pharmacist" }
+                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "مدير النظام - صلاحيات كاملة", false, "Admin", null, null },
+                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "صيدلي - صلاحيات البيع والشراء", false, "Pharmacist", null, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Suppliers",
+                columns: new[] { "Id", "AccountId", "Address", "Balance", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Email", "IsDeleted", "Name", "Notes", "PhoneNumber", "UpdatedAt", "UpdatedBy" },
+                values: new object[] { 1, null, null, 0m, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, null, false, "شركة الأدوية العالمية", null, "011223344", null, null });
+
+            migrationBuilder.InsertData(
+                table: "Accounts",
+                columns: new[] { "Id", "Code", "CreatedAt", "CreatedBy", "CurrentBalance", "DeletedAt", "DeletedBy", "Description", "IsActive", "IsDeleted", "IsMainAccount", "Name", "ParentId", "Type", "UpdatedAt", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { 11, "11", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "الأصول المتداولة", 1, 1, null, null },
+                    { 21, "21", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "الخصوم المتداولة", 2, 2, null, null },
+                    { 31, "31", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, true, "رأس المال", 3, 3, null, null },
+                    { 41, "41", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "إيرادات المبيعات", 4, 4, null, null },
+                    { 51, "51", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "تكلفة المشتريات", 5, 5, null, null },
+                    { 52, "52", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "مصروفات تشغيلية", 5, 5, null, null }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Medicines",
+                columns: new[] { "Id", "ActiveIngredient", "CategoryId", "CreatedAt", "CreatedBy", "DefaultBarcode", "DefaultPurchasePrice", "DefaultSalePrice", "DeletedAt", "DeletedBy", "ImageUrl", "InternalCode", "IsDeleted", "Manufacturer", "MinAlertQuantity", "MovingAverageCost", "Name", "Notes", "ReorderLevel", "ScientificName", "SoldByUnit", "Status", "UpdatedAt", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { 1, null, 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "5011309100010", 10.00m, 15.00m, null, null, null, null, false, null, 0, 0m, "Panadol Advance", null, 10, "Paracetamol", false, "Active", null, null },
+                    { 2, null, 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "5011309100020", 60.00m, 85.00m, null, null, null, null, false, null, 0, 0m, "Augmentin 1g", null, 10, "Amoxicillin", false, "Active", null, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "CreatedAt", "CreatedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "Username" },
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "UpdatedAt", "UpdatedBy", "Username" },
+                values: new object[] { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "admin@pharmacy.com", "مدير النظام", false, null, null, "$2a$11$uvLLk6uV4bDc6L7Nx8ITBuM91LuLsaJQQPO8/T67avAqK8EMHUeNq", null, null, 1, 1, null, null, "admin" });
+
+            migrationBuilder.InsertData(
+                table: "Accounts",
+                columns: new[] { "Id", "Code", "CreatedAt", "CreatedBy", "CurrentBalance", "DeletedAt", "DeletedBy", "Description", "IsActive", "IsDeleted", "IsMainAccount", "Name", "ParentId", "Type", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, "admin@pharmacy.com", "مدير النظام", false, null, null, "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim", null, null, 1, 1, "admin" },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "pharmacist@pharmacy.com", "صيدلي النظام", false, null, null, "$2a$11$v5vhCXa73X0O2d.kpUg/ceTLnbfSytNDAyH8Rn/T7J6Mdar/EJzim", null, null, 2, 1, "pharmacist" }
+                    { 1101, "1101", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "الصندوق الرئيسي", 11, 1, null, null },
+                    { 1102, "1102", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "البنك - حساب جاري", 11, 1, null, null },
+                    { 1301, "1301", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "مخزون الأدوية", 11, 1, null, null },
+                    { 2101, "2101", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "ذمم الموردين", 21, 2, null, null },
+                    { 3101, "3101", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, false, "رأس مال الشركاء", 31, 3, null, null }
                 });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "UpdatedAt", "UpdatedBy", "Username" },
+                values: new object[] { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, null, null, "pharmacist@pharmacy.com", "صيدلي النظام", false, null, null, "$2a$11$uvLLk6uV4bDc6L7Nx8ITBuM91LuLsaJQQPO8/T67avAqK8EMHUeNq", null, null, 2, 1, null, null, "pharmacist" });
+
+            migrationBuilder.InsertData(
+                table: "JournalEntryLines",
+                columns: new[] { "Id", "AccountId", "CreatedAt", "CreatedBy", "Credit", "Debit", "DeletedAt", "DeletedBy", "Description", "IsDeleted", "JournalEntryId", "UpdatedAt", "UpdatedBy" },
+                values: new object[,]
+                {
+                    { 1, 1101, new DateTime(2026, 5, 14, 16, 0, 29, 1, DateTimeKind.Utc).AddTicks(5449), null, 0m, 50000m, null, null, "إيداع رصيد افتتاحي", false, 1, null, null },
+                    { 2, 3101, new DateTime(2026, 5, 14, 16, 0, 29, 1, DateTimeKind.Utc).AddTicks(8566), null, 50000m, 0m, null, null, "إثبات رأس المال", false, 1, null, null }
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Accounts_Code",
+                table: "Accounts",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Accounts_ParentId",
+                table: "Accounts",
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Alerts_BatchId_AlertType",
@@ -882,6 +1342,26 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "CreatedAt");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Cheques_BankAccountId",
+                table: "Cheques",
+                column: "BankAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cheques_ChequeNumber",
+                table: "Cheques",
+                column: "ChequeNumber");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cheques_DueDate",
+                table: "Cheques",
+                column: "DueDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Cheques_JournalEntryId",
+                table: "Cheques",
+                column: "JournalEntryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CustomerReceipts_CustomerId",
                 table: "CustomerReceipts",
                 column: "CustomerId");
@@ -892,9 +1372,19 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "ReceiptDate");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Customers_AccountId",
+                table: "Customers",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Customers_Name",
                 table: "Customers",
                 column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExpenseCategories_AccountId",
+                table: "ExpenseCategories",
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Expenses_AccountId",
@@ -943,6 +1433,27 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_JournalEntries_EntryDate",
+                table: "JournalEntries",
+                column: "EntryDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JournalEntries_VoucherNumber",
+                table: "JournalEntries",
+                column: "VoucherNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JournalEntryLines_AccountId",
+                table: "JournalEntryLines",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JournalEntryLines_JournalEntryId",
+                table: "JournalEntryLines",
+                column: "JournalEntryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MedicineBatches_BatchBarcode",
                 table: "MedicineBatches",
                 column: "BatchBarcode",
@@ -989,6 +1500,42 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "IX_Medicines_ScientificName",
                 table: "Medicines",
                 column: "ScientificName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrderItems_MedicineId",
+                table: "OnlineOrderItems",
+                column: "MedicineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrderItems_OnlineOrderId",
+                table: "OnlineOrderItems",
+                column: "OnlineOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrders_CustomerId",
+                table: "OnlineOrders",
+                column: "CustomerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrders_HandledBy",
+                table: "OnlineOrders",
+                column: "HandledBy");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrders_OrderDate",
+                table: "OnlineOrders",
+                column: "OrderDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrders_OrderNumber",
+                table: "OnlineOrders",
+                column: "OrderNumber",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OnlineOrders_Status",
+                table: "OnlineOrders",
+                column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_PharmacyAccounts_Name",
@@ -1200,9 +1747,19 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "PaymentDate");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SupplierPayments_PurchaseInvoiceId",
+                table: "SupplierPayments",
+                column: "PurchaseInvoiceId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SupplierPayments_SupplierId",
                 table: "SupplierPayments",
                 column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Suppliers_AccountId",
+                table: "Suppliers",
+                column: "AccountId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Suppliers_Name_Performance",
@@ -1238,6 +1795,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "Alerts");
 
             migrationBuilder.DropTable(
+                name: "Cheques");
+
+            migrationBuilder.DropTable(
                 name: "CustomerReceipts");
 
             migrationBuilder.DropTable(
@@ -1251,6 +1811,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "InvoiceSequences");
+
+            migrationBuilder.DropTable(
+                name: "JournalEntryLines");
+
+            migrationBuilder.DropTable(
+                name: "OnlineOrderItems");
 
             migrationBuilder.DropTable(
                 name: "PriceOverrides");
@@ -1275,6 +1841,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "PharmacyAccounts");
+
+            migrationBuilder.DropTable(
+                name: "JournalEntries");
+
+            migrationBuilder.DropTable(
+                name: "OnlineOrders");
 
             migrationBuilder.DropTable(
                 name: "PurchaseReturns");
@@ -1305,6 +1877,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Accounts");
 
             migrationBuilder.DropTable(
                 name: "Roles");

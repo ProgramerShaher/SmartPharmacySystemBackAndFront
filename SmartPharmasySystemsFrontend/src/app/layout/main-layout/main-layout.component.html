@@ -1,7 +1,8 @@
 <!-- main-layout.component.html -->
-<div class="layout-wrapper" dir="rtl">
+<div class="layout-wrapper" dir="rtl" [class.sidebar-collapsed]="isSidebarCollapsed">
     <!-- Sidebar -->
-    <app-sidebar class="layout-sidebar"></app-sidebar>
+    <app-sidebar class="layout-sidebar" [isCollapsed]="isSidebarCollapsed"
+        (collapseChange)="setSidebarCollapsed($event)"></app-sidebar>
 
     <!-- Main Content Area -->
     <div class="layout-main-container">

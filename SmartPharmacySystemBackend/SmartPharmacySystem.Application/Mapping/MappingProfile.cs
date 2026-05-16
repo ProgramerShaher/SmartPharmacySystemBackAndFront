@@ -428,6 +428,45 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<CreateRoleDto, Core.Entities.Role>();
             CreateMap<UpdateRoleDto, Core.Entities.Role>();
             CreateMap<Core.Entities.Role, RoleDto>();
+
+            // ==================== Accounting Mappings ====================
+
+            // Account Mappings
+            CreateMap<CreateAccountDto, Account>();
+            CreateMap<UpdateAccountDto, Account>();
+            CreateMap<Account, AccountDto>()
+                .ForMember(dest => dest.ParentName, opt => opt.MapFrom(src => src.Parent != null ? src.Parent.Name : string.Empty))
+                .ReverseMap();
+
+            // JournalEntry Mappings
+            CreateMap<CreateJournalEntryDto, JournalEntry>()
+                .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
+
+            // DTO -> Entity: تجاهل خصائص التنقل لمنع إنشاء كيانات فارغة
+            CreateMap<JournalEntryDto, JournalEntry>()
+                .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
+
+            CreateMap<JournalEntry, JournalEntryDto>()
+                .ForMember(dest => dest.Lines, opt => opt.MapFrom(src => src.Lines));
+
+            // JournalEntryLine Mappings
+            CreateMap<CreateJournalEntryLineDto, JournalEntryLine>()
+                .ForMember(dest => dest.Account, opt => opt.Ignore());
+
+            // DTO -> Entity: تجاهل خاصية Account لمنع إنشاء حسابات فارغة
+            CreateMap<JournalEntryLineDto, JournalEntryLine>()
+                .ForMember(dest => dest.Account, opt => opt.Ignore())
+                .ForMember(dest => dest.JournalEntry, opt => opt.Ignore());
+
+            CreateMap<JournalEntryLine, JournalEntryLineDto>()
+                .ForMember(dest => dest.AccountName, opt => opt.MapFrom(src => src.Account != null ? src.Account.Name : string.Empty))
+                .ForMember(dest => dest.AccountCode, opt => opt.MapFrom(src => src.Account != null ? src.Account.Code : string.Empty));
+
+            // Cheque Mappings
+            CreateMap<CreateChequeDto, Cheque>();
+            CreateMap<Cheque, ChequeDto>()
+                .ForMember(dest => dest.BankAccountName, opt => opt.MapFrom(src => src.BankAccount != null ? src.BankAccount.Name : string.Empty))
+                .ReverseMap();
         }
     }
 }

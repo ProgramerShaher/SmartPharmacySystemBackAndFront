@@ -5,10 +5,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// Represents the internal pharmacy account balance.
 /// </summary>
-public class PharmacyAccount
+public class PharmacyAccount : BaseEntity
 {
-    [Key]
-    public int Id { get; set; }
 
     /// <summary>
     /// اسم الحساب (مثل: الخزينة الرئيسية)
@@ -29,14 +27,4 @@ public class PharmacyAccount
     /// </summary>
     public bool IsActive { get; set; } = true;
 
-    /// <summary>
-    /// Last time the balance was updated.
-    /// </summary>
-    public DateTime LastUpdated { get; set; }
-
-    /// <summary>
-    /// تاريخ إنشاء الحساب
-    /// Account creation date
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿using SmartPharmacySystem.Core.Enums;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Application.DTOs.StockMovement;
 
@@ -17,8 +17,9 @@ public class StockMovementDto
     public string? FinancialDescription { get; set; }
     public string? MedicineName { get; set; }
     public string? BatchNumber { get; set; }
-    public int CreatedBy { get; set; }
-    public string? CreatedByName { get; set; }
+    public int? CreatedBy { get; set; }
+    public string? CreatedByN
+    ame { get; set; }
     public string MovementTypeLabel { get; set; } = string.Empty;
     public string ReferenceTypeLabel { get; set; } = string.Empty;
 }

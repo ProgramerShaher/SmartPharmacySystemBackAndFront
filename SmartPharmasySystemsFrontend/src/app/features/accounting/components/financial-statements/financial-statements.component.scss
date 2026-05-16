@@ -1,0 +1,148 @@
+.financial-container {
+    background: #f4f7f9;
+    min-height: 100vh;
+    font-size: 11px;
+    padding-bottom: 50px;
+}
+
+/* 🏆 Imperial Header */
+.compact-header {
+    background: white;
+    padding: 8px 15px;
+    border-bottom: 2px solid #1e3c72;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.filters-bar {
+    background: #f8fafc;
+    padding: 6px 15px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* 💎 Micro Statement Panels */
+.statements-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    padding: 15px;
+}
+
+.statement-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 800;
+    color: #1e3c72;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+.section-title {
+    background: #f1f5f9;
+    padding: 4px 10px;
+    font-weight: 700;
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* 📊 Micro Tables */
+.micro-table {
+    width: 100%;
+    border-collapse: collapse;
+    
+    tr td {
+        padding: 5px 12px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    tr:last-child td { border-bottom: none; }
+    
+    .account-name { color: #334155; font-weight: 500; }
+    .amount { font-family: 'JetBrains Mono', monospace; text-align: left; font-weight: 600; }
+}
+
+/* 🎨 Section Specifics */
+.revenue-row { border-right: 3px solid #3b82f6; }
+.expense-row { border-right: 3px solid #ef4444; }
+.asset-row { border-right: 3px solid #10b981; }
+.liability-row { border-right: 3px solid #f59e0b; }
+.equity-row { border-right: 3px solid #8b5cf6; }
+
+.total-row {
+    background: #f8fafc;
+    font-weight: 800;
+    color: #1e293b;
+    border-top: 2px solid #e2e8f0;
+    
+    td { padding: 8px 12px !important; font-size: 12px; }
+}
+
+/* 💰 Net Result & Balance Check */
+.result-banner {
+    padding: 10px 15px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 14px;
+    margin-top: auto;
+    
+    &.profit { background: #dcfce7; color: #166534; border-top: 1px solid #bbf7d0; }
+    &.loss { background: #fee2e2; color: #991b1b; border-top: 1px solid #fecaca; }
+}
+
+.equation-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1e293b;
+    color: white;
+    padding: 8px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    font-weight: 700;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.2);
+    
+    .status-icon { font-size: 18px; }
+    .balanced { color: #4ade80; }
+    .unbalanced { color: #f87171; }
+}
+
+/* 📌 Component Overrides */
+::ng-deep {
+    .p-calendar {
+        height: 28px !important;
+        width: 220px !important;
+        .p-inputtext { padding: 4px 10px !important; font-size: 11px !important; }
+    }
+}
+
+@media print {
+    .filters-bar, .compact-header button { display: none !important; }
+    .financial-container { background: white !important; padding: 0 !important; }
+    .statements-grid { grid-template-columns: 1fr !important; padding: 0 !important; gap: 30px; }
+    .equation-bar { position: relative !important; margin-top: 40px; background: #eee !important; color: #000 !important; }
+}

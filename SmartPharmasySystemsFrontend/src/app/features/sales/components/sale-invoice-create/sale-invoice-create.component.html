@@ -173,14 +173,15 @@
             </div>
             
             <!-- ========== النافذة المنبثقة الملكية لإضافة صنف ========== -->
-            <p-dialog [(visible)]="addItemDialogVisible" header="إضافة صنف للفاتورة" [modal]="true" [style]="{width: '750px'}"
+            <p-dialog [(visible)]="addItemDialogVisible" header="إضافة صنف للفاتورة" [modal]="true" [style]="{width: 'min(94vw, 980px)'}"
+                [breakpoints]="{'960px': '94vw', '640px': '96vw'}"
                 [rtl]="true" [draggable]="false" [resizable]="false" styleClass="premium-item-modal" appendTo="body"
                 [baseZIndex]="10000">
             
                 <div class="modal-content">
             
                     <!-- اسم الدواء - AutoComplete -->
-                    <div class="modal-field">
+                    <div class="modal-field medicine-field">
                         <label class="field-label">
                             <i class="pi pi-search"></i>
                             اسم الدواء
@@ -201,7 +202,7 @@
                     </div>
             
                     <!-- اختيار الدفعة FEFO -->
-                    <div class="modal-field" *ngIf="selectedMedicineForModal && availableBatches.length > 0">
+                    <div class="modal-field batch-field" *ngIf="selectedMedicineForModal && availableBatches.length > 0">
                         <label class="field-label">
                             <i class="pi pi-box"></i>
                             اختر الدفعة (FEFO - الأقرب انتهاءً أولاً)
@@ -230,7 +231,7 @@
                     </div>
 
         <!-- الكمية -->
-        <div class="modal-field" *ngIf="selectedBatchForModal">
+        <div class="modal-field qty-field-wrap" *ngIf="selectedBatchForModal">
             <label class="field-label">الكمية المطلوبة</label>
             <p-inputNumber [(ngModel)]="modalQuantity" [min]="1" [max]="selectedBatchForModal.remainingQuantity"
                 [showButtons]="true" styleClass="w-full qty-field"></p-inputNumber>

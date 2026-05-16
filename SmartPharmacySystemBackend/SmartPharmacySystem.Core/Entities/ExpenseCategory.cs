@@ -1,13 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SmartPharmacySystem.Core.Entities;
 
 /// <summary>
 /// Represents a category for expenses (e.g., Salaries, Rent, Utilities).
 /// </summary>
-public class ExpenseCategory
+public class ExpenseCategory : BaseEntity
 {
-    public int Id { get; set; }
 
     [Required]
     [MaxLength(100)]
@@ -16,12 +16,17 @@ public class ExpenseCategory
     [MaxLength(250)]
     public string? Description { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    /// <summary>
+    /// معرف الحساب المرتبط بهذا التصنيف في شجرة الحسابات
+    /// </summary>
+    public int? AccountId { get; set; }
 
-    public bool IsDeleted { get; set; } = false;
+    // Navigation
+    [ForeignKey(nameof(AccountId))]
+    public virtual Account? Account { get; set; }
 
     /// <summary>
     /// Navigation property for expenses in this category.
     /// </summary>
-    public ICollection<Expense> Expenses { get; set; } = new List<Expense>();
+    public virtual ICollection<Expense> Expenses { get; set; } = new List<Expense>();
 }

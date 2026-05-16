@@ -4,10 +4,8 @@ using System.Collections.Generic;
 
 namespace SmartPharmacySystem.Core.Entities
 {
-    public class Customer
+    public class Customer : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
 
         [Required]
         [MaxLength(200)]
@@ -29,16 +27,21 @@ namespace SmartPharmacySystem.Core.Entities
         public decimal CreditLimit { get; set; }
 
         public bool IsActive { get; set; } = true;
+        
+        /// <summary>
+        /// معرف الحساب المرتبط في شجرة الحسابات
+        /// </summary>
+        public int? AccountId { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Mobile App Auth
         [MaxLength(500)]
         public string? PasswordHash { get; set; }
 
-        public bool IsDeleted { get; set; } = false;
 
         // Navigation
+        [ForeignKey(nameof(AccountId))]
+        public virtual Account? Account { get; set; }
         public virtual ICollection<SaleInvoice> SaleInvoices { get; set; } = new List<SaleInvoice>();
         public virtual ICollection<CustomerReceipt> Receipts { get; set; } = new List<CustomerReceipt>();
     }

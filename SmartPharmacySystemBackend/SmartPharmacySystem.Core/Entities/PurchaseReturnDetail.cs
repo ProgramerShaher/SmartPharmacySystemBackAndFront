@@ -4,12 +4,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents the details of a purchase return.
 /// Each detail line corresponds to a specific medicine batch returned.
 /// </summary>
-public class PurchaseReturnDetail
+public class PurchaseReturnDetail : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the purchase return detail.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the purchase return.
@@ -41,10 +37,6 @@ public class PurchaseReturnDetail
     /// </summary>
     public decimal TotalReturn { get; set; }
 
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Navigation property to the purchase return.

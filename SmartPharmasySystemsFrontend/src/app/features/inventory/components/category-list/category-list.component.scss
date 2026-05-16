@@ -21,6 +21,12 @@
                 border-color: #0f766e !important;
             }
         }
+
+        .category-dialog .p-dialog-content {
+            padding: 0 !important;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
     }
 }
 

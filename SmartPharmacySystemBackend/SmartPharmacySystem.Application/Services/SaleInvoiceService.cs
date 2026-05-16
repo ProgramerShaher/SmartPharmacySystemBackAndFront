@@ -7,6 +7,8 @@ using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
 using Microsoft.AspNetCore.Http;
 using SmartPharmacySystem.Application.DTOs.Barcode;
+using SmartPharmacySystem.Application.IServices;
+using SmartPharmacySystem.Application.DTOs.Financial;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -17,6 +19,7 @@ namespace SmartPharmacySystem.Application.Services
         IStockMovementService stockMovementService,
         IInvoiceNumberGenerator invoiceNumberGenerator,
         IFinancialService financialService,
+        IJournalEntryService journalEntryService,
         IAlertService alertService,
         IBarcodeService barcodeService,
         Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor) : ISaleInvoiceService
@@ -27,6 +30,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IStockMovementService _stockMovementService = stockMovementService;
         private readonly IInvoiceNumberGenerator _invoiceNumberGenerator = invoiceNumberGenerator;
         private readonly IFinancialService _financialService = financialService;
+        private readonly IJournalEntryService _journalEntryService = journalEntryService;
         private readonly IAlertService _alertService = alertService;
         private readonly IBarcodeService _barcodeService = barcodeService;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
@@ -215,26 +219,77 @@ namespace SmartPharmacySystem.Application.Services
                     detail.RemainingQtyToReturn = detail.Quantity;
                 }
 
+                // ==================== المحرك المحاسبي الاحترافي ====================
+                var journalEntry = new JournalEntryDto
+                {
+                    EntryDate = invoice.InvoiceDate,
+                    VoucherNumber = invoice.SaleInvoiceNumber,
+                    Description = $"قيد مبيعات آلي - فاتورة رقم: {invoice.SaleInvoiceNumber} - العميل: {invoice.CustomerName ?? "زبون نقدي"}",
+                    Type = VoucherType.SalesInvoice,
+                    Lines = new List<JournalEntryLineDto>()
+                };
+
+                // 1. الطرف المدين (من حـ/)
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
-                    await _financialService.ProcessTransactionAsync(
-                        accountId: 1,
-                        amount: invoice.TotalAmount,
-                        type: FinancialTransactionType.Income,
-                        referenceType: ReferenceType.SaleInvoice,
-                        referenceId: invoice.Id,
-                        description: $"بيع نقدي - فاتورة رقم: {invoice.SaleInvoiceNumber}"
-                    );
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 1101, // الصندوق الرئيسي
+                        Debit = invoice.TotalAmount,
+                        Credit = 0,
+                        Description = $"تحصيل مبيعات نقدية - فاتورة {invoice.SaleInvoiceNumber}"
+                    });
                     invoice.IsPaid = true;
                 }
-                else
+                else if (invoice.CustomerId.HasValue)
                 {
-                    invoice.IsPaid = false;
-                    if (invoice.CustomerId.HasValue)
+                    journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, invoice.TotalAmount);
-                    }
+                        AccountId = 2101, // ذمم العملاء (الموجود في الشجرة)
+                        Debit = invoice.TotalAmount,
+                        Credit = 0,
+                        Description = $"مبيعات آجلة - فاتورة {invoice.SaleInvoiceNumber}"
+                    });
+                    invoice.IsPaid = false;
+                    await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, invoice.TotalAmount);
                 }
+
+                // 2. الطرف الدائن (إلى حـ/ المبيعات)
+                journalEntry.Lines.Add(new JournalEntryLineDto
+                {
+                    AccountId = 41, // إيرادات المبيعات
+                    Debit = 0,
+                    Credit = invoice.TotalAmount,
+                    Description = $"إيراد مبيعات فاتورة {invoice.SaleInvoiceNumber}"
+                });
+
+                // 3. قيد التكلفة (لتتبع الربحية الدقيقة)
+                if (invoice.TotalCost > 0)
+                {
+                    // من حـ/ تكلفة المشتريات
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 51, // تكلفة المشتريات (الموجود في الشجرة)
+                        Debit = invoice.TotalCost,
+                        Credit = 0,
+                        Description = $"تكلفة المبيعات - فاتورة {invoice.SaleInvoiceNumber}"
+                    });
+
+                    // إلى حـ/ المخزون
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 1301, // مخزون الصيدلية
+                        Debit = 0,
+                        Credit = invoice.TotalCost,
+                        Description = $"نقص المخزون - فاتورة {invoice.SaleInvoiceNumber}"
+                    });
+                }
+
+                // حفظ وترحيل القيد
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId); // ترحيل مباشر وتحديث الأرصدة
+
+                // تم إزالة نداء النظام القديم - يكفي القيد المحاسبي الاحترافي
 
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
                 await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.SaleInvoice);

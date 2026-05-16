@@ -8,6 +8,7 @@ public class ExpenseCategoryDto
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; }
+    public int? AccountId { get; set; }
 }
 
 public class CreateExpenseCategoryDto
@@ -18,6 +19,7 @@ public class CreateExpenseCategoryDto
 
     [MaxLength(250)]
     public string? Description { get; set; }
+    public int? AccountId { get; set; }
 }
 
 public class UpdateExpenseCategoryDto : CreateExpenseCategoryDto

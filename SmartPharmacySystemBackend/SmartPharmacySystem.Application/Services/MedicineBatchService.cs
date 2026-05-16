@@ -67,7 +67,7 @@ public class MedicineBatchService(
 
             // 3. Deduct from Vault
             vault.Balance -= totalCost;
-            vault.LastUpdated = DateTime.UtcNow;
+            vault.UpdatedAt = DateTime.UtcNow;
             await unitOfWork.Financials.UpdateAccountAsync(vault);
 
             // 4. Record Financial Transaction
@@ -184,7 +184,7 @@ public class MedicineBatchService(
                     }
 
                     vault.Balance -= financialValue;
-                    vault.LastUpdated = DateTime.UtcNow;
+                    vault.UpdatedAt = DateTime.UtcNow;
                     await unitOfWork.Financials.UpdateAccountAsync(vault);
 
                     logger.LogInformation("Vault balance deducted by {Amount} SAR due to inventory adjustment ({Type}). New Balance: {Balance}", 
@@ -286,7 +286,7 @@ public class MedicineBatchService(
                 if (vault != null)
                 {
                     vault.Balance += residualValue;
-                    vault.LastUpdated = DateTime.UtcNow;
+                    vault.UpdatedAt = DateTime.UtcNow;
                     await unitOfWork.Financials.UpdateAccountAsync(vault);
 
                     logger.LogInformation("Vault balance refunded +{Amount} due to valid batch deletion.", residualValue);
@@ -712,7 +712,7 @@ public class MedicineBatchService(
             if (vault != null)
             {
                 vault.Balance -= lossAmount;
-                vault.LastUpdated = DateTime.UtcNow;
+                vault.UpdatedAt = DateTime.UtcNow;
                 await unitOfWork.Financials.UpdateAccountAsync(vault);
             }
 

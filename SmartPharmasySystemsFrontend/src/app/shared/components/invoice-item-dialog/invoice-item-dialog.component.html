@@ -1,15 +1,31 @@
-<p-dialog [(visible)]="visible" [header]="isEdit ? 'تعديل بند توريد' : 'إضافة بند توريد جديد'" [modal]="true"
-    [style]="{width: '500px'}" (onHide)="onClose()">
-    <form [formGroup]="itemForm" class="p-fluid grid mt-2">
-        <div class="col-12 mb-3">
-            <label class="font-bold block mb-2">اسم الصنف / الدواء</label>
+<p-dialog [(visible)]="visible" [modal]="true" [showHeader]="false" [draggable]="false" [resizable]="false"
+    [style]="{width: 'min(94vw, 920px)'}" [breakpoints]="{'960px': '94vw', '640px': '96vw'}"
+    styleClass="invoice-item-dialog" (onHide)="onClose()">
+    <div class="item-dialog-shell" dir="rtl">
+        <div class="item-dialog-header">
+            <div class="dialog-title">
+                <span class="dialog-icon">
+                    <i class="pi" [ngClass]="invoiceType === 'Purchase' ? 'pi-truck' : 'pi-shopping-cart'"></i>
+                </span>
+                <div>
+                    <h2>{{ isEdit ? 'تعديل البند' : (invoiceType === 'Purchase' ? 'إضافة بند توريد جديد' : 'إضافة بند بيع') }}</h2>
+                    <p>{{ invoiceType === 'Purchase' ? 'أدخل بيانات التشغيلة والكميات والأسعار' : 'اختر الصنف والدفعة المتاحة' }}</p>
+                </div>
+            </div>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn"
+                (click)="visible = false"></button>
+        </div>
+
+    <form [formGroup]="itemForm" class="item-dialog-body p-fluid">
+        <div class="dialog-field span-2">
+            <label>اسم الصنف / الدواء</label>
             <p-autoComplete [suggestions]="filteredMedicines" (completeMethod)="searchMedicines($event)" field="name"
                 (onSelect)="onMedicineSelect($event.value)" placeholder="ابحث عن الصنف في القاعدة..." appendTo="body"
                 [forceSelection]="true" [disabled]="isEdit"></p-autoComplete>
         </div>
 
-        <div class="col-12 mb-3" *ngIf="invoiceType === 'Sales'">
-            <label class="font-bold block mb-2">الدفعة المخزنية (Batch)</label>
+        <div class="dialog-field span-2" *ngIf="invoiceType === 'Sales'">
+            <label>الدفعة المخزنية (Batch)</label>
             <div class="flex gap-2">
                 <p-dropdown [options]="batches" optionLabel="companyBatchNumber" placeholder="اختر الدفعة المتوفرة"
                     formControlName="batchId" optionValue="id" appendTo="body" (onChange)="onBatchSelect($event.value)"
@@ -76,51 +92,55 @@
             </div>
         </div>
 
-        <div class="col-12 mb-3" *ngIf="invoiceType === 'Purchase'">
-            <label class="font-bold block mb-2">رقم التشغيلة (Batch Number)</label>
+        <div class="dialog-field" *ngIf="invoiceType === 'Purchase'">
+            <label>رقم التشغيلة (Batch Number)</label>
             <input pInputText formControlName="companyBatchNumber" placeholder="أدخل رقم التشغيلة المطبوع" />
         </div>
 
-        <div class="col-12 mb-3" *ngIf="invoiceType === 'Purchase'">
-            <label class="font-bold block mb-2">تاريخ انتهاء الصلاحية</label>
+        <div class="dialog-field" *ngIf="invoiceType === 'Purchase'">
+            <label>تاريخ انتهاء الصلاحية</label>
             <p-calendar formControlName="expiryDate" view="month" dateFormat="mm/yy" [showIcon]="true" appendTo="body"
                 placeholder="اختر شهر/سنة الانتهاء"></p-calendar>
         </div>
 
-        <div class="col-6 mb-3">
-            <label class="font-bold block mb-2">الكمية الموردة</label>
+        <div class="dialog-field">
+            <label>{{invoiceType === 'Sales' ? 'الكمية المطلوبة' : 'الكمية الموردة'}}</label>
             <p-inputNumber formControlName="quantity" [min]="1" [showButtons]="true" buttonLayout="horizontal"
                 incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
         </div>
 
-        <div class="col-6 mb-3" *ngIf="invoiceType === 'Purchase'">
-            <label class="font-bold block mb-2">كمية بونص (مجاني)</label>
+        <div class="dialog-field" *ngIf="invoiceType === 'Purchase'">
+            <label>كمية بونص (مجاني)</label>
             <p-inputNumber formControlName="bonusQuantity" [min]="0" [showButtons]="true" buttonLayout="horizontal"
                 incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"></p-inputNumber>
         </div>
 
-        <div class="col-6 mb-3">
-            <label class="font-bold block mb-2">{{invoiceType === 'Sales' ? 'سعر البيع' : 'سعر الشراء للوحدة'}}</label>
+        <div class="dialog-field">
+            <label>{{invoiceType === 'Sales' ? 'سعر البيع' : 'سعر الشراء للوحدة'}}</label>
             <p-inputNumber formControlName="price" [min]="0" mode="decimal" [minFractionDigits]="2"
                 suffix=" ريال يمني"></p-inputNumber>
         </div>
 
-        <div class="col-6 mb-3" *ngIf="invoiceType === 'Purchase'">
-            <label class="font-bold block mb-2">سعر البيع للجمهور (جديد)</label>
+        <div class="dialog-field" *ngIf="invoiceType === 'Purchase'">
+            <label>سعر البيع للجمهور (جديد)</label>
             <p-inputNumber formControlName="salePrice" [min]="0" mode="decimal" [minFractionDigits]="2"
                 suffix=" ريال يمني"></p-inputNumber>
         </div>
 
-        <div
-            class="col-12 mt-2 bg-indigo-50 p-3 border-round border-1 border-indigo-100 flex justify-content-between align-items-center">
-            <span class="text-indigo-700 font-bold">إجمالي قيمة البند:</span>
-            <span class="text-2xl font-extrabold text-indigo-600">{{itemTotal | number:'1.2-2'}} ريال يمني</span>
+        <div class="item-total-box span-2">
+            <span>إجمالي قيمة البند</span>
+            <strong>{{itemTotal | number:'1.2-2'}} ريال يمني</strong>
         </div>
     </form>
-    <ng-template pTemplate="footer">
-        <p-button label="إلغاء الأمر" icon="pi pi-times" severity="secondary" outlined
-            (onClick)="visible = false"></p-button>
-        <p-button [label]="isEdit ? 'تعديل البند' : 'إضافة البند'" [icon]="isEdit ? 'pi pi-check' : 'pi pi-plus'"
-            severity="primary" [disabled]="itemForm.invalid" (onClick)="onSubmit()"></p-button>
-    </ng-template>
+
+        <div class="item-dialog-footer">
+            <span><i class="pi pi-info-circle"></i> يتم احتساب الإجمالي تلقائياً من الكمية والسعر</span>
+            <div class="footer-actions">
+                <p-button label="إلغاء الأمر" icon="pi pi-times" severity="secondary" outlined
+                    (onClick)="visible = false"></p-button>
+                <p-button [label]="isEdit ? 'تعديل البند' : 'إضافة البند'" [icon]="isEdit ? 'pi pi-check' : 'pi pi-plus'"
+                    severity="primary" [disabled]="itemForm.invalid" (onClick)="onSubmit()"></p-button>
+            </div>
+        </div>
+    </div>
 </p-dialog>

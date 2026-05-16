@@ -1,0 +1,120 @@
+<div class="royal-container p-3">
+    <!-- Header Section -->
+    <div class="glass-header mb-3 p-3 d-flex justify-content-between align-items-center">
+        <div class="header-info d-flex align-items-center">
+            <div class="icon-box me-3">
+                <i class="pi pi-sitemap"></i>
+            </div>
+            <div>
+                <h2 class="m-0 page-title" style="font-weight: 800; color: #1e3c72;">شجرة الحسابات</h2>
+                <p class="text-muted m-0 mt-1" style="font-size: 12px;">نظام عرض هرمي متطور (Explorer View) للحسابات المالية</p>
+            </div>
+        </div>
+        <div class="header-actions d-flex align-items-center">
+            <div class="p-buttonset me-3">
+                <button pButton icon="pi pi-angle-double-down" label="توسيع" class="p-button-sm btn-glass-secondary" (click)="expandAll()"></button>
+                <button pButton icon="pi pi-angle-double-up" label="طي" class="p-button-sm btn-glass-secondary" (click)="collapseAll()"></button>
+            </div>
+            <button pButton icon="pi pi-plus" label="إضافة حساب رئيسي" class="p-button-sm btn-glass-primary" (click)="showAddDialog()"></button>
+            <button pButton icon="pi pi-refresh" class="p-button-sm p-button-text btn-glass-secondary ms-2" (click)="loadAccounts()" [loading]="loading"></button>
+        </div>
+    </div>
+
+    <!-- Tree Explorer Section -->
+    <div class="tree-card p-3 shadow-sm bg-white border-round-xl">
+        <p-tree [value]="accountsTree" 
+                [loading]="loading" 
+                selectionMode="single" 
+                styleClass="royal-tree-component" 
+                [filter]="true" 
+                filterPlaceholder="ابحث في الشجرة..."
+                filterBy="label,data.code" 
+                filterMode="lenient">
+            
+            <ng-template let-node pTemplate="default">
+                <div class="tree-node-item d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center">
+                        <!-- أيقونة مستكشف الملفات المتغيرة -->
+                        <i [class]="node.expanded ? 'pi pi-folder-open text-warning' : (node.data.isMainAccount ? 'pi pi-folder text-warning' : 'pi pi-file text-secondary')" 
+                           class="node-icon" style="font-size: 1.2rem;"></i>
+                        
+                        <div class="d-flex flex-column ms-2">
+                            <span class="node-label">{{node.label}}</span>
+                            <span class="node-code">{{node.data.code}}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-4">
+                        <!-- تفاصيل الحساب -->
+                        <span class="node-type-badge" [ngClass]="'type-' + (node.data.type ? node.data.type.toString().toLowerCase() : 'none')">
+                            {{getTypeNameArabic(node.data.type)}}
+                        </span>
+
+                        <div class="node-balance-container d-flex flex-column align-items-end">
+                            <span class="node-balance" [ngClass]="{'positive': node.data.currentBalance >= 0, 'negative': node.data.currentBalance < 0}">
+                                {{node.data.currentBalance | number:'1.2-2'}}
+                            </span>
+                        </div>
+
+                        <!-- إجراءات العقدة -->
+                        <div class="node-actions d-flex align-items-center gap-2">
+                            <p-inputSwitch [(ngModel)]="node.data.isActive" (onChange)="toggleAccountStatus(node.data)" pTooltip="تفعيل/تعطيل الحساب" tooltipPosition="top"></p-inputSwitch>
+                            
+                            <button pButton icon="pi pi-plus-circle" class="p-button-rounded p-button-text add-btn-small" 
+                                pTooltip="إضافة حساب فرعي" tooltipPosition="top" (click)="showAddDialog(node.data)" *ngIf="node.data.isMainAccount"></button>
+                            
+                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm" 
+                                pTooltip="حذف الحساب نهائياً" tooltipPosition="top" (click)="deleteAccount(node)"></button>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+        </p-tree>
+
+        <!-- حالة الشجرة الفارغة -->
+        <div *ngIf="!loading && accountsTree.length === 0" class="empty-state text-center p-5">
+            <i class="pi pi-cloud-upload text-muted mb-3" style="font-size: 4rem;"></i>
+            <h4 class="text-muted">لا يوجد بيانات لعرضها</h4>
+            <p class="text-muted mb-4">تأكد من تطبيق الـ Seeding في قاعدة البيانات</p>
+            <button pButton label="تحديث القائمة" icon="pi pi-sync" class="btn-glass-primary" (click)="loadAccounts()"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Add Account Dialog -->
+<p-dialog [(visible)]="displayAddDialog" header="إضافة حساب محاسبي" [modal]="true" [style]="{width: '450px'}" styleClass="royal-dialog shadow-8" [draggable]="false" [resizable]="false">
+    <div class="p-fluid">
+        <div class="field mb-4">
+            <label class="dialog-label font-bold mb-2 block">كود الحساب</label>
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon"><i class="pi pi-tag"></i></span>
+                <input type="text" pInputText [(ngModel)]="newAccount.code" placeholder="أدخل الكود الفريد للحساب">
+            </div>
+        </div>
+        <div class="field mb-4">
+            <label class="dialog-label font-bold mb-2 block">اسم الحساب</label>
+            <div class="p-inputgroup">
+                <span class="p-inputgroup-addon"><i class="pi pi-info-circle"></i></span>
+                <input type="text" pInputText [(ngModel)]="newAccount.name" placeholder="مثلاً: صندوق مبيعات عدن">
+            </div>
+        </div>
+        <div class="field mb-4" *ngIf="!newAccount.parentId">
+            <label class="dialog-label font-bold mb-2 block">نوع الحساب الرئيسي</label>
+            <p-dropdown [options]="accountTypeOptions" [(ngModel)]="newAccount.accountType" placeholder="حدد نوع الحساب الرئيسي" appendTo="body"></p-dropdown>
+        </div>
+        <div class="field mb-2" *ngIf="newAccount.parentId">
+            <div class="parent-info p-3 border-round bg-blue-50 border-1 border-blue-100">
+                <p class="m-0 text-blue-700 text-sm">
+                    <i class="pi pi-share-alt me-2"></i> هذا الحساب سيكون فرعياً تحت الحساب الأب ذو المعرف: <strong>{{newAccount.parentId}}</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton label="إلغاء العملية" icon="pi pi-times" class="p-button-text p-button-secondary" (click)="displayAddDialog=false"></button>
+        <button pButton label="تأكيد الحفظ" icon="pi pi-save" class="btn-glass-primary px-4" (click)="saveAccount()"></button>
+    </ng-template>
+</p-dialog>
+
+<p-toast position="bottom-left"></p-toast>
+<p-confirmDialog></p-confirmDialog>

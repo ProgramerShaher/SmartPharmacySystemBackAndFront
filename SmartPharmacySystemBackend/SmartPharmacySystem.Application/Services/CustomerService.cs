@@ -1,10 +1,13 @@
 using AutoMapper;
 using SmartPharmacySystem.Application.DTOs.Customers;
+using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.Interfaces;
+using SmartPharmacySystem.Application.IServices;
 using SmartPharmacySystem.Application.Wrappers;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Models;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -12,11 +15,13 @@ namespace SmartPharmacySystem.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IAccountService _accountService;
 
-        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper)
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, IAccountService accountService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _accountService = accountService;
         }
 
         public async Task<CustomerDto> GetByIdAsync(int id)
@@ -34,10 +39,48 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task<CustomerDto> CreateAsync(CreateCustomerDto dto)
         {
-            var customer = _mapper.Map<Customer>(dto);
-            await _unitOfWork.Customers.AddAsync(customer);
-            await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<CustomerDto>(customer);
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var customer = _mapper.Map<Customer>(dto);
+                
+                // 1. إنشاء حساب للعميل في شجرة الحسابات
+                var parentAccount = await _unitOfWork.Accounts.GetByCodeAsync("1201");
+                var lastAccount = (await _unitOfWork.Accounts.GetChildrenAsync(1201)).OrderByDescending(a => a.Code).FirstOrDefault();
+                
+                string nextCode = "1201001";
+                if (lastAccount != null && long.TryParse(lastAccount.Code, out long lastCode))
+                {
+                    nextCode = (lastCode + 1).ToString();
+                }
+
+                var customerAccount = new Account
+                {
+                    Code = nextCode,
+                    Name = $"عميل: {customer.Name}",
+                    Type = Core.Enums.AccountType.Asset,
+                    ParentId = parentAccount?.Id ?? 1201, // fallback to seeded ID
+                    IsMainAccount = false,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.Accounts.AddAsync(customerAccount);
+                await _unitOfWork.SaveChangesAsync(); // جلب المعرف للحساب الجديد
+
+                // 2. ربط العميل بالحساب
+                customer.AccountId = customerAccount.Id;
+                await _unitOfWork.Customers.AddAsync(customer);
+                await _unitOfWork.SaveChangesAsync();
+
+                await _unitOfWork.CommitAsync();
+                return _mapper.Map<CustomerDto>(customer);
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task UpdateAsync(UpdateCustomerDto dto)
@@ -67,69 +110,31 @@ namespace SmartPharmacySystem.Application.Services
             var customer = await _unitOfWork.Customers.GetByIdAsync(customerId)
                 ?? throw new KeyNotFoundException("العميل غير موجود");
 
+            if (!customer.AccountId.HasValue)
+                throw new InvalidOperationException("هذا العميل ليس له حساب مرتبط في شجرة الحسابات");
+
+            // جلب دفتر الأستاذ من المحرك المحاسبي (مثلاً لآخر سنة)
+            var ledger = await _accountService.GetGeneralLedgerAsync(
+                customer.AccountId.Value, 
+                DateTime.Now.AddYears(-1), 
+                DateTime.Now);
+
             var result = new CustomerStatementDto
             {
                 CustomerId = customer.Id,
                 CustomerName = customer.Name,
-                CurrentBalance = customer.Balance
+                CurrentBalance = ledger.ClosingBalance,
+                Items = ledger.Entries.Select(e => new CustomerStatementItemDto
+                {
+                    Date = e.Date,
+                    Type = "قيد محاسبي", // يمكن تحسينها لاحقاً بناءً على نوع السند
+                    Reference = e.VoucherNumber,
+                    Debit = e.Debit,
+                    Credit = e.Credit,
+                    RunningBalance = e.RunningBalance,
+                    Notes = e.Description
+                }).ToList()
             };
-
-            var items = new List<CustomerStatementItemDto>();
-
-            // 1. Sale Invoices (Debit)
-            var invoices = customer.SaleInvoices
-                .Where(i => i.PaymentMethod == Core.Enums.PaymentType.Credit && i.Status == Core.Enums.DocumentStatus.Approved)
-                .Select(i => new CustomerStatementItemDto
-                {
-                    Date = i.InvoiceDate,
-                    Type = "فاتورة مبيعات",
-                    Reference = i.SaleInvoiceNumber,
-                    Debit = i.TotalAmount,
-                    Credit = 0,
-                    Notes = $"فاتورة رقم {i.SaleInvoiceNumber}"
-                });
-            items.AddRange(invoices);
-
-            // 2. Receipts (Credit)
-            var receipts = customer.Receipts
-                .Where(r => !r.IsCancelled)
-                .Select(r => new CustomerStatementItemDto
-                {
-                    Date = r.ReceiptDate,
-                    Type = "سند قبض",
-                    Reference = r.ReferenceNo ?? r.Id.ToString(),
-                    Debit = 0,
-                    Credit = r.Amount,
-                    Notes = r.Notes
-                });
-            items.AddRange(receipts);
-
-            // 3. Sales Returns (Credit)
-            // Fetch returns linked to this customer's invoices
-            var returns = await _unitOfWork.SalesReturns.GetAllAsync(); // This is expensive, better to have a repo method
-            var customerReturns = returns
-                .Where(r => r.CustomerId == customerId && r.Status == Core.Enums.DocumentStatus.Approved)
-                .Select(r => new CustomerStatementItemDto
-                {
-                    Date = r.ReturnDate,
-                    Type = "مرتجع مبيعات",
-                    Reference = r.Id.ToString(),
-                    Debit = 0,
-                    Credit = r.TotalAmount,
-                    Notes = "مرتجع مبيعات"
-                });
-            items.AddRange(customerReturns);
-
-            // Sort by Date
-            result.Items = items.OrderBy(i => i.Date).ToList();
-
-            // Calculate Running Balance
-            decimal runningBalance = 0;
-            foreach (var item in result.Items)
-            {
-                runningBalance += (item.Debit - item.Credit);
-                item.RunningBalance = runningBalance;
-            }
 
             return result;
         }

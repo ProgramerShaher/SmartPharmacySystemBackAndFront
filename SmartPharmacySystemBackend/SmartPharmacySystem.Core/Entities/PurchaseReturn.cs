@@ -6,12 +6,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents purchase returns in the pharmacy system.
 /// Tracks returns of purchased medicines to suppliers.
 /// </summary>
-public class PurchaseReturn
+public class PurchaseReturn : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the purchase return.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the purchase invoice.
@@ -38,16 +34,6 @@ public class PurchaseReturn
     /// </summary>
     public string? Reason { get; set; }
 
-    /// <summary>
-    /// Date and time when the return was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// ID of the user who created this return.
-    /// معرف المستخدم الذي أنشأ هذا المرتجع.
-    /// </summary>
-    public int CreatedBy { get; set; }
 
     /// <summary>
     /// ID of the user who approved this return.
@@ -69,10 +55,6 @@ public class PurchaseReturn
     /// </summary>
     public DateTime? CancelledAt { get; set; }
 
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Status of the document (Draft, Approved, Cancelled).

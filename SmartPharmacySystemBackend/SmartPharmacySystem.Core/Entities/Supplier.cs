@@ -4,15 +4,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a supplier in the pharmacy management system.
 /// Suppliers provide medicines through purchase invoices.
 /// </summary>
-public class Supplier
+public class Supplier : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the supplier.
-    /// </summary>
-    /// <summary>
-    /// Unique identifier for the supplier.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Name of the supplier.
@@ -45,27 +38,25 @@ public class Supplier
     public string? Notes { get; set; }
 
     /// <summary>
-    /// Date and time when the supplier was created.
+    /// معرف الحساب المرتبط في شجرة الحسابات
     /// </summary>
-    public DateTime CreatedAt { get; set; }
+    public int? AccountId { get; set; }
+
+    // Navigation Properties
 
     /// <summary>
-    /// Date and time when the supplier was last updated.
+    /// الحساب المحاسبي المرتبط
     /// </summary>
-    public DateTime? UpdatedAt { get; set; }
-
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
+    [System.ComponentModel.DataAnnotations.Schema.ForeignKey(nameof(AccountId))]
+    public virtual Account? Account { get; set; }
 
     /// <summary>
     /// Collection of purchase invoices from this supplier.
     /// </summary>
-    public ICollection<PurchaseInvoice> PurchaseInvoices { get; set; }
+    public virtual ICollection<PurchaseInvoice> PurchaseInvoices { get; set; } = new List<PurchaseInvoice>();
 
     /// <summary>
     /// Collection of purchase returns to this supplier.
     /// </summary>
-    public ICollection<PurchaseReturn> PurchaseReturns { get; set; }
+    public virtual ICollection<PurchaseReturn> PurchaseReturns { get; set; } = new List<PurchaseReturn>();
 }

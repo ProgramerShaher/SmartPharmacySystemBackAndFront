@@ -4,12 +4,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents the details of a purchase invoice.
 /// Each detail line corresponds to a specific medicine batch purchased.
 /// </summary>
-public class PurchaseInvoiceDetail
+public class PurchaseInvoiceDetail : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the purchase invoice detail.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the purchase invoice.
@@ -56,10 +52,6 @@ public class PurchaseInvoiceDetail
     /// </summary>
     public decimal TrueUnitCost { get; set; }
 
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Navigation property to the purchase invoice.

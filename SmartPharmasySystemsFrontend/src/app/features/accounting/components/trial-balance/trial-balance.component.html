@@ -1,0 +1,105 @@
+<div class="trial-container animate-fade-in" dir="rtl">
+    <!-- Slim Header -->
+    <div class="compact-header shadow-sm">
+        <div class="d-flex align-items-center">
+            <i class="pi pi-chart-bar me-2 text-primary"></i>
+            <h1 class="page-title-mini" style="font-size: 14px; font-weight: 800; margin: 0;">ميزان المراجعة بالمجاميع والأرصدة</h1>
+        </div>
+        <div class="d-flex gap-2">
+            <button pButton label="تصدير" icon="pi pi-file-excel" class="p-button-sm p-button-success p-button-outlined" (click)="exportToExcel()"></button>
+            <button pButton label="طباعة" icon="pi pi-print" class="p-button-sm p-button-secondary p-button-outlined" (click)="printReport()"></button>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold" style="font-size: 11px;">الفترة من - إلى:</span>
+            <p-calendar 
+                [(ngModel)]="dateRange" 
+                selectionMode="range" 
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                styleClass="p-inputtext-sm"
+                (onSelect)="loadTrialBalance()">
+            </p-calendar>
+        </div>
+        <button pButton label="تحديث الميزان" class="p-button-sm" icon="pi pi-refresh" (click)="loadTrialBalance()" [loading]="loading()"></button>
+    </div>
+
+    <!-- Trial Balance Table -->
+    <div class="p-2" *ngIf="!loading() && trialBalance()">
+        <p-table 
+            [value]="trialBalance()!.lines" 
+            styleClass="p-datatable-sm micro-grid" 
+            responsiveLayout="scroll"
+            [scrollable]="true" 
+            scrollHeight="calc(100vh - 120px)">
+            
+            <ng-template pTemplate="header">
+                <tr>
+                    <th rowspan="2" style="width: 80px">الكود</th>
+                    <th rowspan="2">اسم الحساب</th>
+                    <th colspan="2">الأرصدة الافتتاحية</th>
+                    <th colspan="2">حركات الفترة</th>
+                    <th colspan="2">الأرصدة الختامية</th>
+                </tr>
+                <tr>
+                    <th style="width: 90px" class="bg-success">مدين</th>
+                    <th style="width: 90px" class="bg-danger">دائن</th>
+                    <th style="width: 90px" class="bg-success">مدين</th>
+                    <th style="width: 90px" class="bg-danger">دائن</th>
+                    <th style="width: 90px" class="bg-success">مدين</th>
+                    <th style="width: 90px" class="bg-danger">دائن</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-line>
+                <tr [ngClass]="getAccountTypeClass(line.accountType)">
+                    <td class="text-center fw-bold" style="background: #f8fafc;">{{line.accountCode}}</td>
+                    <td class="account-name-cell">
+                        <span class="type-badge" [ngClass]="line.accountType">{{getTypeNameArabic(line.accountType)}}</span>
+                        <span class="ms-2">{{line.accountName}}</span>
+                    </td>
+                    <td class="text-center text-debit">{{formatCurrency(line.openingDebit)}}</td>
+                    <td class="text-center text-credit">{{formatCurrency(line.openingCredit)}}</td>
+                    <td class="text-center text-debit">{{formatCurrency(line.periodDebit)}}</td>
+                    <td class="text-center text-credit">{{formatCurrency(line.periodCredit)}}</td>
+                    <td class="text-center text-debit fw-bold">{{formatCurrency(line.closingDebit)}}</td>
+                    <td class="text-center text-credit fw-bold">{{formatCurrency(line.closingCredit)}}</td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <tr class="group-header">
+                    <td colspan="2" class="text-center text-total">الإجماليات العامة للميزان</td>
+                    <td class="text-center text-total">{{formatCurrency(trialBalance()!.totalOpeningDebit)}}</td>
+                    <td class="text-center text-total">{{formatCurrency(trialBalance()!.totalOpeningCredit)}}</td>
+                    <td class="text-center text-total">{{formatCurrency(trialBalance()!.totalPeriodDebit)}}</td>
+                    <td class="text-center text-total">{{formatCurrency(trialBalance()!.totalPeriodCredit)}}</td>
+                    <td class="text-center text-total">{{formatCurrency(trialBalance()!.totalClosingDebit)}}</td>
+                    <td class="text-center text-total">{{formatCurrency(trialBalance()!.totalClosingCredit)}}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <!-- Balance Check Notification -->
+        <div class="mt-2 d-flex justify-content-center" *ngIf="trialBalance()">
+            <div class="alert p-1 px-3 m-0 d-flex align-items-center" 
+                style="font-size: 11px;"
+                [ngClass]="Math.abs(trialBalance()!.totalClosingDebit - trialBalance()!.totalClosingCredit) < 1 ? 'alert-success' : 'alert-danger'">
+                <i class="pi me-2" [ngClass]="Math.abs(trialBalance()!.totalClosingDebit - trialBalance()!.totalClosingCredit) < 1 ? 'pi-check-circle' : 'pi-exclamation-triangle'"></i>
+                <span *ngIf="Math.abs(trialBalance()!.totalClosingDebit - trialBalance()!.totalClosingCredit) < 1">ميزان المراجعة متوازن ومطابق للمعايير المحاسبية</span>
+                <span *ngIf="Math.abs(trialBalance()!.totalClosingDebit - trialBalance()!.totalClosingCredit) >= 1">تنبيه: يوجد فارق في توازن الميزان بمقدار {{formatCurrency(Math.abs(trialBalance()!.totalClosingDebit - trialBalance()!.totalClosingCredit))}}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center p-5" *ngIf="loading()">
+        <p-progressSpinner strokeWidth="4" fill="transparent" styleClass="w-3rem h-3rem"></p-progressSpinner>
+        <p class="mt-2 text-muted" style="font-size: 11px;">جاري تدقيق الحسابات وتوليد ميزان المراجعة...</p>
+    </div>
+</div>
+
+<p-toast position="bottom-left"></p-toast>

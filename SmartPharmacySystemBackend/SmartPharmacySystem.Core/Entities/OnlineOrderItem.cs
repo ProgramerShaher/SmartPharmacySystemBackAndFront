@@ -6,9 +6,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// Represents a specific item inside an online order.
 /// </summary>
-public class OnlineOrderItem
+public class OnlineOrderItem : BaseEntity
 {
-    public int Id { get; set; }
     
     public int OnlineOrderId { get; set; }
     [ForeignKey("OnlineOrderId")]

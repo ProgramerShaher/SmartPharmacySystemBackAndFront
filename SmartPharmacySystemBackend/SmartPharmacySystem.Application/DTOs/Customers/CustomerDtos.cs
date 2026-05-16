@@ -10,6 +10,7 @@ namespace SmartPharmacySystem.Application.DTOs.Customers
         public decimal CreditLimit { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int? AccountId { get; set; }
 
         public string Status => IsActive ? "نشط" : "متوقف";
         public string StatusColor => IsActive ? "success" : "danger";

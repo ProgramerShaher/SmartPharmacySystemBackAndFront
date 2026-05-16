@@ -78,6 +78,9 @@ builder.Services.AddScoped<ISupplierPaymentRepository, SupplierPaymentRepository
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<ICustomerReceiptRepository, CustomerReceiptRepository>();
 builder.Services.AddScoped<IPriceOverrideRepository, PriceOverrideRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
+builder.Services.AddScoped<IChequeRepository, ChequeRepository>();
 
 // Services
 builder.Services.AddScoped<IMedicineService, MedicineService>();
@@ -107,6 +110,9 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<ICustomerReceiptService, CustomerReceiptService>();
 builder.Services.AddScoped<IReportService, ReportService>(); // Central Reporting Engine
 builder.Services.AddScoped<IMasterDashboardService, MasterDashboardService>(); // Master Dashboard - Single Source of Truth
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
+builder.Services.AddScoped<IChequeService, ChequeService>();
 
 // -------------------- Mobile App Services --------------------
 builder.Services.AddScoped<IOnlineOrderService, OnlineOrderService>();
@@ -180,6 +186,26 @@ builder.Services.AddSwaggerGen(c =>
 
 // -------------------- Build APP --------------------
 var app = builder.Build();
+
+// -------------------- Database Initialization & Seeding --------------------
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        
+        logger.LogInformation("جاري التحقق من وجود الجداول وتحديث قاعدة البيانات...");
+        await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
+        logger.LogInformation("تم تحديث هيكل قاعدة البيانات بنجاح.");
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "حدث خطأ أثناء تهجير قاعدة البيانات.");
+    }
+}
 
 // -------------------- Middlewares --------------------
 if (app.Environment.IsDevelopment())

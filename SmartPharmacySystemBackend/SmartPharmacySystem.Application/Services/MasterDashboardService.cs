@@ -290,7 +290,7 @@ public class MasterDashboardService : IMasterDashboardService
                 movements,
                 userNames),
             CashierPerformance = approvedSalesToday
-                .GroupBy(x => x.CreatedBy)
+                .GroupBy(x => x.CreatedBy ?? 0)
                 .Select(g => new CashierPerformanceDto
                 {
                     UserId = g.Key,
@@ -557,9 +557,10 @@ public class MasterDashboardService : IMasterDashboardService
         return value >= startInclusive.Date && value < endExclusive.Date;
     }
 
-    private static string GetUserName(Dictionary<int, string> users, int userId)
+    private static string GetUserName(Dictionary<int, string> users, int? userId)
     {
-        return users.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name)
+        if (userId == null) return "نظام";
+        return users.TryGetValue(userId.Value, out var name) && !string.IsNullOrWhiteSpace(name)
             ? name
             : $"مستخدم #{userId}";
     }

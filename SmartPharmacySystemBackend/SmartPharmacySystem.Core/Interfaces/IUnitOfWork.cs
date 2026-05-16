@@ -30,6 +30,9 @@ public interface IUnitOfWork
     ICustomerRepository Customers { get; }
     ICustomerReceiptRepository CustomerReceipts { get; }
     IPriceOverrideRepository PriceOverrides { get; }
+    IAccountRepository Accounts { get; }
+    IJournalEntryRepository JournalEntries { get; }
+    IChequeRepository Cheques { get; }
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

@@ -1,303 +1,65 @@
 <div class="layout-sidebar" dir="rtl" [@slideIn]>
-  <!-- Header / Logo Area -->
   <div class="sidebar-header">
-    <div class="header-content">
-      <div class="logo-box">
-        <i class="pi pi-bolt"></i>
-      </div>
-      <h2 class="app-title">الصيدلية الذكية</h2>
-      <span class="app-subtitle">نظام الإدارة الطبي المتكامل</span>
+    <div class="brand-mark" title="الصيدلية الذكية">
+      <i class="pi pi-bolt"></i>
     </div>
+
+    <div class="brand-copy">
+      <h2>الصيدلية الذكية</h2>
+      <span>نظام الإدارة الطبي</span>
+    </div>
+
+    <button type="button" class="collapse-btn" (click)="toggleCollapsed()"
+      [attr.aria-label]="isCollapsed ? 'توسيع القائمة' : 'تصغير القائمة'"
+      [title]="isCollapsed ? 'توسيع القائمة' : 'تصغير القائمة'">
+      <i class="pi" [class.pi-angle-double-left]="!isCollapsed" [class.pi-angle-double-right]="isCollapsed"></i>
+    </button>
   </div>
 
-  <!-- Navigation Menu -->
-  <div class="sidebar-content custom-scrollbar">
-    <!-- Dashboard -->
-    <div class="menu-group">
-      <div class="menu-items">
-        <a routerLink="/dashboard" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
-          class="menu-item">
-          <div class="item-icon icon-dashboard">
-            <i class="pi pi-chart-pie"></i>
-          </div>
-          <span class="item-label">لوحة التحكم</span>
-          <div class="item-glow"></div>
-        </a>
-        <!-- Master Dashboard - NEW -->
-        <a routerLink="/dashboard/master" routerLinkActive="active-route" class="menu-item master-dashboard-item">
-          <div class="item-icon icon-master-dashboard">
-            <i class="pi pi-chart-line"></i>
-          </div>
-          <span class="item-label">لوحة التحكم الرئيسية</span>
-          <span class="new-badge">جديد</span>
-          <div class="item-glow"></div>
-        </a>
-      </div>
-    </div>
+  <nav class="sidebar-content custom-scrollbar" aria-label="القائمة الرئيسية">
+    <div class="nav-section" *ngFor="let section of menuSections" [class.section-active]="isSectionActive(section)">
+      <button type="button" class="section-trigger" (click)="toggleMenu(section.key)"
+        [class.open]="isMenuOpen(section.key)" [title]="section.label" [attr.aria-expanded]="isMenuOpen(section.key)">
+        <span class="item-icon" [ngClass]="section.iconClass">
+          <i [class]="section.icon"></i>
+        </span>
+        <span class="section-label">{{ section.label }}</span>
+        <i class="pi pi-chevron-down section-arrow"></i>
+      </button>
 
-    <div class="menu-separator"></div>
-
-    <!-- Inventory Group -->
-    <div class="menu-group">
-      <div class="group-title">
-        <i class="pi pi-box"></i>
-        <span>المخزون والمنتجات</span>
-      </div>
-      <div class="menu-items">
-        <a routerLink="/inventory/medicines" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-inventory">
-            <i class="pi pi-box"></i>
-          </div>
-          <span class="item-label">الأدوية والمنتجات</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/inventory/categories" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-categories">
-            <i class="pi pi-tags"></i>
-          </div>
-          <span class="item-label">التصنيفات</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/inventory/movements" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-movements">
-            <i class="pi pi-history"></i>
-          </div>
-          <span class="item-label">حركات المخزون</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/inventory/batches" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-batches">
-            <i class="pi pi-list"></i>
-          </div>
-          <span class="item-label">الدفعات</span>
-          <div class="item-glow"></div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Sales Group -->
-    <div class="menu-group">
-      <div class="group-title">
-        <i class="pi pi-shopping-cart"></i>
-        <span>المبيعات</span>
-      </div>
-      <div class="menu-items">
-        <a routerLink="/sales" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
-          class="menu-item">
-          <div class="item-icon icon-sales">
-            <i class="pi pi-shopping-cart"></i>
-          </div>
-          <span class="item-label">فواتير المبيعات</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/sales/returns" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-returns">
-            <i class="pi pi-replay"></i>
-          </div>
-          <span class="item-label">مرتجع المبيعات</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/online-orders" routerLinkActive="active-route" class="menu-item online-orders-item">
-          <div class="item-icon icon-online-orders">
-            <i class="pi pi-globe"></i>
-          </div>
-          <span class="item-label">طلبات الأونلاين</span>
-          <span class="new-badge">جديد</span>
-          <div class="item-glow"></div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Purchases Group -->
-    <div class="menu-group">
-      <div class="group-title">
-        <i class="pi pi-truck"></i>
-        <span>المشتريات</span>
-      </div>
-      <div class="menu-items">
-        <a routerLink="/purchases" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-purchases">
-            <i class="pi pi-truck"></i>
-          </div>
-          <span class="item-label">فواتير الشراء</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/purchases/returns" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-purchase-returns">
-            <i class="pi pi-refresh"></i>
-          </div>
-          <span class="item-label">مرتجع المشتريات</span>
-          <div class="item-glow"></div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Partners Group -->
-    <div class="menu-group">
-      <div class="group-title">
-        <i class="pi pi-users"></i>
-        <span>الشركاء</span>
-      </div>
-      <div class="menu-items">
-        <a routerLink="/partners" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
-          class="menu-item">
-          <div class="item-icon icon-partners">
-            <i class="pi pi-users"></i>
-          </div>
-          <span class="item-label">الموردين</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/customers" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-customers">
-            <i class="pi pi-user-plus"></i>
-          </div>
-          <span class="item-label">العملاء</span>
-          <div class="item-glow"></div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Financial Group -->
-    <div class="menu-group">
-      <div class="group-title">
-        <i class="pi pi-wallet"></i>
-        <span>المالية</span>
-      </div>
-      <div class="menu-items">
-        <a routerLink="/financial/dashboard" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-financial">
-            <i class="pi pi-wallet"></i>
-          </div>
-          <span class="item-label">الخزينة والأرصدة</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/financial/ledger" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-ledger">
-            <i class="pi pi-book"></i>
-          </div>
-          <span class="item-label">دفتر الأستاذ</span>
-          <div class="item-glow"></div>
-        </a>
-
-        <!-- Expenses Submenu -->
-        <div class="submenu-wrapper">
-          <a (click)="toggleExpenseMenu()" class="menu-item submenu-trigger"
-            [class.active]="expenseMenuOpen || currentRoute.includes('/finance/expense')">
-            <div class="item-icon icon-expenses">
-              <i class="pi pi-money-bill"></i>
-            </div>
-            <span class="item-label">المصروفات</span>
-            <i class="pi submenu-arrow" [class.pi-chevron-down]="!expenseMenuOpen"
-              [class.pi-chevron-up]="expenseMenuOpen"></i>
-            <div class="item-glow"></div>
+      <div class="section-panel" [class.open]="isMenuOpen(section.key)">
+        <ng-container *ngFor="let item of section.children">
+          <a *ngIf="!item.children" [routerLink]="item.route" routerLinkActive="active-route"
+            [routerLinkActiveOptions]="{ exact: item.exact || false }" class="menu-item" [title]="item.label">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+            <span class="new-badge" *ngIf="item.badge">{{ item.badge }}</span>
+            <span class="alert-pill" *ngIf="item.alert && unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
           </a>
 
-          <div class="submenu-items" [class.open]="expenseMenuOpen">
-            <a routerLink="/finance/expenses" routerLinkActive="active-route" [routerLinkActiveOptions]="{ exact: true }"
-              class="submenu-item">
-              <i class="pi pi-list"></i>
-              <span>قائمة المصروفات</span>
-            </a>
-            <a routerLink="/finance/expenses/add" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-plus-circle"></i>
-              <span>إضافة مصروف</span>
-            </a>
-            <a routerLink="/finance/expense-categories" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-tag"></i>
-              <span>فئات المصروفات</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
+          <div class="nested-menu" *ngIf="item.children">
+            <button type="button" class="menu-item nested-trigger" (click)="toggleMenu(item.key!)"
+              [class.open]="isMenuOpen(item.key!)" [title]="item.label" [attr.aria-expanded]="isMenuOpen(item.key!)">
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+              <i class="pi pi-chevron-down nested-arrow"></i>
+            </button>
 
-    <!-- Reports Group - التقارير -->
-    <div class="menu-group">
-      <div class="group-title">
-        <i class="pi pi-chart-bar"></i>
-        <span>التقارير</span>
-      </div>
-      <div class="menu-items">
-        <!-- Reports Submenu -->
-        <div class="submenu-wrapper">
-          <a (click)="toggleReportsMenu()" class="menu-item submenu-trigger"
-            [class.active]="reportsMenuOpen || currentRoute.includes('/reports')">
-            <div class="item-icon icon-reports">
-              <i class="pi pi-file-edit"></i>
+            <div class="nested-panel" [class.open]="isMenuOpen(item.key!)">
+              <a *ngFor="let child of item.children" [routerLink]="child.route" routerLinkActive="active-route"
+                [routerLinkActiveOptions]="{ exact: child.exact || false }" class="submenu-item" [title]="child.label">
+                <i [class]="child.icon"></i>
+                <span>{{ child.label }}</span>
+              </a>
             </div>
-            <span class="item-label">تقارير مالية</span>
-            <i class="pi submenu-arrow" [class.pi-chevron-down]="!reportsMenuOpen"
-              [class.pi-chevron-up]="reportsMenuOpen"></i>
-            <div class="item-glow"></div>
-          </a>
-
-          <div class="submenu-items" [class.open]="reportsMenuOpen">
-            <a routerLink="/reports/daily-sales" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-calendar"></i>
-              <span>المبيعات اليومية</span>
-            </a>
-            <a routerLink="/reports/employee-performance" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-id-card"></i>
-              <span>تقرير أداء الموظفين</span>
-            </a>
-            <a routerLink="/reports/best-selling" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-star"></i>
-              <span>الأكثر مبيعاً</span>
-            </a>
-            <a routerLink="/reports/customer-debts" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-users"></i>
-              <span>ديون العملاء</span>
-            </a>
-            <a routerLink="/reports/supplier-debts" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-truck"></i>
-              <span>ديون الموردين</span>
-            </a>
-            <a routerLink="/reports/net-profit" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-dollar"></i>
-              <span>صافي الأرباح</span>
-            </a>
-            <a routerLink="/reports/inventory-valuation" routerLinkActive="active-route" class="submenu-item">
-              <i class="pi pi-box"></i>
-              <span>تقييم المخزون</span>
-            </a>
           </div>
-        </div>
+        </ng-container>
       </div>
     </div>
+  </nav>
 
-    <!-- Admin Group -->
-    <div class="menu-group">
-      <div class="group-title">
-        <i class="pi pi-cog"></i>
-        <span>الإدارة</span>
-      </div>
-      <div class="menu-items">
-        <a routerLink="/users" routerLinkActive="active-route" class="menu-item">
-          <div class="item-icon icon-users">
-            <i class="pi pi-id-card"></i>
-          </div>
-          <span class="item-label">المستخدمين والصلاحيات</span>
-          <div class="item-glow"></div>
-        </a>
-        <a routerLink="/system-alerts" routerLinkActive="active-route" class="menu-item alerts-menu-item">
-          <div class="item-icon icon-alerts">
-            <i class="pi pi-bell"></i>
-          </div>
-          <span class="item-label">التنبيهات</span>
-          <span class="alert-pill" *ngIf="unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
-          <div class="item-glow"></div>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <!-- Footer -->
   <div class="sidebar-footer">
-    <div class="footer-stats">
-      <div class="stat-item">
-        <i class="pi pi-clock"></i>
-        <span>{{ 'الآن' }}</span>
-      </div>
-    </div>
+    <div class="status-dot"></div>
+    <span>جاهز للعمل</span>
   </div>
 </div>

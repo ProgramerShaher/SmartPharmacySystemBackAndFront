@@ -6,6 +6,8 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Core.Interfaces;
+using SmartPharmacySystem.Application.IServices;
+using System.Collections.Generic;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -15,17 +17,20 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<SupplierPaymentService> _logger;
         private readonly IFinancialService _financialService;
+        private readonly IJournalEntryService _journalEntryService;
 
         public SupplierPaymentService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<SupplierPaymentService> logger,
-            IFinancialService financialService)
+            IFinancialService financialService,
+            IJournalEntryService journalEntryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _financialService = financialService;
+            _journalEntryService = journalEntryService;
         }
 
         public async Task<SupplierPaymentDto> CreateAsync(CreateSupplierPaymentDto dto, int userId)
@@ -82,14 +87,46 @@ namespace SmartPharmacySystem.Application.Services
                 supplier.Balance -= dto.Amount;
                 await _unitOfWork.Suppliers.UpdateAsync(supplier);
 
-                // 4. Financial Transaction (Expense from Vault)
+                // ==================== المحرك المحاسبي الاحترافي ====================
+                var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                {
+                    EntryDate = payment.PaymentDate,
+                    VoucherNumber = $"PAY-{payment.Id}", // معرّف فريد للسند
+                    Description = $"سند صرف للمورد: {supplier.Name} - {dto.Notes}",
+                    Type = SmartPharmacySystem.Core.Enums.VoucherType.PaymentVoucher,
+                    Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
+                };
+
+                // 1. الطرف المدين (من حـ/ المورد)
+                journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                {
+                    AccountId = supplier.AccountId ?? 2101, // حساب المورد الخاص أو ذمم الموردين
+                    Debit = dto.Amount,
+                    Credit = 0,
+                    Description = $"صرف مبلغ دفعة من الحساب - سند رقم {payment.Id}"
+                });
+
+                // 2. الطرف الدائن (إلى حـ/ الصندوق)
+                journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                {
+                    AccountId = 1101, // الصندوق الرئيسي
+                    Debit = 0,
+                    Credit = dto.Amount,
+                    Description = $"صرف نقدية بموجب سند رقم {payment.Id}"
+                });
+
+                // حفظ وترحيل القيد
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
+
+                // الإبقاء على النظام القديم مؤقتاً
                 await _financialService.ProcessTransactionAsync(
                     accountId: 1, // Main Vault
                     amount: dto.Amount,
                     type: FinancialTransactionType.Expense,
                     referenceType: ReferenceType.SupplierPayment,
                     referenceId: payment.Id,
-                    description: $"سند صرف لمورد: {supplier.Name} - {dto.Notes} (Ref: {dto.ReferenceNo})"
+                    description: $"[نظام قديم] سند صرف: {supplier.Name}. Ref: {dto.ReferenceNo}"
                 );
 
                 await _unitOfWork.SaveChangesAsync();

@@ -1,51 +1,50 @@
-<div class="card p-4 shadow-2 border-round-xl border-none surface-card" dir="rtl">
-    <!-- Header -->
-    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
-        <div class="flex align-items-center gap-3">
-            <div class="w-4rem h-4rem border-circle bg-bluegray-50 flex align-items-center justify-content-center">
-                <i class="pi pi-box text-bluegray-600 text-3xl"></i>
+<div class="inventory-page" dir="rtl">
+    <section class="inventory-hero">
+        <div class="inventory-title">
+            <div class="inventory-icon">
+                <i class="pi pi-box"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-bold text-900 m-0">إدارة دفعات الأدوية</h1>
-                <p class="text-500 m-0 mt-1">متابعة المخزون، تواريخ الصلاحية، وحركات الدفعات</p>
+                <h1>إدارة دفعات الأدوية</h1>
+                <p>متابعة المخزون، تواريخ الصلاحية، وحركات الدفعات</p>
             </div>
         </div>
-        <div class="flex gap-2">
+        <div class="inventory-actions">
             <button pButton label="تحديث البيانات" icon="pi pi-refresh"
-                class="p-button-outlined p-button-secondary border-round-lg px-4" (click)="loadBatches()"></button>
+                class="p-button-outlined p-button-secondary border-round-lg" (click)="loadBatches()"></button>
         </div>
-    </div>
+    </section>
 
-    <!-- Filters Section -->
-    <div class="surface-50 p-3 border-round-xl mb-4">
-        <div class="grid p-fluid align-items-center">
-            <div class="col-12 md:col-4">
+    <section class="inventory-filter-panel">
+        <div class="inventory-filters p-fluid">
+            <div class="inventory-filter wide">
+                <label>بحث سريع</label>
                 <span class="p-input-icon-left w-full">
                     <i class="pi pi-search text-500"></i>
                     <input pInputText type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
                         placeholder="ابحث بالاسم، الكود، أو الباركود..." class="border-round-lg w-full" />
                 </span>
             </div>
-            <div class="col-12 md:col-3">
+            <div class="inventory-filter">
+                <label>حالة البيع</label>
                 <p-dropdown [options]="sellableOptions" [(ngModel)]="sellableFilter" (onChange)="applyFilters()"
                     placeholder="حالة البيع" styleClass="w-full border-round-lg" appendTo="body"></p-dropdown>
             </div>
-            <div class="col-12 md:col-3">
+            <div class="inventory-filter">
+                <label>الصلاحية</label>
                 <p-dropdown [options]="expiryOptions" [(ngModel)]="expiryFilter" (onChange)="applyFilters()"
                     placeholder="الصلاحية" styleClass="w-full border-round-lg" appendTo="body"></p-dropdown>
             </div>
-            <div class="col-12 md:col-2">
+            <div class="inventory-filter small">
                 <button pButton label="إعادة تعيين" icon="pi pi-filter-slash" class="p-button-text p-button-danger border-round-lg"
                     (click)="searchTerm=''; sellableFilter=null; expiryFilter='all'; applyFilters()"></button>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Data Table -->
-    <div class="grid">
-        <div class="col-12">
+    <section class="inventory-panel">
             <p-table [value]="filteredBatches" [loading]="loading" [paginator]="true" [rows]="10" [rowHover]="true"
-                styleClass="p-datatable-sm p-datatable-gridlines border-round-lg overflow-hidden shadow-1">
+                responsiveLayout="scroll" styleClass="p-datatable-sm inventory-table">
                 <ng-template pTemplate="header">
                     <tr class="bg-bluegray-50 text-800">
                         <th style="width: 250px">الدواء / الموقع</th>
@@ -73,10 +72,10 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <span class="font-mono text-xs bg-gray-100 px-2 py-1 border-round font-bold">{{ batch.companyBatchNumber }}</span>
+                            <span class="inventory-chip gray">{{ batch.companyBatchNumber }}</span>
                         </td>
                         <td class="text-center">
-                            <span class="font-mono text-xs text-600">{{ batch.batchBarcode || '---' }}</span>
+                            <span class="inventory-chip indigo">{{ batch.batchBarcode || '---' }}</span>
                         </td>
                         <td class="text-center font-bold text-700">{{ batch.quantity }}</td>
                         <td class="text-center">
@@ -97,7 +96,7 @@
                             </div>
                         </td>
                         <td class="text-center">
-                            <span class="text-xs px-2 py-1 border-round font-bold"
+                            <span class="inventory-chip"
                                   [ngClass]="batch.isSellable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
                                 {{ batch.isSellable ? 'للبيع' : 'موقف' }}
                             </span>
@@ -116,17 +115,14 @@
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="9" class="text-center p-6 text-secondary">
-                            <div class="flex flex-column align-items-center">
-                                <i class="pi pi-inbox text-4xl mb-3 opacity-50"></i>
-                                <span class="font-bold">لا توجد دفعات مطابقة لمعايير البحث</span>
-                            </div>
+                        <td colspan="9" class="inventory-empty">
+                            <i class="pi pi-inbox"></i>
+                            <span>لا توجد دفعات مطابقة لمعايير البحث</span>
                         </td>
                     </tr>
                 </ng-template>
             </p-table>
-        </div>
-    </div>
+    </section>
 </div>
 
 <app-batch-actions-dialog *ngIf="displayActionDialog" [visible]="displayActionDialog" [batch]="selectedBatch"

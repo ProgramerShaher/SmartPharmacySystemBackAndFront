@@ -1,31 +1,39 @@
-<div class="card p-3 shadow-1 border-round-xl" dir="rtl">
-    <p-toolbar styleClass="mb-3 border-round-xl shadow-none border-1 border-100 bg-white">
-        <ng-template pTemplate="left">
-            <div class="flex align-items-center gap-2">
-                <i class="pi pi-tags text-teal-600 font-bold"></i>
-                <h2 class="text-xl font-bold text-900 m-0">قائمة الفئات</h2>
+<div class="inventory-page" dir="rtl">
+    <section class="inventory-hero">
+        <div class="inventory-title">
+            <div class="inventory-icon">
+                <i class="pi pi-tags"></i>
             </div>
-        </ng-template>
+            <div>
+                <h1>قائمة الفئات</h1>
+                <p>تنظيم تصنيفات الأدوية والمنتجات لتسهيل البحث والجرد</p>
+            </div>
+        </div>
 
-        <ng-template pTemplate="right">
-            <div class="flex align-items-center gap-2">
-                <span class="p-input-icon-left p-inputtext-sm">
+        <div class="inventory-actions">
+            <p-button label="إضافة فئة" icon="pi pi-plus" styleClass="p-button-success border-round-lg font-bold"
+                (onClick)="showAddModal()"></p-button>
+        </div>
+    </section>
+
+    <section class="inventory-filter-panel">
+        <div class="inventory-filters p-fluid">
+            <div class="inventory-filter wide">
+                <label>بحث سريع</label>
+                <span class="p-input-icon-left w-full">
                     <i class="pi pi-search text-400"></i>
-                    <input pInputText type="text" (input)="onSearch($event)" placeholder="بحث سريع..."
-                        class="border-round-lg w-12rem" />
+                    <input pInputText type="text" (input)="onSearch($event)" placeholder="بحث باسم الفئة أو الوصف..."
+                        class="border-round-lg w-full" />
                 </span>
-                <p-button label="إضافة فئة" icon="pi pi-plus" 
-                    styleClass="p-button-teal border-round-lg shadow-1 p-button-sm font-bold"
-                    (onClick)="showAddModal()"></p-button>
             </div>
-        </ng-template>
-    </p-toolbar>
+        </div>
+    </section>
 
+    <section class="inventory-panel">
     <p-table [value]="categories" [lazy]="true" (onLazyLoad)="loadCategories($event)" [paginator]="true" [rows]="10"
         [totalRecords]="totalRecords" [loading]="loading" [showCurrentPageReport]="true"
         currentPageReportTemplate="{first}-{last} من {totalRecords}"
-        styleClass="p-datatable-sm p-datatable-striped border-round-lg overflow-hidden border-1 border-100"
-        [rowsPerPageOptions]="[10, 25, 50]">
+        responsiveLayout="scroll" styleClass="p-datatable-sm inventory-table" [rowsPerPageOptions]="[10, 25, 50]">
         <ng-template pTemplate="header">
             <tr [style]="{'background': 'var(--table-header-bg)'}">
                 <th pSortableColumn="id" class="text-center w-5rem">ID <p-sortIcon field="id"></p-sortIcon></th>
@@ -53,18 +61,20 @@
 
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="4" class="text-center p-5 text-500 italic">
-                    <i class="pi pi-info-circle mr-2"></i> لا توجد فئات حالياً.
+                <td colspan="4" class="inventory-empty">
+                    <i class="pi pi-info-circle"></i>
+                    <span>لا توجد فئات حالياً.</span>
                 </td>
             </tr>
         </ng-template>
     </p-table>
+    </section>
 </div>
 
 <!-- Add/Edit Modal -->
-<p-dialog [(visible)]="displayModal" [header]="selectedCategoryId ? 'تعديل فئة' : 'إضافة فئة'" [modal]="true"
-    [style]="{ width: '450px' }" [draggable]="false" [resizable]="false"
-    styleClass="p-fluid border-round-2xl overflow-hidden" [breakpoints]="{'960px': '75vw', '640px': '90vw'}">
+<p-dialog [(visible)]="displayModal" [modal]="true" [showHeader]="false"
+    [style]="{ width: 'min(92vw, 760px)' }" [draggable]="false" [resizable]="false"
+    styleClass="p-fluid category-dialog border-round-2xl overflow-hidden" [breakpoints]="{'960px': '92vw', '640px': '96vw'}">
     <app-category-add-edit [categoryId]="selectedCategoryId" (onSave)="onModalSave()"
         (onCancel)="onModalCancel()"></app-category-add-edit>
 </p-dialog>

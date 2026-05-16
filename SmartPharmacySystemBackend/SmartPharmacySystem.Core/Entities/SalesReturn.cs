@@ -9,12 +9,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents sales returns in the pharmacy system.
 /// Tracks returns of sold medicines.
 /// </summary>
-public class SalesReturn
+public class SalesReturn : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the sales return.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the customer.
@@ -56,16 +52,6 @@ public class SalesReturn
     /// </summary>
     public string? Reason { get; set; }
 
-    /// <summary>
-    /// Date and time when the return was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// معرف المستخدم الذي أنشأ المرتجع
-    /// ID of the user who created this return
-    /// </summary>
-    public int CreatedBy { get; set; }
 
     /// <summary>
     /// ID of the user who approved this return.
@@ -87,10 +73,6 @@ public class SalesReturn
     /// </summary>
     public DateTime? CancelledAt { get; set; }
 
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Status of the document (Draft, Approved, Cancelled).

@@ -696,3 +696,267 @@
 ::ng-deep .p-dialog-mask {
     z-index: 9999 !important;
 }
+
+/* Compact luxury refresh */
+.sale-invoice-create {
+    background: #f8fafc;
+    padding: 0.65rem;
+}
+
+.floating-header,
+.form-card,
+.table-card,
+.stat-card {
+    border: 1px solid #e8edf3;
+    border-radius: 16px;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.07);
+}
+
+.floating-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.floating-header::before,
+.form-card::before,
+.table-card::before {
+    content: '';
+    display: block;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+}
+
+.floating-header .header-content {
+    padding: 0.6rem 0.9rem;
+}
+
+.floating-header .header-info h1 {
+    font-size: 1.05rem;
+}
+
+.floating-header .header-subtitle,
+.form-field label,
+.stat-label,
+.total-label {
+    font-size: 0.72rem;
+}
+
+.header-actions ::ng-deep .p-button {
+    min-height: 2.2rem;
+    padding: 0.42rem 0.7rem;
+    border-radius: 11px;
+    font-size: 0.78rem;
+}
+
+.main-grid {
+    grid-template-columns: minmax(0, 1fr) 245px;
+}
+
+.card-header {
+    padding: 0.55rem 0.8rem;
+    background: #ffffff;
+}
+
+.card-header h3 {
+    font-size: 0.82rem;
+}
+
+.card-body {
+    padding: 0.75rem;
+}
+
+.form-row {
+    gap: 0.75rem;
+}
+
+.flying-toggle-container,
+.flying-notice {
+    padding: 0.45rem 0.65rem;
+    border-radius: 11px;
+}
+
+.toggle-label {
+    font-size: 0.8rem;
+}
+
+.grand-total-card {
+    padding: 1rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0f766e, #0284c7);
+}
+
+.total-value {
+    font-size: 2rem;
+}
+
+.stats-grid {
+    gap: 0.55rem;
+}
+
+.stat-card {
+    padding: 0.6rem;
+}
+
+.stat-value {
+    font-size: 1rem;
+}
+
+::ng-deep .items-table .p-datatable-thead > tr > th {
+    padding: 0.55rem 0.65rem !important;
+    font-size: 0.73rem !important;
+}
+
+::ng-deep .items-table .p-datatable-tbody > tr td {
+    padding: 0.5rem 0.65rem !important;
+    font-size: 0.78rem !important;
+}
+
+.batch-badge,
+.profit-badge {
+    padding: 0.22rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+}
+
+::ng-deep .premium-item-modal {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 90px rgba(15, 23, 42, 0.24) !important;
+}
+
+::ng-deep .premium-item-modal .p-dialog-header {
+    position: relative;
+    overflow: hidden;
+    padding: 0.9rem 1.1rem !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e8edf3 !important;
+}
+
+::ng-deep .premium-item-modal .p-dialog-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 5px;
+    background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+}
+
+::ng-deep .premium-item-modal .p-dialog-title {
+    font-size: 1rem !important;
+    font-weight: 900 !important;
+}
+
+::ng-deep .premium-item-modal .p-dialog-content {
+    padding: 0.9rem !important;
+    background: #fbfdff !important;
+}
+
+::ng-deep .premium-item-modal .p-dialog-footer {
+    padding: 0.75rem 0.9rem !important;
+    background: #ffffff !important;
+}
+
+.modal-content {
+    display: grid;
+    grid-template-columns: 1.15fr 1.35fr;
+    gap: 0.75rem;
+}
+
+.modal-field,
+.instant-total-box {
+    padding: 0.75rem;
+    border: 1px solid #e8edf3;
+    border-radius: 14px;
+    background: #ffffff;
+}
+
+.medicine-field,
+.qty-field-wrap,
+.instant-total-box {
+    grid-column: span 1;
+}
+
+.batch-field {
+    grid-row: span 3;
+}
+
+.modal-field .field-label {
+    margin-bottom: 0.45rem;
+    font-size: 0.74rem;
+    font-weight: 900;
+}
+
+.batches-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    max-height: 250px;
+}
+
+.batch-card {
+    padding: 0.65rem;
+    border-radius: 12px;
+}
+
+.batch-number,
+.batch-price {
+    font-size: 0.84rem;
+}
+
+.batch-details {
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    font-size: 0.72rem;
+}
+
+.instant-total-box {
+    margin-top: 0;
+    box-shadow: none;
+}
+
+.instant-total-box .total-row {
+    padding: 0.38rem 0;
+}
+
+.instant-total-box .total-row.grand .value {
+    font-size: 1.05rem;
+}
+
+.modal-footer {
+    align-items: center;
+}
+
+@media (max-width: 1100px) {
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .purple-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 760px) {
+    .floating-header .header-content,
+    .modal-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .header-actions {
+        flex-wrap: wrap;
+    }
+
+    .header-actions ::ng-deep .p-button,
+    .sidebar-actions ::ng-deep .p-button {
+        width: 100%;
+    }
+
+    .modal-content,
+    .batches-container {
+        grid-template-columns: 1fr;
+    }
+
+    .batch-field {
+        grid-row: auto;
+    }
+}

@@ -148,7 +148,7 @@ public class MedicineBatchResponseDto
     /// معرف المستخدم الذي أنشأ هذه الدفعة.
     /// </summary>
     /// <example>1</example>
-    public int CreatedBy { get; set; }
+    public int? CreatedBy { get; set; }
 
     /// <summary>
     /// Name of the user who created this batch.

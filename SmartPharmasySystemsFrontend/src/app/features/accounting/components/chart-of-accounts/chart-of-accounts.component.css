@@ -1,0 +1,172 @@
+.royal-container {
+    background-color: #f8fafc;
+    min-height: calc(100vh - 60px);
+}
+
+.glass-header {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.icon-box {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.5rem;
+}
+
+/* Explorer Style Tree */
+::ng-deep .royal-tree-component {
+    padding: 1rem !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+/* خطوط الربط العمودية */
+::ng-deep .royal-tree-component .p-treenode-children {
+    padding: 0 1.4rem 0 0 !important; /* إزاحة لليمين في RTL */
+    margin: 0;
+    position: relative;
+}
+
+::ng-deep .royal-tree-component .p-treenode-children::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0.6rem; /* الخط العمودي الرئيسي */
+    bottom: 0.8rem;
+    width: 1.5px;
+    background: #cbd5e1;
+}
+
+/* خطوط الربط الأفقية */
+::ng-deep .royal-tree-component .p-treenode-content {
+    position: relative;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 6px !important;
+    margin-bottom: 2px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent !important;
+}
+
+::ng-deep .royal-tree-component .p-treenode-content::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -0.8rem; /* الخط الأفقي المتجه للابن */
+    width: 0.8rem;
+    height: 1.5px;
+    background: #cbd5e1;
+}
+
+/* إخفاء الخط للأب الرئيسي الأول */
+::ng-deep .royal-tree-component > .p-tree-container > .p-treenode > .p-treenode-content::before {
+    display: none;
+}
+
+::ng-deep .royal-tree-component .p-treenode-content:hover {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+}
+
+::ng-deep .royal-tree-component .p-treenode-content.p-highlight {
+    background: #eff6ff !important;
+    border-color: #3b82f6 !important;
+    color: #1e3c72 !important;
+}
+
+/* سهم الفتح والإغلاق (Toggler) */
+::ng-deep .royal-tree-component .p-tree-toggler {
+    width: 20px !important;
+    height: 20px !important;
+    margin-left: 8px !important;
+    color: #64748b !important;
+    background: #fff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 4px !important;
+    z-index: 2;
+    transition: all 0.2s ease;
+}
+
+::ng-deep .royal-tree-component .p-tree-toggler:hover {
+    background: #f8fafc !important;
+    color: #1e3c72 !important;
+    border-color: #1e3c72 !important;
+}
+
+/* أيقونات المجلدات والملفات */
+.node-icon {
+    font-size: 1.1rem;
+    margin-left: 10px;
+}
+.pi-folder-fill, .pi-folder-open-fill { color: #f59e0b; }
+.pi-file-fill { color: #94a3b8; font-size: 0.9rem; }
+
+/* بيانات العقدة */
+.node-label {
+    font-weight: 600;
+    color: #334155;
+    font-size: 14px;
+}
+
+.node-code {
+    font-family: 'Inter', sans-serif;
+    color: #64748b;
+    font-size: 12px;
+    background: #f1f5f9;
+    padding: 1px 6px;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.node-balance {
+    font-weight: 700;
+    font-size: 13px;
+    min-width: 90px;
+    text-align: left;
+}
+.positive { color: #10b981; }
+.negative { color: #ef4444; }
+
+.node-type-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    min-width: 65px;
+    text-align: center;
+}
+.type-asset { background: #ecfdf5; color: #065f46; border: 1px solid #10b98133; }
+.type-liability { background: #fef2f2; color: #991b1b; border: 1px solid #ef444433; }
+.type-equity { background: #f5f3ff; color: #5b21b6; border: 1px solid #8b5cf633; }
+.type-revenue { background: #eff6ff; color: #1e40af; border: 1px solid #3b82f633; }
+.type-expense { background: #fff7ed; color: #9a3412; border: 1px solid #f9731633; }
+
+/* الأزرار الملكية */
+.btn-glass-primary {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+    border: none !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2) !important;
+}
+
+.btn-glass-secondary {
+    background: white !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+}
+
+.add-btn-small {
+    color: #3b82f6 !important;
+    width: 24px !important;
+    height: 24px !important;
+}

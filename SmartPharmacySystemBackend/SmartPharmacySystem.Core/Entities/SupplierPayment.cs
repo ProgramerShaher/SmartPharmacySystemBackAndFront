@@ -3,10 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SmartPharmacySystem.Core.Entities
 {
-    public class SupplierPayment
+    public class SupplierPayment : BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
 
         public int SupplierId { get; set; }
 
@@ -30,10 +28,5 @@ namespace SmartPharmacySystem.Core.Entities
         [MaxLength(500)]
         public string? Notes { get; set; }
 
-        public int CreatedBy { get; set; } // UserId
-
-        public bool IsDeleted { get; set; } = false;
-        public DateTime? DeletedAt { get; set; }
-        public int? DeletedBy { get; set; }
     }
 }

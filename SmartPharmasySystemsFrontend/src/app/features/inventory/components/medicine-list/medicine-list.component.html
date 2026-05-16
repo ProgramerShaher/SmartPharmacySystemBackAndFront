@@ -1,47 +1,45 @@
-<div class="card p-4 shadow-2 border-round-xl border-none surface-card" dir="rtl">
-    <!-- Header -->
-    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
-        <div class="flex align-items-center gap-3">
-            <div class="w-4rem h-4rem border-circle bg-teal-50 flex align-items-center justify-content-center">
-                <i class="pi pi-briefcase text-teal-600 text-3xl"></i>
+<div class="inventory-page" dir="rtl">
+    <section class="inventory-hero">
+        <div class="inventory-title">
+            <div class="inventory-icon">
+                <i class="pi pi-briefcase"></i>
             </div>
             <div>
-                <h1 class="text-3xl font-bold text-900 m-0">إدارة الأدوية</h1>
-                <p class="text-500 m-0 mt-1">إدارة شاملة للمخزون، الأسعار، وتواريخ الصلاحية</p>
+                <h1>إدارة الأدوية</h1>
+                <p>إدارة شاملة للمخزون، الأسعار، وتواريخ الصلاحية</p>
             </div>
         </div>
-        <div class="flex gap-2">
+        <div class="inventory-actions">
             <button pButton label="إضافة دواء جديد" icon="pi pi-plus"
-                class="p-button-raised p-button-success border-round-lg px-4" (click)="openAddMedicine()"></button>
+                class="p-button-raised p-button-success border-round-lg" (click)="openAddMedicine()"></button>
             <button pButton label="تصدير" icon="pi pi-file-excel"
                 class="p-button-outlined p-button-secondary border-round-lg"></button>
         </div>
-    </div>
+    </section>
 
-    <!-- Filters & Search -->
-    <div class="surface-50 p-3 border-round-xl mb-4">
-        <div class="grid p-fluid">
-            <div class="col-12 md:col-4">
+    <section class="inventory-filter-panel">
+        <div class="inventory-filters p-fluid">
+            <div class="inventory-filter wide">
+                <label>بحث سريع</label>
                 <span class="p-input-icon-left w-full">
                     <i class="pi pi-search text-500"></i>
                     <input pInputText type="text" (input)="onSearch($any($event.target).value)"
                         placeholder="بحث سريع (الاسم، الكود، الباركود)..." class="border-round-lg w-full" />
                 </span>
             </div>
-            <div class="col-12 md:col-3">
+            <div class="inventory-filter">
+                <label>الحالة</label>
                 <p-dropdown [options]="statusOptions" [ngModel]="status()"
                     (ngModelChange)="status.set($event); loadMedicines({first:0, rows:10})"
                     placeholder="فلترة حسب الحالة" styleClass="w-full border-round-lg" appendTo="body"></p-dropdown>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Data Table -->
-    <div class="grid">
-        <div class="col-12">
+    <section class="inventory-panel">
             <p-table [value]="medicines()" [lazy]="true" (onLazyLoad)="loadMedicines($event)" [paginator]="true"
                 [rows]="10" [totalRecords]="totalRecords()" [loading]="loading()" [rowHover]="true"
-                styleClass="p-datatable-sm p-datatable-gridlines border-round-lg overflow-hidden shadow-1">
+                responsiveLayout="scroll" styleClass="p-datatable-sm inventory-table">
                 <ng-template pTemplate="header">
                     <tr class="bg-bluegray-50 text-800">
                         <th style="width: 40px" class="text-center">#</th>
@@ -66,16 +64,12 @@
                             <div class="flex flex-column gap-2 py-1">
                                 <!-- Commercial Name -->
                                 <div class="flex align-items-center gap-2">
-                                    <span
-                                        class="text-xs font-bold text-yellow bg-teal-600 px-2 py-0-5 border-round-md shadow-1"
-                                        style="min-width: 50px; text-align: center;">تجاري</span>
+                                    <span class="inventory-chip green">تجاري</span>
                                     <span class="font-bold text-900 text-sm">{{medicine.name}}</span>
                                 </div>
                                 <!-- Scientific Name -->
                                 <div class="flex align-items-center gap-2" *ngIf="medicine.scientificName">
-                                    <span
-                                        class="text-xs font-bold text-yellow bg-bluegray-400 px-2 py-0-5 border-round-md shadow-1"
-                                        style="min-width: 50px; text-align: center;">علمي</span>
+                                    <span class="inventory-chip blue">علمي</span>
                                     <span
                                         class="text-xs text-700 font-medium italic line-height-2">{{medicine.scientificName}}</span>
                                 </div>
@@ -83,19 +77,16 @@
                         </td>
                         <td class="text-center">
                             <div class="flex flex-column gap-2 align-items-center">
-                                <span class="text-xs font-bold px-2 py-1 border-round-lg shadow-1"
-                                    style="background-color: #f1f5f9; color: #475569;">
+                                <span class="inventory-chip gray">
                                     <i class="pi pi-id-card text-xs mr-1"></i> {{medicine.internalCode}}
                                 </span>
-                                <span class="text-xs font-bold px-2 py-1 border-round-lg shadow-1"
-                                    style="background-color: #f8fafc; color: #64748b;" *ngIf="medicine.defaultBarcode">
+                                <span class="inventory-chip indigo" *ngIf="medicine.defaultBarcode">
                                     <i class="pi pi-barcode text-xs mr-1"></i> {{medicine.defaultBarcode}}
                                 </span>
                             </div>
                         </td>
                         <td class="text-center">
-                            <span class="text-xs font-bold px-2 py-1 border-round-lg shadow-1"
-                                style="background-color: #f0fdfa; color: #0d9488;">
+                            <span class="inventory-chip green">
                                 <i class="pi pi-tag text-xs mr-1"></i> {{medicine.categoryName || 'بدون تصنيف'}}
                             </span>
                         </td>
@@ -104,14 +95,14 @@
                         <td class="text-center text-teal-700 font-bold text-sm">{{(medicine.salePrice ||
                             medicine.defaultSalePrice) | number}}</td>
                         <td class="text-center">
-                            <span class="text-xs font-bold px-2 py-1 border-round-lg shadow-1"
+                            <span class="inventory-chip"
                                 [style.background-color]="((medicine.totalStock ?? medicine.totalQuantity ?? 0) <= medicine.reorderLevel) ? '#fef2f2' : '#f0fdf4'"
                                 [style.color]="((medicine.totalStock ?? medicine.totalQuantity ?? 0) <= medicine.reorderLevel) ? '#ef4444' : '#10b981'">
                                 {{medicine.totalStock ?? medicine.totalQuantity ?? 0}}
                             </span>
                         </td>
                         <td class="text-center">
-                            <span class="text-xs px-2 py-1 border-round-lg font-bold shadow-1"
+                            <span class="inventory-chip"
                                 [style.background-color]="medicine.status === 'Active' ? '#f0fdf4' : '#fef2f2'"
                                 [style.color]="medicine.status === 'Active' ? '#10b981' : '#ef4444'">
                                 {{medicine.status === 'Active' ? 'نشط' : 'خامل'}}
@@ -140,8 +131,7 @@
                     </tr>
                 </ng-template>
             </p-table>
-        </div>
-    </div>
+    </section>
 </div>
 
 <p-confirmDialog [style]="{width: '450px'}" acceptLabel="نعم، احذف" rejectLabel="إلغاء"></p-confirmDialog>

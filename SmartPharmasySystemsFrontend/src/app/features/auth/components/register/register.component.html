@@ -1,59 +1,57 @@
-<div class="auth-wrapper">
-    <div class="animated-bg">
-        <div class="blob"></div>
-        <div class="blob"></div>
-        <div class="blob"></div>
-    </div>
+<div class="auth-wrapper" dir="rtl">
+    <p-toast></p-toast>
 
-    <div class="auth-container glass-panel animate-fade-in">
-        <p-toast></p-toast>
+    <section class="auth-card">
+        <div class="card-accent"></div>
 
         <div class="auth-header">
             <div class="icon-box">
                 <i class="pi pi-user-plus"></i>
             </div>
-            <h1>إنشاء حساب جديد</h1>
-            <p>انضم إلينا لإدارة صيدليتك باحترافية</p>
+            <div>
+                <h1>إنشاء حساب</h1>
+                <p>املأ البيانات الأساسية فقط</p>
+            </div>
         </div>
 
-        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form mt-4">
-            <div class="grid">
-                <div class="col-12 md:col-6 field mb-3">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-id-card"></i>
-                        <input pInputText formControlName="fullName" placeholder="الاسم الكامل" class="w-full h-3rem" />
-                    </span>
-                </div>
-                <div class="col-12 md:col-6 field mb-3">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-user"></i>
-                        <input pInputText formControlName="username" placeholder="اسم المستخدم" class="w-full h-3rem" />
-                    </span>
-                </div>
-                <div class="col-12 field mb-3">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-envelope"></i>
-                        <input pInputText formControlName="email" placeholder="البريد الإلكتروني"
-                            class="w-full h-3rem" />
-                    </span>
-                </div>
-                <div class="col-12 field mb-3">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-lock"></i>
-                        <p-password formControlName="password" placeholder="كلمة المرور" [toggleMask]="true"
-                            styleClass="w-full" inputStyleClass="w-full h-3rem"></p-password>
-                    </span>
-                </div>
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+            <label class="field-label">الاسم الكامل</label>
+            <span class="p-input-icon-left w-full">
+                <i class="pi pi-id-card"></i>
+                <input pInputText formControlName="fullName" placeholder="اسمك الكامل" />
+            </span>
+
+            <label class="field-label">اسم المستخدم</label>
+            <span class="p-input-icon-left w-full">
+                <i class="pi pi-user"></i>
+                <input pInputText formControlName="username" placeholder="اسم المستخدم" />
+            </span>
+
+            <label class="field-label">البريد الإلكتروني</label>
+            <span class="p-input-icon-left w-full">
+                <i class="pi pi-envelope"></i>
+                <input pInputText formControlName="email" placeholder="name@example.com" />
+            </span>
+
+            <label class="field-label">كلمة المرور</label>
+            <span class="p-input-icon-left w-full">
+                <i class="pi pi-lock"></i>
+                <p-password formControlName="password" placeholder="6 أحرف على الأقل" [toggleMask]="true"
+                    [feedback]="false" styleClass="w-full" inputStyleClass="w-full"></p-password>
+            </span>
+
+            <div class="terms-row">
+                <p-checkbox formControlName="agreeTerms" [binary]="true" inputId="terms"></p-checkbox>
+                <label for="terms">أوافق على الشروط والأحكام</label>
             </div>
-<div class="flex align-items-center gap-2 mb-4 mt-2">
-    <p-checkbox formControlName="agreeTerms" [binary]="true" inputId="terms"></p-checkbox>
-    <label for="terms" class="text-sm cursor-pointer opacity-70">أوافق على الشروط والأحكام</label>
-</div>
-<p-button type="submit" label="إنشاء الحساب" icon="pi pi-check" [loading]="loading" [disabled]="registerForm.invalid"
-    styleClass="w-full p-button-raised p-button-lg h-3rem"></p-button>
-</form>
-<div class="auth-footer mt-4 text-center">
-    لديك حساب بالفعل؟ <a routerLink="/auth/login" class="text-primary font-bold">تسجيل الدخول</a>
-</div>
-</div>
+
+            <p-button type="submit" label="إنشاء الحساب" icon="pi pi-check" [loading]="loading"
+                [disabled]="registerForm.invalid" styleClass="auth-submit w-full"></p-button>
+        </form>
+
+        <div class="auth-footer">
+            لديك حساب بالفعل؟
+            <a routerLink="/auth/login">تسجيل الدخول</a>
+        </div>
+    </section>
 </div>

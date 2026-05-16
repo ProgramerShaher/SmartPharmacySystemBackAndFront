@@ -4,12 +4,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents the details of a sale invoice.
 /// Each detail line corresponds to a specific medicine batch sold.
 /// </summary>
-public class SaleInvoiceDetail
+public class SaleInvoiceDetail : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the sale invoice detail.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the sale invoice.
@@ -61,10 +57,6 @@ public class SaleInvoiceDetail
     /// </summary>
     public int RemainingQtyToReturn { get; set; }
 
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Navigation property to the sale invoice.

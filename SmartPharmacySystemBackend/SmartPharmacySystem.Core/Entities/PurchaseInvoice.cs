@@ -7,12 +7,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a purchase invoice in the pharmacy system.
 /// Purchase invoices record medicine purchases from suppliers.
 /// </summary>
-public class PurchaseInvoice
+public class PurchaseInvoice : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the purchase invoice.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Unique number for the purchase invoice (Format: PI-YYYY-######).
@@ -61,16 +57,6 @@ public class PurchaseInvoice
     /// </summary>
     public bool IsPaid { get; set; } = false;
 
-    /// <summary>
-    /// Date and time when the invoice was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// ID of the user who created this invoice.
-    /// معرف المستخدم الذي أنشأ هذه الفاتورة.
-    /// </summary>
-    public int CreatedBy { get; set; }
 
     /// <summary>
     /// ID of the user who approved this invoice.
@@ -92,10 +78,6 @@ public class PurchaseInvoice
     /// </summary>
     public DateTime? CancelledAt { get; set; }
 
-    /// <summary>
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     /// <summary>
     /// Status of the document (Draft, Approved, Cancelled).

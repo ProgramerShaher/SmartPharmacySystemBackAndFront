@@ -2,9 +2,13 @@ using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.DTOs.Suppliers;
+using SmartPharmacySystem.Application.DTOs.SupplierPayments;
 using SmartPharmacySystem.Application.Interfaces;
+using SmartPharmacySystem.Application.IServices;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
+using SmartPharmacySystem.Core.Enums;
+using SmartPharmacySystem.Application.IServices;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -13,24 +17,63 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<SupplierService> _logger;
+        private readonly IAccountService _accountService;
 
-        public SupplierService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<SupplierService> logger)
+        public SupplierService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<SupplierService> logger, IAccountService accountService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _accountService = accountService;
         }
 
         public async Task<SupplierDto> CreateAsync(CreateSupplierDto dto)
         {
-            var supplier = _mapper.Map<Supplier>(dto);
-            supplier.CreatedAt = DateTime.UtcNow;
-            supplier.IsDeleted = false;
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var supplier = _mapper.Map<Supplier>(dto);
+                supplier.CreatedAt = DateTime.UtcNow;
+                supplier.IsDeleted = false;
 
-            await _unitOfWork.Suppliers.AddAsync(supplier);
-            await _unitOfWork.SaveChangesAsync();
+                // 1. إنشاء حساب للمورد في شجرة الحسابات
+                var parentAccount = await _unitOfWork.Accounts.GetByCodeAsync("2101");
+                var lastAccount = (await _unitOfWork.Accounts.GetChildrenAsync(2101)).OrderByDescending(a => a.Code).FirstOrDefault();
 
-            return _mapper.Map<SupplierDto>(supplier);
+                string nextCode = "2101001";
+                if (lastAccount != null && long.TryParse(lastAccount.Code, out long lastCode))
+                {
+                    nextCode = (lastCode + 1).ToString();
+                }
+
+                var supplierAccount = new Account
+                {
+                    Code = nextCode,
+                    Name = $"مورد: {supplier.Name}",
+                    Type = Core.Enums.AccountType.Liability,
+                    ParentId = parentAccount?.Id ?? 2101, // fallback to seeded ID
+                    IsMainAccount = false,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.Accounts.AddAsync(supplierAccount);
+                await _unitOfWork.SaveChangesAsync();
+
+                // 2. ربط المورد بالحساب
+                supplier.AccountId = supplierAccount.Id;
+                await _unitOfWork.Suppliers.AddAsync(supplier);
+                await _unitOfWork.SaveChangesAsync();
+
+                await _unitOfWork.CommitAsync();
+                return _mapper.Map<SupplierDto>(supplier);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError(ex, "Error creating supplier with account");
+                throw;
+            }
         }
 
         public async Task UpdateAsync(int id, UpdateSupplierDto dto)
@@ -88,6 +131,41 @@ namespace SmartPharmacySystem.Application.Services
 
             var dtos = _mapper.Map<IEnumerable<SupplierDto>>(items);
             return new PagedResult<SupplierDto>(dtos, totalCount, query.Page, query.PageSize);
+        }
+
+        public async Task<SupplierStatementDto> GetStatementAsync(int supplierId)
+        {
+            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(supplierId)
+                ?? throw new KeyNotFoundException("المورد غير موجود");
+
+            if (!supplier.AccountId.HasValue)
+                throw new InvalidOperationException("هذا المورد ليس له حساب مرتبط في شجرة الحسابات");
+
+            // جلب دفتر الأستاذ من المحرك المحاسبي
+            var ledger = await _accountService.GetGeneralLedgerAsync(
+                supplier.AccountId.Value,
+                DateTime.Now.AddYears(-1),
+                DateTime.Now);
+
+            var result = new SupplierStatementDto
+            {
+                SupplierId = supplier.Id,
+                SupplierName = supplier.Name,
+                TotalBalance = ledger.ClosingBalance,
+                Status = ledger.ClosingBalance == 0 ? "خالص" : "دائن",
+                Transactions = ledger.Entries.Select(e => new StatementItemDto
+                {
+                    Date = e.Date,
+                    Type = "قيد محاسبي",
+                    Reference = e.VoucherNumber,
+                    Debit = e.Debit,
+                    Credit = e.Credit,
+                    RunningBalance = e.RunningBalance,
+                    Notes = e.Description
+                }).ToList()
+            };
+
+            return result;
         }
     }
 }

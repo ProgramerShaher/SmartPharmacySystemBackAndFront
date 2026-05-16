@@ -1,0 +1,172 @@
+.royal-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    min-height: calc(100vh - 60px);
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.royal-title {
+    background: linear-gradient(45deg, #2c3e50, #4ca1af);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
+}
+
+.p-button-royal-gradient {
+    background: linear-gradient(45deg, #2c3e50, #4ca1af) !important;
+    border: none !important;
+}
+
+.entry-id {
+    font-family: 'Cascadia Code', monospace;
+    color: #4ca1af;
+    font-weight: 600;
+}
+
+.bg-success-light { background-color: rgba(46, 204, 113, 0.1); }
+.bg-danger-light { background-color: rgba(231, 76, 60, 0.1); }
+
+.line-row {
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    padding: 10px 0;
+}
+
+.line-row:last-child {
+    border-bottom: none;
+}
+
+.totals-footer {
+    border-top: 2px solid #4ca1af;
+    background: rgba(76, 161, 175, 0.05) !important;
+}
+
+/* PrimeNG Table Tweaks */
+::ng-deep .royal-table .p-datatable-thead > tr > th {
+    background: #f8f9fa !important;
+    color: #2c3e50 !important;
+    font-weight: 700 !important;
+}
+
+/* Double Entry Table Styles */
+::ng-deep .double-entry-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+::ng-deep .double-entry-table .p-datatable-thead > tr > th {
+    background: linear-gradient(to right, #1e3c72, #2a5298) !important;
+    color: white !important;
+    text-transform: uppercase;
+    font-size: 0.95rem;
+    padding: 15px !important;
+    border: none;
+}
+
+::ng-deep .double-entry-table .p-datatable-tbody > tr > td {
+    padding: 15px 15px !important;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+}
+
+::ng-deep .debit-cell {
+    color: #059669 !important;
+    background-color: rgba(5, 150, 105, 0.03) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1.1rem !important;
+}
+
+::ng-deep .credit-cell {
+    color: #dc2626 !important;
+    background-color: rgba(220, 38, 38, 0.03) !important;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1.1rem !important;
+}
+
+.account-name-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+    min-width: 60px;
+    text-align: center;
+}
+
+.debit-badge {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.credit-badge {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+::ng-deep .total-row td {
+    background: #f8fafc !important;
+    border-top: 2px solid #cbd5e1 !important;
+    font-size: 1.15rem !important;
+    padding: 15px !important;
+}
+
+/* New Vibrant Styles */
+.icon-circle {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(45deg, #1e3c72, #2a5298);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+}
+
+.description-card, .status-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    height: 100%;
+}
+
+.tag-posted {
+    background: linear-gradient(to right, #059669, #10b981) !important;
+    color: white !important;
+    padding: 0.35rem 0.8rem !important;
+    border-radius: 20px !important;
+    font-size: 0.8rem !important;
+}
+
+.tag-draft {
+    background: linear-gradient(to right, #d97706, #f59e0b) !important;
+    color: white !important;
+    padding: 0.35rem 0.8rem !important;
+    border-radius: 20px !important;
+    font-size: 0.8rem !important;
+}
+
+.tag-posted-large {
+    background: #ecfdf5 !important;
+    color: #059669 !important;
+    border: 1px solid #10b981 !important;
+    padding: 0.5rem 1rem !important;
+    font-weight: bold !important;
+}
+
+.tag-draft-large {
+    background: #fffbeb !important;
+    color: #d97706 !important;
+    border: 1px solid #f59e0b !important;
+    padding: 0.5rem 1rem !important;
+    font-weight: bold !important;
+}

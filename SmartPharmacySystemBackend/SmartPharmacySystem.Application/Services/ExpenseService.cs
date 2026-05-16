@@ -7,6 +7,9 @@ using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Core.Interfaces;
 
+using SmartPharmacySystem.Application.IServices;
+using System.Collections.Generic;
+
 namespace SmartPharmacySystem.Application.Services
 {
     public class ExpenseService : IExpenseService
@@ -15,13 +18,15 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<ExpenseService> _logger;
         private readonly IFinancialService _financialService;
+        private readonly IJournalEntryService _journalEntryService;
 
-        public ExpenseService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExpenseService> logger, IFinancialService financialService)
+        public ExpenseService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExpenseService> logger, IFinancialService financialService, IJournalEntryService journalEntryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _financialService = financialService;
+            _journalEntryService = journalEntryService;
         }
 
         public async Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto)
@@ -44,16 +49,48 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.Expenses.AddAsync(expense);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Financial Integration - only for cash expenses
+                // ==================== المحرك المحاسبي الاحترافي ====================
                 if (expense.PaymentMethod == PaymentType.Cash)
                 {
+                    var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                    {
+                        EntryDate = expense.ExpenseDate,
+                        VoucherNumber = $"EXP-{expense.Id}",
+                        Description = $"مصروف: {category.Name} - {expense.Notes ?? ""}",
+                        Type = VoucherType.PaymentVoucher,
+                        Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
+                    };
+
+                    // 1. الطرف المدين (من حـ/ المصروف)
+                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    {
+                        AccountId = category.AccountId ?? 5, // حساب المصروف المرتبط بالفئة أو حساب المصروفات العام
+                        Debit = expense.Amount,
+                        Credit = 0,
+                        Description = $"إثبات مصروف {category.Name}"
+                    });
+
+                    // 2. الطرف الدائن (إلى حـ/ الصندوق)
+                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    {
+                        AccountId = 1101, // الصندوق الرئيسي
+                        Debit = 0,
+                        Credit = expense.Amount,
+                        Description = $"صرف نقدية مقابل مصروف {category.Name}"
+                    });
+
+                    // حفظ وترحيل القيد
+                    var createdEntry = await _journalEntryService.CreateAsync(journalEntry, expense.CreatedBy);
+                    await _journalEntryService.ApproveAsync(createdEntry.Id, expense.CreatedBy);
+
+                    // الإبقاء على النظام القديم مؤقتاً
                     await _financialService.ProcessTransactionAsync(
-                        accountId: expense.AccountId,
+                        accountId: 1, // Default Vault
                         amount: expense.Amount,
                         type: FinancialTransactionType.Expense,
                         referenceType: ReferenceType.Expense,
                         referenceId: expense.Id,
-                        description: $"مصروف: {category.Name} - {expense.Notes ?? ""}");
+                        description: $"[نظام قديم] مصروف: {category.Name}");
 
                     expense.IsPaid = true;
                     await _unitOfWork.Expenses.UpdateAsync(expense);

@@ -9,14 +9,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// يمثل دفعة (لوط) من الدواء في نظام الصيدلية.
 /// كل دفعة تتتبع تفاصيل الشراء، معلومات انتهاء الصلاحية، وحالة المخزون.
 /// </summary>
-public class MedicineBatch
+public class MedicineBatch : BaseEntity
 {
-    /// <summary>
-    /// Primary key - Unique identifier for the medicine batch.
-    /// المفتاح الأساسي - المعرف الفريد لدفعة الدواء.
-    /// </summary>
-    [Key]
-    public int Id { get; set; }
 
     /// <summary>
     /// Foreign key to the medicine this batch belongs to.
@@ -103,18 +97,6 @@ public class MedicineBatch
     [Required]
     public DateTime EntryDate { get; set; }
 
-    /// <summary>
-    /// ID of the user who created this batch.
-    /// معرف المستخدم الذي أنشأ هذه الدفعة.
-    /// </summary>
-    [Required]
-    public int CreatedBy { get; set; }
-
-    /// <summary>
-    /// Soft delete flag.
-    /// علامة الحذف الناعم.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     // ===================== Navigation Properties =====================
 
@@ -239,12 +221,4 @@ public class MedicineBatch
         Status = "Damaged";
     }
 
-    /// <summary>
-    /// Performs soft delete on the batch.
-    /// ينفذ الحذف الناعم على الدفعة.
-    /// </summary>
-    public void SoftDelete()
-    {
-        IsDeleted = true;
-    }
 }

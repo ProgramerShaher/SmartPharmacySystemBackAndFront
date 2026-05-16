@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
@@ -89,6 +89,18 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             .FirstOrDefaultAsync(b => b.BatchBarcode == barcode
                                       && b.ExpiryDate.Date == dateOnly
                                       && !b.IsDeleted);
+    }
+
+    /// <inheritdoc/>
+    public async Task<MedicineBatch?> GetByCompanyBatchNumberAsync(string companyBatchNumber)
+    {
+        if (string.IsNullOrWhiteSpace(companyBatchNumber))
+            return null;
+
+        return await _db.MedicineBatches
+            .AsNoTracking()
+            .Include(b => b.Medicine)
+            .FirstOrDefaultAsync(b => b.CompanyBatchNumber == companyBatchNumber && !b.IsDeleted);
     }
 
     /// <inheritdoc/>

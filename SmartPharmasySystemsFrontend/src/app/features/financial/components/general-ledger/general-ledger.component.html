@@ -1,155 +1,109 @@
-<div class="page-container animate-fade-in" dir="rtl">
-  <!-- Header -->
-  <header class="page-header glass-panel mb-4">
-    <div class="header-content">
-      <div class="title-section">
-        <div class="icon-wrapper ledger">
-          <i class="pi pi-book"></i>
+<div class="royal-container animate-fade-in" dir="rtl">
+    <!-- Slim Header -->
+    <div class="compact-header shadow-sm">
+        <div class="d-flex align-items-center">
+            <i class="pi pi-book me-2 text-primary"></i>
+            <h1 class="page-title-mini">دفتر الأستاذ العام (كافة الحسابات)</h1>
         </div>
-        <div class="text-wrapper">
-          <h1 class="m-0 text-2xl font-bold">دفتر الأستاذ العام</h1>
-          <p class="m-0 opacity-70">سجل شامل لجميع الحركات المالية</p>
+        <div class="d-flex gap-2">
+            <button pButton label="تصدير" icon="pi pi-file-excel" class="p-button-sm p-button-success p-button-outlined" (click)="exportToExcel()"></button>
+            <button pButton icon="pi pi-refresh" class="p-button-sm p-button-secondary p-button-text" (click)="loadAllLedgers()" [loading]="loading()"></button>
         </div>
-      </div>
-      <div class="action-section flex gap-2">
-        <p-button 
-          label="تصدير Excel" 
-          icon="pi pi-file-excel" 
-          severity="success" 
-          outlined
-          styleClass="p-button-sm"
-          (onClick)="exportToExcel()">
-        </p-button>
-        <p-button 
-          label="تحديث" 
-          icon="pi pi-refresh" 
-          severity="secondary" 
-          outlined
-          styleClass="p-button-sm"
-          (onClick)="loadLedger()">
-        </p-button>
-      </div>
     </div>
-  </header>
 
-  <!-- Filters -->
-  <div class="glass-panel filters-panel mb-4">
-    <div class="grid align-items-end">
-      <div class="col-12 md:col-6 lg:col-4">
-        <label class="font-bold text-sm block mb-2">فترة التقرير</label>
-        <p-calendar 
-          [(ngModel)]="dateRange" 
-          selectionMode="range" 
-          [showIcon]="true"
-          dateFormat="dd/mm/yy"
-          placeholder="اختر الفترة..."
-          styleClass="w-full"
-          (onSelect)="onDateFilter()">
-        </p-calendar>
-      </div>
-      <div class="col-12 md:col-6 lg:col-2">
-        <p-button 
-          label="مسح الفلاتر" 
-          icon="pi pi-filter-slash" 
-          severity="secondary" 
-          outlined
-          styleClass="w-full p-button-sm"
-          (onClick)="clearFilters()">
-        </p-button>
-      </div>
+    <!-- Filters Bar -->
+    <div class="filters-bar">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold">الفترة:</span>
+            <p-calendar 
+                [(ngModel)]="dateRange" 
+                selectionMode="range" 
+                [showIcon]="true"
+                dateFormat="dd/mm/yy"
+                styleClass="p-inputtext-sm"
+                (onSelect)="onFilterChange()">
+            </p-calendar>
+        </div>
+        <button pButton label="تحديث البيانات" class="p-button-sm" icon="pi pi-search" (click)="loadAllLedgers()"></button>
+        <button pButton icon="pi pi-filter-slash" class="p-button-sm p-button-outlined p-button-secondary" (click)="clearFilters()"></button>
+        <div class="ms-auto text-muted" *ngIf="allLedgers().length > 0">
+            عدد الحسابات النشطة: <span class="fw-bold text-dark">{{allLedgers().length}}</span>
+        </div>
     </div>
-  </div>
 
-  <!-- Ledger Table -->
-  <div class="glass-panel p-0 overflow-hidden">
-    <p-table 
-      [value]="ledgerEntries()" 
-      [loading]="loading()"
-      [paginator]="true"
-      [rows]="pageSize()"
-      [totalRecords]="totalRecords()"
-      [lazy]="true"
-      (onLazyLoad)="onPageChange($event)"
-      responsiveLayout="scroll"
-      styleClass="p-datatable-sm"
-      [showCurrentPageReport]="true"
-      currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}">
-      
-      <ng-template pTemplate="header">
-        <tr>
-          <th style="width: 120px">التاريخ</th>
-          <th>البيان</th>
-          <th style="width: 150px">نوع العملية</th>
-          <th style="width: 120px">المرجع</th>
-          <th class="text-right" style="width: 130px">مدين</th>
-          <th class="text-right" style="width: 130px">دائن</th>
-          <th class="text-right" style="width: 150px">الرصيد الجاري</th>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-entry>
-        <tr class="fadein">
-          <td class="text-center">
-            <div class="flex flex-column align-items-center">
-              <span class="text-xs font-bold text-gray-700">{{ entry.transactionDate | date:'dd/MM/yyyy' }}</span>
+    <!-- Main Content Area -->
+    <div class="p-2 custom-scroll" *ngIf="!loading()">
+        
+        <div *ngFor="let ledger of allLedgers(); let i = index" class="account-section shadow-sm">
+            <!-- Account Ribbon -->
+            <div class="account-header-ribbon" [style.background]="getAccountColor(i)">
+                <span>
+                    <i class="pi pi-folder-open me-2"></i>
+                    {{ledger.accountCode}} - {{ledger.accountName}}
+                </span>
+                <span class="badge-id">ID: {{ledger.accountId}}</span>
             </div>
-          </td>
-          <td>
-            <div class="flex flex-column">
-              <span class="font-bold text-gray-800 line-height-2">{{ entry.description }}</span>
-              <span class="text-xs text-500">{{ entry.category }}</span>
-            </div>
-          </td>
-          <td class="text-center">
-            <p-tag 
-              [value]="getTransactionNature(entry)" 
-              [severity]="getTransactionNatureSeverity(entry)"
-              styleClass="text-xs font-bold shadow-1">
-            </p-tag>
-          </td>
-          <td class="text-center">
-            <span class="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 border-round">{{ entry.referenceNumber || '---' }}</span>
-          </td>
-          <td class="text-right">
-            <span *ngIf="entry.outgoing > 0" class="text-debit text-lg">
-              {{ entry.outgoing | number:'1.0-2' }}
-            </span>
-            <span *ngIf="entry.outgoing === 0" class="opacity-20">-</span>
-          </td>
-          <td class="text-right">
-            <span *ngIf="entry.incoming > 0" class="text-credit text-lg">
-              {{ entry.incoming | number:'1.0-2' }}
-            </span>
-            <span *ngIf="entry.incoming === 0" class="opacity-20">-</span>
-          </td>
-          <td class="text-right">
-            <div class="balance-cell" [ngClass]="entry.runningBalance >= 0 ? 'positive' : 'negative'">
-              <span class="font-bold text-lg">{{ entry.runningBalance | number:'1.0-2' }}</span>
-              <small class="text-xs opacity-60 mr-1">ر.ي</small>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td colspan="7" class="text-center p-6 opacity-40">
-            <i class="pi pi-inbox text-6xl mb-3"></i>
-            <p class="m-0 text-xl">لا توجد حركات مالية في الفترة المحددة</p>
-          </td>
-        </tr>
-      </ng-template>
+            <!-- Summary Strip -->
+            <div class="account-summary-strip">
+                <span>رصيد افتتاحي: <span class="text-primary">{{formatCurrency(ledger.openingBalance)}}</span></span>
+                <span>إجمالي مدين: <span class="text-success">{{formatCurrency(ledger.totalDebit)}}</span></span>
+                <span>إجمالي دائن: <span class="text-danger">{{formatCurrency(ledger.totalCredit)}}</span></span>
+                <span class="ms-auto">الرصيد الختامي: <span class="text-balance">{{formatCurrency(ledger.closingBalance)}}</span></span>
+            </div>
 
-      <ng-template pTemplate="loadingbody">
-        <tr>
-          <td colspan="7" class="text-center p-6">
-            <p-progressSpinner strokeWidth="3"></p-progressSpinner>
-            <p class="mt-3 text-lg">جاري تحميل البيانات...</p>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
+            <!-- Detailed Table -->
+            <p-table 
+                [value]="ledger.entries" 
+                styleClass="p-datatable-sm micro-table" 
+                responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 80px">التاريخ</th>
+                        <th style="width: 60px">القيد</th>
+                        <th>البيان</th>
+                        <th style="width: 100px">مدين (+)</th>
+                        <th style="width: 100px">دائن (-)</th>
+                        <th style="width: 120px">الرصيد</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-entry>
+                    <tr>
+                        <td class="text-center">{{entry.date | date:'dd/MM/yy'}}</td>
+                        <td class="text-center">#{{entry.journalEntryId}}</td>
+                        <td>{{entry.description}}</td>
+                        <td class="text-end">
+                            <span class="text-debit" *ngIf="entry.debit > 0">{{formatCurrency(entry.debit)}}</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="text-credit" *ngIf="entry.credit > 0">{{formatCurrency(entry.credit)}}</span>
+                        </td>
+                        <td class="text-end text-balance fw-bold">{{formatCurrency(entry.runningBalance)}}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="footer">
+                    <tr>
+                        <td colspan="3" class="text-end">إجمالي الحركات:</td>
+                        <td class="text-end text-debit">{{formatCurrency(ledger.totalDebit)}}</td>
+                        <td class="text-end text-credit">{{formatCurrency(ledger.totalCredit)}}</td>
+                        <td class="text-end text-balance">{{formatCurrency(ledger.closingBalance)}}</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="allLedgers().length === 0">
+            <i class="pi pi-inbox mb-2" style="font-size: 2rem;"></i>
+            <p>لا توجد حركات مالية مسجلة في هذه الفترة</p>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="text-center p-5" *ngIf="loading()">
+        <p-progressSpinner strokeWidth="4" fill="transparent" styleClass="w-3rem h-3rem"></p-progressSpinner>
+        <p class="mt-2 text-muted">جاري تجميع دفاتر الأستاذ لكافة الحسابات...</p>
+    </div>
 </div>
 
-<p-toast></p-toast>
+<p-toast position="bottom-left"></p-toast>

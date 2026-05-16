@@ -91,7 +91,7 @@ public class FinancialService : IFinancialService
         // 5. إعادة حساب وتحديث الرصيد من الحركات
         var newBalance = await _unitOfWork.Financials.CalculateBalanceAsync(accountId);
         account.Balance = newBalance;
-        account.LastUpdated = DateTime.UtcNow;
+        account.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.Financials.UpdateAccountAsync(account);
         await _unitOfWork.SaveChangesAsync();
 

@@ -83,6 +83,15 @@ namespace SmartPharmacySystem.Infrastructure
         private IPriceOverrideRepository? _priceOverrides;
         public IPriceOverrideRepository PriceOverrides => _priceOverrides ??= new PriceOverrideRepository(_context);
 
+        private IAccountRepository? _accounts;
+        public IAccountRepository Accounts => _accounts ??= new AccountRepository(_context);
+
+        private IJournalEntryRepository? _journalEntries;
+        public IJournalEntryRepository JournalEntries => _journalEntries ??= new JournalEntryRepository(_context);
+
+        private IChequeRepository? _cheques;
+        public IChequeRepository Cheques => _cheques ??= new ChequeRepository(_context);
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

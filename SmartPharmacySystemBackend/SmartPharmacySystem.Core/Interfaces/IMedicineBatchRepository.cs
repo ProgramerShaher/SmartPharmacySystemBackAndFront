@@ -1,4 +1,4 @@
-﻿using SmartPharmacySystem.Core.Entities;
+using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Interfaces;
@@ -45,6 +45,12 @@ public interface IMedicineBatchRepository
     /// </summary>
     Task<MedicineBatch?> GetByBarcodeAsync(string barcode);
     Task<MedicineBatch?> GetByBarcodeAndExpiryAsync(string barcode, DateTime expiryDate);
+
+    /// <summary>
+    /// Gets a medicine batch by its company batch number.
+    /// يحصل على دفعة دواء برقم دفعة الشركة لمنع التكرار.
+    /// </summary>
+    Task<MedicineBatch?> GetByCompanyBatchNumberAsync(string companyBatchNumber);
 
     /// <summary>
     /// Gets a medicine batch by medicine ID and batch number (unique combination).

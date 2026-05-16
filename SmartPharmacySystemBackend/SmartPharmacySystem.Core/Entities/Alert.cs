@@ -11,9 +11,8 @@ public class Alert(
     AlertType alertType,
     AlertSeverity severity,
     string message,
-    DateTime? expiryDateSnapshot = null)
+    DateTime? expiryDateSnapshot = null) : BaseEntity
 {
-    public int Id { get; set; }
     public int BatchId { get; set; } = batchId;
     public AlertType AlertType { get; set; } = alertType;
     public AlertSeverity Severity { get; set; } = severity;
@@ -21,8 +20,6 @@ public class Alert(
     public DateTime? ExpiryDateSnapshot { get; set; } = expiryDateSnapshot;
 
     public bool IsRead { get; set; } = false;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public bool IsDeleted { get; set; } = false;
 
     // Navigation property
     public MedicineBatch Batch { get; set; } = null!;

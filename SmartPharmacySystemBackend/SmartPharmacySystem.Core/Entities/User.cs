@@ -7,13 +7,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a user in the pharmacy management system.
 /// Users can perform various operations like sales, purchases, and inventory management.
 /// </summary>
-public class User
+public class User : BaseEntity
 {
-    /// <summary>
-    /// Unique identifier for the user.
-    /// </summary>
-    [Key]
-    public int Id { get; set; }
 
     /// <summary>
     /// الاسم الكامل للمستخدم
@@ -86,23 +81,6 @@ public class User
     /// </summary>
     public DateTime? LastLogin { get; set; }
 
-    /// <summary>
-    /// تاريخ إنشاء المستخدم
-    /// Date and time when the user was created.
-    /// </summary>
-    public DateTime CreatedAt { get; set; }
-
-    /// <summary>
-    /// معرف المستخدم الذي أنشأ هذا السجل
-    /// ID of the user who created this record.
-    /// </summary>
-    public int? CreatedBy { get; set; }
-
-    /// <summary>
-    /// علامة الحذف المنطقي
-    /// Soft delete flag.
-    /// </summary>
-    public bool IsDeleted { get; set; }
 
     // Navigation Properties
 

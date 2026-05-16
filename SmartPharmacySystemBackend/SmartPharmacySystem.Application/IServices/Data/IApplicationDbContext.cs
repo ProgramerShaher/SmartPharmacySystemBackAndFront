@@ -32,6 +32,10 @@ public interface IApplicationDbContext
     DbSet<SupplierPayment> SupplierPayments { get; }
     DbSet<OnlineOrder> OnlineOrders { get; }
     DbSet<OnlineOrderItem> OnlineOrderItems { get; }
+    DbSet<Account> Accounts { get; }
+    DbSet<JournalEntry> JournalEntries { get; }
+    DbSet<JournalEntryLine> JournalEntryLines { get; }
+    DbSet<Cheque> Cheques { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

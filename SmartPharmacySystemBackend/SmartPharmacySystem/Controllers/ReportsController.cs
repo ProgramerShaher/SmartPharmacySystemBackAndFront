@@ -308,4 +308,27 @@ public class ReportsController : ControllerBase
 
         return sb.ToString();
     }
+
+    // ===================== القوائم المالية النهائية - Financial Statements =====================
+
+    [HttpGet("trial-balance")]
+    public async Task<IActionResult> GetTrialBalance([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+    {
+        var result = await _reportService.GetTrialBalanceAsync(fromDate, toDate);
+        return Ok(ApiResponse<TrialBalanceDto>.Succeeded(result, "تم جلب ميزان المراجعة بنجاح"));
+    }
+
+    [HttpGet("income-statement")]
+    public async Task<IActionResult> GetIncomeStatement([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+    {
+        var result = await _reportService.GetIncomeStatementAsync(fromDate, toDate);
+        return Ok(ApiResponse<IncomeStatementDto>.Succeeded(result, "تم جلب قائمة الدخل بنجاح"));
+    }
+
+    [HttpGet("balance-sheet")]
+    public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime date)
+    {
+        var result = await _reportService.GetBalanceSheetAsync(date);
+        return Ok(ApiResponse<BalanceSheetDto>.Succeeded(result, "تم جلب الميزانية العمومية بنجاح"));
+    }
 }

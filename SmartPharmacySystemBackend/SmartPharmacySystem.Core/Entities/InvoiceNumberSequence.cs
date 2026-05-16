@@ -4,12 +4,8 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a sequence for invoice numbering.
 /// Tracks the last used number for a specific type and year.
 /// </summary>
-public class InvoiceNumberSequence
+public class InvoiceNumberSequence : BaseEntity
 {
-    /// <summary>
-    /// Primary key for the sequence.
-    /// </summary>
-    public int Id { get; set; }
 
     /// <summary>
     /// Type of invoice (e.g., "SI" for Sale Invoice, "PI" for Purchase Invoice).

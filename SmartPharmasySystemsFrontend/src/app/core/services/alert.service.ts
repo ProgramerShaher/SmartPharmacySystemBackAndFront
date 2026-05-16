@@ -12,6 +12,7 @@ import {
     AlertStatus
 } from '../models/alert.interface';
 import { ApiResponse, PagedResult } from '../models';
+import { MessageService } from 'primeng/api';
 
 @Injectable({
     providedIn: 'root'
@@ -34,6 +35,7 @@ export class AlertService {
 
     constructor(
         private http: HttpClient,
+        private messageService: MessageService,
         @Inject(PLATFORM_ID) private platformId: Object
     ) {
         if (isPlatformBrowser(this.platformId)) {
@@ -80,11 +82,30 @@ export class AlertService {
 
         return this.getAllAlerts(query).pipe(
             tap(alerts => {
+                const previousCount = this.unreadCount();
                 this.unreadAlertsSubject.next(alerts);
                 this.unreadCount.set(alerts.length);
+
+                // Show toast for new alerts
+                if (alerts.length > previousCount && previousCount >= 0) {
+                    const newAlert = alerts[0];
+                    this.messageService.add({
+                        severity: this.getSeverity(newAlert.alertType),
+                        summary: 'تنبيه جديد',
+                        detail: newAlert.message,
+                        life: 6000
+                    });
+                }
             }),
             catchError(() => of([] as Alert[]))
         );
+    }
+
+    private getSeverity(type: any): string {
+        const t = type?.toString() || '';
+        if (t.includes('Critical') || t.includes('OneWeek')) return 'error';
+        if (t.includes('Warning') || t.includes('TwoWeeks') || t.includes('LowStock')) return 'warn';
+        return 'info';
     }
 
     /**

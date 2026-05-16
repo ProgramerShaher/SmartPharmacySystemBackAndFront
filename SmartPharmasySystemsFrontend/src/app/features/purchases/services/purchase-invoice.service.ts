@@ -152,9 +152,20 @@ export class PurchaseInvoiceService {
     }
 
     /**
+     * Create a quick purchase (direct supply) for a single medicine
+     * @param dto QuickPurchaseDto
+     * @returns Observable<PurchaseInvoice>
+     */
+    quickPurchase(dto: any): Observable<PurchaseInvoice> {
+        return this.http.post<ApiResponse<PurchaseInvoice>>(`${this.apiUrl}/quick-purchase`, dto)
+            .pipe(
+                map(response => response.data),
+                catchError(this.handleError)
+            );
+    }
+
+    /**
      * Delete purchase invoice (soft delete)
-     * @param id Invoice ID
-     * @returns Observable<void>
      */
     delete(id: number): Observable<void> {
         return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`)

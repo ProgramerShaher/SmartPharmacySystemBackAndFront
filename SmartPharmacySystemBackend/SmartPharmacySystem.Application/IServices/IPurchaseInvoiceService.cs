@@ -17,6 +17,7 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task CancelAsync(int id, int userId);
         Task PayCreditInvoiceAsync(int invoiceId, int accountId = 1);
         Task<DTOs.Dashboard.PurchasesDashboardStatsDto> GetDashboardStatsAsync();
+        Task<PurchaseInvoiceDto> CreateQuickPurchaseAsync(DTOs.PurchaseInvoice.QuickPurchaseDto dto, int userId);
         Task<BarcodeResultDto> ProcessBarcodeItemAsync(string barcode, int userId);
     }
 }

@@ -171,7 +171,7 @@ namespace SmartPharmacySystem.Application.Services
                     m.MovementType,
                     m.ReferenceType,
                     m.Quantity,
-                    m.Date,
+                    Date = m.Date == default ? m.CreatedAt : m.Date,
                     m.ReferenceId,
                     m.ReferenceNumber,
                     m.CreatedBy,
@@ -302,7 +302,7 @@ namespace SmartPharmacySystem.Application.Services
                 runningBalance += mov.Quantity;
                 result.Add(new StockCardDto
                 {
-                    Date = mov.Date,
+                    Date = mov.Date == default ? mov.CreatedAt : mov.Date,
                     MovementType = mov.MovementType,
                     QuantityChange = mov.Quantity,
                     ReferenceNumber = mov.ReferenceNumber,
@@ -358,10 +358,6 @@ namespace SmartPharmacySystem.Application.Services
 
                 if (batch.IsExpired)
                     throw new InvalidOperationException($"فشل العملية: التشغيلة رقم {batch.CompanyBatchNumber} منتهية الصلاحية.");
-
-                // Validate Stock - REMOVED: Redundant. SaleInvoiceService already validates against MedicineBatch.RemainingQuantity.
-                // Relying on InventoryMovements sum causes errors if history is out of sync.
-                // await ValidateStockAvailability(detail.MedicineId, detail.BatchId, detail.Quantity);
 
                 var mov = new InventoryMovement(
                     detail.MedicineId,

@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 
+using SmartPharmacySystem.Application.DTOs.PurchaseInvoice;
+
 namespace SmartPharmacySystem.Controllers
 {
     [Route("api/[controller]")]
@@ -199,6 +201,26 @@ namespace SmartPharmacySystem.Controllers
         {
             var stats = await _service.GetDashboardStatsAsync();
             return Ok(ApiResponse<SmartPharmacySystem.Application.DTOs.Dashboard.PurchasesDashboardStatsDto>.Succeeded(stats, "تم جلب إحصائيات المشتريات"));
+        }
+
+        // -------------------------------------------------------------
+        // Quick Purchase (Direct Batch Supply)
+        // -------------------------------------------------------------
+        [HttpPost("quick-purchase")]
+        public async Task<IActionResult> CreateQuickPurchase([FromBody] QuickPurchaseDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<object>.Failed("بيانات التوريد غير صحيحة"));
+
+            int userId = 1;
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int parsedId))
+            {
+                userId = parsedId;
+            }
+
+            var created = await _service.CreateQuickPurchaseAsync(dto, userId);
+            return StatusCode(201, ApiResponse<PurchaseInvoiceDto>.Succeeded(created, "تم التوريد السريع وتحديث المخزون والمالية بنجاح", 201));
         }
     }
 }

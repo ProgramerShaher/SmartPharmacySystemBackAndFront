@@ -64,6 +64,7 @@ public class InventoryMovement : BaseEntity
         MovementType = movementType;
         ReferenceType = referenceType;
         Quantity = quantity;
+        Date = DateTime.UtcNow;
         ReferenceId = referenceId;
         ReferenceNumber = referenceNumber;
         CreatedBy = createdBy;

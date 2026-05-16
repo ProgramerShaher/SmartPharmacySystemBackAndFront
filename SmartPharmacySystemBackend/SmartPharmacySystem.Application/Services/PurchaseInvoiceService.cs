@@ -529,6 +529,175 @@ namespace SmartPharmacySystem.Application.Services
             };
         }
 
+        public async Task<PurchaseInvoiceDto> CreateQuickPurchaseAsync(QuickPurchaseDto dto, int userId)
+        {
+            _logger.LogInformation("Creating Quick Purchase for medicine {MedicineId} by user {UserId}", dto.MedicineId, userId);
+
+            // 1. Validation
+            if (dto.ExpiryDate.Date < DateTime.Today)
+                throw new InvalidOperationException($"عذراً، تاريخ الانتهاء ({dto.ExpiryDate:yyyy-MM-dd}) غير صالح (قديم).");
+
+            if (dto.SalePrice < dto.PurchasePrice)
+                throw new InvalidOperationException($"عذراً، سعر البيع ({dto.SalePrice}) أقل من سعر الشراء ({dto.PurchasePrice}).");
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                // 2. Create the Invoice Header
+                var invoice = new PurchaseInvoice
+                {
+                    SupplierId = dto.SupplierId, // Can be null for cash
+                    PurchaseDate = DateTime.UtcNow,
+                    PaymentMethod = dto.PaymentMethod,
+                    Notes = dto.Notes ?? "توريد سريع من قائمة الأدوية",
+                    Status = DocumentStatus.Approved, // Auto-Approve
+                    CreatedBy = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    ApprovedBy = userId,
+                    ApprovedAt = DateTime.UtcNow,
+                    PurchaseInvoiceNumber = await _invoiceNumberGenerator.GeneratePurchaseInvoiceNumberAsync()
+                };
+
+                // 3. Resolve Batch (Find or Create)
+                int batchId = await GetOrCreateBatchIdAsync(dto.MedicineId, dto.BatchBarcode, dto.CompanyBatchNumber, dto.ExpiryDate, userId);
+
+                // 4. Create Invoice Detail
+                var detail = new PurchaseInvoiceDetail
+                {
+                    MedicineId = dto.MedicineId,
+                    BatchId = batchId,
+                    Quantity = dto.Quantity,
+                    BonusQuantity = dto.BonusQuantity,
+                    PurchasePrice = dto.PurchasePrice,
+                    SalePrice = dto.SalePrice,
+                    Total = dto.Quantity * dto.PurchasePrice
+                };
+
+                invoice.PurchaseInvoiceDetails = new List<PurchaseInvoiceDetail> { detail };
+                invoice.TotalAmount = detail.Total;
+
+                // 5. Apply Approval Logic (Same as ApproveAsync)
+                var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(batchId)
+                    ?? throw new KeyNotFoundException($"الدفعة {batchId} غير موجودة");
+
+                batch.Quantity += (detail.Quantity + detail.BonusQuantity);
+                batch.RemainingQuantity += (detail.Quantity + detail.BonusQuantity);
+                batch.Status = "Active";
+
+                // Cost Calculation
+                decimal trueUnitCost = detail.Total / (detail.Quantity + detail.BonusQuantity);
+                batch.UnitPurchasePrice = trueUnitCost;
+                batch.RetailPrice = detail.SalePrice;
+                batch.PurchaseInvoiceId = 0; // Temporary, will set after invoice is saved
+                detail.TrueUnitCost = trueUnitCost;
+
+                await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+
+                // Update Medicine MAC & Default Pricing
+                var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
+                if (medicine != null)
+                {
+                    int totalStock = await _unitOfWork.MedicineBatches.GetTotalQuantityAsync(medicine.Id);
+                    decimal oldVal = Math.Max(0, (totalStock - detail.Quantity - detail.BonusQuantity) * medicine.MovingAverageCost);
+                    decimal newVal = oldVal + (detail.Total);
+                    medicine.MovingAverageCost = totalStock > 0 ? newVal / totalStock : trueUnitCost;
+
+                    medicine.DefaultSalePrice = detail.SalePrice;
+                    medicine.DefaultPurchasePrice = detail.PurchasePrice;
+
+                    await _unitOfWork.Medicines.UpdateAsync(medicine);
+                }
+
+                // 6. Accounting (Journal Entry)
+                var journalEntry = new JournalEntryDto
+                {
+                    EntryDate = invoice.PurchaseDate,
+                    VoucherNumber = invoice.PurchaseInvoiceNumber,
+                    Description = $"قيد توريد سريع - فاتورة رقم: {invoice.PurchaseInvoiceNumber} - الصنف: {medicine?.Name}",
+                    Type = VoucherType.PurchaseInvoice,
+                    Lines = new List<JournalEntryLineDto>()
+                };
+
+                // Debit: Stock (1301)
+                journalEntry.Lines.Add(new JournalEntryLineDto
+                {
+                    AccountId = 1301,
+                    Debit = invoice.TotalAmount,
+                    Credit = 0,
+                    Description = $"توريد سريع للمخزون - {medicine?.Name}"
+                });
+
+                // Credit: Cash or Supplier
+                if (invoice.PaymentMethod == PaymentType.Cash)
+                {
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 1101,
+                        Debit = 0,
+                        Credit = invoice.TotalAmount,
+                        Description = $"صرف نقدي لتوريد سريع - {medicine?.Name}"
+                    });
+                    invoice.IsPaid = true;
+                }
+                else
+                {
+                    if (invoice.SupplierId <= 0) throw new InvalidOperationException("يجب اختيار مورد للشراء الآجل.");
+                    
+                    var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId)
+                        ?? throw new KeyNotFoundException("المورد غير موجود");
+                    
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = supplier.AccountId ?? 2101,
+                        Debit = 0,
+                        Credit = invoice.TotalAmount,
+                        Description = $"توريد آجل سريع - {medicine?.Name}"
+                    });
+                    
+                    supplier.Balance += invoice.TotalAmount;
+                    await _unitOfWork.Suppliers.UpdateAsync(supplier);
+                    invoice.IsPaid = false;
+                }
+
+                // Save Invoice and get ID
+                await _unitOfWork.PurchaseInvoices.AddAsync(invoice);
+                await _unitOfWork.SaveChangesAsync();
+
+                // Update Batch with Invoice ID
+                batch.PurchaseInvoiceId = invoice.Id;
+                await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+
+                // Save Journal Entry
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
+
+                // Record Stock Movement
+                await _unitOfWork.SaveChangesAsync();
+                await _stockMovementService.ProcessDocumentMovementsAsync(invoice.Id, ReferenceType.PurchaseInvoice);
+
+                await _unitOfWork.CommitAsync();
+
+                // 7. Sync Alerts (New Batch might be near expiry)
+                try
+                {
+                    await _alertService.SyncMedicineAlertsAsync(dto.MedicineId);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to sync alerts for medicine {MedicineId} after quick purchase", dto.MedicineId);
+                }
+
+                var finalInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(invoice.Id);
+                return _mapper.Map<PurchaseInvoiceDto>(finalInvoice);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError(ex, "Error during Quick Purchase for medicine {MedicineId}", dto.MedicineId);
+                throw;
+            }
+        }
+
         public async Task<BarcodeResultDto> ProcessBarcodeItemAsync(string barcode, int userId)
         {
             _logger.LogInformation("Processing barcode {Barcode} for purchase by user {UserId}", barcode, userId);

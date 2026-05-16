@@ -172,7 +172,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
             extraMatches: ['/system-alerts'],
             children: [
                 { label: 'المستخدمين والصلاحيات', route: '/users', icon: 'pi pi-id-card' },
-                { label: 'التنبيهات', route: '/system-alerts', icon: 'pi pi-bell', alert: true }
+                { label: 'التنبيهات', route: '/system-alerts', icon: 'pi pi-bell', alert: true },
+                { label: 'إعدادات الصيدلية', route: '/settings', icon: 'pi pi-cog' }
             ]
         }
     ];

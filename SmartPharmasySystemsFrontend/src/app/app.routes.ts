@@ -68,6 +68,10 @@ export const routes: Routes = [
             {
                 path: 'accounting',
                 loadChildren: () => import('./features/accounting/accounting.routes').then(m => m.ACCOUNTING_ROUTES)
+            },
+            {
+                path: 'settings',
+                loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES)
             }
         ]
     },

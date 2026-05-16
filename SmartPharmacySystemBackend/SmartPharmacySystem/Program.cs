@@ -113,6 +113,7 @@ builder.Services.AddScoped<IMasterDashboardService, MasterDashboardService>(); /
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
 builder.Services.AddScoped<IChequeService, ChequeService>();
+builder.Services.AddScoped<IPharmacySettingsService, PharmacySettingsService>();
 
 // -------------------- Mobile App Services --------------------
 builder.Services.AddScoped<IOnlineOrderService, OnlineOrderService>();

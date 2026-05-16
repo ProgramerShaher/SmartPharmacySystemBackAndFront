@@ -23,6 +23,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<User> Users { get; set; } = null!;
     public DbSet<Role> Roles { get; set; } = null!;
     public DbSet<Category> Categories { get; set; } = null!;
+    public DbSet<PharmacySettings> PharmacySettings { get; set; } = null!;
     public DbSet<Medicine> Medicines { get; set; } = null!;
     public DbSet<MedicineBatch> MedicineBatches { get; set; } = null!;
     public DbSet<Supplier> Suppliers { get; set; } = null!;

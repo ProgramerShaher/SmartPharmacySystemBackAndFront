@@ -7,8 +7,11 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CalendarModule } from 'primeng/calendar';
 import { MessageService } from 'primeng/api';
+import { DropdownModule } from 'primeng/dropdown';
 import { MedicineBatchService } from '../../services/medicine-batch.service';
-import { CreateMedicineBatchDto, UpdateMedicineBatchDto, MedicineBatchResponseDto } from '../../../../core/models';
+import { PurchaseInvoiceService } from '../../../purchases/services/purchase-invoice.service';
+import { SupplierService } from '../../../partners/services/supplier.service';
+import { CreateMedicineBatchDto, UpdateMedicineBatchDto, MedicineBatchResponseDto, Supplier } from '../../../../core/models';
 
 @Component({
   selector: 'app-batch-add-edit',
@@ -20,11 +23,13 @@ import { CreateMedicineBatchDto, UpdateMedicineBatchDto, MedicineBatchResponseDt
     ButtonModule, 
     InputTextModule, 
     InputNumberModule, 
-    CalendarModule
+    CalendarModule,
+    DropdownModule
   ],
   templateUrl: './batch-add-edit.component.html',
   styles: [`
     :host { display: block; }
+    .required::after { content: " *"; color: red; }
   `]
 })
 export class BatchAddEditComponent implements OnInit {
@@ -37,43 +42,64 @@ export class BatchAddEditComponent implements OnInit {
 
   form: FormGroup;
   loading = signal(false);
+  suppliers: Supplier[] = [];
+  paymentMethods = [
+    { label: 'نقداً (Cash)', value: 1 },
+    { label: 'آجل (Credit)', value: 2 }
+  ];
 
   constructor(
     private fb: FormBuilder,
     private batchService: MedicineBatchService,
+    private purchaseService: PurchaseInvoiceService,
+    private supplierService: SupplierService,
     private messageService: MessageService
   ) {
     this.form = this.fb.group({
       companyBatchNumber: ['', Validators.required],
       expiryDate: [null, Validators.required],
       quantity: [null, [Validators.required, Validators.min(1)]],
+      bonusQuantity: [0, [Validators.min(0)]],
       unitPurchasePrice: [null, [Validators.required, Validators.min(0)]],
       retailPrice: [null, [Validators.required, Validators.min(0)]],
       batchBarcode: [''],
-      storageLocation: ['']
+      storageLocation: [''],
+      supplierId: [null],
+      paymentMethod: [1, Validators.required],
+      notes: ['']
     });
   }
 
   ngOnInit() {
+    this.loadSuppliers();
     if (this.batch) {
       this.form.patchValue({
         companyBatchNumber: this.batch.companyBatchNumber,
         expiryDate: new Date(this.batch.expiryDate),
-        quantity: this.batch.quantity, // Note: Creating usually sets Init Qty, Editing might be different logic.
+        quantity: this.batch.quantity,
         unitPurchasePrice: this.batch.unitPurchasePrice,
         retailPrice: this.batch.retailPrice,
         batchBarcode: this.batch.batchBarcode,
         storageLocation: this.batch.storageLocation
       });
-      // Disable quantity editing if it's existing batch (usually handled via adjustments)
       this.form.get('quantity')?.disable();
+      this.form.get('bonusQuantity')?.disable();
+      this.form.get('supplierId')?.disable();
+      this.form.get('paymentMethod')?.disable();
     }
+  }
+
+  loadSuppliers() {
+    this.supplierService.getAll({ pageSize: 1000 }).subscribe({
+      next: (res) => this.suppliers = res.items,
+      error: (err) => console.error('Failed to load suppliers', err)
+    });
   }
 
   close() {
     this.visible = false;
     this.visibleChange.emit(false);
-    this.form.reset();
+    this.form.reset({ paymentMethod: 1, bonusQuantity: 0 });
   }
 
   save() {
@@ -87,7 +113,7 @@ export class BatchAddEditComponent implements OnInit {
     }
 
     this.loading.set(true);
-    const val = this.form.value;
+    const val = this.form.getRawValue();
 
     // Adjust Date to ISO
     const expiryDate = val.expiryDate instanceof Date ? val.expiryDate.toISOString() : val.expiryDate;
@@ -108,19 +134,23 @@ export class BatchAddEditComponent implements OnInit {
             error: (err) => this.handleError(err)
         });
     } else {
-        const payload: CreateMedicineBatchDto = {
+        // QUICK PURCHASE LOGIC (Exactly like Purchase Invoice)
+        const payload = {
             medicineId: this.medicineId,
             companyBatchNumber: val.companyBatchNumber,
             expiryDate: expiryDate,
             quantity: val.quantity,
-            unitPurchasePrice: val.unitPurchasePrice,
-            retailPrice: val.retailPrice,
+            bonusQuantity: val.bonusQuantity || 0,
+            purchasePrice: val.unitPurchasePrice,
+            salePrice: val.retailPrice,
             batchBarcode: val.batchBarcode,
-            storageLocation: val.storageLocation
+            supplierId: val.supplierId,
+            paymentMethod: val.paymentMethod,
+            notes: val.notes
         };
 
-        this.batchService.create(payload).subscribe({
-            next: () => this.handleSuccess('تم إضافة الدفعة بنجاح'),
+        this.purchaseService.quickPurchase(payload).subscribe({
+            next: () => this.handleSuccess('تم التوريد وتحديث المخزون والمالية بنجاح'),
             error: (err) => this.handleError(err)
         });
     }
@@ -128,7 +158,7 @@ export class BatchAddEditComponent implements OnInit {
 
   private handleSuccess(msg: string) {
     this.loading.set(false);
-    this.messageService.add({ severity: 'success', summary: 'نجاح', detail: msg });
+    this.messageService.add({ severity: 'success', summary: 'نجاح التوريد', detail: msg });
     this.onSave.emit();
     this.close();
   }
@@ -136,6 +166,6 @@ export class BatchAddEditComponent implements OnInit {
   private handleError(err: any) {
     this.loading.set(false);
     console.error(err);
-    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'حدث خطأ غير متوقع' });
+    this.messageService.add({ severity: 'error', summary: 'خطأ في التوريد', detail: err.error?.message || 'حدث خطأ غير متوقع' });
   }
 }

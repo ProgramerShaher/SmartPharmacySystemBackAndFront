@@ -11,6 +11,7 @@
     .medicine-dialog {
         border-radius: 20px;
         overflow: hidden;
+        max-height: 92vh;
         box-shadow: 0 30px 90px rgba(15, 23, 42, 0.24);
     }
 
@@ -19,6 +20,7 @@
         border-radius: 20px;
         overflow: hidden;
         background: #ffffff;
+        max-height: 92vh;
     }
 
     .medicine-dialog .p-inputtext,
@@ -56,12 +58,16 @@
 }
 
 .modal-shell {
+    display: flex;
+    flex-direction: column;
+    max-height: 92vh;
     background: #ffffff;
     color: #0f172a;
 }
 
 .modal-header {
     position: relative;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -116,6 +122,9 @@
 }
 
 .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
     display: grid;
     grid-template-columns: 220px minmax(0, 1fr);
     gap: 1rem;
@@ -250,6 +259,10 @@
 }
 
 .modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -285,8 +298,6 @@
 @media (max-width: 860px) {
     .modal-body {
         grid-template-columns: 1fr;
-        max-height: 72vh;
-        overflow-y: auto;
     }
 
     .media-panel {

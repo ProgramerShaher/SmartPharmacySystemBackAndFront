@@ -21,6 +21,7 @@ using SmartPharmacySystem.Application.DTOs.Financial;
 using SmartPharmacySystem.Application.DTOs.Role;
 using SmartPharmacySystem.Application.DTOs.StockMovement;
 using SmartPharmacySystem.Application.DTOs.SupplierPayments;
+using SmartPharmacySystem.Application.DTOs.Settings;
 
 namespace SmartPharmacySystem.Application.Mapping
 {
@@ -467,6 +468,10 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<Cheque, ChequeDto>()
                 .ForMember(dest => dest.BankAccountName, opt => opt.MapFrom(src => src.BankAccount != null ? src.BankAccount.Name : string.Empty))
                 .ReverseMap();
+
+            // Pharmacy Settings Mappings
+            CreateMap<PharmacySettings, PharmacySettingsDto>().ReverseMap();
+            CreateMap<UpdatePharmacySettingsDto, PharmacySettings>();
         }
     }
 }

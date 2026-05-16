@@ -27,9 +27,9 @@ namespace SmartPharmacySystem.Controllers
         // Get All
         // -------------------------------------------------------------
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] AlertQueryDto query)
         {
-            var alerts = await _alertService.GetAllAsync();
+            var alerts = await _alertService.SearchAsync(query);
             if (alerts == null || !alerts.Any())
                 return Ok(ApiResponse<IEnumerable<AlertDto>>.Succeeded(new List<AlertDto>(), "لا توجد تنبيهات"));
 

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.DTOs.Alerts;
@@ -13,12 +13,44 @@ namespace SmartPharmacySystem.Application.Services
         IMedicineBatchRepository batchRepository,
         ILogger<AlertService> logger,
         IMapper mapper,
-        IUnitOfWork unitOfWork) : IAlertService
+        IUnitOfWork unitOfWork,
+        IMedicineBatchService medicineBatchService,
+        INotificationService notificationService) : IAlertService
     {
         public async Task<IEnumerable<AlertDto>> GetAllAsync()
         {
             var alerts = await alertRepository.GetAllAsync();
             return mapper.Map<IEnumerable<AlertDto>>(alerts);
+        }
+
+        public async Task<IEnumerable<AlertDto>> SearchAsync(AlertQueryDto query)
+        {
+            IEnumerable<Alert> alerts;
+
+            if (query.Status.HasValue)
+            {
+                var isRead = query.Status == AlertStatus.Read;
+                alerts = await alertRepository.GetByReadStatusAsync(isRead);
+            }
+            else if (query.IsRead.HasValue)
+            {
+                alerts = await alertRepository.GetByReadStatusAsync(query.IsRead.Value);
+            }
+            else
+            {
+                alerts = await alertRepository.GetAllAsync();
+            }
+            
+            // Filtering logic
+            var filtered = alerts.AsQueryable();
+
+            if (query.Severity.HasValue)
+                filtered = filtered.Where(a => a.Severity == query.Severity.Value);
+
+            if (query.BatchId.HasValue)
+                filtered = filtered.Where(a => a.BatchId == query.BatchId.Value);
+
+            return mapper.Map<IEnumerable<AlertDto>>(filtered.ToList());
         }
 
         public async Task<AlertDto> GetByIdAsync(int id)
@@ -85,42 +117,102 @@ namespace SmartPharmacySystem.Application.Services
         {
             var batches = await batchRepository.GetExpiringBatchesAsync();
             var today = DateTime.UtcNow.Date;
+            bool added = false;
+
             foreach (var batch in batches.Where(b => !b.IsDeleted))
             {
                 var daysLeft = (batch.ExpiryDate.Date - today).Days;
+                
+                // If strictly expired, process financial loss (auto-scrap)
+                if (daysLeft <= 0 && batch.RemainingQuantity > 0 && batch.Status != "Scrapped")
+                {
+                    try {
+                        await medicineBatchService.ProcessFinancialLossAsync(batch.Id);
+                        added = true;
+                        continue; // No need for expiry alert if scrapped
+                    } catch (Exception ex) {
+                        logger.LogError(ex, "Failed to auto-scrap expired batch {BatchId}", batch.Id);
+                    }
+                }
+
                 if (daysLeft <= 30)
                 {
+                    // Check if unread alert already exists
+                    var existing = await alertRepository.GetByBatchIdAsync(batch.Id);
+                    if (existing.Any(a => !a.IsRead && (int)a.AlertType >= (int)AlertType.ExpiryTwoWeeks)) continue;
+
                     var severity = daysLeft <= 0 ? AlertSeverity.Critical : AlertSeverity.Warning;
-                    var alert = new Alert(batch.Id, daysLeft <= 0 ? AlertType.Expired : AlertType.ExpiryOneMonth, severity, $"Medicine {batch.Medicine?.Name} is expiring soon.", batch.ExpiryDate);
+                    var type = daysLeft <= 0 ? AlertType.Expired : (daysLeft <= 7 ? AlertType.ExpiryOneWeek : AlertType.ExpiryTwoWeeks);
+                    
+                    var alert = new Alert(batch.Id, type, severity, $"الصنف {batch.Medicine?.Name} تشغيلة {batch.CompanyBatchNumber} سينتهي خلال {daysLeft} يوم.", batch.ExpiryDate);
                     await alertRepository.AddAsync(alert);
+                    added = true;
                 }
             }
-            await unitOfWork.SaveChangesAsync();
+            if (added)
+            {
+                await unitOfWork.SaveChangesAsync();
+                await notificationService.SendNotificationAsync("تنبيه صلاحية", "تم تحديث تنبيهات تاريخ الانتهاء", "warn");
+            }
         }
 
         public async Task GenerateLowStockAlertsAsync()
         {
             var medicines = await unitOfWork.Medicines.GetAllAsync();
+            bool added = false;
             foreach (var med in medicines.Where(m => !m.IsDeleted))
             {
                 var batches = await unitOfWork.MedicineBatches.GetBatchesByMedicineIdAsync(med.Id);
                 var totalQuantity = batches.Where(b => !b.IsDeleted).Sum(b => b.RemainingQuantity);
-                if (totalQuantity < med.MinAlertQuantity)
+                if (totalQuantity <= med.MinAlertQuantity)
                 {
                     var firstBatch = batches.FirstOrDefault();
                     if (firstBatch != null)
                     {
-                        var alert = new Alert(firstBatch.Id, AlertType.LowStock, AlertSeverity.Warning, $"Low stock for {med.Name}. Total: {totalQuantity}", null);
+                        // Check if unread low stock alert exists
+                        var existing = await alertRepository.GetAllAsync(); // Should ideally use a filtered repo method
+                        if (existing.Any(a => !a.IsRead && a.AlertType == AlertType.LowStock && a.Batch?.MedicineId == med.Id)) continue;
+
+                        var alert = new Alert(firstBatch.Id, AlertType.LowStock, AlertSeverity.Warning, $"نقص مخزون: {med.Name}. الرصيد الحالي: {totalQuantity}", null);
                         await alertRepository.AddAsync(alert);
+                        added = true;
                     }
                 }
             }
-            await unitOfWork.SaveChangesAsync();
+            if (added)
+            {
+                await unitOfWork.SaveChangesAsync();
+                await notificationService.SendNotificationAsync("نقص مخزون", "تم رصد أصناف تحت حد الطلب", "error");
+            }
         }
 
         public async Task SyncMedicineAlertsAsync(int medicineId)
         {
-            await Task.CompletedTask;
+            logger.LogInformation("Syncing alerts for medicine {MedicineId}", medicineId);
+            var batches = await unitOfWork.MedicineBatches.GetBatchesByMedicineIdAsync(medicineId);
+            var today = DateTime.UtcNow.Date;
+            bool added = false;
+
+            foreach (var batch in batches.Where(b => !b.IsDeleted && b.RemainingQuantity > 0))
+            {
+                var daysLeft = (batch.ExpiryDate.Date - today).Days;
+                if (daysLeft <= 30)
+                {
+                    var existing = await alertRepository.GetByBatchIdAsync(batch.Id);
+                    if (existing.Any(a => !a.IsRead)) continue;
+
+                    var severity = daysLeft <= 0 ? AlertSeverity.Critical : (daysLeft <= 14 ? AlertSeverity.Warning : AlertSeverity.Info);
+                    var alert = new Alert(batch.Id, AlertType.ExpiryOneMonth, severity, $"تنبيه: {batch.Medicine?.Name} (تشغيلة {batch.CompanyBatchNumber}) سينتهي قريباً.", batch.ExpiryDate);
+                    await alertRepository.AddAsync(alert);
+                    added = true;
+                }
+            }
+            
+            if (added)
+            {
+                await unitOfWork.SaveChangesAsync();
+                await notificationService.SendNotificationAsync("تحديث تنبيهات", "تم إضافة تنبيهات جديدة للصنف", "info");
+            }
         }
 
         private bool IsBatchEligibleForAlert(MedicineBatch batch)

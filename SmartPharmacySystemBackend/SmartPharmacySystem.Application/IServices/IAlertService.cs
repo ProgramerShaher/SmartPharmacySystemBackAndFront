@@ -1,4 +1,4 @@
-﻿// SmartPharmacySystem.Application/Interfaces/IAlertService.cs
+// SmartPharmacySystem.Application/Interfaces/IAlertService.cs
 namespace SmartPharmacySystem.Application.Interfaces;
 
 using SmartPharmacySystem.Application.DTOs.Alerts;
@@ -7,6 +7,7 @@ using SmartPharmacySystem.Core.Enums;
 public interface IAlertService
 {
     Task<IEnumerable<AlertDto>> GetAllAsync();
+    Task<IEnumerable<AlertDto>> SearchAsync(AlertQueryDto query);
     Task<AlertDto> GetByIdAsync(int id);
 
     Task<AlertDto> CreateAsync(CreateAlertDto dto);

@@ -9,56 +9,79 @@
 
     <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-column gap-3 mt-3">
         
-        <!-- Company Batch Number -->
-        <div class="field">
-            <label class="font-bold block mb-2 required">رقم الدفعة (التشغيلة)</label>
-            <input pInputText formControlName="companyBatchNumber" placeholder="مثال: LOT-123" />
-            <small *ngIf="form.get('companyBatchNumber')?.invalid && form.get('companyBatchNumber')?.touched" class="p-error block">
-                رقم الدفعة مطلوب
-            </small>
+        <!-- Supplier & Payment Method (Only for new) -->
+        <div class="formgrid grid" *ngIf="!batch">
+            <div class="field col-12 md:col-6">
+                <label class="font-bold block mb-2">المورد (Supplier)</label>
+                <p-dropdown [options]="suppliers" formControlName="supplierId" optionLabel="name" optionValue="id" 
+                    placeholder="اختر المورد (اختياري)" [showClear]="true" [filter]="true" filterBy="name" appendTo="body">
+                </p-dropdown>
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-bold block mb-2 required">طريقة الدفع</label>
+                <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" optionLabel="label" optionValue="value" appendTo="body"></p-dropdown>
+            </div>
         </div>
 
-        <!-- Expiry Date -->
-        <div class="field">
-            <label class="font-bold block mb-2 required">تاريخ الانتهاء</label>
-            <p-calendar formControlName="expiryDate" appendTo="body" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="YYYY-MM-DD"></p-calendar>
-            <small *ngIf="form.get('expiryDate')?.invalid && form.get('expiryDate')?.touched" class="p-error block">
-                تاريخ الانتهاء مطلوب
-            </small>
-        </div>
-
+        <!-- Batch Number & Expiry -->
         <div class="formgrid grid">
-            <!-- Quantity (Only for new) -->
-            <div class="field col-12 md:col-6" *ngIf="!batch">
-                <label class="font-bold block mb-2 required">الكمية الأولية</label>
+            <div class="field col-12 md:col-6">
+                <label class="font-bold block mb-2 required">رقم الدفعة (Batch No)</label>
+                <input pInputText formControlName="companyBatchNumber" placeholder="مثال: LOT-123" />
+                <small *ngIf="form.get('companyBatchNumber')?.invalid && form.get('companyBatchNumber')?.touched" class="p-error block">
+                    رقم الدفعة مطلوب
+                </small>
+            </div>
+            <div class="field col-12 md:col-6">
+                <label class="font-bold block mb-2 required">تاريخ الانتهاء</label>
+                <p-calendar formControlName="expiryDate" appendTo="body" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="YYYY-MM-DD"></p-calendar>
+                <small *ngIf="form.get('expiryDate')?.invalid && form.get('expiryDate')?.touched" class="p-error block">
+                    تاريخ الانتهاء مطلوب
+                </small>
+            </div>
+        </div>
+
+        <!-- Quantity & Bonus -->
+        <div class="formgrid grid" *ngIf="!batch">
+            <div class="field col-12 md:col-6">
+                <label class="font-bold block mb-2 required">الكمية المشتراة</label>
                 <p-inputNumber formControlName="quantity" mode="decimal" [min]="1" [showButtons]="true"></p-inputNumber>
             </div>
-
-            <!-- Storage Location -->
             <div class="field col-12 md:col-6">
-                <label class="font-bold block mb-2">موقع التخزين</label>
-                <input pInputText formControlName="storageLocation" placeholder="رف A-1" />
+                <label class="font-bold block mb-2">كمية البونص (Bonus)</label>
+                <p-inputNumber formControlName="bonusQuantity" mode="decimal" [min]="0" [showButtons]="true"></p-inputNumber>
             </div>
         </div>
 
+        <!-- Prices -->
         <div class="formgrid grid">
-            <!-- Unit Cost -->
             <div class="field col-12 md:col-6">
                 <label class="font-bold block mb-2 required">سعر الشراء (للوحدة)</label>
                 <p-inputNumber formControlName="unitPurchasePrice" mode="currency" currency="YER" [min]="0"></p-inputNumber>
             </div>
-
-            <!-- Sale Price -->
             <div class="field col-12 md:col-6">
                 <label class="font-bold block mb-2 required">سعر البيع (للجمهور)</label>
                 <p-inputNumber formControlName="retailPrice" mode="currency" currency="YER" [min]="0"></p-inputNumber>
             </div>
         </div>
 
-        <!-- Barcode -->
-        <div class="field">
-            <label class="font-bold block mb-2">باركود خاص بالدفعة (اختياري)</label>
-            <input pInputText formControlName="batchBarcode" placeholder="اتركه فارغاً لاستخدام باركود الدواء" />
+        <div class="formgrid grid">
+            <!-- Barcode -->
+            <div class="field col-12 md:col-6">
+                <label class="font-bold block mb-2">باركود الدفعة (اختياري)</label>
+                <input pInputText formControlName="batchBarcode" placeholder="باركود خاص بالدفعة" />
+            </div>
+            <!-- Storage Location -->
+            <div class="field col-12 md:col-6">
+                <label class="font-bold block mb-2">موقع التخزين</label>
+                <input pInputText formControlName="storageLocation" placeholder="مثال: رف A-1" />
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="field" *ngIf="!batch">
+            <label class="font-bold block mb-2">ملاحظات</label>
+            <input pInputText formControlName="notes" placeholder="أضف أي ملاحظات هنا..." />
         </div>
 
     </form>

@@ -92,6 +92,9 @@ namespace SmartPharmacySystem.Infrastructure
         private IChequeRepository? _cheques;
         public IChequeRepository Cheques => _cheques ??= new ChequeRepository(_context);
 
+        private IPharmacySettingsRepository? _pharmacySettings;
+        public IPharmacySettingsRepository PharmacySettings => _pharmacySettings ??= new PharmacySettingsRepository(_context);
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

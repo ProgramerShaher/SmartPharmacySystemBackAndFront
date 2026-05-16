@@ -33,6 +33,7 @@ public interface IUnitOfWork
     IAccountRepository Accounts { get; }
     IJournalEntryRepository JournalEntries { get; }
     IChequeRepository Cheques { get; }
+    IPharmacySettingsRepository PharmacySettings { get; }
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

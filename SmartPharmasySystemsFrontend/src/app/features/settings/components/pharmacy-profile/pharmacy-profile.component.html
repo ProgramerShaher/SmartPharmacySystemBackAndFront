@@ -1,0 +1,138 @@
+<p-toast></p-toast>
+
+<div class="settings-container fade-in" dir="rtl">
+    <div class="settings-header">
+        <div class="header-title">
+            <i class="pi pi-cog"></i>
+            <h2>إعدادات الصيدلية</h2>
+        </div>
+        <button pButton icon="pi pi-save" label="حفظ التغييرات" class="p-button-sm p-button-success"
+            (click)="saveSettings()" [loading]="isSaving"></button>
+    </div>
+
+    <div class="settings-grid" *ngIf="!isLoading">
+        <!-- قسم الشعار والهوية -->
+        <div class="settings-card identity-card">
+            <div class="card-header">
+                <h3><i class="pi pi-id-card"></i> الهوية والشعار</h3>
+            </div>
+            
+            <div class="logo-section">
+                <div class="logo-preview">
+                    <img [src]="currentLogoUrl || 'assets/images/placeholder-logo.png'" alt="شعار الصيدلية" 
+                         (error)="currentLogoUrl = 'assets/images/placeholder-logo.png'">
+                </div>
+                <div class="logo-upload">
+                    <p-fileUpload #fileUpload mode="basic" chooseLabel="تغيير الشعار" chooseIcon="pi pi-upload"
+                        accept="image/*" [maxFileSize]="2000000" (onSelect)="onLogoSelect($event, fileUpload)"
+                        [auto]="true" styleClass="p-button-sm p-button-outlined">
+                    </p-fileUpload>
+                    <small class="help-text">JPG, PNG أو WEBP (الحد الأقصى 2 ميجابايت)</small>
+                </div>
+            </div>
+
+            <form [formGroup]="settingsForm" class="p-fluid form-compact mt-4">
+                <div class="field">
+                    <label for="pharmacyName">اسم الصيدلية <span class="required">*</span></label>
+                    <input id="pharmacyName" type="text" pInputText formControlName="pharmacyName" class="p-inputtext-sm" placeholder="أدخل اسم الصيدلية" />
+                    <small class="p-error" *ngIf="settingsForm.get('pharmacyName')?.invalid && settingsForm.get('pharmacyName')?.touched">
+                        اسم الصيدلية مطلوب
+                    </small>
+                </div>
+
+                <div class="field">
+                    <label for="baseCurrency">عملة النظام الأساسية</label>
+                    <p-dropdown id="baseCurrency" [options]="currencies" formControlName="baseCurrency" 
+                               styleClass="p-inputtext-sm w-full" optionLabel="label" optionValue="value">
+                    </p-dropdown>
+                </div>
+            </form>
+        </div>
+
+        <!-- قسم بيانات التواصل -->
+        <div class="settings-card">
+            <div class="card-header">
+                <h3><i class="pi pi-phone"></i> بيانات التواصل</h3>
+            </div>
+            
+            <form [formGroup]="settingsForm" class="p-fluid form-compact form-grid">
+                <div class="field">
+                    <label for="phoneNumber">رقم الهاتف</label>
+                    <span class="p-input-icon-right">
+                        <i class="pi pi-phone"></i>
+                        <input id="phoneNumber" type="text" pInputText formControlName="phoneNumber" class="p-inputtext-sm" />
+                    </span>
+                </div>
+
+                <div class="field">
+                    <label for="mobileNumber">الجوال</label>
+                    <span class="p-input-icon-right">
+                        <i class="pi pi-mobile"></i>
+                        <input id="mobileNumber" type="text" pInputText formControlName="mobileNumber" class="p-inputtext-sm" />
+                    </span>
+                </div>
+
+                <div class="field full-width">
+                    <label for="email">البريد الإلكتروني</label>
+                    <span class="p-input-icon-right">
+                        <i class="pi pi-envelope"></i>
+                        <input id="email" type="email" pInputText formControlName="email" class="p-inputtext-sm" />
+                    </span>
+                </div>
+
+                <div class="field full-width">
+                    <label for="address">العنوان</label>
+                    <span class="p-input-icon-right">
+                        <i class="pi pi-map-marker"></i>
+                        <input id="address" type="text" pInputText formControlName="address" class="p-inputtext-sm" />
+                    </span>
+                </div>
+
+                <div class="field full-width">
+                    <label for="website">الموقع الإلكتروني</label>
+                    <span class="p-input-icon-right">
+                        <i class="pi pi-globe"></i>
+                        <input id="website" type="text" pInputText formControlName="website" class="p-inputtext-sm" />
+                    </span>
+                </div>
+            </form>
+        </div>
+
+        <!-- قسم البيانات القانونية والطباعة -->
+        <div class="settings-card">
+            <div class="card-header">
+                <h3><i class="pi pi-file-check"></i> البيانات الضريبية والطباعة</h3>
+            </div>
+            
+            <form [formGroup]="settingsForm" class="p-fluid form-compact">
+                <div class="field">
+                    <label for="taxNumber">الرقم الضريبي</label>
+                    <input id="taxNumber" type="text" pInputText formControlName="taxNumber" class="p-inputtext-sm" />
+                </div>
+
+                <div class="field">
+                    <label for="commercialRegister">السجل التجاري</label>
+                    <input id="commercialRegister" type="text" pInputText formControlName="commercialRegister" class="p-inputtext-sm" />
+                </div>
+
+                <div class="field">
+                    <label for="healthMinistryLicense">ترخيص وزارة الصحة</label>
+                    <input id="healthMinistryLicense" type="text" pInputText formControlName="healthMinistryLicense" class="p-inputtext-sm" />
+                </div>
+
+                <div class="field mt-3">
+                    <label for="invoiceWelcomeMessage">رسالة تذييل الفاتورة</label>
+                    <textarea id="invoiceWelcomeMessage" pInputTextarea formControlName="invoiceWelcomeMessage" 
+                              rows="3" class="p-inputtext-sm" placeholder="مثال: نتمنى لكم دوام الصحة والعافية"></textarea>
+                    <small class="help-text">هذه الرسالة ستظهر أسفل جميع الفواتير المطبوعة</small>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+        <p>جاري تحميل الإعدادات...</p>
+    </div>
+</div>

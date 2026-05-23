@@ -1,201 +1,205 @@
 /* ==============================================
-   EXPENSE FORM - FORMAL PROFESSIONAL DESIGN
-   ERP STYLE - MINIMAL & CLEAN
+   EXPENSE FORM - MICRO-COMPACT GLASSMORPHIC OVERRIDES
    ============================================== */
 
-/* Professional CSS Variables */
-:root {
-  --bg-primary: #f8fafc;
-  /* Neutral Light Gray */
-  --bg-secondary: #f1f5f9;
-  --bg-card: #ffffff;
-  --text-primary: #1e293b;
-  /* Corporate Navy */
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-
-  /* Formal Colors */
-  --primary-color: #1e293b;
-  --accent-color: #3b82f6;
+/* Page Scaling to Micro ERP Sizes */
+.inventory-page {
+    gap: 0.5rem !important;
+    padding: 0.35rem !important;
 }
 
-[data-theme="dark"] {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-card: #1e293b;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --border-color: #334155;
+/* Micro Hero Section */
+.inventory-hero {
+    padding: 0.4rem 0.6rem !important;
+    border-radius: 10px !important;
+    gap: 0.5rem !important;
+    background: var(--card-bg) !important;
+    border: var(--card-border) !important;
 }
 
-/* Container */
-.expense-form-container {
-  padding: 1rem;
-  max-width: 760px;
-  margin: 0 auto;
-  direction: rtl;
-  background: var(--bg-primary);
-  min-height: 100vh;
+.inventory-icon {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.15) !important;
 }
 
-/* Formal Header Styling */
-.header-card {
-  margin-bottom: 2rem;
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 12px !important;
-  box-shadow: var(--shadow-sm) !important;
+.inventory-icon i {
+    font-size: 0.95rem !important;
 }
 
-::ng-deep .header-card.p-card .p-card-body {
-  padding: 1rem 1.25rem !important;
+.inventory-title h1 {
+    font-size: 0.95rem !important;
+    font-weight: 800;
+    color: var(--text-color) !important;
 }
 
-.header-content {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
+.inventory-title p {
+    font-size: 0.68rem !important;
+    margin-top: 0.1rem !important;
+    color: var(--text-color-secondary) !important;
 }
 
-.title-section {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
+/* Micro Panel Card */
+.inventory-panel {
+    background: var(--card-bg) !important;
+    border: var(--card-border) !important;
+    border-radius: 10px !important;
+    padding: 0.75rem !important;
+    box-shadow: var(--shadow-sm) !important;
 }
 
-.header-icon {
-  font-size: 2.5rem;
-  color: var(--primary-color);
-  background: var(--bg-secondary);
-  padding: 0.75rem;
-  border-radius: 10px;
-}
-
-.page-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--text-primary) !important;
-}
-
-.page-subtitle {
-  margin: 0.25rem 0 0 0;
-  font-size: 0.95rem;
-  color: var(--text-secondary) !important;
-}
-
-/* Form Card Styling */
-.form-card {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 12px !important;
-  box-shadow: var(--shadow-sm) !important;
-}
-
-::ng-deep .form-card .p-card-body {
-  padding: 2.5rem !important;
-}
-
-/* Form Grid */
+/* Micro Form Layout */
 .form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.45rem !important;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.full-width {
+    grid-column: 1 / -1;
 }
 
 .form-field label {
-  font-weight: 600;
-  color: var(--text-primary) !important;
-  margin-bottom: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 0.68rem !important;
+    color: var(--text-color-secondary) !important;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
 }
 
-/* Input Styling */
-::ng-deep .p-inputtext,
-::ng-deep .p-inputtextarea,
-::ng-deep .p-dropdown,
-::ng-deep .p-calendar .p-inputtext,
-::ng-deep .p-inputnumber input {
-  border: 1px solid var(--border-color) !important;
-  border-radius: 6px !important;
-  padding: 0.65rem 0.85rem !important;
-  background: var(--bg-card) !important;
-  color: var(--text-primary) !important;
+.form-field label i {
+    color: var(--primary-color) !important;
 }
 
-::ng-deep .p-inputtext:focus,
-::ng-deep .p-dropdown.p-focus,
-::ng-deep .p-calendar .p-inputtext:focus,
-::ng-deep .p-inputnumber input:focus {
-  border-color: var(--accent-color) !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
-}
-
-/* Payment Method Cards - Formal Style */
+/* Custom Selected Radio Cards */
 .payment-methods {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-top: 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
 }
 
 .payment-method-card {
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 1.25rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: var(--bg-card);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px;
+    padding: 0.4rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: var(--card-bg) !important;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
 }
 
 .payment-method-card:hover {
-  border-color: var(--accent-color);
-  background: var(--bg-secondary);
+    border-color: var(--primary-color) !important;
+    background: var(--surface-hover) !important;
 }
 
 .payment-method-card.selected {
-  border-color: var(--accent-color);
-  background: rgba(59, 130, 246, 0.05);
+    border-color: var(--primary-color) !important;
+    background: rgba(var(--primary-rgb), 0.04) !important;
+    box-shadow: 0 2px 6px rgba(var(--primary-rgb), 0.08) !important;
+}
+
+.method-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.method-icon {
+    font-size: 0.9rem !important;
 }
 
 .method-label {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--text-primary) !important;
+    font-weight: 800;
+    font-size: 0.75rem !important;
+    color: var(--text-color) !important;
 }
 
 .method-description small {
-  color: var(--text-secondary) !important;
+    color: var(--text-color-secondary) !important;
+    font-size: 0.62rem !important;
 }
 
-/* Actions */
+/* Actions Containment */
 .form-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border-color);
+    display: flex;
+    gap: 0.35rem;
+    justify-content: flex-end;
+    margin-top: 0.75rem !important;
+    padding-top: 0.75rem !important;
+    border-top: 1px solid var(--border-color) !important;
 }
 
-::ng-deep .p-button-success {
-  background: var(--primary-color) !important;
-  border: none !important;
-  padding: 0.65rem 2rem !important;
-  font-weight: 600 !important;
-  border-radius: 8px !important;
+::ng-deep .form-actions button,
+::ng-deep .form-actions .p-button {
+    font-size: 0.72rem !important;
+    padding: 0.35rem 0.75rem !important;
+    border-radius: 6px !important;
+    height: auto !important;
 }
 
-::ng-deep .p-button-outlined.p-button-secondary {
-  border: 1px solid var(--border-color) !important;
-  color: var(--text-secondary) !important;
-  font-weight: 600 !important;
-  border-radius: 8px !important;
+/* Global Micro Inputs Integration */
+::ng-deep .inventory-page {
+    .p-inputtext,
+    .p-inputtextarea,
+    .p-dropdown,
+    .p-calendar .p-inputtext,
+    .p-inputnumber input {
+        border: 1px solid var(--border-color) !important;
+        border-radius: 6px !important;
+        padding: 0.35rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
+    }
+
+    .p-inputtext:focus,
+    .p-dropdown.p-focus,
+    .p-calendar .p-inputtext:focus,
+    .p-inputnumber input:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1) !important;
+    }
+    
+    .p-dropdown-panel,
+    .p-datepicker {
+        background: var(--modal-bg) !important;
+        border: var(--card-border) !important;
+        box-shadow: var(--shadow-md) !important;
+        
+        .p-dropdown-item {
+            color: var(--text-color) !important;
+            padding: 0.35rem 0.5rem !important;
+            font-size: 0.75rem !important;
+            &:hover { background: var(--surface-hover) !important; }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        
+        button {
+            width: 100%;
+        }
+    }
 }

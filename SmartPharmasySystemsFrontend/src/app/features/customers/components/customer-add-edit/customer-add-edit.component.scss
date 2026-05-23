@@ -1,87 +1,141 @@
+/* customer-add-edit.component.scss - Premium Imperial Theme (Compact-Micro Design) */
+
+:host {
+  display: block;
+  height: 100%;
+}
+
 .edit-container {
-    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-    min-height: 100vh;
+  background: transparent; /* Seamless drawer overlay transparency */
+  height: 100%;
+  color: var(--text-color, #1e293b);
 }
 
-.premium-form-card {
-    background: rgba(255, 255, 255, 0.7) !important;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-
-    ::ng-deep .p-card-body {
-        padding: 0;
-    }
+.border-bottom-dashed {
+  border-bottom: 1px dashed var(--border-color, rgba(0, 0, 0, 0.12));
 }
 
-.form-header {
-    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
-    border-radius: 20px 20px 0 0;
+.icon-circle {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+
+  &.phone-bg { background: rgba(var(--primary-rgb, 16, 185, 129), 0.12); color: var(--primary-color); }
+  &.address-bg { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
 }
 
-.header-icon-box {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.section-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: #1e293b;
-    border-bottom: 2px solid #e2e8f0;
-    padding-bottom: 0.5rem;
-    width: fit-content;
-}
-
-.premium-btn {
-    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
-    border: none !important;
-    border-radius: 12px !important;
-    transition: all 0.3s ease;
-
-    &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
-    }
-}
-
+/* ═══════════ Premium Form Controls ═══════════ */
 ::ng-deep {
-    .p-inputtext, .p-inputtextarea, .p-inputnumber-input {
-        background: white !important;
-        border: 2px solid #e2e8f0 !important;
-        transition: all 0.3s ease;
-        padding-right: 2.5rem !important;
+  .premium-input {
+    background: var(--input-bg, #ffffff) !important;
+    color: var(--text-color, #1e293b) !important;
+    border: 1px solid var(--border-color, rgba(0,0,0,0.12)) !important;
+    border-radius: 8px !important;
+    padding: 0.55rem 0.75rem !important;
+    font-size: 0.78rem !important;
+    width: 100%;
+    transition: all 0.2s ease;
 
-        &:focus {
-            border-color: #4f46e5 !important;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
-        }
+    &:focus {
+      border-color: var(--primary-color) !important;
+      box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1) !important;
+      background: var(--modal-bg, #ffffff) !important;
     }
+  }
 
-    .p-input-icon-left > i {
-        right: 1rem !important;
-        left: auto !important;
+  .p-inputtextarea {
+    resize: none;
+  }
+
+  /* PrimeNG InputNumber alignment wrapper */
+  .p-inputnumber {
+    width: 100%;
+    .p-inputtext {
+      text-align: right !important;
     }
+  }
+
+  /* Icon inside fields padding fix */
+  .p-input-icon-left {
+    width: 100%;
+    > i {
+      right: auto !important;
+      left: 0.75rem !important;
+      color: var(--text-color-secondary);
+    }
+    .premium-input {
+      padding-left: 2.2rem !important;
+    }
+  }
+
+  /* Switch active slider color */
+  .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+    background: var(--primary-color, #10b981) !important;
+  }
 }
 
-// Custom Radio/Switch styling if needed
-::ng-deep .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
-    background: #4f46e5;
+.status-switch-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  background: var(--surface-hover, rgba(0, 0, 0, 0.03));
+  border-radius: 10px;
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
+
+  .font-bold {
+    color: var(--text-color);
+  }
 }
 
-// Fade in animation
-.animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
+/* ═══════════ Sticky Form Actions Footer ═══════════ */
+.form-actions-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+  background: var(--modal-bg, #ffffff);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+
+  .p-button-text {
+    color: var(--text-color-secondary) !important;
+    border-radius: 8px !important;
+    &:hover {
+      background: var(--surface-hover) !important;
+    }
+  }
+}
+
+/* Premium Primary Button override */
+.imperial-btn-primary {
+  background: linear-gradient(135deg, var(--primary-600, #059669), var(--primary-400, #34d399)) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.25);
+  }
+}
+
+.fadein {
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }

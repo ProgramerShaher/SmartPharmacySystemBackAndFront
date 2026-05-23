@@ -1,0 +1,51 @@
+<p-dialog [(visible)]="visible" (onHide)="close()" [modal]="true" [draggable]="false" [resizable]="false"
+    [style]="{ width: 'min(94vw, 540px)' }" styleClass="warehouse-dialog" [breakpoints]="{'640px': '96vw'}"
+    [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40">
+
+    <div class="modal-shell" dir="rtl">
+        <div class="modal-header">
+            <div class="modal-title">
+                <span class="modal-icon">
+                    <i class="pi" [ngClass]="isEdit ? 'pi-pencil' : 'pi-plus'"></i>
+                </span>
+                <div>
+                    <h2>{{ isEdit ? 'تعديل المخزن' : 'إضافة مخزن جديد' }}</h2>
+                    <p>{{ isEdit ? 'تعديل بيانات المخزن' : 'إدخال بيانات المخزن الجديد' }}</p>
+                </div>
+            </div>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn"
+                (click)="close()"></button>
+        </div>
+
+        <div class="modal-body p-fluid">
+            <div class="field-group">
+                <div class="field">
+                    <label for="branchId">الفرع <span class="text-red-500">*</span></label>
+                    <p-dropdown id="branchId" [options]="branches()" optionLabel="name" optionValue="id"
+                        [(ngModel)]="model.branchId" placeholder="اختر الفرع" [showClear]="true"
+                        [style]="{ width: '100%' }"></p-dropdown>
+                </div>
+                <div class="field">
+                    <label for="type">نوع المخزن <span class="text-red-500">*</span></label>
+                    <p-dropdown id="type" [options]="typeOptions" optionLabel="label" optionValue="value"
+                        [(ngModel)]="model.type" placeholder="اختر النوع"
+                        [style]="{ width: '100%' }"></p-dropdown>
+                </div>
+                <div class="field">
+                    <label for="name">اسم المخزن <span class="text-red-500">*</span></label>
+                    <input id="name" pInputText type="text" [(ngModel)]="model.name"
+                        placeholder="أدخل اسم المخزن" maxlength="150" />
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <p-button label="إلغاء" icon="pi pi-times" [rounded]="true" [outlined]="true" severity="secondary"
+                (onClick)="close()"></p-button>
+            <p-button [label]="isEdit ? 'تحديث' : 'إضافة'" [icon]="isEdit ? 'pi pi-check' : 'pi pi-plus'"
+                [rounded]="true" [disabled]="!isFormValid" [loading]="submitting()"
+                severity="primary" (onClick)="submit()"></p-button>
+        </div>
+    </div>
+</p-dialog>
+<p-toast position="top-center"></p-toast>

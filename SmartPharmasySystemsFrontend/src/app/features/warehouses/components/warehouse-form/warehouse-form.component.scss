@@ -1,0 +1,115 @@
+:host ::ng-deep {
+    .warehouse-dialog {
+        .p-dialog-content {
+            padding: 0;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+    }
+
+    .modal-shell {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 1.5rem 2rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .modal-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        p {
+            margin: 0.25rem 0 0;
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+    }
+
+    .modal-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #00bcd4, #0097a7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 6px 16px rgba(0, 150, 136, 0.2);
+
+        i {
+            color: white;
+            font-size: 1.3rem;
+        }
+    }
+
+    .close-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .modal-body {
+        padding: 1.5rem 2rem;
+    }
+
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .field {
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        padding: 1rem 2rem 1.5rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    .p-dropdown {
+        width: 100%;
+        border-radius: 10px;
+        &:not(.p-disabled).p-focus {
+            box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2);
+            border-color: #00bcd4;
+        }
+    }
+
+    .p-inputtext {
+        border-radius: 10px;
+        padding: 0.65rem 1rem;
+        width: 100%;
+        &:enabled:focus {
+            box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2);
+            border-color: #00bcd4;
+        }
+    }
+
+    .p-button.p-button-rounded {
+        border-radius: 10px;
+    }
+}

@@ -1,0 +1,87 @@
+<p-dialog [(visible)]="visible" [header]="editMode ? 'تعديل بيانات الموظف' : 'إضافة موظف جديد'" [modal]="true"
+    [style]="{width:'650px'}" [dir]="'rtl'" [draggable]="false" [resizable]="false"
+    (onHide)="cancel()" styleClass="employee-dialog">
+
+    <div class="grid p-fluid form-grid">
+        <div class="col-12 md:col-6">
+            <label class="form-label">كود الموظف <span class="text-danger">*</span></label>
+            <input pInputText type="text" class="premium-input w-full"
+                [class.ng-invalid]="hasError('employeeCode')" [(ngModel)]="model.employeeCode"
+                placeholder="مثال: EMP001" />
+            <small *ngIf="hasError('employeeCode')" class="text-danger">{{ errors['employeeCode'] }}</small>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+            <input pInputText type="text" class="premium-input w-full"
+                [class.ng-invalid]="hasError('fullName')" [(ngModel)]="model.fullName"
+                placeholder="أدخل الاسم الكامل" />
+            <small *ngIf="hasError('fullName')" class="text-danger">{{ errors['fullName'] }}</small>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label class="form-label">رقم الهوية <span class="text-danger">*</span></label>
+            <input pInputText type="text" class="premium-input w-full"
+                [class.ng-invalid]="hasError('nationalId')" [(ngModel)]="model.nationalId"
+                placeholder="رقم الهوية الوطنية" />
+            <small *ngIf="hasError('nationalId')" class="text-danger">{{ errors['nationalId'] }}</small>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label class="form-label">المسمى الوظيفي <span class="text-danger">*</span></label>
+            <input pInputText type="text" class="premium-input w-full"
+                [class.ng-invalid]="hasError('jobTitle')" [(ngModel)]="model.jobTitle"
+                placeholder="المسمى الوظيفي" />
+            <small *ngIf="hasError('jobTitle')" class="text-danger">{{ errors['jobTitle'] }}</small>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label class="form-label">الفرع <span class="text-danger">*</span></label>
+            <p-dropdown [options]="branches()" [(ngModel)]="model.branchId" optionLabel="name" optionValue="id"
+                placeholder="اختر الفرع" styleClass="premium-dropdown w-full"
+                [class.ng-invalid]="hasError('branchId')"></p-dropdown>
+            <small *ngIf="hasError('branchId')" class="text-danger">{{ errors['branchId'] }}</small>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label class="form-label">القسم <span class="text-danger">*</span></label>
+            <p-dropdown [options]="departments()" [(ngModel)]="model.departmentId" optionLabel="name" optionValue="id"
+                placeholder="اختر القسم" styleClass="premium-dropdown w-full"
+                [class.ng-invalid]="hasError('departmentId')"></p-dropdown>
+            <small *ngIf="hasError('departmentId')" class="text-danger">{{ errors['departmentId'] }}</small>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label class="form-label">تاريخ التعيين <span class="text-danger">*</span></label>
+            <p-calendar [(ngModel)]="model.hireDate" [showIcon]="true" dateFormat="dd/mm/yy"
+                placeholder="اختر التاريخ" inputStyleClass="premium-input w-full"
+                [class.ng-invalid]="hasError('hireDate')"></p-calendar>
+            <small *ngIf="hasError('hireDate')" class="text-danger">{{ errors['hireDate'] }}</small>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label class="form-label">الراتب الأساسي <span class="text-danger">*</span></label>
+            <p-inputNumber [(ngModel)]="model.basicSalary" [min]="0" [maxFractionDigits]="0"
+                styleClass="premium-input w-full" placeholder="0"
+                [class.ng-invalid]="hasError('basicSalary')"></p-inputNumber>
+            <small *ngIf="hasError('basicSalary')" class="text-danger">{{ errors['basicSalary'] }}</small>
+        </div>
+
+        <div class="col-12">
+            <div class="flex align-items-center gap-3">
+                <p-inputSwitch [(ngModel)]="model.isActive"></p-inputSwitch>
+                <label class="form-label m-0">نشط</label>
+            </div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <p-button label="إلغاء" icon="pi pi-times" [rounded]="true" severity="secondary"
+                (onClick)="cancel()"></p-button>
+            <p-button [label]="editMode ? 'حفظ التعديلات' : 'إضافة موظف'" icon="pi pi-check" [rounded]="true"
+                severity="primary" [loading]="saving()" (onClick)="save()"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+<p-toast position="top-left"></p-toast>

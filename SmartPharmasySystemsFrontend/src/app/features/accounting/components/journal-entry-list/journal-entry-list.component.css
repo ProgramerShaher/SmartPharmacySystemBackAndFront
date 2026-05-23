@@ -78,7 +78,7 @@
 }
 
 ::ng-deep .debit-cell {
-    color: #059669 !important;
+    color: var(--primary-600) !important;
     background-color: rgba(5, 150, 105, 0.03) !important;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 1.1rem !important;
@@ -140,7 +140,7 @@
 }
 
 .tag-posted {
-    background: linear-gradient(to right, #059669, #10b981) !important;
+    background: linear-gradient(to right, var(--primary-600), var(--primary-color)) !important;
     color: white !important;
     padding: 0.35rem 0.8rem !important;
     border-radius: 20px !important;
@@ -156,9 +156,9 @@
 }
 
 .tag-posted-large {
-    background: #ecfdf5 !important;
-    color: #059669 !important;
-    border: 1px solid #10b981 !important;
+    background: var(--primary-50) !important;
+    color: var(--primary-600) !important;
+    border: 1px solid var(--primary-color) !important;
     padding: 0.5rem 1rem !important;
     font-weight: bold !important;
 }

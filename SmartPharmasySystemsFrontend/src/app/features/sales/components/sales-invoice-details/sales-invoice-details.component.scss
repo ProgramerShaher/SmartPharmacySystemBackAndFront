@@ -97,7 +97,7 @@
 }
 
 .invoice-card.approved .accent-line {
-  background: linear-gradient(90deg, #16a34a, #22c55e);
+  background: linear-gradient(90deg, var(--primary-color), #22c55e);
 }
 
 .invoice-card.cancelled .accent-line {
@@ -158,7 +158,7 @@
 }
 
 .summary-tile.creator {
-  background: linear-gradient(135deg, #ecfdf5, #eff6ff);
+  background: linear-gradient(135deg, var(--primary-50), #eff6ff);
   border-color: #99f6e4;
 }
 

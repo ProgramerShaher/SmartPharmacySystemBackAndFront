@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { CardModule } from 'primeng/card';
@@ -32,6 +33,7 @@ import { environment } from '../../../../../environments/environment';
 })
 export class PharmacyProfileComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private router = inject(Router);
   private settingsService = inject(SettingsService);
   private messageService = inject(MessageService);
 
@@ -65,6 +67,12 @@ export class PharmacyProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.currencies = [
+      { label: 'ريال يمني', value: 'ر.ي' },
+      { label: 'ريال سعودي', value: 'ر.س' }
+    ];
+
+    this.settingsForm.patchValue({ baseCurrency: 'ر.ي' });
     this.loadSettings();
   }
 
@@ -111,6 +119,7 @@ export class PharmacyProfileComponent implements OnInit {
       next: (res) => {
         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ الإعدادات بنجاح' });
         this.isSaving = false;
+        setTimeout(() => this.router.navigate(['/dashboard']), 400);
       },
       error: (err) => {
         this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في حفظ الإعدادات' });

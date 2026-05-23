@@ -34,6 +34,22 @@ export const routes: Routes = [
                 loadChildren: () => import('./features/purchases/purchases.routes').then(m => m.PURCHASES_ROUTES)
             },
             {
+                path: 'branches',
+                loadChildren: () => import('./features/branches/branches.routes').then(m => m.BRANCHES_ROUTES)
+            },
+            {
+                path: 'departments',
+                loadChildren: () => import('./features/departments/departments.routes').then(m => m.DEPARTMENTS_ROUTES)
+            },
+            {
+                path: 'employees',
+                loadChildren: () => import('./features/employees/employees.routes').then(m => m.EMPLOYEES_ROUTES)
+            },
+            {
+                path: 'warehouses',
+                loadChildren: () => import('./features/warehouses/warehouses.routes').then(m => m.WAREHOUSE_ROUTES)
+            },
+            {
                 path: 'customers',
                 loadChildren: () => import('./features/customers/customers.routes').then(m => m.CUSTOMERS_ROUTES)
             },

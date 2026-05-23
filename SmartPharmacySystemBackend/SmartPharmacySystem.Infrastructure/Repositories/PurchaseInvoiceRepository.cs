@@ -20,6 +20,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         public async Task<PurchaseInvoice?> GetByIdAsync(int id)
         {
             return await _context.PurchaseInvoices
+                .AsNoTracking()
                 .Include(i => i.Supplier)
                 .Include(i => i.PurchaseInvoiceDetails)
                     .ThenInclude(d => d.Medicine)

@@ -37,5 +37,32 @@ public interface IApplicationDbContext
     DbSet<JournalEntryLine> JournalEntryLines { get; }
     DbSet<Cheque> Cheques { get; }
 
+    // ===== Multi-Branch & Inventory =====
+    DbSet<Branch> Branches { get; }
+    DbSet<Warehouse> Warehouses { get; }
+    DbSet<InventoryStock> InventoryStocks { get; }
+    DbSet<MedicineWarehouseConfig> MedicineWarehouseConfigs { get; }
+    DbSet<StockTransfer> StockTransfers { get; }
+    DbSet<StockTransferItem> StockTransferItems { get; }
+    DbSet<DamagedGoodsRecord> DamagedGoodsRecords { get; }
+    DbSet<StockCountHeader> StockCountHeaders { get; }
+    DbSet<StockCountItem> StockCountItems { get; }
+
+    // ===== HR & Payroll =====
+    DbSet<Department> Departments { get; }
+    DbSet<Employee> Employees { get; }
+    DbSet<Attendance> Attendances { get; }
+    DbSet<MonthlySalary> MonthlySalaries { get; }
+    DbSet<SalaryDeductionItem> SalaryDeductionItems { get; }
+    DbSet<EmployeeLoan> EmployeeLoans { get; }
+
+    // ===== Customer & Finance =====
+    DbSet<CustomerLedger> CustomerLedgers { get; }
+    DbSet<InterBranchSettlement> InterBranchSettlements { get; }
+    DbSet<DailyClosing> DailyClosings { get; }
+
+    // ===== Notifications =====
+    DbSet<Notification> Notifications { get; }
+
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

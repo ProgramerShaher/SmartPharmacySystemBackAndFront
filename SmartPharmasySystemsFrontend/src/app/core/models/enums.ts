@@ -30,5 +30,11 @@ export enum AlertPriority {
     Critical = 4
 }
 
+export enum WarehouseType {
+    Main = 1,
+    Branch = 2,
+    Damaged = 3
+}
+
 // Re-export from stock-movement.enums for convenience
 export { ReferenceType, DocumentStatus, StockMovementType } from './stock-movement.enums';

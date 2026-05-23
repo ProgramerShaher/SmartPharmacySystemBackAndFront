@@ -136,14 +136,50 @@ namespace SmartPharmacySystem.Application.Services
                 // 1. Handling Payment Method Transitions
                 if (oldMethod == PaymentType.Cash && expense.PaymentMethod == PaymentType.Credit)
                 {
-                    // Switched from Cash to Credit: Reverse original vault transaction
+                    // Switched from Cash to Credit: Cancel the Journal Entry
+                    var existingEntry = await _unitOfWork.JournalEntries.GetByVoucherNumberAsync($"EXP-{expense.Id}");
+                    if (existingEntry != null)
+                    {
+                        await _journalEntryService.CancelAsync(existingEntry.Id, expense.CreatedBy, $"تغيير طريقة الدفع من نقدي إلى آجل - إلغاء المصروف");
+                    }
+
+                    // Legacy system fallback
                     await _financialService.ReverseFinancialTransactionAsync(
                         ReferenceType.Expense, expense.Id,
                         $"تغيير طريقة الدفع من نقدي إلى آجل - استرداد مبلغ: {oldAmount}");
                 }
                 else if (oldMethod == PaymentType.Credit && expense.PaymentMethod == PaymentType.Cash)
                 {
-                    // Switched from Credit to Cash: Create new vault transaction
+                    // Switched from Credit to Cash: Create a NEW Journal Entry
+                    var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                    {
+                        EntryDate = expense.ExpenseDate,
+                        VoucherNumber = $"EXP-{expense.Id}",
+                        Description = $"مصروف: {category.Name} - {expense.Notes ?? ""}",
+                        Type = VoucherType.PaymentVoucher,
+                        Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
+                    };
+
+                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    {
+                        AccountId = category.AccountId ?? 5,
+                        Debit = expense.Amount,
+                        Credit = 0,
+                        Description = $"إثبات مصروف {category.Name}"
+                    });
+
+                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    {
+                        AccountId = 1101, // الصندوق الرئيسي
+                        Debit = 0,
+                        Credit = expense.Amount,
+                        Description = $"صرف نقدية مقابل مصروف {category.Name}"
+                    });
+
+                    var createdEntry = await _journalEntryService.CreateAsync(journalEntry, expense.CreatedBy);
+                    await _journalEntryService.ApproveAsync(createdEntry.Id, expense.CreatedBy);
+
+                    // Legacy system fallback
                     await _financialService.ProcessTransactionAsync(
                         expense.AccountId, expense.Amount, FinancialTransactionType.Expense,
                         ReferenceType.Expense, expense.Id,
@@ -152,6 +188,31 @@ namespace SmartPharmacySystem.Application.Services
                 // 2. Handling Amount Changes for existing Cash expenses
                 else if (expense.PaymentMethod == PaymentType.Cash && oldAmount != expense.Amount)
                 {
+                    var existingEntry = await _unitOfWork.JournalEntries.GetByVoucherNumberAsync($"EXP-{expense.Id}");
+                    if (existingEntry != null)
+                    {
+                        // Since Journal Entries cannot be directly modified after being Approved in professional systems, 
+                        // we reverse the old entry and create a new one, or if it's draft, update it.
+                        // For simplicity, we cancel the old and create a new one.
+                        await _journalEntryService.CancelAsync(existingEntry.Id, expense.CreatedBy, $"تعديل مبلغ المصروف من {oldAmount} إلى {expense.Amount}");
+
+                        var newJournalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                        {
+                            EntryDate = expense.ExpenseDate,
+                            VoucherNumber = $"EXP-{expense.Id}",
+                            Description = $"تعديل مصروف: {category.Name} - {expense.Notes ?? ""}",
+                            Type = VoucherType.PaymentVoucher,
+                            Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>
+                            {
+                                new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto { AccountId = category.AccountId ?? 5, Debit = expense.Amount, Credit = 0, Description = $"إثبات مصروف {category.Name}" },
+                                new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto { AccountId = 1101, Debit = 0, Credit = expense.Amount, Description = $"صرف نقدية مقابل مصروف {category.Name}" }
+                            }
+                        };
+                        var createdEntry = await _journalEntryService.CreateAsync(newJournalEntry, expense.CreatedBy);
+                        await _journalEntryService.ApproveAsync(createdEntry.Id, expense.CreatedBy);
+                    }
+
+                    // Legacy system fallback
                     decimal difference = expense.Amount - oldAmount;
                     var correctionType = difference > 0
                         ? FinancialTransactionType.Expense
@@ -188,9 +249,16 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // إذا تم دفع المصروف نقداً، يجب عكس الحركة المالية عند الحذف
                 if (expense.IsPaid && expense.PaymentMethod == PaymentType.Cash)
                 {
+                    // 1. إلغاء القيد المحاسبي
+                    var existingEntry = await _unitOfWork.JournalEntries.GetByVoucherNumberAsync($"EXP-{expense.Id}");
+                    if (existingEntry != null)
+                    {
+                        await _journalEntryService.CancelAsync(existingEntry.Id, expense.CreatedBy, $"حذف مصروف: {category?.Name ?? ""} - إلغاء القيد");
+                    }
+
+                    // 2. Legacy system fallback
                     await _financialService.ReverseFinancialTransactionAsync(
                         ReferenceType.Expense,
                         expense.Id,

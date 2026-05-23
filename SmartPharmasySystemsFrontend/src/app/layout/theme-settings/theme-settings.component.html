@@ -1,0 +1,48 @@
+<p-sidebar [(visible)]="visible" position="left" styleClass="theme-settings-sidebar" [showCloseIcon]="true" appendTo="body">
+
+    <!-- Header -->
+    <div class="sidebar-header">
+        <i class="pi pi-palette"></i>
+        <h3>تخصيص المظهر</h3>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Body -->
+    <div class="settings-content" dir="rtl">
+
+        <!-- Theme Mode Section -->
+        <div class="setting-section">
+            <h4><i class="pi pi-circle-fill"></i> وضع الإضاءة</h4>
+            <div class="theme-options">
+                <div class="theme-option" [class.active]="currentTheme === 'light'" (click)="setTheme('light')">
+                    <i class="pi pi-sun"></i>
+                    <span>فاتح</span>
+                </div>
+                <div class="theme-option" [class.active]="currentTheme === 'dark'" (click)="setTheme('dark')">
+                    <i class="pi pi-moon"></i>
+                    <span>داكن</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
+        <!-- Color Palette Section -->
+        <div class="setting-section">
+            <h4><i class="pi pi-circle-fill"></i> لون النظام الأساسي</h4>
+            <div class="color-grid">
+                <div *ngFor="let opt of colorOptions"
+                     class="color-option"
+                     [class.active]="currentColor === opt.key"
+                     (click)="setColor(opt.key)">
+                    <div class="color-circle" [style.background-color]="opt.color">
+                        <i class="pi pi-check" *ngIf="currentColor === opt.key"></i>
+                    </div>
+                    <span class="color-name">{{ opt.name }}</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</p-sidebar>

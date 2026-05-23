@@ -1,24 +1,29 @@
 <div class="supplier-container fadein" dir="rtl">
-  <!-- Imperial Header -->
+
+  <!-- ═══════════ Micro Header ═══════════ -->
   <div class="imperial-header">
     <div class="header-content">
       <div class="title-area">
         <div class="icon-box">
-          <i class="pi pi-users text-2xl text-blue-600"></i>
+          <i class="pi pi-users"></i>
         </div>
         <div>
-          <h1>إدارة الموردين والشركات</h1>
-          <p>واجهة متقدمة للتحكم بالموردين والأرصدة المالية</p>
+          <h1>إدارة الموردين والشركاء</h1>
+          <p>تتبع الأرصدة والمديونيات وسندات الصرف</p>
         </div>
       </div>
       <div class="actions-area">
-        <button pButton label="سندات الصرف" icon="pi pi-wallet" class="p-button-outlined p-button-sm imperial-btn" (click)="openPaymentDialog()"></button>
-        <button pButton label="إضافة مورد جديد" icon="pi pi-plus" class="p-button-sm imperial-btn-primary" (click)="openCreateSupplier()"></button>
+        <button pButton label="سندات الصرف" icon="pi pi-wallet"
+          class="imperial-btn p-button-outlined p-button-sm"
+          (click)="openPaymentDialog()"></button>
+        <button pButton label="مورد جديد" icon="pi pi-plus"
+          class="imperial-btn-primary p-button-sm"
+          (click)="openCreateSupplier()"></button>
       </div>
     </div>
   </div>
 
-  <!-- Jewel Tone Stat Cards -->
+  <!-- ═══════════ Stat Cards ═══════════ -->
   <div class="stats-grid">
     <div class="stat-card jewel-blue">
       <div class="stat-icon"><i class="pi pi-users"></i></div>
@@ -27,12 +32,15 @@
         <span class="stat-value">{{ totalRecords() }}</span>
       </div>
     </div>
-    
+
     <div class="stat-card jewel-emerald">
       <div class="stat-icon"><i class="pi pi-check-circle"></i></div>
       <div class="stat-details">
         <span class="stat-label">موردين بدون مديونية</span>
-        <span class="stat-value">{{ totalRecords() - highDebtCount() }} <small>تقريباً</small></span>
+        <span class="stat-value">
+          {{ totalRecords() - highDebtCount() }}
+          <small>تقريباً</small>
+        </span>
       </div>
     </div>
 
@@ -40,40 +48,52 @@
       <div class="stat-icon"><i class="pi pi-chart-line"></i></div>
       <div class="stat-details">
         <span class="stat-label">إجمالي المديونية (علينا)</span>
-        <span class="stat-value">{{ totalDebt() | number }} <span class="currency">ر.ي</span></span>
+        <span class="stat-value">
+          {{ totalDebt() | number }}
+          <span class="currency">ر.ي</span>
+        </span>
       </div>
     </div>
   </div>
 
-  <!-- Ultra Compact Table -->
-  <div class="table-card shadow-sm border-round-xl">
-    <p-table #dt [value]="suppliers()" [loading]="loading()" [paginator]="true" [rows]="10" [lazy]="true" 
-             (onLazyLoad)="loadSuppliers($event)" [totalRecords]="totalRecords()" [rowsPerPageOptions]="[10,25,50]" 
+  <!-- ═══════════ Table ═══════════ -->
+  <div class="table-card">
+    <p-table #dt [value]="suppliers()" [loading]="loading()"
+             [paginator]="true" [rows]="10" [lazy]="true"
+             (onLazyLoad)="loadSuppliers($event)" [totalRecords]="totalRecords()"
+             [rowsPerPageOptions]="[10,25,50]"
              styleClass="p-datatable-sm imperial-table" [rowHover]="true">
-      
+
+      <!-- Caption / Search -->
       <ng-template pTemplate="caption">
         <div class="table-caption">
-          <span class="caption-title"><i class="pi pi-list mr-2"></i> سجل الموردين</span>
+          <span class="caption-title">
+            <i class="pi pi-list ml-2"></i>سجل الموردين
+          </span>
           <div class="p-input-icon-left search-box">
             <i class="pi pi-search"></i>
-            <input #searchInput pInputText type="text" (input)="dt.filterGlobal(searchInput.value, 'contains')" 
-                   placeholder="بحث برقم الهاتف، الاسم..." class="p-inputtext-sm" />
+            <input #searchInput pInputText type="text"
+                   (input)="dt.filterGlobal(searchInput.value, 'contains')"
+                   placeholder="بحث بالاسم أو الهاتف..." />
           </div>
         </div>
       </ng-template>
 
+      <!-- Header -->
       <ng-template pTemplate="header">
         <tr>
           <th>بيانات المورد</th>
           <th>رقم التواصل</th>
-          <th>الرصيد المستحق</th>
-          <th>الحالة المالية</th>
-          <th class="text-center w-5rem">خيارات</th>
+          <th class="text-center">الرصيد المستحق</th>
+          <th class="text-center">الحالة المالية</th>
+          <th class="text-center" style="width: 4rem">خيارات</th>
         </tr>
       </ng-template>
 
+      <!-- Body -->
       <ng-template pTemplate="body" let-supplier>
         <tr>
+          <!-- Supplier Info -->
           <td>
             <div class="supplier-cell">
               <div class="avatar-glass" [style.background]="getRandomColor(supplier.name)">
@@ -81,55 +101,103 @@
               </div>
               <div class="info">
                 <div class="name">{{ supplier.name }}</div>
-                <div class="address"><i class="pi pi-map-marker text-xs"></i> {{ supplier.address || 'غير محدد' }}</div>
+                <div class="address">
+                  <i class="pi pi-map-marker text-xs"></i>
+                  {{ supplier.address || 'العنوان غير محدد' }}
+                </div>
               </div>
             </div>
           </td>
-          <td class="font-mono text-sm text-700">{{ supplier.phoneNumber || '---' }}</td>
-          <td>
-            <div class="balance-cell" [class.is-debt]="supplier.Balance > 0">
+
+          <!-- Phone -->
+          <td class="font-mono" style="font-size: 0.78rem;">
+            {{ supplier.phoneNumber || '---' }}
+          </td>
+
+          <!-- Balance -->
+          <td class="text-center">
+            <div class="balance-cell" [class.is-debt]="supplier.Balance > 0"
+                 style="justify-content: center;">
               <span class="amount">{{ supplier.Balance | number }}</span>
               <span class="currency">ر.ي</span>
             </div>
           </td>
-          <td>
-            <p-tag [value]="supplier.statusName" 
-                   [style]="{'background-color': supplier.statusColor + '1A', 'color': supplier.statusColor, 'border': '1px solid ' + supplier.statusColor + '40', 'font-weight': '600'}" 
-                   [rounded]="true" styleClass="text-xs px-2"></p-tag>
-          </td>
+
+          <!-- Status Tag -->
           <td class="text-center">
-            <button pButton type="button" icon="pi pi-ellipsis-v" class="p-button-rounded p-button-text p-button-sm text-600 hover:text-900" 
-                    (click)="showMenu(menu, $event, supplier)"></button>
-            <p-menu #menu [model]="items" [popup]="true" appendTo="body" styleClass="imperial-menu"></p-menu>
+            <p-tag [value]="supplier.statusName"
+                   [style]="{
+                     'background-color': supplier.statusColor + '1A',
+                     'color': supplier.statusColor,
+                     'border': '1px solid ' + supplier.statusColor + '40',
+                     'font-weight': '700',
+                     'font-size': '0.68rem'
+                   }"
+                   [rounded]="true">
+            </p-tag>
+          </td>
+
+          <!-- Actions Menu -->
+          <td class="text-center">
+            <button pButton type="button" icon="pi pi-ellipsis-v"
+                    class="p-button-rounded p-button-text p-button-sm"
+                    style="width: 1.8rem; height: 1.8rem; color: var(--text-color-secondary);"
+                    (click)="showMenu(menu, $event, supplier)">
+            </button>
+            <p-menu #menu [model]="items" [popup]="true" appendTo="body"
+                    styleClass="imperial-menu">
+            </p-menu>
           </td>
         </tr>
       </ng-template>
-      
+
+      <!-- Empty Message -->
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="5" class="text-center p-5 text-500">
-            <i class="pi pi-inbox text-4xl mb-3 block text-300"></i>
-            لا توجد بيانات متاحة للموردين
+          <td colspan="5" class="text-center" style="padding: 2.5rem;">
+            <i class="pi pi-inbox" style="font-size: 2rem; color: var(--border-color); display: block; margin-bottom: 0.65rem;"></i>
+            <p style="color: var(--text-color-secondary); font-size: 0.82rem; margin: 0 0 0.75rem;">
+              لا توجد بيانات موردين متاحة
+            </p>
+            <button pButton type="button" label="إضافة مورد جديد" icon="pi pi-plus"
+                    class="imperial-btn-primary p-button-sm" (click)="openCreateSupplier()">
+            </button>
           </td>
         </tr>
       </ng-template>
+
     </p-table>
   </div>
 
-  <!-- Add/Edit Dialog -->
-  <p-dialog [visible]="addEditDialogVisible()" [modal]="true" [draggable]="false" [resizable]="false" 
-            [style]="{width: '650px', maxWidth: '95vw'}" [header]="editSupplierId() ? 'تعديل بيانات مورد' : 'إضافة مورد جديد'" 
-            (onHide)="closeAddEditDialog()" styleClass="imperial-dialog">
-    <app-supplier-add-edit [dialogMode]="true" [editSupplierId]="editSupplierId()" (saved)="onSupplierSaved()" (closed)="closeAddEditDialog()"></app-supplier-add-edit>
-  </p-dialog>
-
-  <!-- Payments Dialog -->
-  <p-dialog [visible]="paymentsDialogVisible()" [modal]="true" [draggable]="false" [resizable]="false" 
-            [style]="{width: '850px', maxWidth: '95vw'}" header="إدارة سندات الصرف" 
-            (onHide)="closePaymentsDialog()" styleClass="imperial-dialog">
-    <app-supplier-payments [dialogMode]="true" [autoOpenCreate]="true" [presetSupplierId]="selectedSupplierIdForPayment()" (closed)="closePaymentsDialog()"></app-supplier-payments>
-  </p-dialog>
 </div>
+
+<!-- ═══════════ Add/Edit Dialog ═══════════ -->
+<p-dialog [visible]="addEditDialogVisible()" [modal]="true"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '600px', maxWidth: '95vw'}"
+          [header]="editSupplierId() ? 'تعديل بيانات المورد' : 'إضافة مورد جديد'"
+          (onHide)="closeAddEditDialog()" styleClass="imperial-dialog">
+  <app-supplier-add-edit
+    [dialogMode]="true"
+    [editSupplierId]="editSupplierId()"
+    (saved)="onSupplierSaved()"
+    (closed)="closeAddEditDialog()">
+  </app-supplier-add-edit>
+</p-dialog>
+
+<!-- ═══════════ Payments Dialog ═══════════ -->
+<p-dialog [visible]="paymentsDialogVisible()" [modal]="true"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '820px', maxWidth: '95vw'}"
+          header="إدارة سندات الصرف للموردين"
+          (onHide)="closePaymentsDialog()" styleClass="imperial-dialog">
+  <app-supplier-payments
+    [dialogMode]="true"
+    [autoOpenCreate]="true"
+    [presetSupplierId]="selectedSupplierIdForPayment()"
+    (closed)="closePaymentsDialog()">
+  </app-supplier-payments>
+</p-dialog>
 
 <p-confirmDialog [rtl]="true" styleClass="imperial-confirm"></p-confirmDialog>
 <p-toast position="top-left"></p-toast>

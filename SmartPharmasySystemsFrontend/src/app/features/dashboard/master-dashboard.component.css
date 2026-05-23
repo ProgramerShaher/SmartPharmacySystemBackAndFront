@@ -2,7 +2,7 @@
 
 :root {
   --dash-bg: #f8fafc;
-  --emerald-main: #10b981;
+  --emerald-main: var(--primary-color);
   --gold-main: #f59e0b;
   --indigo-main: #6366f1;
   --rose-main: #f43f5e;
@@ -113,7 +113,7 @@
 
 /* Tones Mappings */
 .tone-emerald { border-right: 5px solid var(--emerald-main); }
-.tone-emerald .metric-icon { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
+.tone-emerald .metric-icon { background: linear-gradient(135deg, var(--primary-color), var(--primary-600)); box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3); }
 
 .tone-gold { border-right: 5px solid var(--gold-main); }
 .tone-gold .metric-icon { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }

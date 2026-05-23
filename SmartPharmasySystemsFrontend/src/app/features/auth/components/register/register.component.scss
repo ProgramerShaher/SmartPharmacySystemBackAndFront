@@ -24,7 +24,7 @@
     position: absolute;
     inset: 0 0 auto;
     height: 5px;
-    background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+    background: linear-gradient(90deg, #6366f1, #06b6d4, var(--primary-color));
 }
 
 .auth-header {
@@ -103,7 +103,7 @@
         border: 0;
         border-radius: 12px;
         font-weight: 900;
-        background: linear-gradient(135deg, #4f46e5, #10b981);
+        background: linear-gradient(135deg, #4f46e5, var(--primary-color));
         box-shadow: 0 12px 24px rgba(79, 70, 229, 0.2);
     }
 }

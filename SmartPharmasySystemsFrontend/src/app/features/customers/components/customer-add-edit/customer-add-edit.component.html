@@ -1,49 +1,51 @@
-<div class="edit-container h-full flex flex-column" dir="rtl">
-    <div *ngIf="loading()" class="flex justify-content-center align-items-center flex-grow-1">
+<div class="edit-container h-full flex flex-column fadein" dir="rtl">
+    <!-- Loading overlay inside drawer -->
+    <div *ngIf="loading()" class="flex justify-content-center align-items-center flex-grow-1 py-5">
         <p-progressSpinner></p-progressSpinner>
     </div>
 
-    <form *ngIf="!loading()" [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="flex flex-column h-full">
-        <div class="flex-grow-1 overflow-y-auto px-1 py-2">
-            <!-- Basic Info -->
-            <div class="flex align-items-center gap-2 mb-3">
-                <div class="icon-circle bg-blue-50 text-blue-600">
-                    <i class="pi pi-info-circle"></i>
+    <form *ngIf="!loading()" [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="flex flex-column h-full justify-content-between">
+        <div class="flex-grow-1 px-1 py-1">
+            <!-- ═══════════ Section 1: Basic Info ═══════════ -->
+            <div class="flex align-items-center gap-2 mb-2 mt-1 pb-1 border-bottom-dashed">
+                <div class="icon-circle phone-bg">
+                    <i class="pi pi-user-plus text-xs"></i>
                 </div>
-                <h3 class="m-0 text-gray-700 text-lg font-bold">المعلومات الأساسية</h3>
+                <h3 class="m-0 text-xs font-bold">المعلومات الأساسية والائتمانية</h3>
             </div>
 
             <div class="grid p-fluid">
-                <div class="field col-12">
-                    <label for="name" class="font-bold text-sm mb-2 text-gray-600">اسم العميل <span
-                            class="text-red-500">*</span></label>
+                <!-- Customer Name -->
+                <div class="field col-12 mb-2">
+                    <label for="name" class="font-bold text-xs mb-1 text-gray-500 block">اسم العميل بالكامل <span class="text-red-500">*</span></label>
                     <span class="p-input-icon-left">
                         <i class="pi pi-user text-gray-400"></i>
-                        <input id="name" type="text" pInputText formControlName="name" placeholder="الاسم الكامل"
+                        <input id="name" type="text" pInputText formControlName="name" placeholder="الاسم الكامل للعميل..."
                             class="premium-input" />
                     </span>
-                    <small class="text-red-500 block mt-1"
+                    <small class="text-red-500 block mt-0.5 text-xs"
                         *ngIf="customerForm.get('name')?.touched && customerForm.get('name')?.invalid">
                         الاسم مطلوب (3 أحرف على الأقل)
                     </small>
                 </div>
 
-                <div class="field col-12 md:col-6">
-                    <label for="phone" class="font-bold text-sm mb-2 text-gray-600">رقم الهاتف <span
-                            class="text-red-500">*</span></label>
+                <!-- Phone Number -->
+                <div class="field col-6 mb-2">
+                    <label for="phone" class="font-bold text-xs mb-1 text-gray-500 block">رقم الهاتف والجوال <span class="text-red-500">*</span></label>
                     <span class="p-input-icon-left">
                         <i class="pi pi-phone text-gray-400"></i>
                         <input id="phone" type="text" pInputText formControlName="phoneNumber" placeholder="77xxxxxxx"
                             class="premium-input" />
                     </span>
-                    <small class="text-red-500 block mt-1"
+                    <small class="text-red-500 block mt-0.5 text-xs"
                         *ngIf="customerForm.get('phoneNumber')?.touched && customerForm.get('phoneNumber')?.invalid">
-                        رقم الهاتف مطلوب
+                        رقم الهاتف مطلوب للاتصال
                     </small>
                 </div>
 
-                <div class="field col-12 md:col-6">
-                    <label for="email" class="font-bold text-sm mb-2 text-gray-600">البريد الإلكتروني</label>
+                <!-- Email -->
+                <div class="field col-6 mb-2">
+                    <label for="email" class="font-bold text-xs mb-1 text-gray-500 block">البريد الإلكتروني</label>
                     <span class="p-input-icon-left">
                         <i class="pi pi-envelope text-gray-400"></i>
                         <input id="email" type="email" pInputText formControlName="email" placeholder="email@domain.com"
@@ -51,84 +53,57 @@
                     </span>
                 </div>
 
-                <div class="field col-12">
-                    <label for="creditLimit" class="font-bold text-sm mb-2 text-gray-600">سقف المديونية (ر.ي)</label>
-                    <p-inputNumber id="creditLimit" formControlName="creditLimit" mode="decimal" [minFractionDigits]="2" suffix=" ر.ي"
-                        placeholder="0.00" styleClass="w-full" inputStyleClass="premium-input text-left" [min]="0" [useGrouping]="false">
+                <!-- Credit Limit -->
+                <div class="field col-6 mb-2">
+                    <label for="creditLimit" class="font-bold text-xs mb-1 text-gray-500 block">سقف المديونية الأقصى (ر.ي)</label>
+                    <p-inputNumber id="creditLimit" formControlName="creditLimit" mode="decimal" [minFractionDigits]="0" suffix=" ر.ي"
+                        placeholder="اتركه 0 ليكون مفتوحاً" styleClass="w-full" inputStyleClass="premium-input text-left" [min]="0" [useGrouping]="false">
                     </p-inputNumber>
-                    <small class="text-gray-400 text-xs mt-1 block">اترك القيمة 0 ليكون سقف المديونية مفتوحاً</small>
-                </div>
-            </div>
-
-            <div class="separator my-4 border-top-1 surface-border"></div>
-
-            <!-- Address & Notes -->
-            <div class="flex align-items-center gap-2 mb-3">
-                <div class="icon-circle bg-orange-50 text-orange-600">
-                    <i class="pi pi-map-marker"></i>
-                </div>
-                <h3 class="m-0 text-gray-700 text-lg font-bold">العنوان والملاحظات</h3>
-            </div>
-
-            <div class="grid p-fluid">
-                <div class="field col-12">
-                    <label for="address" class="font-bold text-sm mb-2 text-gray-600">العنوان التفصيلي</label>
-                    <textarea id="address" pInputTextarea formControlName="address" rows="2" class="premium-input"
-                        placeholder="المدينة، الشارع، المعلم القريب"></textarea>
-                </div>
-
-                <div class="field col-12">
-                    <label for="notes" class="font-bold text-sm mb-2 text-gray-600">ملاحظات إضافية</label>
-                    <textarea id="notes" pInputTextarea formControlName="notes" rows="3" class="premium-input"
-                        placeholder="أي تفاصيل أخرى..."></textarea>
                 </div>
 
                 <!-- Status Switch -->
-                <div class="field col-12">
-                    <div
-                        class="flex align-items-center justify-content-between p-3 surface-50 border-round-xl border-1 surface-border">
-                        <div class="flex flex-column">
-                            <span class="font-bold text-gray-800">حالة العميل</span>
-                            <span class="text-sm text-gray-500">تفعيل أو تعطيل التعامل مع هذا العميل</span>
-                        </div>
+                <div class="field col-6 mb-2">
+                    <label class="font-bold text-xs mb-1 text-gray-500 block">حالة الحساب والنشاط</label>
+                    <div class="status-switch-panel py-1 px-3" style="min-height: 38px;">
+                        <span class="text-xs text-gray-700 font-bold">نشط بالنظام</span>
                         <p-inputSwitch formControlName="isActive"></p-inputSwitch>
                     </div>
                 </div>
             </div>
+
+            <!-- ═══════════ Section 2: Address & Notes ═══════════ -->
+            <div class="flex align-items-center gap-2 mb-2 mt-2 pb-1 border-bottom-dashed">
+                <div class="icon-circle address-bg">
+                    <i class="pi pi-map-marker text-xs"></i>
+                </div>
+                <h3 class="m-0 text-xs font-bold">العنوان التفصيلي والملاحظات</h3>
+            </div>
+
+            <div class="grid p-fluid">
+                <!-- Address -->
+                <div class="field col-6 mb-2">
+                    <label for="address" class="font-bold text-xs mb-1 text-gray-500 block">العنوان الجغرافي السكني</label>
+                    <textarea id="address" pInputTextarea formControlName="address" rows="2" class="premium-input"
+                        placeholder="المحافظة، المديرية، الشارع..."></textarea>
+                </div>
+
+                <!-- Notes -->
+                <div class="field col-6 mb-2">
+                    <label for="notes" class="font-bold text-xs mb-1 text-gray-500 block">ملاحظات وقيود إضافية</label>
+                    <textarea id="notes" pInputTextarea formControlName="notes" rows="2" class="premium-input"
+                        placeholder="أي ملاحظات تخص التعامل المالي..."></textarea>
+                </div>
+            </div>
         </div>
 
-        <!-- Form Actions -->
-        <div class="flex justify-content-between gap-3 mt-auto pt-4 border-top-1 surface-border bg-white sticky-footer">
-            <p-button label="إلغاء" icon="pi pi-times" styleClass="p-button-text p-button-secondary w-full"
-                (onClick)="cancel()"></p-button>
-            <p-button [label]="isEditMode() ? 'حفظ التغييرات' : 'إضافة العميل'"
-                [icon]="isEditMode() ? 'pi pi-check' : 'pi pi-plus'" type="submit" [loading]="saving()"
-                styleClass="premium-btn-indigo w-full shadow-2">
-            </p-button>
+        <!-- Form Actions Sticky Footer -->
+        <div class="form-actions-footer mt-2 pt-2 gap-2">
+            <button pButton type="button" label="إلغاء الإجراء" icon="pi pi-times" class="p-button-text p-button-secondary w-full p-button-sm font-bold"
+                (click)="cancel()"></button>
+            <button pButton type="submit" [label]="isEditMode() ? 'حفظ التعديلات' : 'تسجيل العميل الجديد'"
+                [icon]="isEditMode() ? 'pi pi-check' : 'pi pi-plus'" [loading]="saving()"
+                class="imperial-btn-primary w-full p-button-sm font-bold shadow-2">
+            </button>
         </div>
     </form>
 </div>
-<style>
-    .premium-input {
-        border-radius: 0.75rem !important;
-        padding: 0.75rem 1rem !important;
-        background-color: #f9fafb !important;
-        border: 1px solid #e5e7eb !important;
-        transition: all 0.2s;
-    }
-
-    .premium-input:focus {
-        background-color: #ffffff !important;
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1) !important;
-    }
-
-    .icon-circle {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-</style>

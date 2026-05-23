@@ -1,0 +1,103 @@
+@import "primeflex/primeflex.css";
+
+:host { display: block; }
+
+.inventory-page {
+    padding: 1.5rem;
+    background: var(--surface-ground);
+    min-height: 100vh;
+}
+
+.inventory-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    .inventory-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        h1 { margin: 0; font-size: 1.5rem; font-weight: 800; color: var(--text-color); }
+        p { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-color-secondary); }
+    }
+
+    .inventory-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+}
+
+.inventory-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.4rem;
+    box-shadow: 0 8px 20px rgba(168, 85, 247, 0.25);
+}
+
+.inventory-filter-panel {
+    background: var(--surface-card);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--surface-border);
+}
+
+.inventory-filters {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+
+    .inventory-filter {
+        flex: 1;
+        min-width: 160px;
+        &.wide { flex: 2; min-width: 300px; }
+        label { display: block; font-size: 0.78rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-color-secondary); }
+        input { height: 42px; }
+    }
+}
+
+.inventory-panel {
+    background: var(--surface-card);
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    border: 1px solid var(--surface-border);
+    overflow: hidden;
+}
+
+.inventory-chip {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+}
+
+::ng-deep {
+    .inventory-table {
+        .p-datatable-thead > tr > th { font-size: 0.75rem; font-weight: 700; padding: 0.75rem; border-bottom: 1px solid var(--surface-border); }
+        .p-datatable-tbody > tr > td { padding: 0.65rem 0.75rem; font-size: 0.85rem; }
+        .p-paginator { padding: 0.5rem; font-size: 0.85rem; }
+    }
+    .p-button.p-button-text.p-button-sm { width: 2rem; height: 2rem; }
+}
+
+@media (max-width: 768px) {
+    .inventory-page { padding: 1rem; }
+    .inventory-hero { flex-direction: column; align-items: stretch; }
+    .inventory-filters { flex-direction: column; }
+    .inventory-filter { min-width: 100% !important; }
+}

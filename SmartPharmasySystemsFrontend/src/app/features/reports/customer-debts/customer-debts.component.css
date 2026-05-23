@@ -122,7 +122,7 @@
 }
 
 .text-danger { color: #ef4444 !important; font-weight: 700; }
-.text-success { color: #10b981 !important; font-weight: 700; }
+.text-success { color: var(--primary-color) !important; font-weight: 700; }
 .text-center { text-align: center; }
 .font-bold { font-weight: 700; }
 

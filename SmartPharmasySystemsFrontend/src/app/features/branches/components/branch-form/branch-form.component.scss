@@ -1,0 +1,32 @@
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.text-danger { color: #ef4444; }
+
+.premium-input {
+    border-radius: 0.65rem !important;
+    padding: 0.6rem 0.85rem !important;
+    border: 2px solid #e2e8f0 !important;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.9rem;
+    &:focus { border-color: #6366f1 !important; box-shadow: 0 0 0 3px rgba(99,102,241,0.1) !important; }
+}
+
+::ng-deep {
+    .premium-dropdown .p-dropdown {
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 0.65rem !important;
+        font-family: 'Cairo', sans-serif;
+    }
+    .branch-dialog {
+        .p-dialog-header { padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; font-family: 'Cairo', sans-serif; }
+        .p-dialog-content { padding: 1.5rem; }
+        .p-dialog-footer { padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; }
+    }
+    .p-button { font-family: 'Cairo', sans-serif; transition: all 0.2s ease; &:hover:not(:disabled) { transform: translateY(-2px); } }
+}

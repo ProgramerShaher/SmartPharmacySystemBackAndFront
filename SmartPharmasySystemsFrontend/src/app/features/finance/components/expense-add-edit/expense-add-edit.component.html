@@ -1,119 +1,120 @@
-<div class="expense-form-container">
-    <!-- Header Card -->
-    <p-card class="header-card">
-        <div class="header-content">
-            <div class="title-section">
-                <i class="pi pi-money-bill header-icon"></i>
-                <div>
-                    <h2 class="page-title">{{ isEditMode ? 'تعديل مصروف' : 'إضافة مصروف جديد' }}</h2>
-                    <p class="page-subtitle">{{ isEditMode ? 'تحديث بيانات المصروف' : 'إدخال بيانات مصروف جديد' }}</p>
-                </div>
-            </div>
-        </div>
-    </p-card>
-
-    <!-- Loading State -->
-    <div *ngIf="loading" class="loading-container">
-        <p-progressSpinner></p-progressSpinner>
-        <p>جاري التحميل...</p>
+<div class="inventory-page" dir="rtl" style="max-width: 650px; margin: 0 auto;">
+  <!-- Header / Hero Section -->
+  <section class="inventory-hero">
+    <div class="inventory-title">
+      <div class="inventory-icon">
+        <i class="pi pi-money-bill"></i>
+      </div>
+      <div>
+        <h1>{{ isEditMode ? 'تعديل مصروف' : 'إضافة مصروف جديد' }}</h1>
+        <p class="text-xs">{{ isEditMode ? 'تحديث بيانات المصروف الحالي وسند الصرف' : 'إدخل مصروف جديد وتوليد قيد تلقائي' }}</p>
+      </div>
     </div>
+  </section>
 
-    <!-- Form Card -->
-    <p-card *ngIf="!loading" class="form-card">
-        <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()">
-            <div class="form-grid">
-                <!-- Category -->
-                <div class="form-field full-width">
-                    <label for="category" class="required">
-                        <i class="pi pi-tag"></i> فئة المصروف
-                    </label>
-                    <p-dropdown id="category" formControlName="categoryId" [options]="categoryOptions"
-                        placeholder="اختر الفئة" [showClear]="false" styleClass="w-full"
-                        [class.p-invalid]="isFieldInvalid('categoryId')">
-                    </p-dropdown>
-                    <small *ngIf="isFieldInvalid('categoryId')" class="p-error">
-                        {{ getFieldError('categoryId') }}
-                    </small>
-                </div>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="flex flex-column align-items-center justify-content-center py-5">
+    <p-progressSpinner styleClass="w-3rem h-3rem"></p-progressSpinner>
+    <p class="text-600 font-bold mt-2 text-xs">جاري تحميل البيانات...</p>
+  </div>
 
-                <!-- Amount -->
-                <div class="form-field">
-                    <label for="amount" class="required">
-                        <i class="pi pi-dollar"></i> المبلغ
-                    </label>
-                    <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2"
-                        [maxFractionDigits]="2" placeholder="0.00" suffix=" ريال" styleClass="w-full"
-                        [class.p-invalid]="isFieldInvalid('amount')">
-                    </p-inputNumber>
-                    <small *ngIf="isFieldInvalid('amount')" class="p-error">
-                        {{ getFieldError('amount') }}
-                    </small>
-                </div>
+  <!-- Form Section -->
+  <section class="inventory-panel p-3" *ngIf="!loading">
+    <form [formGroup]="expenseForm" (ngSubmit)="onSubmit()" class="p-fluid">
+      <div class="form-grid">
+        <!-- Category -->
+        <div class="form-field full-width">
+          <label for="category" class="required">
+            <i class="pi pi-tag"></i> فئة المصروف
+          </label>
+          <p-dropdown id="category" formControlName="categoryId" [options]="categoryOptions"
+            placeholder="اختر فئة المصروف" [showClear]="false" styleClass="w-full border-round-lg"
+            [class.p-invalid]="isFieldInvalid('categoryId')">
+          </p-dropdown>
+          <small *ngIf="isFieldInvalid('categoryId')" class="p-error">
+            {{ getFieldError('categoryId') }}
+          </small>
+        </div>
 
-                <!-- Expense Date -->
-                <div class="form-field">
-                    <label for="expenseDate" class="required">
-                        <i class="pi pi-calendar"></i> تاريخ المصروف
-                    </label>
-                    <p-calendar id="expenseDate" formControlName="expenseDate" [showIcon]="true" dateFormat="yy-mm-dd"
-                        placeholder="اختر التاريخ" styleClass="w-full"
-                        [class.p-invalid]="isFieldInvalid('expenseDate')">
-                    </p-calendar>
-                    <small *ngIf="isFieldInvalid('expenseDate')" class="p-error">
-                        {{ getFieldError('expenseDate') }}
-                    </small>
-                </div>
+        <!-- Amount -->
+        <div class="form-field">
+          <label for="amount" class="required">
+            <i class="pi pi-dollar"></i> المبلغ
+          </label>
+          <p-inputNumber id="amount" formControlName="amount" mode="decimal" [minFractionDigits]="2"
+            [maxFractionDigits]="2" placeholder="0.00" suffix=" ريال" styleClass="w-full border-round-lg"
+            [class.p-invalid]="isFieldInvalid('amount')">
+          </p-inputNumber>
+          <small *ngIf="isFieldInvalid('amount')" class="p-error">
+            {{ getFieldError('amount') }}
+          </small>
+        </div>
 
-                <!-- Payment Method -->
-                <div class="form-field full-width">
-                    <label class="required">
-                        <i class="pi pi-wallet"></i> طريقة الدفع
-                    </label>
-                    <div class="payment-methods">
-                        <div *ngFor="let method of paymentMethods" class="payment-method-card"
-                            [class.selected]="expenseForm.get('paymentMethod')?.value === method.value"
-                            (click)="expenseForm.patchValue({paymentMethod: method.value})">
-                            <p-radioButton [value]="method.value" formControlName="paymentMethod">
-                            </p-radioButton>
-                            <div class="method-details">
-                                <i class="pi {{method.icon}} method-icon" [style.color]="method.color"></i>
-                                <span class="method-label">{{ method.label }}</span>
-                            </div>
-                            <div class="method-description">
-                                <small *ngIf="method.value === PaymentType.Cash">
-                                    سيتم خصم المبلغ من الخزينة فوراً
-                                </small>
-                                <small *ngIf="method.value === PaymentType.Credit">
-                                    لن يؤثر على رصيد الخزينة حالياً
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Expense Date -->
+        <div class="form-field">
+          <label for="expenseDate" class="required">
+            <i class="pi pi-calendar"></i> تاريخ المصروف
+          </label>
+          <p-calendar id="expenseDate" formControlName="expenseDate" [showIcon]="true" dateFormat="yy-mm-dd"
+            placeholder="اختر التاريخ" styleClass="w-full border-round-lg"
+            [class.p-invalid]="isFieldInvalid('expenseDate')">
+          </p-calendar>
+          <small *ngIf="isFieldInvalid('expenseDate')" class="p-error">
+            {{ getFieldError('expenseDate') }}
+          </small>
+        </div>
 
-                <!-- Notes -->
-                <div class="form-field full-width">
-                    <label for="notes">
-                        <i class="pi pi-align-right"></i> ملاحظات
-                    </label>
-                    <textarea id="notes" pInputTextarea formControlName="notes" rows="4"
-                        placeholder="أدخل أي ملاحظات إضافية..." class="w-full">
-          </textarea>
+        <!-- Payment Method -->
+        <div class="form-field full-width">
+          <label class="required mb-2">
+            <i class="pi pi-wallet"></i> طريقة الدفع
+          </label>
+          <div class="payment-methods">
+            <div *ngFor="let method of paymentMethods" class="payment-method-card"
+              [class.selected]="expenseForm.get('paymentMethod')?.value === method.value"
+              (click)="expenseForm.patchValue({paymentMethod: method.value})">
+              <p-radioButton [value]="method.value" formControlName="paymentMethod" styleClass="mt-1">
+              </p-radioButton>
+              <div class="method-details flex-1">
+                <div class="flex align-items-center gap-2">
+                  <i class="pi {{method.icon}} method-icon" [style.color]="method.color"></i>
+                  <span class="method-label">{{ method.label }}</span>
                 </div>
+                <div class="method-description mt-1">
+                  <small *ngIf="method.value === PaymentType.Cash">
+                    سيتم خصم المبلغ من الخزينة تلقائياً وتوليد قيد فوري
+                  </small>
+                  <small *ngIf="method.value === PaymentType.Credit">
+                    سند آجل يتم تسجيله كمستحق دفع
+                  </small>
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Form Actions -->
-            <div class="form-actions">
-                <button pButton type="button" label="إلغاء" icon="pi pi-times"
-                    class="p-button-outlined p-button-secondary" (click)="cancel()" [disabled]="saving">
-                </button>
-                <button pButton type="submit" [label]="isEditMode ? 'تحديث' : 'حفظ'" icon="pi pi-check"
-                    class="p-button-success" [loading]="saving" [disabled]="saving">
-                </button>
-            </div>
-        </form>
-    </p-card>
+        <!-- Notes -->
+        <div class="form-field full-width">
+          <label for="notes">
+            <i class="pi pi-align-right"></i> ملاحظات
+          </label>
+          <textarea id="notes" pInputTextarea formControlName="notes" rows="3"
+            placeholder="أدخل أي تفاصيل أو ملاحظات إضافية تخص المصروف..." class="w-full border-round-lg"></textarea>
+        </div>
+      </div>
 
-    <!-- Toast -->
-    <p-toast position="top-center" [life]="3000"></p-toast>
+      <!-- Actions -->
+      <div class="form-actions mt-3 pt-3 flex justify-content-end gap-2 border-top-1 border-300">
+        <button pButton type="button" label="إلغاء" icon="pi pi-times"
+          class="p-button-outlined p-button-secondary border-round-lg" (click)="cancel()" [disabled]="saving">
+        </button>
+        <button pButton type="submit" [label]="isEditMode ? 'تحديث المصروف' : 'حفظ المصروف'" icon="pi pi-check"
+          class="p-button-success border-round-lg" [loading]="saving" [disabled]="saving">
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <!-- Toast -->
+  <p-toast position="top-center" [life]="3000"></p-toast>
 </div>

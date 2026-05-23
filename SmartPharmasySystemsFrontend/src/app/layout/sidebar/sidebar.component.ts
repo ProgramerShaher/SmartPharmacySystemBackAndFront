@@ -2,8 +2,10 @@ import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, HostBinding 
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AlertService } from '../../core/services/alert.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
+import { environment } from '../../../environments/environment';
 
 interface SidebarMenuItem {
     key?: string;
@@ -30,7 +32,76 @@ interface SidebarSection {
     selector: 'app-sidebar',
     standalone: true,
     imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
-    templateUrl: './sidebar.component.html',
+    template: `
+<div class="layout-sidebar" dir="rtl" [@slideIn]>
+  <div class="sidebar-header">
+    <div class="brand-mark" [title]="pharmacyName">
+      <img *ngIf="pharmacyLogoUrl; else defaultSidebarLogo" [src]="pharmacyLogoUrl" [alt]="pharmacyName">
+      <ng-template #defaultSidebarLogo>
+        <i class="pi pi-bolt"></i>
+      </ng-template>
+    </div>
+
+    <div class="brand-copy">
+      <h2>{{ pharmacyName }}</h2>
+      <span>نظام الإدارة الذكي</span>
+    </div>
+
+    <button type="button" class="collapse-btn" (click)="toggleCollapsed()"
+      [attr.aria-label]="isCollapsed ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'"
+      [title]="isCollapsed ? 'توسيع الشريط الجانبي' : 'طي الشريط الجانبي'">
+      <i class="pi" [class.pi-angle-double-left]="!isCollapsed" [class.pi-angle-double-right]="isCollapsed"></i>
+    </button>
+  </div>
+
+  <nav class="sidebar-content custom-scrollbar" aria-label="التنقل الرئيسي">
+    <div class="nav-section" *ngFor="let section of menuSections" [class.section-active]="isSectionActive(section)">
+      <button type="button" class="section-trigger" (click)="toggleMenu(section.key)"
+        [class.open]="isMenuOpen(section.key)" [title]="section.label" [attr.aria-expanded]="isMenuOpen(section.key)">
+        <span class="item-icon" [ngClass]="section.iconClass">
+          <i [class]="section.icon"></i>
+        </span>
+        <span class="section-label">{{ section.label }}</span>
+        <i class="pi pi-chevron-down section-arrow"></i>
+      </button>
+
+      <div class="section-panel" [class.open]="isMenuOpen(section.key)">
+        <ng-container *ngFor="let item of section.children">
+          <a *ngIf="!item.children" [routerLink]="item.route" routerLinkActive="active-route"
+            [routerLinkActiveOptions]="{ exact: item.exact || false }" class="menu-item" [title]="item.label">
+            <i [class]="item.icon"></i>
+            <span>{{ item.label }}</span>
+            <span class="new-badge" *ngIf="item.badge">{{ item.badge }}</span>
+            <span class="alert-pill" *ngIf="item.alert && unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
+          </a>
+
+          <div class="nested-menu" *ngIf="item.children">
+            <button type="button" class="menu-item nested-trigger" (click)="toggleMenu(item.key!)"
+              [class.open]="isMenuOpen(item.key!)" [title]="item.label" [attr.aria-expanded]="isMenuOpen(item.key!)">
+              <i [class]="item.icon"></i>
+              <span>{{ item.label }}</span>
+              <i class="pi pi-chevron-down nested-arrow"></i>
+            </button>
+
+            <div class="nested-panel" [class.open]="isMenuOpen(item.key!)">
+              <a *ngFor="let child of item.children" [routerLink]="child.route" routerLinkActive="active-route"
+                [routerLinkActiveOptions]="{ exact: child.exact || false }" class="submenu-item" [title]="child.label">
+                <i [class]="child.icon"></i>
+                <span>{{ child.label }}</span>
+              </a>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="status-dot"></div>
+    <span>متصل الآن</span>
+  </div>
+</div>
+    `,
     styleUrls: ['./sidebar.component.css'],
     animations: [
         trigger('slideIn', [
@@ -50,6 +121,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     unreadAlertsCount = 0;
     currentRoute = '';
+    pharmacyName = 'الصيدلية الذكية';
+    pharmacyLogoUrl: string | null = null;
+    readonly serverUrl = environment.apiUrl.replace('/api', '');
     openMenus: Record<string, boolean> = {
         dashboard: true
     };
@@ -98,6 +172,29 @@ export class SidebarComponent implements OnInit, OnDestroy {
             children: [
                 { label: 'فواتير الشراء', route: '/purchases', icon: 'pi pi-truck' },
                 { label: 'مرتجع المشتريات', route: '/purchases/returns', icon: 'pi pi-refresh' }
+            ]
+        },
+        {
+            key: 'warehouses',
+            label: 'المخازن',
+            icon: 'pi pi-warehouse',
+            iconClass: 'icon-warehouses',
+            match: '/warehouses',
+            children: [
+                { label: 'جميع المخازن', route: '/warehouses', icon: 'pi pi-warehouse', exact: true }
+            ]
+        },
+        {
+            key: 'employees',
+            label: 'الموظفين',
+            icon: 'pi pi-id-card',
+            iconClass: 'icon-employees',
+            match: '/employees',
+            extraMatches: ['/branches', '/departments'],
+            children: [
+                { label: 'جميع الموظفين', route: '/employees', icon: 'pi pi-users', exact: true },
+                { label: 'الفروع', route: '/branches', icon: 'pi pi-sitemap', exact: true },
+                { label: 'الأقسام', route: '/departments', icon: 'pi pi-th-large', exact: true }
             ]
         },
         {
@@ -181,10 +278,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
     constructor(
         private alertService: AlertService,
+        private settingsService: SettingsService,
         private router: Router
     ) { }
 
     ngOnInit() {
+        this.loadPharmacySettings();
+
         // Subscribe to alerts
         this.alertService.unreadAlerts$
             .pipe(takeUntil(this.destroy$))
@@ -250,6 +350,15 @@ export class SidebarComponent implements OnInit, OnDestroy {
     private routeMatches(section: SidebarSection): boolean {
         const matches = [section.match, ...(section.extraMatches || [])].filter((match): match is string => !!match);
         return matches.some((match: string) => this.currentRoute.startsWith(match));
+    }
+
+    private loadPharmacySettings(): void {
+        this.settingsService.getSettings().subscribe({
+            next: (settings) => {
+                this.pharmacyName = settings.pharmacyName || this.pharmacyName;
+                this.pharmacyLogoUrl = settings.logoUrl ? `${this.serverUrl}${settings.logoUrl}` : null;
+            }
+        });
     }
 
     ngOnDestroy() {

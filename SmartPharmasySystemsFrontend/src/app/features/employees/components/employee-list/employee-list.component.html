@@ -1,0 +1,174 @@
+<div class="employee-container p-4 animate-fade-in" dir="rtl">
+    <!-- Header -->
+    <div class="flex justify-content-between align-items-center mb-3">
+        <div class="flex align-items-center gap-3">
+            <div class="icon-circle bg-gradient-employee">
+                <i class="pi pi-users text-3xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="page-title m-0">الموظفين</h1>
+                <p class="page-subtitle m-0">إدارة بيانات الموظفين والفروع والأقسام</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <p-button icon="pi pi-filter" [rounded]="true" [outlined]="true" severity="secondary"
+                pTooltip="الفلاتر" tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
+            <p-button icon="pi pi-cog" [rounded]="true" [outlined]="true" severity="secondary"
+                pTooltip="إدارة الأعمدة" tooltipPosition="bottom" (onClick)="toggleColumnManager()"></p-button>
+            <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success"
+                pTooltip="تصدير Excel" tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
+            <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger"
+                pTooltip="تصدير PDF" tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
+            <p-button label="إضافة موظف" icon="pi pi-plus" [rounded]="true" severity="primary"
+                (onClick)="openAddDialog()"></p-button>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="glass-panel p-3 mb-3 border-round-2xl" *ngIf="showFilters()">
+        <div class="grid p-fluid">
+            <div class="col-12 md:col-4">
+                <label class="filter-label">بحث عام</label>
+                <span class="p-input-icon-left w-full">
+                    <i class="pi pi-search text-gray-400"></i>
+                    <input pInputText type="text" class="premium-input w-full"
+                        placeholder="الاسم، الكود، الهوية، المسمى..."
+                        (input)="globalFilter.set($any($event.target).value)" />
+                </span>
+            </div>
+            <div class="col-12 md:col-3">
+                <label class="filter-label">الفرع</label>
+                <p-dropdown [options]="branches()" [(ngModel)]="filterBranchId" optionLabel="name" optionValue="id"
+                    placeholder="جميع الفروع" styleClass="premium-dropdown w-full" [showClear]="true"></p-dropdown>
+            </div>
+            <div class="col-12 md:col-2">
+                <label class="filter-label">القسم</label>
+                <p-dropdown [options]="departments()" [(ngModel)]="filterDepartmentId" optionLabel="name" optionValue="id"
+                    placeholder="الكل" styleClass="premium-dropdown w-full" [showClear]="true"></p-dropdown>
+            </div>
+            <div class="col-12 md:col-2">
+                <label class="filter-label">الحالة</label>
+                <p-dropdown [options]="[{label:'الكل',value:undefined},{label:'نشط',value:'true'},{label:'غير نشط',value:'false'}]"
+                    [(ngModel)]="filterIsActive" optionLabel="label" optionValue="value"
+                    placeholder="الكل" styleClass="premium-dropdown w-full"></p-dropdown>
+            </div>
+            <div class="col-12 md:col-1 flex align-items-end">
+                <p-button label="بحث" icon="pi pi-search" styleClass="w-full premium-btn-filter"
+                    (onClick)="loadEmployees()"></p-button>
+            </div>
+        </div>
+        <div class="flex justify-content-end mt-2">
+            <p-button label="مسح الكل" icon="pi pi-times" [link]="true" severity="secondary"
+                (onClick)="resetFilters()"></p-button>
+        </div>
+    </div>
+
+    <!-- Column Manager Dialog -->
+    <p-dialog header="إدارة الأعمدة" [visible]="showColumnManager()" (onHide)="showColumnManager.set(false)"
+        [modal]="true" [style]="{width:'380px'}" [dir]="'rtl'" [draggable]="false" [resizable]="false">
+        <div class="flex flex-column gap-1">
+            <div *ngFor="let col of columns()" class="flex align-items-center gap-2 p-2 border-round hover:surface-100 cursor-pointer"
+                (click)="toggleColumnVisibility(col.field)">
+                <p-checkbox [binary]="true" [ngModel]="col.visible"
+                    (onChange)="toggleColumnVisibility(col.field)"></p-checkbox>
+                <span class="text-sm">{{ col.header }}</span>
+            </div>
+        </div>
+    </p-dialog>
+
+    <!-- Table -->
+    <div class="glass-panel border-round-2xl overflow-hidden">
+        <p-table [value]="filteredEmployees()" [rows]="25" [totalRecords]="filteredEmployees().length"
+            [loading]="loading()" [paginator]="true" [rowsPerPageOptions]="[10, 25, 50, 100]"
+            styleClass="p-datatable-striped p-datatable-sm" responsiveLayout="scroll"
+            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} موظف"
+            [showCurrentPageReport]="true">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th *ngFor="let col of visibleColumns()" [style.width]="col.width || 'auto'"
+                        class="text-sm font-bold text-gray-600 py-2 px-3">
+                        {{ col.header }}
+                    </th>
+                    <th style="width: 110px" class="text-center text-sm font-bold text-gray-600 py-2 px-3">الإجراءات</th>
+                </tr>
+                <tr>
+                    <th *ngFor="let col of visibleColumns()" class="py-1 px-3">
+                        <ng-container [ngSwitch]="col.type">
+                            <input *ngSwitchDefault pInputText type="text" class="column-filter-input w-full"
+                                [placeholder]="'فلترة ' + col.header"
+                                (input)="onColumnFilter(col.field, $event)" />
+                            <p-dropdown *ngSwitchCase="'boolean'"
+                                [options]="[{label:'الكل',value:''},{label:'نشط',value:'true'},{label:'غير نشط',value:'false'}]"
+                                [(ngModel)]="filters[col.field]" optionLabel="label" optionValue="value"
+                                placeholder="الكل" styleClass="column-filter-dropdown" (onChange)="applyFilters()">
+                            </p-dropdown>
+                        </ng-container>
+                    </th>
+                    <th class="py-1 px-3"></th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-employee>
+                <tr class="hover:surface-50 transition-colors">
+                    <td *ngFor="let col of visibleColumns()" class="py-2 px-3 border-bottom-1 border-gray-100">
+                        <ng-container [ngSwitch]="col.type">
+                            <span *ngSwitchCase="'currency'"
+                                class="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 border-round text-sm">
+                                {{ (getFieldValue(employee, col.field) || 0) | number:'1.0-0' }} ر.ي
+                            </span>
+                            <div *ngSwitchCase="'date'" class="flex align-items-center gap-1">
+                                <i class="pi pi-calendar text-gray-400 text-xs"></i>
+                                <span class="text-gray-600 text-sm font-mono">
+                                    {{ getFieldValue(employee, col.field) | date:'dd/MM/yyyy' }}
+                                </span>
+                            </div>
+                            <p-tag *ngSwitchCase="'boolean'"
+                                [value]="getActiveLabel(getFieldValue(employee, col.field))"
+                                [severity]="getActiveSeverity(getFieldValue(employee, col.field))"
+                                styleClass="text-xs font-bold px-2 py-1">
+                            </p-tag>
+                            <span *ngSwitchDefault class="text-gray-700 text-sm">
+                                {{ getFieldValue(employee, col.field) }}
+                            </span>
+                        </ng-container>
+                    </td>
+                    <td class="py-2 px-3 border-bottom-1 border-gray-100 text-center">
+                        <div class="flex justify-content-center gap-1">
+                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary" size="small"
+                                pTooltip="تعديل" tooltipPosition="top" (onClick)="openEditDialog(employee)"></p-button>
+                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+                                pTooltip="حذف" tooltipPosition="top"
+                                (onClick)="confirmDelete(employee.id, employee.fullName)"></p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td [attr.colspan]="visibleColumns().length + 1" class="text-center p-6">
+                        <div class="flex flex-column align-items-center">
+                            <div class="w-5rem h-5rem bg-gray-50 border-circle flex align-items-center justify-content-center mb-3">
+                                <i class="pi pi-users text-4xl text-gray-300"></i>
+                            </div>
+                            <span class="text-gray-500 font-medium text-lg">لا يوجد موظفين</span>
+                            <span class="text-gray-400 text-sm mt-1">ابدأ بإضافة موظف جديد</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<app-employee-form *ngIf="showFormDialog()"
+    [visible]="showFormDialog()"
+    [employee]="selectedEmployee"
+    [editMode]="isEditMode"
+    (saved)="onFormSaved()"
+    (cancelled)="onFormCancelled()">
+</app-employee-form>
+
+<p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
+<p-toast position="top-left"></p-toast>

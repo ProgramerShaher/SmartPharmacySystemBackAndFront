@@ -312,7 +312,7 @@
         gap: 0.5rem;
 
         .edit-btn {
-            color: #10b981 !important;
+            color: var(--primary-color) !important;
 
             &:hover {
                 background: rgba(16, 185, 129, 0.1) !important;

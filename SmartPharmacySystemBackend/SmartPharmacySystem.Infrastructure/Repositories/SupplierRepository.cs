@@ -42,7 +42,17 @@ public class SupplierRepository : ISupplierRepository
 
     public Task UpdateAsync(Supplier entity)
     {
-        _context.Suppliers.Update(entity);
+        var trackedEntity = _context.Suppliers.Local.FirstOrDefault(s => s.Id == entity.Id);
+
+        if (trackedEntity != null)
+        {
+            _context.Entry(trackedEntity).CurrentValues.SetValues(entity);
+        }
+        else
+        {
+            _context.Suppliers.Update(entity);
+        }
+
         return Task.CompletedTask;
     }
 

@@ -271,7 +271,7 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
 
   getActivityColor(type: string): string {
     const colors: Record<string, string> = {
-      SaleInvoice: '#10b981',
+      SaleInvoice: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
       PurchaseInvoice: '#6366f1',
       SalesReturn: '#f43f5e',
       PurchaseReturn: '#f59e0b',
@@ -388,7 +388,7 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
         {
           label: 'التدفق الداخل',
           data: cashFlow.inbound,
-          borderColor: '#10b981',
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.08)',
           fill: true,
           tension: 0.4,
@@ -422,7 +422,7 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
           data: cashierPerformance.map((c) => this.toNumber(c.totalSales)),
           borderRadius: 8,
           maxBarThickness: 20,
-          backgroundColor: ['#6366f1', '#10b981', '#f59e0b', '#06b6d4', '#f43f5e', '#8b5cf6']
+          backgroundColor: ['#6366f1', getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#f59e0b', '#06b6d4', '#f43f5e', '#8b5cf6']
         }
       ]
     };
@@ -436,7 +436,7 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
       datasets: [
         {
           data: supplierData.map((s) => this.toNumber(s.inventoryValue)),
-          backgroundColor: ['#10b981', '#6366f1', '#f59e0b', '#06b6d4', '#8b5cf6'],
+          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#6366f1', '#f59e0b', '#06b6d4', '#8b5cf6'],
           hoverOffset: 12,
           borderWidth: 0
         }

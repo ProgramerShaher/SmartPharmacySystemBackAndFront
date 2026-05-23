@@ -1,252 +1,542 @@
 /* ==============================================
-   EXPENSE LIST - FORMAL PROFESSIONAL DESIGN
-   ERP STYLE - MINIMAL & CLEAN
+   EXPENSE LIST - MICRO-COMPACT GLASSMORPHIC OVERRIDES
    ============================================== */
 
-/* Professional CSS Variables */
-:root {
-    --bg-primary: #f8fafc;
-    /* Neutral Light Gray */
-    --bg-secondary: #f1f5f9;
-    --bg-card: #ffffff;
-    --text-primary: #1e293b;
-    /* Corporate Navy */
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-
-    /* Formal Colors */
-    --primary-color: #1e293b;
-    --accent-color: #3b82f6;
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --info-color: #0ea5e9;
+/* Page Scaling to Micro ERP Sizes */
+.inventory-page {
+    gap: 0.5rem !important;
+    padding: 0.35rem !important;
 }
 
-[data-theme="dark"] {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --bg-card: #1e293b;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --border-color: #334155;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+/* Micro Hero Section */
+.inventory-hero {
+    padding: 0.4rem 0.6rem !important;
+    border-radius: 10px !important;
+    gap: 0.5rem !important;
+    background: var(--card-bg) !important;
+    border: var(--card-border) !important;
 }
 
-/* Container */
-.expenses-container {
-    padding: 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    direction: rtl;
-    background: var(--bg-primary);
-    min-height: 100vh;
-}
-
-/* Formal Header Styling */
-.header-card {
-    margin-bottom: 2rem;
-    background: var(--bg-card) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    box-shadow: var(--shadow-sm) !important;
-}
-
-::ng-deep .header-card.p-card .p-card-body {
-    padding: 1rem 1.25rem !important;
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.title-section {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-}
-
-.header-icon {
-    font-size: 2.5rem;
-    color: var(--primary-color);
-    background: var(--bg-secondary);
-    padding: 0.75rem;
-    border-radius: 10px;
-}
-
-.page-title {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--text-primary) !important;
-}
-
-.page-subtitle {
-    margin: 0.25rem 0 0 0;
-    font-size: 0.95rem;
-    color: var(--text-secondary) !important;
-}
-
-/* Formal Add Button */
-.add-btn {
-    background: var(--primary-color) !important;
-    border: none !important;
-    font-weight: 600 !important;
-    padding: 0.65rem 1.75rem !important;
+.inventory-icon {
+    width: 32px !important;
+    height: 32px !important;
     border-radius: 8px !important;
-    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.15) !important;
 }
 
-.add-btn:hover {
-    filter: brightness(1.2);
-    transform: translateY(-1px);
+.inventory-icon i {
+    font-size: 0.95rem !important;
 }
 
-/* Summary Cards Area - Formal Accents */
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2rem;
+.inventory-title h1 {
+    font-size: 0.95rem !important;
+    font-weight: 800;
+    color: var(--text-color) !important;
 }
 
-.summary-card {
-    background: var(--bg-card) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    box-shadow: var(--shadow-sm) !important;
+.inventory-title p {
+    font-size: 0.68rem !important;
+    margin-top: 0.1rem !important;
+    color: var(--text-color-secondary) !important;
 }
 
-::ng-deep .summary-card .p-card-body {
-    padding: 1.5rem !important;
+.inventory-actions {
+    gap: 0.35rem !important;
 }
 
-.summary-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+::ng-deep .inventory-actions button,
+::ng-deep .inventory-actions .p-button {
+    font-size: 0.72rem !important;
+    padding: 0.35rem 0.75rem !important;
+    border-radius: 6px !important;
+    height: auto !important;
 }
 
-.summary-details {
+/* Micro Stat Cards */
+.inventory-stats {
+    gap: 0.4rem !important;
+}
+
+.inventory-stat-card {
+    padding: 0.45rem 0.6rem !important;
+    border-radius: 10px !important;
+    border: var(--card-border) !important;
+}
+
+.inventory-stat-card::before {
+    width: 3px !important;
+}
+
+.inventory-stat-card span {
+    font-size: 0.68rem !important;
+    color: var(--text-color-secondary) !important;
+    font-weight: 700 !important;
+}
+
+.inventory-stat-card strong {
+    font-size: 1.1rem !important;
+    font-weight: 800 !important;
+}
+
+.inventory-stat-card small {
+    font-size: 0.62rem !important;
+    color: var(--text-color-secondary) !important;
+}
+
+/* Tiny Border Highlights */
+.inventory-stats .total-card::before { background: var(--primary-color) !important; }
+.inventory-stats .paid-card::before { background: #28a745 !important; }
+.inventory-stats .unpaid-card::before { background: #f59e0b !important; }
+
+/* Micro Filters Panel */
+.inventory-filter-panel {
+    padding: 0.35rem 0.5rem !important;
+    border-radius: 8px !important;
+    background: var(--card-bg) !important;
+    border: var(--card-border) !important;
+}
+
+.inventory-filters {
+    display: grid !important;
+    grid-template-columns: 1.8fr 1fr 1fr 1fr 1.1fr 1.1fr auto !important;
+    gap: 0.35rem !important;
+    align-items: flex-end !important;
+}
+
+.inventory-filter {
+    grid-column: auto !important;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.15rem;
 }
 
-.summary-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.inventory-filter label {
+    font-size: 0.65rem !important;
+    margin-bottom: 0.1rem !important;
+    font-weight: 800 !important;
+    color: var(--text-color-secondary) !important;
+    white-space: nowrap;
 }
 
-.summary-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-primary);
+/* Micro inputs overrides specifically inside filters */
+::ng-deep .inventory-filters {
+    .p-inputtext,
+    .p-dropdown,
+    .p-calendar .p-inputtext {
+        padding: 0.2rem 0.35rem !important;
+        font-size: 0.72rem !important;
+        height: 1.7rem !important;
+        line-height: 1.7rem !important;
+        border-radius: 5px !important;
+        border: 1px solid var(--border-color) !important;
+    }
+
+    .p-dropdown {
+        display: flex !important;
+        align-items: center !important;
+        
+        .p-dropdown-label {
+            padding: 0 0.25rem !important;
+            line-height: 1.7rem !important;
+            height: 1.7rem !important;
+            font-size: 0.72rem !important;
+        }
+        .p-dropdown-trigger {
+            width: 1.35rem !important;
+            height: 1.7rem !important;
+            span {
+                font-size: 0.65rem !important;
+            }
+        }
+    }
+
+    .p-calendar {
+        height: 1.7rem !important;
+        
+        .p-inputtext {
+            border-top-left-radius: 0px !important;
+            border-bottom-left-radius: 0px !important;
+        }
+
+        .p-datepicker-trigger {
+            width: 1.5rem !important;
+            height: 1.7rem !important;
+            padding: 0 !important;
+            border-top-left-radius: 5px !important;
+            border-bottom-left-radius: 5px !important;
+            background: var(--primary-color) !important;
+            border: 1px solid var(--primary-color) !important;
+            
+            span {
+                font-size: 0.65rem !important;
+            }
+        }
+    }
 }
 
-.summary-icon {
-    font-size: 2.25rem;
-    opacity: 0.8;
-}
-
-/* Formal Summary Accents */
-.total-card {
-    border-right: 4px solid var(--info-color) !important;
-}
-
-.paid-card {
-    border-right: 4px solid var(--success-color) !important;
-}
-
-.unpaid-card {
-    border-right: 4px solid var(--warning-color) !important;
-}
-
-.total-card .summary-icon {
-    color: var(--info-color);
-}
-
-.paid-card .summary-icon {
-    color: var(--success-color);
-}
-
-.unpaid-card .summary-icon {
-    color: var(--warning-color);
-}
-
-/* Table & Filters Card */
-.filters-card,
-.table-card {
-    background: var(--bg-card) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 12px !important;
-    box-shadow: var(--shadow-sm) !important;
-    margin-bottom: 2rem;
-}
-
-::ng-deep .p-datatable-thead>tr>th {
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-    font-weight: 700 !important;
-    padding: 1rem 1.5rem !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-}
-
-[data-theme="dark"] ::ng-deep .p-datatable-thead>tr>th {
-    background: #1e293b !important;
-    color: #cbd5e1 !important;
-}
-
-::ng-deep .p-datatable-tbody>tr {
-    transition: background 0.1s ease !important;
-}
-
-::ng-deep .p-datatable-tbody>tr:hover {
-    background: #f8fafc !important;
-}
-
-[data-theme="dark"] ::ng-deep .p-datatable-tbody>tr:hover {
-    background: #334155 !important;
-}
-
-/* Custom Elements */
-.amount-text {
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.category-cell {
+.filter-btn-container {
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
+    justify-content: flex-end;
 }
 
-.category-icon {
-    color: var(--text-secondary);
-}
-
-/* Professional Inputs */
-::ng-deep .p-inputtext,
-::ng-deep .p-dropdown,
-::ng-deep .p-calendar .p-inputtext {
+::ng-deep .filter-btn-container button {
+    height: 1.7rem !important;
+    padding: 0 0.6rem !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    border-radius: 5px !important;
+    background: transparent !important;
+    color: var(--text-color) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 6px !important;
-    padding: 0.6rem 0.85rem !important;
-    background: var(--bg-card) !important;
-    color: var(--text-primary) !important;
+    
+    span.p-button-icon {
+        font-size: 0.68rem !important;
+    }
+    
+    &:hover {
+        background: var(--surface-hover) !important;
+        border-color: var(--primary-color) !important;
+        color: var(--primary-color) !important;
+    }
 }
 
-::ng-deep .p-inputtext:focus,
-::ng-deep .p-dropdown.p-focus {
-    border-color: var(--accent-color) !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+/* Responsiveness for Compact Filters */
+@media (max-width: 1100px) {
+    .inventory-filters {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+    .filter-btn-container {
+        grid-column: span 3 !important;
+    }
 }
+
+@media (max-width: 768px) {
+    .inventory-filters {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .filter-btn-container {
+        grid-column: span 2 !important;
+        
+        button {
+            width: 100% !important;
+        }
+    }
+}
+
+
+/* Micro PrimeNG Table Layout */
+.inventory-panel {
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    border: var(--card-border) !important;
+}
+
+::ng-deep .inventory-table {
+    .p-datatable-thead > tr > th {
+        padding: 0.45rem 0.5rem !important;
+        font-size: 0.72rem !important;
+        font-weight: 800 !important;
+        border-color: rgba(255, 255, 255, 0.05) !important;
+    }
+    
+    .p-datatable-tbody > tr > td {
+        padding: 0.35rem 0.5rem !important;
+        font-size: 0.72rem !important;
+        border-color: var(--border-color) !important;
+        background: var(--card-bg) !important;
+    }
+    
+    .p-datatable-tbody > tr:hover > td {
+        background: var(--surface-hover) !important;
+    }
+    
+    /* Paginator Scaling */
+    .p-paginator {
+        padding: 0.25rem !important;
+        background: var(--card-bg) !important;
+        border-color: var(--border-color) !important;
+        
+        .p-paginator-pages .p-paginator-page,
+        .p-paginator-first, .p-paginator-prev, .p-paginator-next, .p-paginator-last {
+            min-width: 1.6rem !important;
+            height: 1.6rem !important;
+            font-size: 0.72rem !important;
+            margin: 0 0.05rem !important;
+            border-radius: 4px !important;
+        }
+    }
+}
+
+/* Chip Overrides */
+.inventory-chip {
+    padding: 0.15rem 0.4rem !important;
+    font-size: 0.68rem !important;
+    min-height: 1.35rem !important;
+    border-radius: 4px !important;
+    font-weight: 700 !important;
+}
+
+/* PrimeNG Inputs Scaling */
+::ng-deep .inventory-page {
+    .p-inputtext,
+    .p-dropdown,
+    .p-calendar .p-inputtext {
+        border-radius: 6px !important;
+        padding: 0.35rem 0.5rem !important;
+        font-size: 0.75rem !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        border: 1px solid var(--border-color) !important;
+        height: auto !important;
+    }
+
+    .p-inputtext:focus,
+    .p-dropdown.p-focus,
+    .p-calendar .p-inputtext:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1) !important;
+    }
+    
+    .p-dropdown-panel,
+    .p-datepicker {
+        background: var(--modal-bg) !important;
+        border: var(--card-border) !important;
+        box-shadow: var(--shadow-md) !important;
+        
+        .p-dropdown-item {
+            color: var(--text-color) !important;
+            padding: 0.35rem 0.5rem !important;
+            font-size: 0.75rem !important;
+            &:hover { background: var(--surface-hover) !important; }
+        }
+    }
+}
+
+/* ==============================================
+   PRINTABLE VOUCHER - MEDIA PRINT LAYOUT
+   ============================================== */
+
+.printable-voucher {
+    display: none;
+}
+
+@media print {
+    /* 1. Hide every possible UI component */
+    app-sidebar,
+    .app-sidebar,
+    .layout-sidebar,
+    app-topbar,
+    .app-topbar,
+    .layout-topbar,
+    .layout-footer,
+    .layout-mask,
+    .inventory-page,
+    p-toast,
+    p-confirmdialog,
+    .p-toast,
+    .p-confirmdialog {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* 2. Reset parents */
+    body, html, app-root, .layout-wrapper, .layout-main, .layout-main-container {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    /* 3. Display only the voucher container */
+    .printable-voucher,
+    .printable-voucher * {
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    .printable-voucher {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100% !important;
+        max-width: 19cm !important;
+        margin: 0 auto !important;
+        padding: 0.8cm !important;
+        box-sizing: border-box !important;
+        direction: rtl !important;
+        font-family: 'Cairo', sans-serif !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .voucher-wrapper {
+        border: 2px solid #000000 !important;
+        padding: 1.25rem !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.25rem !important;
+        background: #ffffff !important;
+        position: relative !important;
+    }
+
+    /* Header styling */
+    .voucher-header {
+        display: grid !important;
+        grid-template-columns: 1.2fr 1fr 1.2fr !important;
+        align-items: center !important;
+        border-bottom: 2px solid #000000 !important;
+        padding-bottom: 0.85rem !important;
+    }
+
+    .right-header {
+        text-align: right !important;
+    }
+    .pharmacy-title {
+        display: block !important;
+        font-size: 1.15rem !important;
+        font-weight: 800 !important;
+        margin-bottom: 0.2rem !important;
+    }
+    .pharmacy-sub, .pharmacy-phone {
+        display: block !important;
+        font-size: 0.78rem !important;
+        color: #000000 !important;
+        font-weight: 600 !important;
+    }
+
+    .center-header {
+        text-align: center !important;
+    }
+    .voucher-type-box {
+        border: 2px solid #000000 !important;
+        padding: 0.4rem 0.85rem !important;
+        display: inline-block !important;
+        background: #f5f5f5 !important;
+        border-radius: 4px !important;
+    }
+    .voucher-type-title {
+        display: block !important;
+        font-size: 1.2rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px !important;
+    }
+    .voucher-type-subtitle {
+        display: block !important;
+        font-size: 0.65rem !important;
+        font-weight: 800 !important;
+        color: #000000 !important;
+    }
+
+    .left-header {
+        text-align: left !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.35rem !important;
+    }
+    .meta-row {
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 0.5rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+    }
+    .meta-label {
+        font-weight: 800 !important;
+    }
+
+    /* Amount Bar styling */
+    .amount-receipt-bar {
+        display: flex !important;
+        justify-content: flex-start !important;
+        margin: 0.5rem 0 !important;
+    }
+    .amount-box {
+        border: 2px solid #000000 !important;
+        border-radius: 4px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: stretch !important;
+        font-size: 1.15rem !important;
+        font-weight: 900 !important;
+    }
+    .amount-currency {
+        background: #eaeaea !important;
+        padding: 0.3rem 0.85rem !important;
+        border-left: 2px solid #000000 !important;
+        font-size: 0.85rem !important;
+        font-weight: 800 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .amount-number {
+        padding: 0.3rem 1.25rem !important;
+        background: #ffffff !important;
+    }
+
+    /* Main receipt content grid */
+    .voucher-body-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.85rem !important;
+        margin-top: 0.5rem !important;
+    }
+    .grid-row {
+        display: flex !important;
+        align-items: center !important;
+        border-bottom: 1px dotted #000000 !important;
+        padding-bottom: 0.45rem !important;
+    }
+    .row-label {
+        width: 160px !important;
+        font-weight: 800 !important;
+        font-size: 0.85rem !important;
+        color: #000000 !important;
+        flex-shrink: 0 !important;
+    }
+    .row-content {
+        flex-grow: 1 !important;
+        font-size: 0.9rem !important;
+        text-align: right !important;
+    }
+    .notes-content {
+        font-size: 0.85rem !important;
+        color: #000000 !important;
+        font-style: italic !important;
+    }
+
+    /* Signatures */
+    .voucher-signatures {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr !important;
+        gap: 1.5rem !important;
+        margin-top: 3rem !important;
+        text-align: center !important;
+    }
+    .sig-col {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 2.2rem !important;
+    }
+    .sig-col span {
+        font-weight: 800 !important;
+        font-size: 0.85rem !important;
+    }
+    .sig-line {
+        width: 80% !important;
+        border-bottom: 1.5px dashed #000000 !important;
+    }
+    
+    @page {
+        margin: 0.8cm !important;
+    }
+}
+

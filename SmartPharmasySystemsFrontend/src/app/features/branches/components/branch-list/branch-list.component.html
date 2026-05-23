@@ -1,0 +1,203 @@
+<div class="branch-container p-4 animate-fade-in" dir="rtl">
+    <!-- Premium Header -->
+    <div class="flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="flex align-items-center gap-3">
+            <div class="icon-circle bg-gradient-branch">
+                <i class="pi pi-sitemap text-3xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold m-0 text-gray-800">إدارة الفروع</h1>
+                <p class="text-gray-500 text-sm mt-1">إدارة فروع الشركة، المواقع، وأنواع الفروع</p>
+            </div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            <p-button icon="pi pi-filter-slash" [rounded]="true" [outlined]="true" severity="secondary"
+                pTooltip="مسح الفلاتر" tooltipPosition="bottom" (onClick)="resetFilters()"></p-button>
+            <p-button label="فرع جديد" icon="pi pi-plus" [rounded]="true" severity="primary"
+                (onClick)="openAddDialog()"></p-button>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid mb-4">
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-indigo-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">إجمالي الفروع</span>
+                        <h3 class="text-3xl font-bold text-indigo-600 m-0">{{ totalRecords() }}</h3>
+                    </div>
+                    <div class="bg-indigo-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-sitemap text-indigo-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">جميع الفروع المسجلة في النظام</div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-green-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">نشط</span>
+                        <h3 class="text-3xl font-bold text-green-600 m-0">{{ activeCount() }}</h3>
+                    </div>
+                    <div class="bg-green-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-check-circle text-green-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">الفروع النشطة حالياً</div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-orange-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">رئيسية</span>
+                        <h3 class="text-3xl font-bold text-orange-600 m-0">{{ mainCount() }}</h3>
+                    </div>
+                    <div class="bg-orange-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-star text-orange-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">فروع رئيسية</div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-blue-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">فرعية</span>
+                        <h3 class="text-3xl font-bold text-blue-600 m-0">{{ subCount() }}</h3>
+                    </div>
+                    <div class="bg-blue-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-sitemap text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">فروع فرعية</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white mb-4">
+        <div class="flex flex-wrap gap-3 align-items-end">
+            <div class="flex-1 min-w-16rem">
+                <label class="block text-xs font-bold text-gray-500 mb-1">بحث</label>
+                <span class="p-input-icon-right w-full">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" class="w-full" placeholder="اسم الفرع أو الكود..."
+                        [ngModel]="searchTerm()" (ngModelChange)="onSearch($event)" />
+                </span>
+            </div>
+            <div class="flex-1 min-w-12rem">
+                <label class="block text-xs font-bold text-gray-500 mb-1">الحالة</label>
+                <p-dropdown [options]="statusOptions" optionLabel="label" optionValue="value"
+                    [ngModel]="statusFilter()" (onChange)="statusFilter.set($event.value); onFilterChange()"
+                    placeholder="جميع الحالات" class="w-full"></p-dropdown>
+            </div>
+            <div class="flex-1 min-w-12rem">
+                <label class="block text-xs font-bold text-gray-500 mb-1">النوع</label>
+                <p-dropdown [options]="typeOptions" optionLabel="label" optionValue="value"
+                    [ngModel]="typeFilter()" (onChange)="typeFilter.set($event.value); onFilterChange()"
+                    placeholder="جميع الأنواع" class="w-full"></p-dropdown>
+            </div>
+            <div class="flex-shrink-0">
+                <button pButton icon="pi pi-refresh" label="تحديث" [rounded]="true" [outlined]="true"
+                    severity="info" (click)="loadBranches()" class="h-3rem"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="glass-panel border-round-2xl shadow-1 bg-white overflow-hidden">
+        <p-table [value]="branches()" [loading]="loading()" [paginator]="true" [rows]="15"
+            [rowsPerPageOptions]="[10,15,25,50]" [totalRecords]="totalRecords()" [showCurrentPageReport]="true"
+            currentPageReportTemplate="الفروع {first} إلى {last} من أصل {totalRecords}"
+            styleClass="p-datatable-sm premium-table" responsiveLayout="scroll"
+            sortField="createdAt" [sortOrder]="-1">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between align-items-center p-2">
+                    <span class="text-sm text-gray-500">
+                        <i class="pi pi-list ml-1"></i> قائمة الفروع
+                    </span>
+                    <span class="text-xs bg-indigo-50 text-indigo-700 px-3 py-1 border-round font-bold">
+                        {{ totalRecords() }} فرع
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 50px" class="text-center">#</th>
+                    <th pSortableColumn="branchCode">كود الفرع <p-sortIcon field="branchCode"></p-sortIcon></th>
+                    <th pSortableColumn="name">الاسم <p-sortIcon field="name"></p-sortIcon></th>
+                    <th pSortableColumn="location">الموقع <p-sortIcon field="location"></p-sortIcon></th>
+                    <th pSortableColumn="branchTypeName">النوع <p-sortIcon field="branchTypeName"></p-sortIcon></th>
+                    <th style="width: 80px" class="text-center">المخازن</th>
+                    <th style="width: 80px" class="text-center">الموظفين</th>
+                    <th pSortableColumn="isActive" class="text-center">الحالة <p-sortIcon field="isActive"></p-sortIcon></th>
+                    <th style="width: 120px;" class="text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-branch let-i="rowIndex">
+                <tr class="hover-scale-sm">
+                    <td class="text-center text-gray-400 font-medium">{{ i + 1 }}</td>
+                    <td>
+                        <span class="font-mono text-sm bg-indigo-50 text-indigo-700 px-2 py-1 border-round font-bold">
+                            {{ branch.branchCode }}
+                        </span>
+                    </td>
+                    <td class="font-bold text-gray-700">
+                        <i class="pi pi-building ml-2 text-indigo-400"></i>
+                        {{ branch.name }}
+                    </td>
+                    <td>
+                        <span class="text-gray-500 text-sm">{{ branch.location || '—' }}</span>
+                    </td>
+                    <td>
+                        <p-tag [value]="getTypeLabel(branch.branchType)"
+                            [severity]="branch.branchType === 1 ? 'info' : 'warning'" styleClass="px-3 py-1"></p-tag>
+                    </td>
+                    <td class="text-center">
+                        <span class="font-bold text-sm text-gray-600">{{ branch.warehouseCount }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="font-bold text-sm text-gray-600">{{ branch.employeeCount }}</span>
+                    </td>
+                    <td class="text-center">
+                        <p-tag [value]="getActiveLabel(branch.isActive)"
+                            [severity]="getActiveSeverity(branch.isActive)" styleClass="px-3 py-1"></p-tag>
+                    </td>
+                    <td class="text-center">
+                        <div class="flex justify-content-center gap-1">
+                            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+                                pTooltip="تعديل" tooltipPosition="top" (click)="openEditDialog(branch)"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                                pTooltip="حذف" tooltipPosition="top" (click)="confirmDelete(branch.id, branch.name)"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptydata">
+                <tr>
+                    <td colspan="9" class="text-center p-5">
+                        <div class="flex flex-column align-items-center gap-2 text-gray-400">
+                            <i class="pi pi-sitemap text-5xl"></i>
+                            <span class="font-bold text-lg">لا توجد فروع</span>
+                            <span class="text-sm">لم يتم إضافة أي فروع بعد. اضغط "فرع جديد" للإضافة.</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-confirmDialog acceptLabel="نعم" rejectLabel="إلغاء"></p-confirmDialog>
+<p-toast position="top-center"></p-toast>
+<app-branch-form *ngIf="showFormDialog()" [visible]="showFormDialog()" [branch]="selectedBranch"
+    [editMode]="isEditMode" (saved)="onFormSaved()" (cancelled)="onFormCancelled()">
+</app-branch-form>

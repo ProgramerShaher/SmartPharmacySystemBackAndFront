@@ -57,7 +57,7 @@ export class ExpenseAddEditComponent implements OnInit {
     categoryOptions: any[] = [];
 
     paymentMethods = [
-        { label: 'نقدي', value: PaymentType.Cash, icon: 'pi-wallet', color: '#10b981' },
+        { label: 'نقدي', value: PaymentType.Cash, icon: 'pi-wallet', color: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981' },
         { label: 'آجل', value: PaymentType.Credit, icon: 'pi-credit-card', color: '#f59e0b' }
     ];
 

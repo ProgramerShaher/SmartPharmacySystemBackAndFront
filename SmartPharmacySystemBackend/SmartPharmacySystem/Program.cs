@@ -1,6 +1,5 @@
 using SmartPharmacySystem.Application.IServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Swashbuckle.AspNetCore.ReDoc;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
@@ -50,7 +49,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // -------------------- AutoMapper --------------------
-builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile).Assembly));
+builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile)));
 
 
 // -------------------- Dependency Injection --------------------
@@ -81,6 +80,25 @@ builder.Services.AddScoped<IPriceOverrideRepository, PriceOverrideRepository>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IJournalEntryRepository, JournalEntryRepository>();
 builder.Services.AddScoped<IChequeRepository, ChequeRepository>();
+builder.Services.AddScoped<IBranchRepository, BranchRepository>();
+builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+builder.Services.AddScoped<IMonthlySalaryRepository, MonthlySalaryRepository>();
+builder.Services.AddScoped<IEmployeeLoanRepository, EmployeeLoanRepository>();
+builder.Services.AddScoped<ICustomerLedgerRepository, CustomerLedgerRepository>();
+builder.Services.AddScoped<IInterBranchSettlementRepository, InterBranchSettlementRepository>();
+builder.Services.AddScoped<IDailyClosingRepository, DailyClosingRepository>();
+builder.Services.AddScoped<IExpenseCategoryRepository, ExpenseCategoryRepository>();
+builder.Services.AddScoped<IInventoryStockRepository, InventoryStockRepository>();
+builder.Services.AddScoped<IStockCountRepository, StockCountRepository>();
+builder.Services.AddScoped<IDamagedGoodsRepository, DamagedGoodsRepository>();
+builder.Services.AddScoped<IStockTransferRepository, StockTransferRepository>();
+builder.Services.AddScoped<IStockTransferItemRepository, StockTransferItemRepository>();
+builder.Services.AddScoped<IMedicineWarehouseConfigRepository, MedicineWarehouseConfigRepository>();
+builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
+builder.Services.AddScoped<IPharmacySettingsRepository, PharmacySettingsRepository>();
+builder.Services.AddScoped<IInvoiceSequenceRepository, InvoiceSequenceRepository>();
 
 // Services
 builder.Services.AddScoped<IMedicineService, MedicineService>();
@@ -114,6 +132,32 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
 builder.Services.AddScoped<IChequeService, ChequeService>();
 builder.Services.AddScoped<IPharmacySettingsService, PharmacySettingsService>();
+
+// -------------------- HR & Payroll Services --------------------
+builder.Services.AddScoped<IBranchService, BranchService>();
+builder.Services.AddScoped<IWarehouseService, WarehouseService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<IMonthlySalaryService, MonthlySalaryService>();
+builder.Services.AddScoped<IEmployeeLoanService, EmployeeLoanService>();
+
+// -------------------- Financial & Settlement Services --------------------
+builder.Services.AddScoped<ICustomerLedgerService, CustomerLedgerService>();
+builder.Services.AddScoped<IInterBranchSettlementService, InterBranchSettlementService>();
+builder.Services.AddScoped<IDailyClosingService, DailyClosingService>();
+builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
+
+// -------------------- Inventory & Warehouse Services --------------------
+builder.Services.AddScoped<IInventoryStockService, InventoryStockService>();
+builder.Services.AddScoped<IStockCountService, StockCountService>();
+builder.Services.AddScoped<IDamagedGoodsService, DamagedGoodsService>();
+builder.Services.AddScoped<IStockTransferService, StockTransferService>();
+builder.Services.AddScoped<IMedicineWarehouseConfigService, MedicineWarehouseConfigService>();
+
+// -------------------- Additional Services --------------------
+builder.Services.AddScoped<IPriceOverrideService, PriceOverrideService>();
+builder.Services.AddScoped<IInvoiceSequenceService, InvoiceSequenceService>();
 
 // -------------------- Mobile App Services --------------------
 builder.Services.AddScoped<IOnlineOrderService, OnlineOrderService>();

@@ -1,0 +1,110 @@
+.branch-container {
+    max-width: 1400px;
+    margin: 0 auto;
+
+    :host ::ng-deep {
+        .glass-panel {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .hover-scale {
+            &:hover {
+                transform: translateY(-4px) scale(1.01);
+                box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08) !important;
+            }
+        }
+
+        .hover-scale-sm {
+            transition: all 0.2s ease;
+            &:hover {
+                background: rgba(99, 102, 241, 0.03);
+            }
+        }
+
+        .bg-gradient-branch {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        .icon-circle {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.2);
+        }
+
+        .premium-table {
+            .p-datatable-thead > tr > th {
+                background: #f8fafc;
+                color: #475569;
+                font-size: 0.85rem;
+                font-weight: 700;
+                padding: 1rem 1rem;
+                border-bottom: 2px solid #e2e8f0;
+                text-align: right;
+            }
+            .p-datatable-tbody > tr {
+                transition: all 0.2s ease;
+                &:nth-child(even) { background: #fafbfc; }
+                &:hover { background: #f0f0ff !important; }
+                > td {
+                    padding: 0.85rem 1rem;
+                    border-bottom: 1px solid #f1f5f9;
+                }
+            }
+            .p-paginator {
+                background: transparent;
+                border: none;
+                padding: 1rem;
+                .p-paginator-page.p-highlight {
+                    background: #6366f1;
+                    color: white;
+                    border-radius: 8px;
+                }
+                .p-paginator-element { border-radius: 8px; }
+            }
+            .p-datatable-header {
+                background: transparent;
+                border: none;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        .p-dropdown {
+            width: 100%;
+            border-radius: 10px;
+            &:not(.p-disabled).p-focus {
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+                border-color: #6366f1;
+            }
+        }
+
+        .p-inputtext {
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            &:enabled:focus {
+                box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+                border-color: #6366f1;
+            }
+        }
+
+        .p-tag {
+            font-size: 0.8rem;
+            border-radius: 20px;
+        }
+
+        .p-button.p-button-rounded {
+            border-radius: 10px;
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+}

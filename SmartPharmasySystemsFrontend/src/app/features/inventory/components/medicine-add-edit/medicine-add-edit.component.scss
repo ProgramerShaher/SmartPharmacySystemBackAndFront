@@ -46,7 +46,7 @@
     .medicine-dialog .p-inputtext:focus,
     .medicine-dialog .p-inputnumber-input:focus,
     .medicine-dialog textarea:focus {
-        border-color: #10b981 !important;
+        border-color: var(--primary-color) !important;
         background: #ffffff !important;
         box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
     }
@@ -81,7 +81,7 @@
     position: absolute;
     inset: 0 0 auto;
     height: 5px;
-    background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+    background: linear-gradient(90deg, var(--primary-color), #06b6d4, #6366f1);
 }
 
 .modal-title {
@@ -99,7 +99,7 @@
     flex-shrink: 0;
     border-radius: 13px;
     color: #ffffff;
-    background: linear-gradient(135deg, #0f766e, #10b981);
+    background: linear-gradient(135deg, #0f766e, var(--primary-color));
     box-shadow: 0 12px 24px rgba(16, 185, 129, 0.22);
 }
 
@@ -153,7 +153,7 @@
     overflow: hidden;
     border: 1px dashed #b6d8d0;
     border-radius: 16px;
-    background: linear-gradient(135deg, #f8fafc, #ecfdf5);
+    background: linear-gradient(135deg, #f8fafc, var(--primary-50));
 }
 
 .image-empty {
@@ -193,8 +193,8 @@
     gap: 0.45rem;
     padding: 0.65rem;
     border-radius: 12px;
-    color: #047857;
-    background: #ecfdf5;
+    color: var(--primary-700);
+    background: var(--primary-50);
     font-size: 0.72rem;
     font-weight: 750;
     line-height: 1.6;
@@ -221,7 +221,7 @@
     align-items: center;
     gap: 0.45rem;
     margin: 0 0 0.55rem;
-    color: #047857;
+    color: var(--primary-700);
     font-size: 0.76rem;
     font-weight: 900;
 }
@@ -291,7 +291,7 @@
     border: 0;
     border-radius: 12px;
     font-weight: 900;
-    background: linear-gradient(135deg, #10b981, #0284c7);
+    background: linear-gradient(135deg, var(--primary-color), #0284c7);
     box-shadow: 0 12px 24px rgba(2, 132, 199, 0.18);
 }
 

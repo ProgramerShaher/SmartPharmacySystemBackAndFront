@@ -1,263 +1,246 @@
-<div class="statement-container p-4 animate-fade-in" dir="rtl">
-    <div class="max-w-7xl mx-auto" *ngIf="statement() as s">
+<div class="statement-container fadein" dir="rtl" *ngIf="statement() as s">
 
-        <!-- Action Bar (No Print) -->
-        <div class="flex justify-content-between align-items-center mb-5 no-print">
-            <div class="flex align-items-center gap-3">
-                <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary"
-                    [routerLink]="['/customers/detail', customerId]"></p-button>
-                <div>
-                    <h1 class="text-3xl font-bold m-0 text-gray-800">كشف حساب تفصيلي</h1>
-                    <span class="text-gray-500 text-sm">مراجعة الحركات المالية والمديونية</span>
-                </div>
-            </div>
-
-            <div class="flex gap-2">
-                <p-button label="طباعة الكشف" icon="pi pi-print" (onClick)="printStatement()"
-                    styleClass="p-button-outlined p-button-secondary p-button-rounded font-bold"></p-button>
-                <p-button label="تصدير PDF" icon="pi pi-file-pdf"
-                    styleClass="p-button-outlined p-button-danger p-button-rounded font-bold"></p-button>
-            </div>
+  <!-- ═══════════ Imperial Header / Breadcrumb / Actions (No Print) ═══════════ -->
+  <div class="imperial-header mb-3 no-print">
+    <div class="header-content">
+      <div class="flex-align">
+        <button pButton icon="pi pi-arrow-right" [routerLink]="['/customers/detail', customerId]"
+                class="p-button-rounded p-button-text p-button-secondary back-btn"></button>
+        <div>
+          <h1 class="page-title">كشف الحساب المالي التفصيلي</h1>
+          <p class="page-subtitle">العميل: <span class="highlight-text">{{ s.customer.name }}</span> <span class="badge-code font-mono">#CUST-{{ customerId }}</span></p>
         </div>
-
-        <!-- Filter Bar (No Print) -->
-        <div
-            class="glass-panel p-3 mb-4 border-round-2xl shadow-1 flex flex-wrap gap-4 align-items-end no-print bg-white">
-            <div class="flex-grow-1 grid m-0">
-                <div class="col-12 md:col-4 p-2">
-                    <label class="block font-bold text-gray-700 text-sm mb-2">من تاريخ</label>
-                    <p-calendar [(ngModel)]="dateFrom" appendTo="body" styleClass="w-full premium-input"
-                        placeholder="البداية" dateFormat="yy/mm/dd" [showIcon]="true"></p-calendar>
-                </div>
-                <div class="col-12 md:col-4 p-2">
-                    <label class="block font-bold text-gray-700 text-sm mb-2">إلى تاريخ</label>
-                    <p-calendar [(ngModel)]="dateTo" appendTo="body" styleClass="w-full premium-input"
-                        placeholder="النهاية" dateFormat="yy/mm/dd" [showIcon]="true"></p-calendar>
-                </div>
-                <div class="col-12 md:col-4 p-2 flex align-items-end">
-                    <p-button label="تحديث البيانات" icon="pi pi-refresh" (onClick)="loadStatement()"
-                        styleClass="w-full premium-btn-indigo shadow-1"></p-button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Printable Area Wrapper -->
-        <div class="printable-content">
-            <!-- Professional Header (Visible in Print & UI) -->
-            <div class="glass-panel p-5 mb-4 border-round-2xl shadow-1 bg-white relative overflow-hidden">
-                <div class="absolute top-0 right-0 w-full h-1 bg-gradient-customer"></div>
-
-                <div class="grid align-items-center">
-                    <div class="col-12 md:col-6">
-                        <div class="flex align-items-center gap-3">
-                            <div
-                                class="w-4rem h-4rem bg-indigo-50 border-circle flex align-items-center justify-content-center text-indigo-600 font-bold text-2xl">
-                                {{ s.customer.name.charAt(0) }}
-                            </div>
-                            <div>
-                                <h2 class="m-0 text-xl font-bold text-gray-800">{{ s.customer.name }}</h2>
-                                <div class="flex align-items-center gap-2 mt-1 text-gray-500 text-sm">
-                                    <span *ngIf="s.customer.phoneNumber"><i class="pi pi-phone text-xs"></i> {{
-                                        s.customer.phoneNumber }}</span>
-                                    <span class="mx-2 text-gray-300">|</span>
-                                    <span>الرصيد الحالي: <span class="text-indigo-600 font-bold" dir="ltr">{{
-                                            s.summary.currentBalance | number }}</span> ر.ي</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-12 md:col-6 text-left md:text-left text-center">
-                        <div class="text-gray-500 text-sm">تاريخ التقرير</div>
-                        <div class="font-bold text-gray-800 text-lg">{{ today | date:'yyyy/MM/dd HH:mm' }}</div>
-                        <div class="text-xs text-gray-400 mt-1">
-                            {{ (dateFrom | date:'yyyy/MM/dd') || 'البداية' }} - {{ (dateTo | date:'yyyy/MM/dd') ||
-                            'الآن' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Summary Mini Cards -->
-            <div class="grid mb-4">
-                <div class="col-12 md:col-4">
-                    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden">
-                        <div class="absolute right-0 top-0 h-full w-4px bg-blue-500"></div>
-                        <div class="flex justify-content-between align-items-center">
-                            <div>
-                                <span class="text-gray-500 font-bold text-xs uppercase">إجمالي المبيعات (مدين)</span>
-                                <h3 class="text-2xl font-bold text-blue-600 m-0 mt-2">{{ s.summary.totalSales |
-                                    number:'1.0-2' }}</h3>
-                                <span class="text-xs text-gray-400">ر.ي</span>
-                            </div>
-                            <div
-                                class="bg-blue-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-blue-500">
-                                <i class="pi pi-shopping-cart text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 md:col-4">
-                    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden">
-                        <div class="absolute right-0 top-0 h-full w-4px bg-green-500"></div>
-                        <div class="flex justify-content-between align-items-center">
-                            <div>
-                                <span class="text-gray-500 font-bold text-xs uppercase">إجمالي المقبوضات (دائن)</span>
-                                <h3 class="text-2xl font-bold text-green-600 m-0 mt-2">{{ s.summary.totalReceipts |
-                                    number:'1.0-2' }}</h3>
-                                <span class="text-xs text-gray-400">ر.ي</span>
-                            </div>
-                            <div
-                                class="bg-green-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-green-500">
-                                <i class="pi pi-dollar text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 md:col-4">
-                    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden">
-                        <div class="absolute right-0 top-0 h-full w-4px bg-orange-500"></div>
-                        <div class="flex justify-content-between align-items-center">
-                            <div>
-                                <span class="text-gray-500 font-bold text-xs uppercase">الرصيد القائم</span>
-                                <h3 class="text-2xl font-bold text-gray-800 m-0 mt-2">{{ s.summary.currentBalance |
-                                    number:'1.0-2' }}</h3>
-                                <span class="text-xs text-gray-400">ر.ي</span>
-                            </div>
-                            <div
-                                class="bg-orange-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-orange-500">
-                                <i class="pi pi-wallet text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Premium Table -->
-            <div class="glass-panel border-round-2xl shadow-2 bg-white overflow-hidden">
-                <p-table [value]="s.transactions" [loading]="loading()" styleClass="p-datatable-striped p-datatable-sm"
-                    responsiveLayout="scroll" [tableStyle]="{'min-width': '60rem'}">
-                    <ng-template pTemplate="header">
-                        <tr class="bg-gray-50 text-gray-700 uppercase text-xs">
-                            <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">التاريخ</th>
-                            <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">البيان</th>
-                            <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">رقم المرجع</th>
-                            <th class="py-3 px-4 font-bold text-center border-bottom-1 border-gray-200 text-red-600">
-                                مدين (+)</th>
-                            <th class="py-3 px-4 font-bold text-center border-bottom-1 border-gray-200 text-green-600">
-                                دائن (-)</th>
-                            <th class="py-3 px-4 font-bold text-center border-bottom-1 border-gray-200">الرصيد</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-tx>
-                        <tr class="hover:surface-50 transition-colors">
-                            <td class="px-4 py-3 text-sm text-gray-600 font-medium border-bottom-1 border-gray-100">
-                                {{ tx.transactionDate | date:'yyyy/MM/dd' }}
-                                <div class="text-xs text-gray-400">{{ tx.transactionDate | date:'HH:mm' }}</div>
-                            </td>
-                            <td class="px-4 py-3 border-bottom-1 border-gray-100">
-                                <span class="font-bold text-gray-700 ml-2"
-                                    *ngIf="getTransactionLabel(tx.transactionType) as label">
-                                    {{ label }}
-                                </span>
-                                <span class="text-sm text-gray-500 block">{{ tx.description }}</span>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-500 font-mono border-bottom-1 border-gray-100">
-                                {{ tx.referenceNumber || '-' }}
-                            </td>
-                            <td class="px-4 py-3 text-center font-bold text-red-500 border-bottom-1 border-gray-100">
-                                {{ tx.debit > 0 ? (tx.debit | number:'1.0-2') : '-' }}
-                            </td>
-                            <td class="px-4 py-3 text-center font-bold text-green-500 border-bottom-1 border-gray-100">
-                                {{ tx.credit > 0 ? (tx.credit | number:'1.0-2') : '-' }}
-                            </td>
-                            <td
-                                class="px-4 py-3 text-center font-bold text-gray-800 border-bottom-1 border-gray-100 bg-gray-50">
-                                {{ tx.runningBalance | number:'1.0-2' }}
-                            </td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="emptymessage">
-                        <tr>
-                            <td colspan="6" class="text-center p-5">
-                                <div class="flex flex-column align-items-center">
-                                    <i class="pi pi-inbox text-4xl text-gray-300 mb-3"></i>
-                                    <span class="text-gray-500 font-medium">لا توجد حركات مالية في الفترة المحددة</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="footer">
-                        <tr class="bg-gray-100 border-top-2 border-gray-200">
-                            <td colspan="3" class="text-right font-bold py-3 px-4 text-gray-700">المجاميع النهائية:</td>
-                            <td class="text-center font-bold text-red-600 py-3 px-4 text-lg">
-                                {{ s.summary.totalSales | number:'1.0-2' }}
-                            </td>
-                            <td class="text-center font-bold text-green-600 py-3 px-4 text-lg">
-                                {{ s.summary.totalReceipts | number:'1.0-2' }}
-                            </td>
-                            <td class="text-center font-bold text-indigo-700 py-3 px-4 text-lg bg-indigo-50">
-                                {{ s.summary.currentBalance | number:'1.0-2' }}
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-
-            <!-- Print Footer -->
-            <div class="print-footer hidden mt-6 pt-4 border-top-1 border-300">
-                <div class="grid text-center">
-                    <div class="col-4">
-                        <p class="font-bold text-gray-700 mb-4">المحاسب</p>
-                        <div class="h-2rem"></div>
-                    </div>
-                    <div class="col-4">
-                        <p class="text-xs text-gray-500">{{ today | date:'yyyy-MM-dd HH:mm:ss' }}</p>
-                    </div>
-                    <div class="col-4">
-                        <p class="font-bold text-gray-700 mb-4">استلام العميل</p>
-                        <div class="h-2rem"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
+      <div class="header-actions">
+        <button pButton label="طباعة الكشف المالي" icon="pi pi-print" (click)="printStatement()"
+                class="imperial-btn-primary p-button-sm"></button>
+      </div>
     </div>
+  </div>
+
+  <!-- ═══════════ Search & Filtering Panel (No Print) ═══════════ -->
+  <div class="imperial-search-bar mb-3 no-print">
+    <div class="search-content grid m-0 p-2">
+      <!-- Date From -->
+      <div class="col-12 md:col-4 p-2 search-input-wrapper">
+        <span class="search-label">من تاريخ الحركة المالية</span>
+        <p-calendar [(ngModel)]="dateFrom" appendTo="body" styleClass="w-full"
+                    placeholder="تاريخ البداية" dateFormat="yy/mm/dd" [showIcon]="true"></p-calendar>
+      </div>
+
+      <!-- Date To -->
+      <div class="col-12 md:col-4 p-2 search-input-wrapper">
+        <span class="search-label">إلى تاريخ الحركة المالية</span>
+        <p-calendar [(ngModel)]="dateTo" appendTo="body" styleClass="w-full"
+                    placeholder="تاريخ النهاية" dateFormat="yy/mm/dd" [showIcon]="true"></p-calendar>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="col-12 md:col-4 p-2 flex align-items-end justify-content-end action-buttons">
+        <button pButton label="تطبيق الفلترة وتحديث الحساب" icon="pi pi-refresh" (click)="loadStatement()"
+                class="p-button-outlined p-button-secondary w-full p-button-sm font-bold" style="height: 38px; border-radius: 8px;"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ Printable Area Wrapper ═══════════ -->
+  <div class="printable-content">
+
+    <!-- Official Print Header (Only visible on physical prints) -->
+    <div class="print-only-header hidden">
+      <div class="print-header-layout">
+        <div>
+          <h1 class="print-doc-title">صيدلية النظام الذكي</h1>
+          <p class="print-doc-subtitle">كشف حساب عميل رسمي ومفصل</p>
+        </div>
+        <div class="print-meta-left">
+          <div>تاريخ الطباعة: {{ today | date:'yyyy/MM/dd HH:mm' }}</div>
+          <div>الفترة: {{ (dateFrom | date:'yyyy/MM/dd') || 'البداية' }} - {{ (dateTo | date:'yyyy/MM/dd') || 'الآن' }}</div>
+        </div>
+      </div>
+      <div class="print-divider"></div>
+    </div>
+
+    <!-- ═══════════ Summary Statistics Widgets ═══════════ -->
+    <div class="summary-stats-grid mb-3">
+      <!-- Customer Identity Card -->
+      <div class="statement-stat-card card-supplier">
+        <div class="stat-icon-wrapper">
+          <i class="pi pi-user"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">ملف العميل المالي</span>
+          <span class="stat-value supplier-title text-ellipsis">{{ s.customer.name }}</span>
+        </div>
+      </div>
+
+      <!-- Total Credit Sales (مدين) -->
+      <div class="statement-stat-card card-invoice-total">
+        <div class="stat-icon-wrapper">
+          <i class="pi pi-shopping-cart"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">إجمالي الفواتير (مدين)</span>
+          <span class="stat-value value-credit">{{ s.summary.totalSales | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+        </div>
+      </div>
+
+      <!-- Total Receipts (دائن) -->
+      <div class="statement-stat-card card-payments-total">
+        <div class="stat-icon-wrapper">
+          <i class="pi pi-dollar"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">إجمالي المقبوضات (دائن)</span>
+          <span class="stat-value value-paid">{{ s.summary.totalReceipts | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+        </div>
+      </div>
+
+      <!-- Current Balance -->
+      <div class="statement-stat-card" [ngClass]="s.summary.currentBalance > 0 ? 'bal-debt' : 'bal-clear'">
+        <div class="stat-icon-wrapper">
+          <i class="pi pi-wallet"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">صافي الرصيد القائم</span>
+          <span class="stat-value">{{ s.summary.currentBalance | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ Transaction Color Legend Bar ═══════════ -->
+    <div class="statement-legend-bar mb-3 no-print">
+      <span class="legend-header-text">دليل الحركات والألوان المالي:</span>
+      <div class="legend-chips-row">
+        <span class="legend-indicator"><span class="indicator-dot dot-invoice"></span> فاتورة بيع آجل (مدين عليك)</span>
+        <span class="legend-indicator"><span class="indicator-dot dot-payment"></span> سند قبض مالي (دائن مسدد)</span>
+        <span class="legend-indicator"><span class="indicator-dot dot-return"></span> مرتجع مبيعات (دائن للعميل)</span>
+        <span class="legend-divider">|</span>
+        <span class="legend-indicator">حالة الرصيد:</span>
+        <span class="color-badge badge-red">متبقي مديونية</span>
+        <span class="color-badge badge-teal">الحساب مصفّر</span>
+      </div>
+    </div>
+
+    <!-- ═══════════ Detailed Account Ledger Table ═══════════ -->
+    <div class="ledger-card-wrapper mb-3">
+      <p-table [value]="s.transactions" [loading]="loading()" styleClass="p-datatable-striped p-datatable-sm imperial-statement-table"
+                responsiveLayout="scroll" [tableStyle]="{'min-width': '60rem'}">
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="col-num text-center">#</th>
+            <th class="col-date text-center">تاريخ الحركة</th>
+            <th class="col-type">نوع المستند</th>
+            <th class="col-ref">رقم المرجع</th>
+            <th class="col-amount text-center th-credit">مدين (+)<div class="header-subtext">قيمة المشتريات</div></th>
+            <th class="col-amount text-center th-paid">دائن (-)<div class="header-subtext">المسدد والمدفوعات</div></th>
+            <th class="col-balance text-center th-balance">الرصيد التراكمي<div class="header-subtext">حالة الرصيد الإجمالي</div></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-tx let-index="rowIndex">
+          <tr [ngClass]="{
+                'row-invoice': tx.transactionType === 'SaleInvoice',
+                'row-payment': tx.transactionType === 'Receipt',
+                'row-return': tx.transactionType === 'Return'
+              }">
+            <!-- Serial Number -->
+            <td class="text-center font-bold text-gray-500">{{ index + 1 }}</td>
+
+            <!-- Transaction Date -->
+            <td class="text-center">
+              <span class="font-bold">{{ tx.transactionDate | date:'yyyy/MM/dd' }}</span>
+              <div class="transaction-detail-notes font-mono">{{ tx.transactionDate | date:'HH:mm' }}</div>
+            </td>
+
+            <!-- Transaction Type -->
+            <td>
+              <span class="statement-type-pill" [ngClass]="{
+                      'pill-invoice': tx.transactionType === 'SaleInvoice',
+                      'pill-payment': tx.transactionType === 'Receipt',
+                      'pill-return': tx.transactionType === 'Return'
+                    }">
+                <i class="pi" [ngClass]="{
+                     'pi-shopping-cart': tx.transactionType === 'SaleInvoice',
+                     'pi-dollar': tx.transactionType === 'Receipt',
+                     'pi-refresh': tx.transactionType === 'Return'
+                   }"></i>
+                {{ getTransactionLabel(tx.transactionType) }}
+              </span>
+              <div class="transaction-detail-notes mt-1">{{ tx.description }}</div>
+            </td>
+
+            <!-- Reference Number -->
+            <td>
+              <span class="ref-code-chip">{{ tx.referenceNumber || 'بدون مرجع' }}</span>
+            </td>
+
+            <!-- Debit (مدين +) -->
+            <td class="text-center amount-cell text-credit">
+              {{ tx.debit > 0 ? (tx.debit | number:'1.0-0') : '—' }}
+            </td>
+
+            <!-- Credit (دائن -) -->
+            <td class="text-center amount-cell text-paid">
+              {{ tx.credit > 0 ? (tx.credit | number:'1.0-0') : '—' }}
+            </td>
+
+            <!-- Running Balance -->
+            <td class="text-center amount-cell running-bal-cell"
+                [ngClass]="{
+                  'bal-red': tx.runningBalance > 0,
+                  'bal-green': tx.runningBalance < 0,
+                  'bal-zero': tx.runningBalance === 0
+                }">
+              {{ tx.runningBalance | number:'1.0-0' }}
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="empty-table-placeholder">
+              <i class="pi pi-inbox mb-2"></i>
+              لا توجد أي حركات مالية أو قيود مسجلة لهذا العميل في الفترة الزمنية المحددة.
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+          <tr class="ledger-totals-row">
+            <td colspan="4" class="totals-label">إجمالي الحركات والترصيد النهائي:</td>
+            <td class="text-center amount-cell text-credit-light">{{ s.summary.totalSales | number:'1.0-0' }}</td>
+            <td class="text-center amount-cell text-paid-light">{{ s.summary.totalReceipts | number:'1.0-0' }}</td>
+            <td class="text-center amount-cell text-paid-light" style="background: rgba(255,255,255,0.08) !important;">
+              {{ s.summary.currentBalance | number:'1.0-0' }}
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Official Print Signatures block (Only visible on physical prints) -->
+    <div class="print-only-footer hidden">
+      <div class="print-signatures-row">
+        <div class="signature-box">
+          <span class="signature-title">المحاسب المسؤول</span>
+          <span class="signature-line">.....................................</span>
+        </div>
+        <div class="signature-box">
+          <span class="signature-title">المدير المالي</span>
+          <span class="signature-line">.....................................</span>
+        </div>
+        <div class="signature-box">
+          <span class="signature-title">توقيع واستلام العميل</span>
+          <span class="signature-line">.....................................</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<style>
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-
-        .print-footer {
-            display: block !important;
-        }
-
-        .statement-container {
-            padding: 0 !important;
-            background: white !important;
-        }
-
-        .glass-panel {
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-        }
-
-        .p-datatable-striped .p-datatable-tbody>tr:nth-child(even) {
-            background-color: #f9fafb !important;
-        }
-
-        .bg-indigo-50 {
-            background-color: #eef2ff !important;
-            -webkit-print-color-adjust: exact;
-        }
-
-        /* Force background colors print */
-        * {
-            -webkit-print-color-adjust: exact !important;
-            print-color-adjust: exact !important;
-        }
-    }
-</style>
+<!-- Loading Ring shell -->
+<div class="statement-loading-box" *ngIf="loading()">
+  <div class="imperial-spinner-ring"></div>
+  <div class="loading-text">جاري احتساب وموازنة كشف الحساب التفصيلي...</div>
+</div>
 
 <p-toast position="top-left"></p-toast>

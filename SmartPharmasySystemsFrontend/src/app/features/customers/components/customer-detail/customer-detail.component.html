@@ -1,249 +1,255 @@
-<div class="detail-container p-4 animate-fade-in" dir="rtl">
-    <div class="max-w-7xl mx-auto" *ngIf="customer() as c">
-        <!-- Header Actions & Title -->
-        <div class="flex flex-wrap justify-content-between align-items-center mb-5 gap-3">
-            <div class="flex align-items-center gap-3">
-                <button pButton icon="pi pi-arrow-right"
-                    class="p-button-text p-button-rounded text-gray-500 hover:bg-gray-100" (click)="back()"></button>
-                <div>
-                    <h1 class="text-3xl font-bold m-0 text-gray-800 flex align-items-center gap-2">
-                        {{ c.name }}
-                        <p-tag [severity]="c.isActive ? 'success' : 'danger'" [value]="c.isActive ? 'نشط' : 'خامل'"
-                            [rounded]="true" styleClass="text-xs"></p-tag>
-                    </h1>
-                    <span class="text-gray-500 text-sm">الملف الشخصي والبيانات المالية</span>
-                </div>
-            </div>
+<!-- Add/Edit Dialog Modal -->
+<p-dialog [(visible)]="displayAddEditSidebar" [header]="'تعديل بيانات العميل'" [modal]="true" [style]="{width: '780px', 'max-height': '92vh'}"
+    styleClass="premium-dialog border-round-2xl overflow-hidden" [draggable]="false" [resizable]="false">
 
-            <div class="flex gap-2">
-                <p-button icon="pi pi-book" label="كشف الحساب" [routerLink]="['/customers/statement', c.id]"
-                    styleClass="p-button-outlined p-button-secondary p-button-rounded font-bold"></p-button>
-                <p-button icon="pi pi-pencil" label="تعديل البيانات" [routerLink]="['/customers/edit', c.id]"
-                    styleClass="p-button-outlined p-button-primary p-button-rounded font-bold"></p-button>
-            </div>
+    <app-customer-add-edit *ngIf="displayAddEditSidebar()" [customerId]="selectedCustomerId" (onSave)="onAddEditSave()"
+        (onClose)="onAddEditClose()">
+    </app-customer-add-edit>
+</p-dialog>
+
+<div class="customer-detail-page fadein" dir="rtl" *ngIf="customer() as c">
+
+  <!-- ═══════════ Imperial Header / Breadcrumb / Actions ═══════════ -->
+  <div class="imperial-header mb-3 no-print">
+    <div class="header-content">
+      <div class="flex-align">
+        <button pButton icon="pi pi-arrow-right" (click)="back()"
+                class="p-button-rounded p-button-text p-button-secondary back-btn"></button>
+        <div>
+          <h1 class="page-title">ملف العميل المالي والشخصي</h1>
+          <p class="page-subtitle">العميل: <span class="highlight-text">{{ c.name }}</span> <span class="badge-code font-mono">#CUST-{{ c.id }}</span></p>
         </div>
-
-        <!-- Financial Header (Mini Cards) -->
-        <div class="grid mb-4">
-            <!-- Total Debt -->
-            <div class="col-12 sm:col-6 md:col-3">
-                <div
-                    class="glass-panel p-3 border-round-2xl shadow-1 flex align-items-center justify-content-between h-full hover-scale">
-                    <div>
-                        <span class="text-gray-500 text-xs font-bold uppercase block mb-2">إجمالي المديونية</span>
-                        <div class="text-2xl font-bold"
-                            [ngClass]="c.balance > 0 ? 'text-red-500 dashed-underline' : 'text-green-500'">
-                            {{ c.balance | number }} <small class="text-xs text-gray-400">ر.ي</small>
-                        </div>
-                    </div>
-                    <div
-                        class="bg-red-50 border-circle w-3rem h-3rem flex align-items-center justify-content-center text-red-500">
-                        <i class="pi pi-wallet text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Credit Limit -->
-            <div class="col-12 sm:col-6 md:col-3">
-                <div
-                    class="glass-panel p-3 border-round-2xl shadow-1 flex align-items-center justify-content-between h-full hover-scale">
-                    <div>
-                        <span class="text-gray-500 text-xs font-bold uppercase block mb-2">سقف المديونية</span>
-                        <div class="text-2xl font-bold text-gray-800">
-                            {{ c.creditLimit ? (c.creditLimit | number) : '∞' }} <small class="text-xs text-gray-400"
-                                *ngIf="c.creditLimit">ر.ي</small>
-                        </div>
-                    </div>
-                    <div
-                        class="bg-blue-50 border-circle w-3rem h-3rem flex align-items-center justify-content-center text-blue-500">
-                        <i class="pi pi-shield text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Last Payment (Mocked for now or added if available) -->
-            <div class="col-12 sm:col-6 md:col-3">
-                <div
-                    class="glass-panel p-3 border-round-2xl shadow-1 flex align-items-center justify-content-between h-full hover-scale">
-                    <div>
-                        <span class="text-gray-500 text-xs font-bold uppercase block mb-2">آخر دفعة</span>
-                        <div class="text-2xl font-bold text-gray-800">
-                            - <small class="text-xs text-gray-400">ر.ي</small>
-                        </div>
-                    </div>
-                    <div
-                        class="bg-green-50 border-circle w-3rem h-3rem flex align-items-center justify-content-center text-green-500">
-                        <i class="pi pi-check-circle text-xl"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Last Visit -->
-            <div class="col-12 sm:col-6 md:col-3">
-                <div
-                    class="glass-panel p-3 border-round-2xl shadow-1 flex align-items-center justify-content-between h-full hover-scale">
-                    <div>
-                        <span class="text-gray-500 text-xs font-bold uppercase block mb-2">آخر زيارة</span>
-                        <div class="text-xl font-bold text-gray-800">
-                            {{ 'اليوم' }}
-                        </div>
-                    </div>
-                    <div
-                        class="bg-orange-50 border-circle w-3rem h-3rem flex align-items-center justify-content-center text-orange-500">
-                        <i class="pi pi-calendar text-xl"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid">
-            <!-- Left Info Card + Donut Chart -->
-            <div class="col-12 lg:col-4">
-                <div class="glass-panel border-round-3xl shadow-2 overflow-hidden h-full flex flex-column bg-white">
-                    <!-- Profile Header -->
-                    <div class="p-5 text-center bg-gray-50 relative">
-                        <div class="absolute top-0 left-0 w-full h-full opacity-50 bg-pattern"></div>
-                        <div class="avatar-large mx-auto mb-3 shadow-4 surface-card flex align-items-center justify-content-center border-circle text-4xl font-bold text-indigo-600 relative z-1"
-                            style="width: 80px; height: 80px;">
-                            {{ c.name.charAt(0) }}
-                        </div>
-                        <h2 class="m-0 text-gray-800 font-bold relative z-1">{{ c.name }}</h2>
-                        <span class="text-sm text-gray-500 relative z-1">{{ c.phoneNumber }}</span>
-                    </div>
-
-                    <!-- Contact Info List -->
-                    <div class="p-4 flex-grow-1">
-                        <h4 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-4">معلومات الاتصال</h4>
-
-                        <div class="flex flex-column gap-3 mb-4">
-                            <div class="flex align-items-center gap-3">
-                                <i class="pi pi-phone text-indigo-500 bg-indigo-50 p-2 border-circle"></i>
-                                <span class="text-gray-700 font-medium text-sm">{{ c.phoneNumber }}</span>
-                            </div>
-                            <div class="flex align-items-center gap-3">
-                                <i class="pi pi-map-marker text-orange-500 bg-orange-50 p-2 border-circle"></i>
-                                <span class="text-gray-700 font-medium text-sm">{{ c.address || 'العنوان غير محدد'
-                                    }}</span>
-                            </div>
-                            <div class="flex align-items-center gap-3" *ngIf="c.email">
-                                <i class="pi pi-envelope text-purple-500 bg-purple-50 p-2 border-circle"></i>
-                                <span class="text-gray-700 font-medium text-sm">{{ c.email }}</span>
-                            </div>
-                        </div>
-
-                        <p-divider></p-divider>
-
-                        <!-- Purchase Categories Donut Chart -->
-                        <div class="mt-4">
-                            <h4 class="text-gray-400 text-xs font-bold uppercase tracking-wider mb-3">تحليل المشتريات
-                                (تصنيفات)</h4>
-                            <div class="flex flex-column align-items-center">
-                                <div class="chart-wrapper relative" style="height: 160px; width: 160px;">
-                                    <p-chart type="doughnut" [data]="purchaseCategoryData"
-                                        [options]="purchaseCategoryOptions" height="160px" width="160px"></p-chart>
-                                    <!-- Center Text -->
-                                    <div
-                                        class="absolute top-0 left-0 w-full h-full flex align-items-center justify-content-center pointer-events-none">
-                                        <i class="pi pi-shopping-bag text-2xl text-gray-300"></i>
-                                    </div>
-                                </div>
-                                <div class="flex gap-2 mt-3 flex-wrap justify-content-center">
-                                    <span class="text-xs text-gray-500 flex align-items-center gap-1">
-                                        <span class="block w-0-5rem h-0-5rem border-circle bg-indigo-500"></span> مزمنة
-                                    </span>
-                                    <span class="text-xs text-gray-500 flex align-items-center gap-1">
-                                        <span class="block w-0-5rem h-0-5rem border-circle bg-pink-500"></span> مضادات
-                                    </span>
-                                    <span class="text-xs text-gray-500 flex align-items-center gap-1">
-                                        <span class="block w-0-5rem h-0-5rem border-circle bg-green-500"></span> عناية
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Financial & Activity -->
-            <div class="col-12 lg:col-8">
-                <div class="flex flex-column gap-4 h-full">
-
-                    <!-- Balance Progress & Indication -->
-                    <div class="glass-panel p-4 border-round-3xl shadow-1 bg-white">
-                        <div class="flex justify-content-between align-items-end mb-2">
-                            <div>
-                                <h3 class="font-bold text-gray-700 m-0">استهلاك السقف الائتماني</h3>
-                                <p class="text-gray-500 text-sm m-0 mt-1">نسبة الدين الحالي من الحد المسموح به</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-2xl font-bold"
-                                    [ngClass]="getDebtSeverity() === 'danger' ? 'text-red-500' : 'text-indigo-600'">
-                                    {{ getDebtPercentage() | number:'1.0-1' }}%
-                                </span>
-                            </div>
-                        </div>
-                        <p-progressBar [value]="getDebtPercentage()" [showValue]="false"
-                            styleClass="h-1rem border-round-xl mt-2"
-                            [color]="getDebtSeverity() === 'danger' ? '#ef4444' : (getDebtSeverity() === 'warning' ? '#f59e0b' : '#10b981')">
-                        </p-progressBar>
-                    </div>
-
-                    <!-- Activity Chart -->
-                    <div class="glass-panel p-4 border-round-3xl shadow-1 bg-white flex-grow-1">
-                        <div class="flex justify-content-between align-items-center mb-4">
-                            <div>
-                                <h3 class="m-0 text-gray-700 font-bold flex align-items-center gap-2">
-                                    <i class="pi pi-chart-line text-indigo-500"></i>
-                                    النشاط المالي
-                                </h3>
-                                <p class="text-gray-400 text-xs mt-1">تطور الرصيد خلال آخر 15 عملية</p>
-                            </div>
-                        </div>
-
-                        <div class="chart-container relative" style="height: 250px;">
-                            <p-chart type="line" [data]="historyChartData" [options]="historyChartOptions"
-                                *ngIf="historyChartData"></p-chart>
-                            <div *ngIf="!historyChartData"
-                                class="flex align-items-center justify-content-center h-full text-gray-400">
-                                لا توجد بيانات كافية للرسم البياني
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notes Section -->
-                    <div class="glass-panel p-4 border-round-3xl shadow-1 bg-gray-50">
-                        <h4 class="m-0 mb-2 font-bold text-gray-600 flex align-items-center gap-2">
-                            <i class="pi pi-file-edit text-gray-400"></i> ملاحـظات
-                        </h4>
-                        <p
-                            class="text-gray-600 line-height-3 text-sm m-0 bg-white p-3 border-round-xl border-1 border-gray-200">
-                            {{ c.notes || 'لا توجد ملاحظات مسجلة على هذا العميل.' }}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
+      <div class="header-actions">
+        <button pButton label="كشف الحساب" icon="pi pi-book" [routerLink]="['/customers/statement', c.id]"
+                class="imperial-btn-outline p-button-sm"></button>
+        <button pButton label="تعديل البيانات" icon="pi pi-pencil" (click)="openEdit(c.id)"
+                class="imperial-btn-warning p-button-sm"></button>
+      </div>
     </div>
+  </div>
+
+  <div class="detail-grid">
+    <!-- ═══════════ Sidebar: Profile Info Card ═══════════ -->
+    <div class="sidebar-col">
+      <div class="profile-card">
+        <!-- Top Gradient Strip -->
+        <div class="profile-card-header">
+          <div class="profile-avatar shadow-lg">
+            {{ c.name.charAt(0) }}
+          </div>
+          <div class="status-badge">
+            <span class="status-dot" [class.active]="c.isActive"></span>
+            {{ c.isActive ? 'نشط بالنظام' : 'موقف مؤقتاً' }}
+          </div>
+        </div>
+
+        <!-- Body content -->
+        <div class="profile-card-body">
+          <div class="profile-header-text">
+            <h2 class="customer-display-name">{{ c.name }}</h2>
+            <div class="contact-person-label">
+              <i class="pi pi-user ml-1 text-primary"></i>
+              عميل معتمد لدى الصيدلية
+            </div>
+          </div>
+
+          <div class="profile-info-list">
+            <!-- Phone Number -->
+            <div class="profile-info-item">
+              <div class="info-icon phone-bg">
+                <i class="pi pi-phone"></i>
+              </div>
+              <div class="info-texts">
+                <span class="info-label">رقم الهاتف والجوال</span>
+                <span class="info-value font-mono dir-ltr">{{ c.phoneNumber || 'غير متوفر' }}</span>
+              </div>
+            </div>
+
+            <!-- Email Address -->
+            <div class="profile-info-item">
+              <div class="info-icon email-bg">
+                <i class="pi pi-envelope"></i>
+              </div>
+              <div class="info-texts">
+                <span class="info-label">البريد الإلكتروني</span>
+                <span class="info-value">{{ c.email || 'غير متوفر' }}</span>
+              </div>
+            </div>
+
+            <!-- Geographical Address -->
+            <div class="profile-info-item">
+              <div class="info-icon address-bg">
+                <i class="pi pi-map-marker"></i>
+              </div>
+              <div class="info-texts">
+                <span class="info-label">العنوان الجغرافي / السكن</span>
+                <span class="info-value">{{ c.address || 'غير محدد' }}</span>
+              </div>
+            </div>
+
+            <!-- Registration Date (Mocked or Defaulted) -->
+            <div class="profile-info-item">
+              <div class="info-icon date-bg">
+                <i class="pi pi-calendar-plus"></i>
+              </div>
+              <div class="info-texts">
+                <span class="info-label">تاريخ التسجيل بالنظام</span>
+                <span class="info-value font-mono">2026/01/01</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <!-- Purchase Categories Donut Chart -->
+          <div class="categories-donut-section">
+            <h4 class="donut-title">تحليل المشتريات (تصنيفات)</h4>
+            <div class="donut-chart-wrapper">
+              <div class="chart-box" style="height: 120px; width: 120px; position: relative; margin: 0 auto;">
+                <p-chart type="doughnut" [data]="purchaseCategoryData"
+                          [options]="purchaseCategoryOptions" height="120px" width="120px"></p-chart>
+                <div class="chart-center-icon">
+                  <i class="pi pi-chart-pie"></i>
+                </div>
+              </div>
+              <div class="donut-legend">
+                <span class="legend-chip"><span class="chip-color ch-chronic"></span> مزمنة</span>
+                <span class="legend-chip"><span class="chip-color ch-antibiotics"></span> مضادات</span>
+                <span class="legend-chip"><span class="chip-color ch-care"></span> عناية</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ Main Content Area ═══════════ -->
+    <div class="main-content-col">
+      <!-- KPI stats grid -->
+      <div class="kpi-grid">
+        <!-- Total Debt Card -->
+        <div class="imperial-kpi-card">
+          <div class="kpi-main-row">
+            <div>
+              <span class="kpi-title">إجمالي المديونية (مدين)</span>
+              <div class="kpi-value debt">
+                {{ c.balance | number }}
+                <span class="kpi-unit">ر.ي</span>
+              </div>
+            </div>
+            <div class="kpi-icon-box debt-bg-icon">
+              <i class="pi pi-wallet"></i>
+            </div>
+          </div>
+          <div class="kpi-footer-row">
+            <i class="pi pi-info-circle ml-1 orange-color-text"></i>
+            <span>الرصيد القائم المستحق دفعه فوراً</span>
+          </div>
+        </div>
+
+        <!-- Credit Limit Card -->
+        <div class="imperial-kpi-card">
+          <div class="kpi-main-row">
+            <div>
+              <span class="kpi-title">سقف المديونية الأقصى</span>
+              <div class="kpi-value clear">
+                {{ c.creditLimit ? (c.creditLimit | number) : '∞' }}
+                <span class="kpi-unit" *ngIf="c.creditLimit">ر.ي</span>
+              </div>
+            </div>
+            <div class="kpi-icon-box purchases-bg-icon">
+              <i class="pi pi-shield"></i>
+            </div>
+          </div>
+          <div class="kpi-footer-row">
+            <i class="pi pi-check-circle ml-1 primary-color-text"></i>
+            <span>الحد الأقصى للبيع الآجل المسموح به</span>
+          </div>
+        </div>
+
+        <!-- Last Visit Card -->
+        <div class="imperial-kpi-card">
+          <div class="kpi-main-row">
+            <div>
+              <span class="kpi-title">آخر زيارة / نشاط مالي</span>
+              <div class="kpi-value" style="font-size: 1.1rem; padding-top: 0.2rem;">
+                اليوم
+              </div>
+            </div>
+            <div class="kpi-icon-box returns-bg-icon">
+              <i class="pi pi-calendar text-orange-500"></i>
+            </div>
+          </div>
+          <div class="kpi-footer-row">
+            <i class="pi pi-clock ml-1"></i>
+            <span>آخر حركة شراء أو سداد مسجلة</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Credit Limit Progress & Chart Column -->
+      <div class="financial-progress-section mb-3">
+        <div class="progress-info-row">
+          <div>
+            <h3 class="section-main-title">استهلاك السقف الائتماني المالي</h3>
+            <p class="section-sub-title">نسبة الدين الحالي المترتب على العميل من الحد الائتماني الإجمالي</p>
+          </div>
+          <div class="percentage-display">
+            <span class="percent-val" [ngClass]="getDebtSeverity() === 'danger' ? 'danger-text' : 'primary-text'">
+              {{ getDebtPercentage() | number:'1.0-1' }}%
+            </span>
+          </div>
+        </div>
+        <p-progressBar [value]="getDebtPercentage()" [showValue]="false"
+                       styleClass="h-1rem border-round-xl mt-2 progress-bar-bar"
+                       [color]="getDebtSeverity() === 'danger' ? '#ef4444' : (getDebtSeverity() === 'warning' ? '#f59e0b' : 'var(--primary-color, #10b981)')">
+        </p-progressBar>
+      </div>
+
+      <!-- Chart and Notes section -->
+      <div class="chart-and-notes-section">
+        <!-- Balance evolutionary chart -->
+        <div class="imperial-chart-card mb-3">
+          <div class="chart-header">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-chart-line chart-icon"></i>
+              <div>
+                <h3 class="chart-title">النشاط والمسار المالي للعميل</h3>
+                <p class="chart-subtitle">تطور ومنحنى رصيد المديونية التراكمي خلال آخر 15 حركة مالية مسجلة</p>
+              </div>
+            </div>
+          </div>
+          <div class="chart-area-box" style="height: 250px; position: relative;">
+            <p-chart type="line" [data]="historyChartData" [options]="historyChartOptions"
+                      *ngIf="historyChartData"></p-chart>
+            <div *ngIf="!historyChartData"
+                 class="flex align-items-center justify-content-center h-full empty-chart-placeholder">
+              <i class="pi pi-chart-line ml-2"></i> لا توجد حركات مالية كافية لتتبع المسار البياني
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes Card interior -->
+        <div class="imperial-notes-card">
+          <h4 class="notes-header-title">
+            <i class="pi pi-file-edit"></i> ملاحظات وسجل العميل الخاص
+          </h4>
+          <div class="notes-body-text">
+            {{ c.notes || 'لا توجد ملاحظات مسجلة أو تحذيرات ائتمانية على هذا العميل حتى الآن.' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<style>
-    .dashed-underline {
-        text-decoration: underline;
-        text-decoration-style: dashed;
-        text-decoration-color: rgba(239, 68, 68, 0.3);
-        text-underline-offset: 4px;
-    }
+<!-- Loading Ring shell -->
+<div class="imperial-loading-shell" *ngIf="loading()">
+  <div class="imperial-spinner-ring"></div>
+  <div class="loading-main-text">جاري تحميل ملف العميل المالي...</div>
+  <div class="loading-sub-text">يرجى الانتظار قليلاً لتجميع السجلات المالية والائتمانية</div>
+</div>
 
-    .hover-scale {
-        transition: transform 0.2s;
-    }
-
-    .hover-scale:hover {
-        transform: translateY(-2px);
-    }
-
-    .bg-pattern {
-        background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-        background-size: 10px 10px;
-    }
-</style>
+<p-toast position="top-left"></p-toast>

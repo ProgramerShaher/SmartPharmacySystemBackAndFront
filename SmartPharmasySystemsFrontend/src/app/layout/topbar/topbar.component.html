@@ -23,6 +23,12 @@
 
     <!-- Actions Section -->
     <div class="topbar-right">
+        <!-- Settings Toggle -->
+        <button class="action-icon-btn theme-toggle" (click)="themeSettings.show()"
+            pTooltip="تخصيص المظهر" tooltipPosition="bottom" pRipple>
+            <i class="pi pi-palette"></i>
+        </button>
+
         <!-- Theme Toggle -->
         <button class="action-icon-btn theme-toggle" (click)="themeService.toggleTheme()"
             [pTooltip]="themeService.currentThemeValue === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'"
@@ -119,3 +125,6 @@
 
 <!-- Confirmation Dialog -->
 <p-confirmDialog [style]="{width: '400px'}" [baseZIndex]="10000"></p-confirmDialog>
+
+<!-- Theme Settings Panel -->
+<app-theme-settings #themeSettings></app-theme-settings>

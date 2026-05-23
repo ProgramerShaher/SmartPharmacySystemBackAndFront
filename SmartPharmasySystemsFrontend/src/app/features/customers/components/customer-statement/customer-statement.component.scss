@@ -1,107 +1,702 @@
+/* customer-statement.component.scss - Premium Imperial Theme (Compact-Micro Design) */
+
+:host {
+  display: block;
+}
+
 .statement-container {
-    background: #f5f5f5;
-    min-height: 100vh;
-    color: #1e293b;
-    /* Force dark text */
+  padding: 0.75rem;
+  background: transparent; /* Transparent so body gradient shows through nicely */
+  min-height: calc(100vh - 70px);
+  color: var(--text-color, #1e293b);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-.statement-header {
-    border: 1px solid #dee2e6;
-}
+/* ═══════════ Imperial Header ═══════════ */
+.imperial-header {
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg, #ffffff);
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    backdrop-filter: var(--glass-blur, blur(10px));
+  }
 
-.statement-table {
-    ::ng-deep {
-        .p-datatable-thead>tr>th {
-            padding: 0.75rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-align: center;
-            color: #1e293b;
-            /* Force dark text */
-        }
+  .flex-align {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
 
-        .p-datatable-tbody>tr {
-            color: #334155;
-            /* Force dark text */
-
-            >td {
-                padding: 0.75rem;
-                font-size: 0.875rem;
-                border-bottom: 1px solid #e9ecef;
-                color: #334155;
-            }
-        }
-
-        .p-datatable-footer>tr>td {
-            padding: 1rem 0.75rem;
-            font-weight: 600;
-            border-top: 2px solid #dee2e6;
-            color: #1e293b;
-        }
+  .back-btn {
+    width: 2.2rem;
+    height: 2.2rem;
+    color: var(--text-color-secondary);
+    &:hover {
+      background: var(--surface-hover, rgba(0,0,0,0.05)) !important;
     }
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  .page-subtitle {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .highlight-text {
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  .badge-code {
+    background: var(--surface-hover, #e2e8f0);
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+    color: var(--text-color-secondary);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
-// Print Styles
-.no-print {
-    @media print {
-        display: none !important;
+/* ═══════════ Imperial Search Bar ═══════════ */
+.imperial-search-bar {
+  .search-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg, #ffffff);
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    backdrop-filter: var(--glass-blur, blur(10px));
+  }
+
+  .search-input-wrapper {
+    flex: 1;
+    min-width: 0;
+
+    .search-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text-color-secondary);
+      margin-bottom: 0.2rem;
     }
+  }
+
+  .action-buttons {
+    display: flex;
+    align-items: center;
+  }
 }
 
-.print-footer {
-    @media print {
-        display: block !important;
-        page-break-inside: avoid;
+/* Make sure calendar inputs are fully themed and dark/light aware */
+::ng-deep {
+  .p-calendar {
+    width: 100%;
+    .p-inputtext {
+      background: var(--input-bg, #ffffff) !important;
+      color: var(--text-color, #1e293b) !important;
+      border: 1px solid var(--border-color, rgba(0,0,0,0.12)) !important;
+      border-radius: 8px !important;
+      padding: 0.45rem 0.75rem !important;
+      font-size: 0.76rem !important;
+      width: 100%;
+
+      &:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1) !important;
+      }
     }
+    .p-datepicker {
+      background: var(--modal-bg, #ffffff) !important;
+      border: 1px solid var(--border-color, rgba(0,0,0,0.12)) !important;
+      color: var(--text-color) !important;
+
+      .p-datepicker-header {
+        background: var(--surface-hover, #f1f5f9) !important;
+        color: var(--text-color) !important;
+        border-bottom: 1px solid var(--border-color) !important;
+      }
+
+      table th {
+        color: var(--text-color) !important;
+      }
+
+      table td > span {
+        color: var(--text-color) !important;
+        &:hover {
+          background: var(--surface-hover) !important;
+        }
+        &.p-highlight {
+          background: var(--primary-color) !important;
+          color: var(--primary-color-text) !important;
+        }
+      }
+    }
+  }
 }
 
+/* Premium Primary Button override */
+.imperial-btn-primary {
+  background: linear-gradient(135deg, var(--primary-600, #059669), var(--primary-400, #34d399)) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.25);
+  }
+}
+
+/* ═══════════ Summary Stats Grid ═══════════ */
+.summary-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statement-stat-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: var(--card-border, 1px solid rgba(0,0,0,0.08));
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  backdrop-filter: var(--glass-blur, blur(10px));
+
+  &:hover {
+    transform: translateY(-1.5px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .stat-icon-wrapper {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+  }
+
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .stat-value {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: var(--text-color);
+    margin-top: 0.05rem;
+
+    &.supplier-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+    }
+  }
+
+  .stat-unit {
+    font-size: 0.62rem;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+    margin-right: 0.15rem;
+  }
+
+  /* Stat Card Types Color Schemes */
+  &.card-supplier {
+    border-bottom: 3px solid var(--primary-color, #10b981);
+    .stat-icon-wrapper { background: rgba(var(--primary-rgb, 16, 185, 129), 0.1); color: var(--primary-color); }
+  }
+
+  &.card-invoice-total {
+    border-bottom: 3px solid #ef4444;
+    .stat-icon-wrapper { background: rgba(239,68,68,0.1); color: #ef4444; }
+  }
+
+  &.card-payments-total {
+    border-bottom: 3px solid #10b981;
+    .stat-icon-wrapper { background: rgba(16,185,129,0.1); color: #10b981; }
+  }
+
+  &.bal-debt {
+    border-bottom: 3px solid #ef4444;
+    .stat-icon-wrapper { background: rgba(239,68,68,0.1); color: #ef4444; }
+  }
+
+  &.bal-clear {
+    border-bottom: 3px solid #10b981;
+    .stat-icon-wrapper { background: rgba(16,185,129,0.1); color: #10b981; }
+  }
+}
+
+/* Stat color texts */
+.value-credit { color: #ef4444 !important; }
+.value-paid { color: #10b981 !important; }
+.value-debit { color: #10b981 !important; }
+
+/* ═══════════ Legend Bar ═══════════ */
+.statement-legend-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--card-bg, #ffffff);
+  border: var(--card-border, 1px solid rgba(0,0,0,0.08));
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.74rem;
+  flex-wrap: wrap;
+  backdrop-filter: var(--glass-blur, blur(10px));
+
+  .legend-header-text {
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  .legend-chips-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+  }
+
+  .indicator-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+
+    &.dot-invoice { background: rgba(59, 130, 246, 0.15); }
+    &.dot-payment { background: rgba(16, 185, 129, 0.15); }
+    &.dot-return { background: rgba(245, 158, 11, 0.15); }
+  }
+
+  .legend-divider {
+    color: var(--border-color, rgba(0,0,0,0.12));
+  }
+
+  .color-badge {
+    font-size: 0.64rem;
+    font-weight: 800;
+    padding: 0.08rem 0.35rem;
+    border-radius: 4px;
+
+    &.badge-red { background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.15); }
+    &.badge-teal { background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.15); }
+  }
+}
+
+/* ═══════════ Ledger Table Wrapper ═══════════ */
+.ledger-card-wrapper {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: var(--card-border, 1px solid rgba(0,0,0,0.08));
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--glass-blur, blur(10px));
+}
+
+::ng-deep .imperial-statement-table {
+  .p-datatable-thead > tr > th {
+    background: var(--table-header-bg, var(--surface-hover, #f4f6f9)) !important;
+    color: var(--text-color-secondary) !important;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
+    vertical-align: bottom;
+    line-height: 1.2;
+
+    .header-subtext {
+      font-size: 0.6rem;
+      font-weight: 500;
+      opacity: 0.75;
+      margin-top: 0.1rem;
+    }
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.04)) !important;
+    vertical-align: middle;
+    color: var(--text-color);
+  }
+
+  /* Table column color highlights - adjusted slightly for darker themes */
+  .th-credit { color: #ef4444 !important; background: rgba(239, 68, 68, 0.04) !important; }
+  .th-paid { color: #10b981 !important; background: rgba(16, 185, 129, 0.04) !important; }
+  .th-debit { color: #10b981 !important; background: rgba(16, 185, 129, 0.04) !important; }
+  .th-balance { color: var(--primary-color) !important; background: rgba(var(--primary-rgb, 16, 185, 129), 0.04) !important; }
+
+  /* Column width settings */
+  .col-num { width: 2.2rem; }
+  .col-date { width: 6.2rem; }
+  .col-ref { width: 6rem; }
+  .col-amount { width: 8rem; }
+  .col-balance { width: 8.5rem; }
+
+  /* Table Row Specific Color Accents */
+  .row-invoice {
+    border-right: 3px solid #ef4444;
+    background: rgba(239, 68, 68, 0.03) !important;
+    &:hover { background: rgba(239, 68, 68, 0.08) !important; }
+  }
+  .row-payment {
+    border-right: 3px solid #10b981;
+    background: rgba(16, 185, 129, 0.03) !important;
+    &:hover { background: rgba(16, 185, 129, 0.08) !important; }
+  }
+  .row-return {
+    border-right: 3px solid #f59e0b;
+    background: rgba(245, 158, 11, 0.03) !important;
+    &:hover { background: rgba(245, 158, 11, 0.08) !important; }
+  }
+}
+
+/* Row types pills */
+.statement-type-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  white-space: nowrap;
+
+  &.pill-invoice { background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.15); }
+  &.pill-payment { background: rgba(16, 185, 129, 0.08); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.15); }
+  &.pill-return { background: rgba(245, 158, 11, 0.08); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.15); }
+}
+
+.transaction-detail-notes {
+  font-size: 0.66rem;
+  color: var(--text-color-secondary);
+  margin-top: 0.15rem;
+}
+
+/* Reference Code Chip */
+.ref-code-chip {
+  background: var(--surface-hover, #f1f5f9);
+  color: var(--text-color-secondary);
+  font-family: monospace;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+  display: inline-block;
+  font-weight: 700;
+}
+
+/* Table Amount Cells */
+.amount-cell {
+  font-weight: 800;
+  font-size: 0.8rem;
+
+  &.text-credit { color: #ef4444; }
+  &.text-paid { color: #10b981; }
+}
+
+.table-dash {
+  color: var(--text-color-secondary);
+  opacity: 0.35;
+  font-size: 0.9rem;
+}
+
+/* Running balance column styling */
+.running-bal-cell {
+  &.bal-red { background: rgba(239, 68, 68, 0.06) !important; color: #ef4444; }
+  &.bal-green { background: rgba(16, 185, 129, 0.06) !important; color: #10b981; }
+  &.bal-zero { background: var(--surface-hover, rgba(0,0,0,0.04)) !important; color: var(--text-color-secondary); }
+}
+
+/* ═══════════ Table Footer Totals ═══════════ */
+::ng-deep .imperial-statement-table {
+  .p-datatable-tfoot > tr.ledger-totals-row > td {
+    background: #1e293b !important; /* Keep it dark like receipt prints */
+    color: #ffffff !important;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.8rem;
+    border: none;
+    font-weight: 800;
+  }
+
+  .totals-label {
+    text-align: right !important;
+    font-size: 0.82rem;
+  }
+
+  .text-credit-light { color: #fca5a5 !important; }
+  .text-paid-light { color: #86efac !important; }
+}
+
+.empty-table-placeholder {
+  text-align: center !important;
+  padding: 2.5rem !important;
+  color: var(--text-color-secondary);
+  font-size: 0.78rem;
+
+  i {
+    font-size: 1.8rem;
+    opacity: 0.35;
+    display: block;
+  }
+}
+
+/* ═══════════ Loading Ring ═══════════ */
+.statement-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+
+  .imperial-spinner-ring {
+    width: 32px;
+    height: 32px;
+    border: 3.5px solid var(--border-color, rgba(0,0,0,0.08));
+    border-top: 3.5px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .loading-text {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--text-color-secondary);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.fadein {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════ Professional Print Stylesheet ═══════════ */
 @media print {
-    .statement-container {
-        padding: 0 !important;
-        background: white !important;
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only-header,
+  .print-only-footer {
+    display: block !important;
+  }
+
+  .statement-container {
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  /* Printable Header block styling */
+  .print-header-layout {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    direction: rtl;
+    padding-bottom: 0.5rem;
+  }
+
+  .print-doc-title {
+    margin: 0;
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #000;
+  }
+
+  .print-doc-subtitle {
+    margin: 0.15rem 0 0 0;
+    font-size: 0.75rem;
+    color: #444;
+  }
+
+  .print-meta-left {
+    font-size: 0.72rem;
+    color: #333;
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  .print-divider {
+    border-top: 2px solid #000;
+    margin-top: 0.4rem;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Summary stats printed look */
+  .summary-stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 0.4rem !important;
+  }
+
+  .statement-stat-card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    padding: 0.4rem !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+
+    .stat-icon-wrapper {
+      display: none !important; /* Hide icons in formal printed sheet */
     }
 
-    .statement-header,
-    .bg-white {
-        box-shadow: none !important;
-        border: 1px solid #000 !important;
+    .stat-value {
+      font-size: 0.85rem !important;
+      color: #000 !important;
+    }
+  }
+
+  /* Table printed look */
+  .ledger-card-wrapper {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  ::ng-deep .imperial-statement-table {
+    .p-datatable-thead > tr > th {
+      background: #f0f0f0 !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      font-size: 0.68rem !important;
+      padding: 0.35rem !important;
     }
 
-    .statement-table {
-        ::ng-deep {
-            .p-datatable-thead>tr>th {
-                background: #f8f9fa !important;
-                color: #000 !important;
-                border: 1px solid #000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .p-datatable-tbody>tr>td {
-                border: 1px solid #000 !important;
-            }
-
-            .p-datatable-footer>tr>td {
-                border: 1px solid #000 !important;
-                background: #f8f9fa !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-        }
+    .p-datatable-tbody > tr {
+      background: transparent !important;
+      border: none !important;
     }
 
-    // Ensure colors print correctly
-    .bg-blue-50,
-    .bg-green-50,
-    .bg-orange-50 {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+    .p-datatable-tbody > tr > td {
+      border: 1px solid #000 !important;
+      color: #000 !important;
+      font-size: 0.72rem !important;
+      padding: 0.35rem !important;
     }
 
-    .text-red-600,
-    .text-green-600,
-    .text-orange-600 {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+    .row-invoice,
+    .row-payment,
+    .row-return {
+      border: none !important;
+      background: transparent !important;
     }
+
+    .amount-cell {
+      color: #000 !important;
+    }
+
+    .running-bal-cell {
+      background: transparent !important;
+      color: #000 !important;
+    }
+
+    .p-datatable-tfoot > tr.ledger-totals-row > td {
+      background: #f0f0f0 !important;
+      color: #000 !important;
+      border: 1px solid #000 !important;
+      font-size: 0.74rem !important;
+      padding: 0.35rem !important;
+    }
+
+    .text-credit-light,
+    .text-paid-light {
+      color: #000 !important;
+    }
+  }
+
+  /* Printable signature lines */
+  .print-signatures-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3.5rem;
+    direction: rtl;
+    padding: 0 1rem;
+  }
+
+  .signature-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+
+    .signature-title {
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+    }
+
+    .signature-line {
+      font-size: 0.65rem;
+      color: #000;
+    }
+  }
 }

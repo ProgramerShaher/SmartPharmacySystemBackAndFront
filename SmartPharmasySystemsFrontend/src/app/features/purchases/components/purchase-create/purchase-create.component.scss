@@ -36,7 +36,7 @@
         }
     
         &.bg-green-500 {
-            background: #10b981;
+            background: var(--primary-color);
             box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
         }
     }
@@ -217,7 +217,7 @@
     content: '';
     display: block;
     height: 4px;
-    background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+    background: linear-gradient(90deg, #6366f1, #06b6d4, var(--primary-color));
 }
 
 .pos-header.purchase-accent {

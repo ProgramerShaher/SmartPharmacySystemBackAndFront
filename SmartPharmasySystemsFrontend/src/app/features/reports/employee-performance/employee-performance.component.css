@@ -146,7 +146,7 @@
 
 .muted { font-size: 0.75rem; color: #94a3b8; margin-right: 0.25rem; }
 .items-list { display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.75rem; color: #64748b; }
-.text-success { color: #10b981 !important; font-weight: 700; }
+.text-success { color: var(--primary-color) !important; font-weight: 700; }
 .text-danger { color: #ef4444 !important; font-weight: 700; }
 .text-center { text-align: center; }
 

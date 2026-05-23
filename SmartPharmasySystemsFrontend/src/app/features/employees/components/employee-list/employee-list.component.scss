@@ -1,0 +1,275 @@
+.employee-container {
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
+    min-height: 100vh;
+    color: #1e293b;
+}
+
+.icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.bg-gradient-employee {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+}
+
+.page-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.page-subtitle {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+
+.glass-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+}
+
+.filter-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #475569;
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.premium-input {
+    border-radius: 0.75rem !important;
+    padding: 0.65rem 0.75rem 0.65rem 2.5rem !important;
+    border: 2px solid #e5e7eb !important;
+    transition: all 0.2s ease !important;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.85rem;
+
+    &:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    }
+}
+
+.premium-dropdown {
+    ::ng-deep .p-dropdown {
+        border: 2px solid #e5e7eb !important;
+        border-radius: 0.75rem !important;
+        font-family: 'Cairo', sans-serif;
+
+        &:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+        }
+    }
+}
+
+.premium-btn-filter {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    border: none !important;
+    color: white !important;
+    border-radius: 0.75rem !important;
+    height: 45px;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3) !important;
+    }
+}
+
+.column-filter-input {
+    padding: 0.35rem 0.5rem !important;
+    font-size: 0.72rem !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    background: #f8fafc;
+    transition: all 0.2s ease !important;
+    font-family: 'Cairo', sans-serif;
+
+    &:focus {
+        border-color: #6366f1 !important;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.08) !important;
+    }
+
+    &::placeholder {
+        color: #cbd5e1;
+        font-size: 0.68rem;
+    }
+}
+
+::ng-deep .column-filter-dropdown {
+    .p-dropdown {
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 6px !important;
+        background: #f8fafc;
+        font-family: 'Cairo', sans-serif;
+        font-size: 0.72rem;
+        min-width: 100%;
+
+        .p-dropdown-label {
+            padding: 0.3rem 0.5rem !important;
+            font-size: 0.72rem;
+        }
+    }
+}
+
+// Table overrides
+::ng-deep {
+    .p-datatable {
+        .p-datatable-thead > tr > th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            padding: 0.58rem 0.65rem !important;
+            border-bottom: 1px solid #e8edf3 !important;
+            font-size: 0.72rem !important;
+        }
+
+        .p-datatable-tbody > tr {
+            background: white;
+            color: #334155;
+            transition: all 0.2s ease;
+
+            &:hover {
+                background: #f8fafc !important;
+            }
+
+            > td {
+                padding: 0.5rem 0.65rem !important;
+                border-color: #f1f5f9;
+                font-size: 0.78rem !important;
+            }
+        }
+
+        .p-paginator {
+            background: #f8fafc;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0 0 1rem 1rem;
+            font-family: 'Cairo', sans-serif;
+        }
+    }
+
+    .p-tag {
+        font-family: 'Cairo', sans-serif;
+        font-weight: 600;
+        padding: 0.24rem 0.55rem !important;
+        border-radius: 999px !important;
+        font-size: 0.68rem !important;
+    }
+
+    .p-button {
+        font-family: 'Cairo', sans-serif;
+        transition: all 0.2s ease;
+
+        &:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+    }
+
+    .p-button.p-button-rounded {
+        width: 2.1rem;
+        height: 2.1rem;
+    }
+
+    .p-button-text {
+        color: #64748b;
+
+        &.p-button-danger { color: #ef4444; }
+        &.p-button-info { color: #3b82f6; }
+        &.p-button-success { color: var(--primary-color); }
+        &.p-button-warning { color: #f59e0b; }
+        &.p-button-secondary { color: #475569; }
+
+        &:hover:not(:disabled) {
+            background: rgba(0, 0, 0, 0.04) !important;
+        }
+    }
+
+    .p-dialog {
+        font-family: 'Cairo', sans-serif;
+
+        .p-dialog-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .p-dialog-content {
+            padding: 1rem 1.5rem;
+        }
+    }
+
+    .p-checkbox {
+        .p-checkbox-box {
+            border-radius: 6px;
+            border: 2px solid #cbd5e1;
+            width: 1.2rem;
+            height: 1.2rem;
+
+            &.p-highlight {
+                border-color: #6366f1;
+                background: #6366f1;
+            }
+        }
+    }
+
+    .p-dropdown {
+        border-radius: 0.75rem !important;
+        border: 2px solid #e5e7eb !important;
+
+        &:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+        }
+    }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .employee-container {
+        padding: 1rem !important;
+    }
+
+    .icon-circle {
+        width: 40px;
+        height: 40px;
+    }
+
+    .page-title {
+        font-size: 1.2rem !important;
+    }
+
+    ::ng-deep .p-datatable .p-datatable-thead > tr > th,
+    ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+        padding: 0.4rem 0.4rem !important;
+        font-size: 0.7rem !important;
+    }
+}
+
+@media print {
+    .no-print { display: none !important; }
+    .glass-panel { box-shadow: none !important; border: 1px solid #ddd !important; }
+    .employee-container { background: white !important; padding: 0 !important; }
+}

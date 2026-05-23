@@ -1,0 +1,81 @@
+<div class="inventory-page" dir="rtl">
+    <!-- Hero -->
+    <section class="inventory-hero">
+        <div class="inventory-title">
+            <div class="inventory-icon" style="background: linear-gradient(135deg, #a855f7, #7c3aed);">
+                <i class="pi pi-th-large"></i>
+            </div>
+            <div>
+                <h1>إدارة الأقسام</h1>
+                <p>تصنيف الموظفين حسب الأقسام الإدارية</p>
+            </div>
+        </div>
+        <div class="inventory-actions">
+            <button pButton label="إضافة قسم جديد" icon="pi pi-plus"
+                class="p-button-raised p-button-success border-round-lg" (click)="openAddDialog()"></button>
+        </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="inventory-filter-panel">
+        <div class="inventory-filters p-fluid">
+            <div class="inventory-filter wide">
+                <label>بحث سريع</label>
+                <span class="p-input-icon-left w-full">
+                    <i class="pi pi-search text-500"></i>
+                    <input pInputText type="text" (input)="onSearch($any($event.target).value)"
+                        placeholder="بحث باسم القسم..." class="border-round-lg w-full" />
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Table -->
+    <section class="inventory-panel">
+        <p-table [value]="departments()" [paginator]="true" [rows]="10" [totalRecords]="totalRecords()"
+            [loading]="loading()" [rowHover]="true" responsiveLayout="scroll"
+            styleClass="p-datatable-sm inventory-table">
+            <ng-template pTemplate="header">
+                <tr class="bg-bluegray-50 text-800">
+                    <th style="width: 50px" class="text-center">#</th>
+                    <th style="min-width: 250px">اسم القسم</th>
+                    <th style="width: 120px" class="text-center">عدد الموظفين</th>
+                    <th style="width: 130px" class="text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-dept let-i="rowIndex">
+                <tr class="transition-colors transition-duration-200 hover:bg-purple-50">
+                    <td class="text-center text-500 font-medium">{{i + 1}}</td>
+                    <td>
+                        <span class="font-bold text-900">{{ dept.name }}</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="inventory-chip" style="background:#f5f3ff;color:#7c3aed;">
+                            <i class="pi pi-users text-xs"></i> {{ dept.employeeCount }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="flex justify-content-center gap-1">
+                            <button pButton icon="pi pi-pencil"
+                                class="p-button-text p-button-sm p-button-info p-0 w-2rem h-2rem"
+                                (click)="openEditDialog(dept)" pTooltip="تعديل"></button>
+                            <button pButton icon="pi pi-trash"
+                                class="p-button-text p-button-sm p-button-danger p-0 w-2rem h-2rem"
+                                (click)="confirmDelete(dept.id, dept.name)" pTooltip="حذف"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr><td colspan="4" class="text-center p-5 text-500">لا توجد أقسام</td></tr>
+            </ng-template>
+        </p-table>
+    </section>
+</div>
+
+<app-department-form *ngIf="showFormDialog()" [visible]="showFormDialog()" [department]="selectedDepartment"
+    [editMode]="isEditMode" (saved)="onFormSaved()" (cancelled)="onFormCancelled()">
+</app-department-form>
+
+<p-confirmDialog acceptLabel="نعم" rejectLabel="إلغاء"></p-confirmDialog>
+<p-toast></p-toast>

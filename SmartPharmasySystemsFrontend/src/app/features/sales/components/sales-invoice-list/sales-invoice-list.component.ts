@@ -105,8 +105,8 @@ export class SalesInvoiceListComponent implements OnInit {
             labels: ['نقدي', 'آجل', 'بطاقة', 'تأمين', 'أخرى'],
             datasets: [{
                 data: [45, 25, 15, 10, 5],
-                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'],
-                hoverBackgroundColor: ['#059669', '#2563eb', '#d97706', '#7c3aed', '#4b5563']
+                backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'],
+                hoverBackgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-600').trim() || '#059669', '#2563eb', '#d97706', '#7c3aed', '#4b5563']
             }]
         };
 
@@ -334,8 +334,8 @@ export class SalesInvoiceListComponent implements OnInit {
                     labels: ['نقدي', 'آجل'],
                     datasets: [{
                         data: [Math.round(cashCount / total * 100), Math.round(creditCount / total * 100)],
-                        backgroundColor: ['#10b981', '#3b82f6'],
-                        hoverBackgroundColor: ['#059669', '#2563eb'],
+                        backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#3b82f6'],
+                        hoverBackgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-600').trim() || '#059669', '#2563eb'],
                         borderWidth: 0
                     }]
                 };

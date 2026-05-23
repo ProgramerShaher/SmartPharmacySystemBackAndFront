@@ -1,287 +1,243 @@
-<div class="receipts-container p-4 animate-fade-in" dir="rtl">
-    <!-- Premium Header Stats -->
-    <div class="grid mb-5">
-        <!-- Main Title Block -->
-        <div class="col-12 md:col-3">
-            <div class="h-full flex flex-column justify-content-center">
-                <h1 class="text-3xl font-bold m-0 text-gray-800 flex align-items-center gap-2">
-                    <i class="pi pi-receipt text-emerald-500"></i>
-                    سندات القبض
-                </h1>
-                <p class="text-gray-500 text-sm mt-1">إدارة التحصيلات المالية</p>
-                <div class="mt-3">
-                    <p-button label="سند قبض جديد" icon="pi pi-plus"
-                        styleClass="p-button-rounded premium-btn-emerald shadow-2 w-full font-bold"
-                        (onClick)="openNew()">
-                    </p-button>
-                </div>
-            </div>
-        </div>
+<div class="receipts-container fadein" dir="rtl">
 
-        <!-- Mini Cards -->
-        <div class="col-12 md:col-3">
-            <div
-                class="glass-panel p-3 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-gray-500 font-bold text-xs uppercase block mb-1">إجمالي المقبوضات (الكل)</span>
-                    <div class="text-2xl font-bold text-emerald-600">{{ totalAmount() | number }} <small
-                            class="text-xs text-gray-400">ر.ي</small></div>
-                </div>
-                <div
-                    class="bg-emerald-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-emerald-500">
-                    <i class="pi pi-money-bill text-xl"></i>
-                </div>
-            </div>
+  <!-- ═══════════ Imperial Header & Actions ═══════════ -->
+  <div class="imperial-header mb-3 no-print">
+    <div class="header-content">
+      <div class="flex-align">
+        <div class="icon-wrapper bg-indigo-600 shadow-lg border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
+          <i class="pi pi-receipt text-white text-xl"></i>
         </div>
+        <div>
+          <h1 class="page-title">إدارة سندات القبض المالية</h1>
+          <p class="page-subtitle">سجل تحصيل المديونيات وتسويات حسابات العملاء</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button pButton label="سند قبض جديد" icon="pi pi-plus" (click)="openNew()"
+                class="imperial-btn-primary p-button-sm"></button>
+      </div>
+    </div>
+  </div>
 
-        <div class="col-12 md:col-3">
-            <div
-                class="glass-panel p-3 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-gray-500 font-bold text-xs uppercase block mb-1">مقبوضات اليوم</span>
-                    <div class="text-2xl font-bold text-indigo-600">{{ todayAmount() | number }} <small
-                            class="text-xs text-gray-400">ر.ي</small></div>
-                </div>
-                <div
-                    class="bg-indigo-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-indigo-500">
-                    <i class="pi pi-calendar-plus text-xl"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 md:col-3">
-            <div
-                class="glass-panel p-3 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden flex align-items-center justify-content-between">
-                <div>
-                    <span class="text-gray-500 font-bold text-xs uppercase block mb-1">عدد السندات</span>
-                    <div class="text-2xl font-bold text-gray-800">{{ receiptsCount() }} <small
-                            class="text-xs text-gray-400">سند</small></div>
-                </div>
-                <div
-                    class="bg-orange-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center text-orange-500">
-                    <i class="pi pi-list text-xl"></i>
-                </div>
-            </div>
-        </div>
+  <!-- ═══════════ Summary Statistics widgets ═══════════ -->
+  <div class="summary-stats-grid mb-3">
+    <!-- Total amount receipts -->
+    <div class="statement-stat-card card-supplier">
+      <div class="stat-icon-wrapper">
+        <i class="pi pi-wallet"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">إجمالي التحصيلات (الكل)</span>
+        <span class="stat-value value-credit">{{ totalAmount() | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+      </div>
     </div>
 
-    <!-- Premium Table -->
-    <div class="glass-panel p-0 overflow-hidden shadow-2 border-round-2xl bg-white">
-        <p-table [value]="receipts()" [loading]="loading()" [paginator]="true" [rows]="10"
-            [lazy]="true" (onLazyLoad)="loadReceipts($event)" [totalRecords]="totalRecords()"
-            styleClass="p-datatable-striped p-datatable-sm" [rowsPerPageOptions]="[10, 25, 50]"
-            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} سند" [showCurrentPageReport]="true">
-
-            <ng-template pTemplate="header">
-                <tr class="bg-gray-50 text-gray-700 uppercase text-xs">
-                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200"># رقم السند</th>
-                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">العميل</th>
-                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">المبلغ المستلم</th>
-                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">التاريخ</th>
-                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200">طريقة الدفع</th>
-                    <th class="py-3 px-4 font-bold border-bottom-1 border-gray-200 text-center">الإجراءات</th>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="body" let-receipt>
-                <tr class="hover:surface-50 transition-colors">
-                    <td class="px-4 py-3 border-bottom-1 border-gray-100">
-                        <span
-                            class="font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 border-round text-sm">#{{
-                            receipt.receiptNumber }}</span>
-                    </td>
-                    <td class="px-4 py-3 border-bottom-1 border-gray-100">
-                        <div class="flex align-items-center gap-2">
-                            <div
-                                class="w-2rem h-2rem bg-gray-100 border-circle flex align-items-center justify-content-center text-gray-500">
-                                <i class="pi pi-user text-xs"></i>
-                            </div>
-                            <span class="font-bold text-gray-700">{{ receipt.customerName }}</span>
-                        </div>
-                    </td>
-                    <td class="px-4 py-3 border-bottom-1 border-gray-100">
-                        <span class="text-emerald-600 font-bold text-lg bg-emerald-50 px-2 py-1 border-round">
-                            {{ receipt.amount | number }} <small class="text-xs">ر.ي</small>
-                        </span>
-                    </td>
-                    <td class="px-4 py-3 border-bottom-1 border-gray-100 text-sm text-gray-600">
-                        {{ receipt.paymentDate | date:'yyyy/MM/dd' }}
-                    </td>
-                    <td class="px-4 py-3 border-bottom-1 border-gray-100">
-                        <p-tag [value]="receipt.paymentMethod"
-                            [severity]="receipt.paymentMethod === 'Cash' ? 'success' : 'info'" [rounded]="true"
-                            styleClass="text-xs mb-0">
-                        </p-tag>
-                    </td>
-                    <td class="px-4 py-3 border-bottom-1 border-gray-100 text-center">
-                        <div class="flex justify-content-center gap-2">
-                            <button pButton icon="pi pi-print"
-                                class="p-button-rounded p-button-text p-button-secondary p-button-sm" pTooltip="طباعة"
-                                tooltipPosition="top"></button>
-                            <button pButton icon="pi pi-trash"
-                                class="p-button-rounded p-button-text p-button-danger p-button-sm" pTooltip="حذف"
-                                tooltipPosition="top" (click)="deleteReceipt($event, receipt)"></button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="6" class="text-center p-6">
-                        <div class="flex flex-column align-items-center">
-                            <div
-                                class="w-5rem h-5rem bg-gray-50 border-circle flex align-items-center justify-content-center mb-3">
-                                <i class="pi pi-wallet text-3xl text-gray-300"></i>
-                            </div>
-                            <span class="text-gray-500 font-medium text-lg">لا توجد سندات قبض مسجلة حتى الآن</span>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+    <!-- Receipts today -->
+    <div class="statement-stat-card card-payments-total">
+      <div class="stat-icon-wrapper">
+        <i class="pi pi-calendar-plus"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">متحصلات اليوم</span>
+        <span class="stat-value value-paid">{{ todayAmount() | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+      </div>
     </div>
+
+    <!-- Count of receipts -->
+    <div class="statement-stat-card bal-clear">
+      <div class="stat-icon-wrapper">
+        <i class="pi pi-list"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">سندات القبض المصدّرة</span>
+        <span class="stat-value">{{ receiptsCount() }}<span class="stat-unit">سند مالي</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ Detailed Receipts Table ═══════════ -->
+  <div class="ledger-card-wrapper mb-4">
+    <p-table [value]="receipts()" [loading]="loading()" [paginator]="true" [rows]="10"
+        [lazy]="true" (onLazyLoad)="loadReceipts($event)" [totalRecords]="totalRecords()"
+        styleClass="p-datatable-striped p-datatable-sm imperial-statement-table" [rowsPerPageOptions]="[10, 25, 50]"
+        currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} سند" [showCurrentPageReport]="true">
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="col-num text-center">رقم السند</th>
+            <th>اسم العميل</th>
+            <th class="col-amount text-center th-credit">المبلغ المقبوض (المستلم)</th>
+            <th class="col-date text-center">تاريخ التحصيل</th>
+            <th class="col-ref">طريقة الدفع</th>
+            <th class="col-num text-center">الإجراءات</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-receipt>
+          <tr>
+            <!-- Receipt Number -->
+            <td class="text-center">
+              <span class="ref-code-chip font-bold">#{{ receipt.receiptNumber }}</span>
+            </td>
+
+            <!-- Customer Name -->
+            <td>
+              <div class="flex align-items-center gap-2">
+                <div class="w-2rem h-2rem bg-gray-100 border-circle flex align-items-center justify-content-center text-gray-500" style="background: var(--surface-hover) !important;">
+                  <i class="pi pi-user text-xs"></i>
+                </div>
+                <span class="font-bold text-gray-700">{{ receipt.customerName }}</span>
+              </div>
+            </td>
+
+            <!-- Amount -->
+            <td class="text-center amount-cell text-paid" style="background: rgba(16, 185, 129, 0.04) !important;">
+              {{ receipt.amount | number:'1.0-0' }} <small class="text-xs">ر.ي</small>
+            </td>
+
+            <!-- Date -->
+            <td class="text-center font-bold">
+              {{ receipt.paymentDate | date:'yyyy/MM/dd' }}
+            </td>
+
+            <!-- Method -->
+            <td>
+              <p-tag [value]="receipt.paymentMethod"
+                     [severity]="receipt.paymentMethod === 'Cash' ? 'success' : 'info'" [rounded]="true"
+                     styleClass="text-xs mb-0">
+              </p-tag>
+            </td>
+
+            <!-- Action buttons -->
+            <td class="text-center no-print">
+              <div class="flex justify-content-center gap-2">
+                <button pButton icon="pi pi-print"
+                    class="p-button-rounded p-button-text p-button-secondary p-button-sm" pTooltip="طباعة السند"
+                    tooltipPosition="top" (click)="printReceipt(receipt)"></button>
+                <button pButton icon="pi pi-trash"
+                    class="p-button-rounded p-button-text p-button-danger p-button-sm" pTooltip="حذف السند"
+                    tooltipPosition="top" (click)="deleteReceipt($event, receipt)"></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="empty-table-placeholder">
+              <i class="pi pi-receipt mb-2"></i>
+              لا توجد أي سندات قبض مالية مسجلة بالنظام حتى الآن.
+            </td>
+          </tr>
+        </ng-template>
+    </p-table>
+  </div>
 </div>
 
-<!-- Add Receipt Dialog -->
-<p-dialog [(visible)]="displayDialog" [header]="'سند قبض جديد'" [modal]="true" [style]="{width: '550px'}"
+<!-- ═══════════ Add Receipt dialog Modal ═══════════ -->
+<p-dialog [(visible)]="displayDialog" [header]="'سند قبض مالي جديد'" [modal]="true" [style]="{width: '660px', 'max-height': '92vh'}"
     styleClass="premium-dialog border-round-2xl overflow-hidden" [draggable]="false" [resizable]="false">
 
-    <div class="flex align-items-center gap-2 mb-4 p-3 bg-indigo-50 border-round-xl border-1 border-indigo-100">
-        <i class="pi pi-info-circle text-indigo-500 text-xl"></i>
-        <div class="text-sm text-indigo-900 line-height-3">
-            قم باختيار العميل أولاً لعرض رصيده الحالي، ثم أدخل تفاصيل عملية القبض.
-        </div>
-    </div>
-
-    <form [formGroup]="receiptForm" class="p-fluid grid" (ngSubmit)="saveReceipt()">
-        <!-- Customer Search -->
-        <div class="field col-12 mb-3">
-            <label class="font-bold mb-2 block text-gray-700 text-sm">العميل <span class="text-red-500">*</span></label>
+    <form [formGroup]="receiptForm" class="p-fluid grid m-0 p-0" (ngSubmit)="saveReceipt()">
+        <!-- Customer autocomplete search -->
+        <div class="field col-12 mb-2">
+            <label class="font-bold mb-1 block text-gray-700 text-xs">بحث واختيار العميل <span class="text-red-500">*</span></label>
             <p-autoComplete formControlName="customerId" [suggestions]="filteredCustomers"
-                (completeMethod)="searchCustomers($event)" field="name" placeholder="ابحث بالاسم أو الهاتف..."
+                (completeMethod)="searchCustomers($event)" field="name" placeholder="ابحث بالاسم أو رقم الهاتف..."
                 (onSelect)="onCustomerSelect($event.value)" inputStyleClass="premium-input" styleClass="w-full">
                 <ng-template let-customer pTemplate="item">
                     <div class="flex justify-content-between align-items-center w-full">
                         <span class="font-bold text-gray-800">{{ customer.name }}</span>
-                        <span class="text-sm text-red-500 font-bold bg-red-50 px-2 py-1 border-round">{{
+                        <span class="text-xs text-red-500 font-bold bg-red-50 px-2 py-0.5 border-round">{{
                             customer.balance | number }} ر.ي</span>
                     </div>
                 </ng-template>
             </p-autoComplete>
         </div>
 
-        <div class="col-12 mb-3" *ngIf="selectedCustomer">
-            <div
-                class="flex justify-content-between align-items-center bg-gray-50 p-3 border-round-xl border-1 border-gray-200 mb-3">
-                <span class="text-gray-500 text-sm font-bold">الرصيد الحالي (قبل السداد):</span>
-                <span class="text-red-600 font-bold text-lg">{{ selectedCustomer.balance | number }} ر.ي</span>
+        <!-- Selected Customer balance display and Invoices link -->
+        <div class="col-12 mb-2 p-0 px-2" *ngIf="selectedCustomer">
+            <div class="flex justify-content-between align-items-center bg-gray-50 p-2 border-round-xl border-1 border-gray-200 mb-2" style="background: var(--surface-hover) !important; border-color: var(--border-color) !important; margin: 0 0.25rem;">
+                <span class="text-gray-500 text-xs font-bold">الرصيد المالي الحالي المستحق:</span>
+                <span class="text-red-600 font-bold text-sm">{{ selectedCustomer.balance | number }} ر.ي</span>
             </div>
-<!-- Smart Linking: Unpaid Invoices -->
-<div *ngIf="unpaidInvoices().length > 0" class="fadein animation-duration-300">
-    <label class="font-bold mb-2 block text-gray-700 text-xs">الفواتير غير المسددة (اضغط لسداد قيمة الفاتورة)</label>
-    <div class="surface-border border-1 border-round-xl overflow-hidden">
-        <p-table [value]="unpaidInvoices()" [rows]="3" [paginator]="unpaidInvoices().length > 3"
-            styleClass="p-datatable-sm p-datatable-gridlines" responsiveLayout="scroll">
-            <ng-template pTemplate="header">
-                <tr class="bg-gray-50 text-xs">
-                    <th class="p-2">رقم الفاتورة</th>
-                    <th class="p-2">التاريخ</th>
-                    <th class="p-2">المبلغ</th>
-                    <th class="p-2">الإجراء</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-inv>
-                <tr>
-                    <td class="p-2 text-center text-xs font-bold">{{inv.id}}</td>
-                    <td class="p-2 text-center text-xs text-gray-500">{{inv.invoiceDate | date:'yyyy/MM/dd'}}</td>
-                    <td class="p-2 text-center text-xs font-bold text-red-500">{{inv.totalAmount | number}}</td>
-                    <td class="p-2 text-center">
-                        <button pButton icon="pi pi-check" label="سداد"
-                            class="p-button-text p-button-success p-button-xs py-0 text-xs"
-                            (click)="receiptForm.patchValue({amount: inv.totalAmount, saleInvoiceId: inv.id, notes: 'سداد فاتورة رقم ' + inv.id}); $event.preventDefault()"></button>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
-</div>
+
+            <!-- Unpaid Invoices Linkage -->
+            <div *ngIf="unpaidInvoices().length > 0" class="fadein animation-duration-300 mb-2 px-1">
+                <label class="font-bold mb-1 block text-gray-700 text-xs">الفواتير المعلقة غير المسددة (اختر الفاتورة للربط السريع)</label>
+                <div class="surface-border border-1 border-round-xl overflow-hidden ledger-card-wrapper" style="max-height: 110px; overflow-y: auto;">
+                    <p-table [value]="unpaidInvoices()" [rows]="3"
+                        styleClass="p-datatable-sm p-datatable-gridlines imperial-statement-table" responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr class="text-xs">
+                                <th class="p-1 text-center">رقم الفاتورة</th>
+                                <th class="p-1 text-center">التاريخ</th>
+                                <th class="p-1 text-center th-credit">المبلغ المتبقي</th>
+                                <th class="p-1 text-center">الإجراء</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-inv>
+                            <tr class="text-xs">
+                                <td class="p-1 text-center font-bold">{{inv.id}}</td>
+                                <td class="p-1 text-center text-gray-500">{{inv.invoiceDate | date:'yyyy/MM/dd'}}</td>
+                                <td class="p-1 text-center font-bold text-red-500">{{inv.totalAmount | number}}</td>
+                                <td class="p-1 text-center">
+                                    <button pButton icon="pi pi-check" label="ربط وسداد"
+                                        class="p-button-text p-button-success p-button-xs py-0 text-xs"
+                                        (click)="receiptForm.patchValue({amount: inv.totalAmount, saleInvoiceId: inv.id, notes: 'سداد فاتورة مبيعات معلقة رقم #' + inv.id}); $event.preventDefault()"></button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </div>
+            </div>
         </div>
 
-        <!-- Amount -->
-        <div class="field col-12 md:col-6">
-            <label class="font-bold mb-2 block text-gray-700 text-sm">المبلغ المستلم <span
-                    class="text-red-500">*</span></label>
-            <p-inputNumber formControlName="amount" mode="decimal" [minFractionDigits]="2" suffix=" ر.ي" [min]="0"
-                inputStyleClass="premium-input font-bold text-emerald-600 text-lg" placeholder="0.00">
+        <!-- Paid Amount -->
+        <div class="field col-6 mb-2">
+            <label class="font-bold mb-1 block text-gray-700 text-xs">المبلغ المستلم نقداً <span class="text-red-500">*</span></label>
+            <p-inputNumber formControlName="amount" mode="decimal" [minFractionDigits]="0" suffix=" ر.ي" [min]="0"
+                inputStyleClass="premium-input font-bold text-emerald-600 text-base py-1" placeholder="0">
             </p-inputNumber>
         </div>
 
         <!-- Payment Date -->
-        <div class="field col-12 md:col-6">
-            <label class="font-bold mb-2 block text-gray-700 text-sm">تاريخ القبض <span
-                    class="text-red-500">*</span></label>
+        <div class="field col-6 mb-2">
+            <label class="font-bold mb-1 block text-gray-700 text-xs">تاريخ استلام السند <span class="text-red-500">*</span></label>
             <p-calendar formControlName="paymentDate" [showIcon]="true" appendTo="body"
-                inputStyleClass="premium-input"></p-calendar>
+                inputStyleClass="premium-input py-1"></p-calendar>
         </div>
 
         <!-- Payment Method -->
-        <div class="field col-12 md:col-6">
-            <label class="font-bold mb-2 block text-gray-700 text-sm">طريقة الدفع</label>
+        <div class="field col-6 mb-2">
+            <label class="font-bold mb-1 block text-gray-700 text-xs">طريقة الدفع المستلمة</label>
             <p-dropdown [options]="paymentMethods" formControlName="paymentMethod"
-                styleClass="premium-dropdown w-full"></p-dropdown>
+                styleClass="premium-dropdown w-full py-0"></p-dropdown>
         </div>
 
         <!-- Reference Number -->
-        <div class="field col-12 md:col-6">
-            <label class="font-bold mb-2 block text-gray-700 text-sm">رقم المرجع / الشيك</label>
+        <div class="field col-6 mb-2">
+            <label class="font-bold mb-1 block text-gray-700 text-xs">رقم الشيك أو المرجع (إن وجد)</label>
             <input type="text" pInputText formControlName="referenceNumber" placeholder="اختياري"
-                class="premium-input" />
+                class="premium-input py-1" />
         </div>
 
         <!-- Notes -->
-        <div class="field col-12">
-            <label class="font-bold mb-2 block text-gray-700 text-sm">ملاحظات</label>
-            <textarea pInputTextarea formControlName="notes" rows="2" class="premium-input"
-                placeholder="أضف ملاحظات إضافية هنا..."></textarea>
+        <div class="field col-12 mb-2">
+            <label class="font-bold mb-1 block text-gray-700 text-xs">ملاحظات تسوية الحساب</label>
+            <textarea pInputTextarea formControlName="notes" rows="1" class="premium-input"
+                placeholder="أضف أي ملاحظات إضافية تخص سند القبض..."></textarea>
         </div>
 
         <!-- Footer -->
-        <div class="col-12 flex justify-content-end gap-2 mt-2 pt-3 border-top-1 border-gray-200">
-            <p-button label="إلغاء" icon="pi pi-times" styleClass="p-button-text p-button-secondary border-round-xl"
-                (onClick)="displayDialog.set(false)"></p-button>
-            <p-button label="حفظ السند" icon="pi pi-check"
-                styleClass="premium-btn-emerald border-round-xl shadow-2 px-4" [loading]="saving()"
-                (onClick)="saveReceipt()"></p-button>
+        <div class="col-12 flex justify-content-end gap-2 mt-2 pt-2 border-top-1 border-gray-200 form-actions-footer">
+            <button pButton type="button" label="إلغاء" icon="pi pi-times" class="p-button-text p-button-secondary border-round-xl p-button-sm py-1"
+                (click)="displayDialog.set(false)"></button>
+            <button pButton type="submit" label="تسجيل وحفظ السند" icon="pi pi-check"
+                class="imperial-btn-primary border-round-xl shadow-2 px-4 p-button-sm py-1" [loading]="saving()"></button>
         </div>
     </form>
 </p-dialog>
 
-<p-confirmDialog [style]="{width: '450px'}" styleClass="premium-dialog"></p-confirmDialog>
+<p-confirmDialog [style]="{width: '450px'}" styleClass="premium-confirm-dialog"></p-confirmDialog>
 <p-toast position="top-left"></p-toast>
-<style>
-    .premium-input {
-        border-radius: 0.75rem !important;
-        padding: 0.75rem 1rem !important;
-        border: 1px solid #e5e7eb !important;
-    }
-
-    .premium-input:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1) !important;
-    }
-
-    .premium-dropdown {
-        border-radius: 0.75rem !important;
-        border: 1px solid #e5e7eb !important;
-    }
-
-    ::ng-deep .premium-dialog .p-dialog-header {
-        border-bottom: 1px solid #f3f4f6 !important;
-        padding: 1.5rem !important;
-    }
-
-    ::ng-deep .premium-dialog .p-dialog-content {
-        padding: 1.5rem !important;
-    }
-</style>

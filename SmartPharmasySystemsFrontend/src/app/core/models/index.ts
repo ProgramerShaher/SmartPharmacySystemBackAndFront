@@ -26,6 +26,10 @@ export * from './financial.interface';
 export * from './enums';
 export * from './expense-category.interface';
 export * from './reports.interface';
+export * from './employee.interface';
+export * from './branch.interface';
+export * from './department.interface';
+export * from './warehouse.interface';
 
 // Re-export PagedResult for convenience
 export type { PagedResult } from './api-response.interface';

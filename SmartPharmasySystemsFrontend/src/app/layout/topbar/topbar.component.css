@@ -312,7 +312,7 @@
     left: -2px;
     width: 10px;
     height: 10px;
-    background: #10b981;
+    background: var(--primary-color);
     border: 2px solid var(--card-bg);
     border-radius: 50%;
 }
@@ -507,7 +507,7 @@
 
 .notification-card .card-icon.severity-success {
     background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
+    color: var(--primary-color);
 }
 
 .notification-card .card-body {

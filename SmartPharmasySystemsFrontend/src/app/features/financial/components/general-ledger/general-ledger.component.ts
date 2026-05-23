@@ -91,7 +91,7 @@ export class GeneralLedgerComponent implements OnInit {
     }
 
     getAccountColor(index: number): string {
-        const colors = ['#1e3c72', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1'];
+        const colors = ['#1e3c72', getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1'];
         return colors[index % colors.length];
     }
 

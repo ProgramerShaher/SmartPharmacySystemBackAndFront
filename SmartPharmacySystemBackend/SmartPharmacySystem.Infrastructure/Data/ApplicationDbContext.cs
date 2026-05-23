@@ -53,6 +53,33 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<JournalEntryLine> JournalEntryLines { get; set; } = null!;
     public DbSet<Cheque> Cheques { get; set; } = null!;
 
+    // ===== Multi-Branch & Inventory =====
+    public DbSet<Branch> Branches { get; set; } = null!;
+    public DbSet<Warehouse> Warehouses { get; set; } = null!;
+    public DbSet<InventoryStock> InventoryStocks { get; set; } = null!;
+    public DbSet<MedicineWarehouseConfig> MedicineWarehouseConfigs { get; set; } = null!;
+    public DbSet<StockTransfer> StockTransfers { get; set; } = null!;
+    public DbSet<StockTransferItem> StockTransferItems { get; set; } = null!;
+    public DbSet<DamagedGoodsRecord> DamagedGoodsRecords { get; set; } = null!;
+    public DbSet<StockCountHeader> StockCountHeaders { get; set; } = null!;
+    public DbSet<StockCountItem> StockCountItems { get; set; } = null!;
+
+    // ===== HR & Payroll =====
+    public DbSet<Department> Departments { get; set; } = null!;
+    public DbSet<Employee> Employees { get; set; } = null!;
+    public DbSet<Attendance> Attendances { get; set; } = null!;
+    public DbSet<MonthlySalary> MonthlySalaries { get; set; } = null!;
+    public DbSet<SalaryDeductionItem> SalaryDeductionItems { get; set; } = null!;
+    public DbSet<EmployeeLoan> EmployeeLoans { get; set; } = null!;
+
+    // ===== Customer & Finance =====
+    public DbSet<CustomerLedger> CustomerLedgers { get; set; } = null!;
+    public DbSet<InterBranchSettlement> InterBranchSettlements { get; set; } = null!;
+    public DbSet<DailyClosing> DailyClosings { get; set; } = null!;
+
+    // ===== Notifications =====
+    public DbSet<Notification> Notifications { get; set; } = null!;
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
@@ -658,6 +685,399 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 IsDeleted = false
             }
         );
+        // ==================== Multi-Branch & Inventory Configuration ====================
+
+        // Branch Configuration
+        modelBuilder.Entity<Branch>(entity =>
+        {
+            entity.Property(e => e.BranchCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.Location).HasMaxLength(250);
+            entity.Property(e => e.BranchType).HasConversion<int>();
+            entity.HasIndex(e => e.BranchCode).IsUnique();
+        });
+
+        // Warehouse Configuration
+        modelBuilder.Entity<Warehouse>(entity =>
+        {
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.Type).HasConversion<int>();
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany(b => b.Warehouses)
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.BranchId);
+        });
+
+        // InventoryStock Configuration
+        modelBuilder.Entity<InventoryStock>(entity =>
+        {
+            entity.Property(e => e.BatchNumber).IsRequired().HasMaxLength(100);
+
+            entity.HasOne(e => e.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.WarehouseId, e.MedicineId, e.BatchNumber }).IsUnique();
+            entity.HasIndex(e => e.ExpiryDate);
+        });
+
+        // MedicineWarehouseConfig Configuration
+        modelBuilder.Entity<MedicineWarehouseConfig>(entity =>
+        {
+            entity.HasKey(e => new { e.WarehouseId, e.MedicineId });
+
+            entity.HasOne(e => e.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // StockTransfer Configuration
+        modelBuilder.Entity<StockTransfer>(entity =>
+        {
+            entity.Property(e => e.TransferCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.Property(e => e.Status).HasConversion<int>();
+            entity.Property(e => e.TransferType).HasConversion<int>();
+
+            entity.HasIndex(e => e.TransferCode).IsUnique();
+
+            entity.HasOne(e => e.SourceWarehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.SourceWarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.DestinationWarehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.DestinationWarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.RequestedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.RequestedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ApprovedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.ApprovedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.DispatchedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.DispatchedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ReceivedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.ReceivedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // StockTransferItem Configuration
+        modelBuilder.Entity<StockTransferItem>(entity =>
+        {
+            entity.Property(e => e.BatchNumber).IsRequired().HasMaxLength(100);
+
+            entity.HasOne(e => e.StockTransfer)
+                  .WithMany(s => s.Items)
+                  .HasForeignKey(e => e.StockTransferId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // DamagedGoodsRecord Configuration
+        modelBuilder.Entity<DamagedGoodsRecord>(entity =>
+        {
+            entity.Property(e => e.DamageCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.BatchNumber).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.DamageValue).HasPrecision(18, 2);
+            entity.Property(e => e.DamageType).HasConversion<int>();
+            entity.Property(e => e.DisposalMethod).HasConversion<int>();
+            entity.Property(e => e.Status).HasConversion<int>();
+
+            entity.HasIndex(e => e.DamageCode).IsUnique();
+            entity.HasIndex(e => new { e.SourceWarehouseId, e.Status });
+
+            entity.HasOne(e => e.SourceWarehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.SourceWarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ApprovedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.ApprovedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.RecordedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.RecordedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // StockCountHeader Configuration
+        modelBuilder.Entity<StockCountHeader>(entity =>
+        {
+            entity.Property(e => e.CountCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Notes).HasMaxLength(500);
+            entity.Property(e => e.CountType).HasConversion<int>();
+            entity.Property(e => e.Status).HasConversion<int>();
+
+            entity.HasIndex(e => e.CountCode).IsUnique();
+
+            entity.HasOne(e => e.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ApprovedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.ApprovedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // StockCountItem Configuration
+        modelBuilder.Entity<StockCountItem>(entity =>
+        {
+            entity.Property(e => e.BatchNumber).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.VarianceReason).HasMaxLength(250);
+
+            entity.HasOne(e => e.StockCountHeader)
+                  .WithMany(s => s.Items)
+                  .HasForeignKey(e => e.StockCountHeaderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // ==================== HR & Payroll Configuration ====================
+
+        // Department Configuration
+        modelBuilder.Entity<Department>(entity =>
+        {
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        // Employee Configuration
+        modelBuilder.Entity<Employee>(entity =>
+        {
+            entity.Property(e => e.EmployeeCode).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.FullName).IsRequired().HasMaxLength(150);
+            entity.Property(e => e.NationalId).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.JobTitle).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.BasicSalary).HasPrecision(18, 2);
+
+            entity.HasIndex(e => e.EmployeeCode).IsUnique();
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany(b => b.Employees)
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Department)
+                  .WithMany()
+                  .HasForeignKey(e => e.DepartmentId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Attendance Configuration
+        modelBuilder.Entity<Attendance>(entity =>
+        {
+            entity.Property(e => e.WorkedHours).HasPrecision(5, 2);
+            entity.Property(e => e.Shift).HasConversion<int>();
+            entity.Property(e => e.AttendanceStatus).HasConversion<int>();
+
+            entity.HasOne(e => e.Employee)
+                  .WithMany(e => e.Attendances)
+                  .HasForeignKey(e => e.EmployeeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.WorkingBranch)
+                  .WithMany()
+                  .HasForeignKey(e => e.WorkingBranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.EmployeeId, e.CheckIn });
+        });
+
+        // MonthlySalary Configuration
+        modelBuilder.Entity<MonthlySalary>(entity =>
+        {
+            entity.Property(e => e.BasicSalary).HasPrecision(18, 2);
+            entity.Property(e => e.TotalAllowances).HasPrecision(18, 2);
+            entity.Property(e => e.TotalBonuses).HasPrecision(18, 2);
+            entity.Property(e => e.TotalDeductions).HasPrecision(18, 2);
+            //entity.Property(e => e.NetSalary).HasPrecision(18, 2);
+            entity.Property(e => e.PaymentStatus).HasConversion<int>();
+
+            entity.HasOne(e => e.Employee)
+                  .WithMany(e => e.Salaries)
+                  .HasForeignKey(e => e.EmployeeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.EmployeeId, e.Year, e.Month }).IsUnique();
+        });
+
+        // SalaryDeductionItem Configuration
+        modelBuilder.Entity<SalaryDeductionItem>(entity =>
+        {
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.DeductionType).HasConversion<int>();
+            entity.Property(e => e.Description).HasMaxLength(250);
+
+            //entity.HasOne(e => e.MonthlySalary)
+            //      .WithMany(s => s.Deductions)
+            //      .HasForeignKey(e => e.MonthlySalaryId)
+            //      .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // EmployeeLoan Configuration
+        modelBuilder.Entity<EmployeeLoan>(entity =>
+        {
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.MonthlyInstalment).HasPrecision(18, 2);
+            entity.Property(e => e.RemainingAmount).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.Employee)
+                  .WithMany(e => e.Loans)
+                  .HasForeignKey(e => e.EmployeeId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.EmployeeId, e.IsFullyPaid });
+        });
+
+        // ==================== Customer & Finance Configuration ====================
+
+        // CustomerLedger Configuration
+        modelBuilder.Entity<CustomerLedger>(entity =>
+        {
+            entity.Property(e => e.Debit).HasPrecision(18, 2);
+            entity.Property(e => e.Credit).HasPrecision(18, 2);
+            entity.Property(e => e.TransactionType).HasConversion<int>();
+
+            entity.HasOne(e => e.Customer)
+                  .WithMany()
+                  .HasForeignKey(e => e.CustomerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.CustomerId);
+            entity.HasIndex(e => new { e.CustomerId, e.TransactionDate });
+            entity.HasIndex(e => e.BranchId);
+        });
+
+        // InterBranchSettlement Configuration
+        modelBuilder.Entity<InterBranchSettlement>(entity =>
+        {
+            entity.Property(e => e.Amount).HasPrecision(18, 2);
+            entity.Property(e => e.Status).HasConversion<int>();
+
+            entity.HasOne(e => e.FromBranch)
+                  .WithMany()
+                  .HasForeignKey(e => e.FromBranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ToBranch)
+                  .WithMany()
+                  .HasForeignKey(e => e.ToBranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SettledByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.SettledByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.FromBranchId, e.Status });
+        });
+
+        // DailyClosing Configuration
+        modelBuilder.Entity<DailyClosing>(entity =>
+        {
+            entity.Property(e => e.OpeningCash).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCashSales).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCreditSales).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCardSales).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCollections).HasPrecision(18, 2);
+            entity.Property(e => e.TotalCashReturns).HasPrecision(18, 2);
+            entity.Property(e => e.TotalExpenses).HasPrecision(18, 2);
+            entity.Property(e => e.ActualCash).HasPrecision(18, 2);
+            entity.Property(e => e.Status).HasConversion<int>();
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SubmittedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.SubmittedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ApprovedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.ApprovedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.BranchId, e.ClosingDate }).IsUnique();
+        });
+
+        // ==================== Notifications Configuration ====================
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.Property(e => e.Type).HasConversion<int>();
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Body).HasMaxLength(1000);
+            entity.Property(e => e.ReferenceType).HasMaxLength(100);
+
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.UserId, e.IsRead });
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
         // ==================== Performance Indexes ====================
         // Added for query optimization and faster search operations
 

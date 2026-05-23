@@ -1,4 +1,4 @@
-﻿.movement-container {
+.movement-container {
   min-height: 100vh;
   padding: 0.85rem;
   background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
@@ -84,7 +84,7 @@ h1 {
   height: 100%;
 }
 
-.kpi-card.stock::before { background: #10b981; }
+.kpi-card.stock::before { background: var(--primary-color); }
 .kpi-card.expiry::before { background: #ef4444; }
 .kpi-card.low::before { background: #f59e0b; }
 .kpi-card.today::before { background: #3b82f6; }
@@ -103,7 +103,7 @@ h1 {
   line-height: 1.2;
 }
 
-.kpi-card.stock strong { color: #059669; }
+.kpi-card.stock strong { color: var(--primary-600); }
 .kpi-card.expiry strong { color: #dc2626; }
 .kpi-card.low strong { color: #d97706; }
 .kpi-card.today strong { color: #2563eb; }
@@ -183,7 +183,7 @@ h1 {
 .batch-chip { background: #eef2ff; color: #4338ca; font-family: Consolas, monospace; }
 
 .movement-qty { min-width: 3rem; font-size: 0.82rem; }
-.movement-qty-in { background: #ecfdf5; color: #047857; }
+.movement-qty-in { background: var(--primary-50); color: var(--primary-700); }
 .movement-qty-out { background: #fff1f2; color: #be123c; }
 
 .date-main,

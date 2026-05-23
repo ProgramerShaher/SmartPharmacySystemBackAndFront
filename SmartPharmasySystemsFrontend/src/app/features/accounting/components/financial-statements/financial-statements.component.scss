@@ -86,7 +86,7 @@
 /* 🎨 Section Specifics */
 .revenue-row { border-right: 3px solid #3b82f6; }
 .expense-row { border-right: 3px solid #ef4444; }
-.asset-row { border-right: 3px solid #10b981; }
+.asset-row { border-right: 3px solid var(--primary-color); }
 .liability-row { border-right: 3px solid #f59e0b; }
 .equity-row { border-right: 3px solid #8b5cf6; }
 

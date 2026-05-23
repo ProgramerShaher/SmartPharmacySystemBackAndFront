@@ -95,6 +95,54 @@ namespace SmartPharmacySystem.Infrastructure
         private IPharmacySettingsRepository? _pharmacySettings;
         public IPharmacySettingsRepository PharmacySettings => _pharmacySettings ??= new PharmacySettingsRepository(_context);
 
+        private IEmployeeRepository? _employees;
+        public IEmployeeRepository Employees => _employees ??= new EmployeeRepository(_context);
+
+        private IDepartmentRepository? _departments;
+        public IDepartmentRepository Departments => _departments ??= new DepartmentRepository(_context);
+
+        private IAttendanceRepository? _attendances;
+        public IAttendanceRepository Attendances => _attendances ??= new AttendanceRepository(_context);
+
+        private IMonthlySalaryRepository? _monthlySalaries;
+        public IMonthlySalaryRepository MonthlySalaries => _monthlySalaries ??= new MonthlySalaryRepository(_context);
+
+        private IEmployeeLoanRepository? _employeeLoans;
+        public IEmployeeLoanRepository EmployeeLoans => _employeeLoans ??= new EmployeeLoanRepository(_context);
+
+        private ICustomerLedgerRepository? _customerLedgers;
+        public ICustomerLedgerRepository CustomerLedgers => _customerLedgers ??= new CustomerLedgerRepository(_context);
+
+        private IInterBranchSettlementRepository? _interBranchSettlements;
+        public IInterBranchSettlementRepository InterBranchSettlements => _interBranchSettlements ??= new InterBranchSettlementRepository(_context);
+
+        private IDailyClosingRepository? _dailyClosings;
+        public IDailyClosingRepository DailyClosings => _dailyClosings ??= new DailyClosingRepository(_context);
+
+        private IInventoryStockRepository? _inventoryStocks;
+        public IInventoryStockRepository InventoryStocks => _inventoryStocks ??= new InventoryStockRepository(_context);
+
+        private IStockCountRepository? _stockCounts;
+        public IStockCountRepository StockCounts => _stockCounts ??= new StockCountRepository(_context);
+
+        private IDamagedGoodsRepository? _damagedGoods;
+        public IDamagedGoodsRepository DamagedGoods => _damagedGoods ??= new DamagedGoodsRepository(_context);
+
+        private IStockTransferRepository? _stockTransfers;
+        public IStockTransferRepository StockTransfers => _stockTransfers ??= new StockTransferRepository(_context);
+
+        private IStockTransferItemRepository? _stockTransferItems;
+        public IStockTransferItemRepository StockTransferItems => _stockTransferItems ??= new StockTransferItemRepository(_context);
+
+        private IMedicineWarehouseConfigRepository? _medicineWarehouseConfigs;
+        public IMedicineWarehouseConfigRepository MedicineWarehouseConfigs => _medicineWarehouseConfigs ??= new MedicineWarehouseConfigRepository(_context);
+
+        private IWarehouseRepository? _warehouses;
+        public IWarehouseRepository Warehouses => _warehouses ??= new WarehouseRepository(_context);
+
+        private IBranchRepository? _branches;
+        public IBranchRepository Branches => _branches ??= new BranchRepository(_context);
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

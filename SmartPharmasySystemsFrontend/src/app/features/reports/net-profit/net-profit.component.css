@@ -144,7 +144,7 @@
     font-weight: 800;
 }
 
-.text-success { color: #10b981 !important; }
+.text-success { color: var(--primary-color) !important; }
 .text-danger { color: #ef4444 !important; }
 
 @media (max-width: 1024px) {

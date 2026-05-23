@@ -1,210 +1,701 @@
-/* supplier-detail.component.scss */
+/* supplier-detail.component.scss - Premium Imperial Theme (Compact-Micro Design) */
+
+:host {
+  display: block;
+}
 
 .supplier-detail-page {
-    padding: 1.5rem;
-    background: #f8fafc;
-    min-height: 100vh;
+  padding: 0.75rem;
+  background: transparent; /* Let the global theme body gradient show through */
+  min-height: 100vh;
+  font-family: inherit;
+  color: var(--text-color, #1e293b);
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* ── Navbar ───────────────────────────────────────── */
-.navbar-title {
+/* ═══════════ Imperial Header ═══════════ */
+.imperial-header {
+  .header-content {
     display: flex;
-    flex-direction: column;
-}
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg, #ffffff);
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+    box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    backdrop-filter: var(--glass-blur, blur(10px));
+  }
 
-/* ── Profile Card (Sidebar) ───────────────────────── */
-.profile-card {
-    transition: box-shadow 0.3s ease;
-    
-    .card-header-bg {
-        height: 120px;
-        background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-    }
-
-    .avatar-large {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        background: #fff;
-        color: #1e293b;
-        font-size: 2.5rem;
-        font-weight: 900;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-top: 40px; /* Pull it up into the header background */
-        z-index: 2;
-    }
-}
-
-.info-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.info-item {
+  .flex-align {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+  }
+
+  .back-btn {
+    width: 2.2rem;
+    height: 2.2rem;
+    color: var(--text-color-secondary);
+    &:hover {
+      background: var(--surface-hover, rgba(0,0,0,0.05)) !important;
+    }
+  }
+
+  .page-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  .page-subtitle {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .highlight-text {
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  .badge-code {
+    background: var(--surface-hover, #e2e8f0);
+    padding: 0.05rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+    color: var(--text-color-secondary);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+/* Custom Buttons matching the premium theme */
+.imperial-btn-warning {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3);
+  }
+}
+
+.imperial-btn-danger-text {
+  color: #ef4444 !important;
+  background: transparent !important;
+  border: 1px solid rgba(239, 68, 68, 0.2) !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  &:hover {
+    background: rgba(239, 68, 68, 0.05) !important;
+    border-color: #ef4444 !important;
+  }
+}
+
+.imperial-btn-outline {
+  border: 1px solid var(--border-color, rgba(0,0,0,0.12)) !important;
+  color: var(--text-color) !important;
+  border-radius: 8px !important;
+  transition: all 0.2s;
+  background: transparent !important;
+  &:hover {
+    background: var(--surface-hover) !important;
+    border-color: var(--primary-color) !important;
+    color: var(--primary-color) !important;
+  }
+}
+
+.imperial-btn-success-text {
+  color: #10b981 !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  &:hover {
+    background: rgba(16, 185, 129, 0.06) !important;
+  }
+}
+
+/* ═══════════ Detail Grid ═══════════ */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 0.75rem;
+
+  @media (max-width: 991px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════ Profile Card (Sidebar) ═══════════ */
+.profile-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: var(--card-border, 1px solid rgba(0,0,0,0.08));
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  position: sticky;
+  top: 0.75rem;
+  z-index: 5;
+  backdrop-filter: var(--glass-blur, blur(10px));
+
+  .profile-card-header {
+    height: 90px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding-top: 1.5rem;
+    /* Dynamically adapts to user selected primary theme color! */
+    background: linear-gradient(135deg, var(--primary-color, #10b981) 0%, var(--primary-700, #047857) 100%) !important;
+  }
+
+  .profile-avatar {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    background: var(--modal-bg, #ffffff);
+    color: var(--primary-color, #10b981); /* Adapts to primary theme color */
+    border: 3px solid var(--modal-bg, #ffffff);
+    font-size: 1.8rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    position: absolute;
+    bottom: -34px;
+    z-index: 2;
+  }
+
+  .status-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 0.15rem 0.45rem;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+      &.active {
+        background: #10b981;
+        box-shadow: 0 0 4px #10b981;
+      }
+    }
+  }
+
+  .profile-card-body {
+    padding: 2.5rem 0.85rem 1rem 0.85rem;
+  }
+
+  .profile-header-text {
+    text-align: center;
+    margin-bottom: 1.25rem;
+
+    .supplier-display-name {
+      margin: 0 0 0.2rem 0;
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--text-color);
+      line-height: 1.2;
+    }
+
+    .contact-person-label {
+      font-size: 0.72rem;
+      color: var(--text-color-secondary);
+      font-weight: 600;
+
+      i {
+        color: var(--primary-color) !important;
+      }
+    }
+  }
+
+  .profile-info-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .profile-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface-hover, rgba(0,0,0,0.02));
+    padding: 0.4rem 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, rgba(0,0,0,0.04));
 
     .info-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+
+      &.phone-bg { background: rgba(var(--primary-rgb, 16, 185, 129), 0.12); color: var(--primary-color); }
+      &.email-bg { background: rgba(139, 92, 246, 0.12); color: #8b5cf6; }
+      &.address-bg { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+      &.date-bg { background: rgba(16, 185, 129, 0.12); color: #10b981; }
     }
 
-    .info-content {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-    }
+    .info-texts {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
 
-    .info-label {
-        font-size: 0.65rem;
+      .info-label {
+        font-size: 0.6rem;
+        font-weight: 800;
+        color: var(--text-color-secondary);
+      }
+
+      .info-value {
+        font-size: 0.75rem;
         font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
+        color: var(--text-color);
+        margin-top: 0.05rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     }
+  }
 
-    .info-value {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #1e293b;
-        margin-top: 0.1rem;
-    }
+  .profile-divider {
+    height: 1px;
+    background: var(--border-color, rgba(0,0,0,0.08));
+    margin: 1rem 0;
+  }
+
+  .profile-actions-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
 }
 
-/* ── KPI Cards ────────────────────────────────────── */
-.kpi-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid #e2e8f0;
+/* ═══════════ KPI Grid (Main Area) ═══════════ */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.imperial-kpi-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+  padding: 0.65rem 0.85rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+  backdrop-filter: var(--glass-blur, blur(10px));
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .kpi-main-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .kpi-title {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text-color-secondary);
+      margin-bottom: 0.15rem;
+    }
+
+    .kpi-value {
+      font-size: 1.25rem;
+      font-weight: 900;
+      display: flex;
+      align-items: baseline;
+      gap: 0.15rem;
+
+      &.debt { color: #ef4444; }
+      &.clear { color: #10b981; }
+    }
+
+    .kpi-unit {
+      font-size: 0.65rem;
+      color: var(--text-color-secondary);
+      font-weight: 600;
+    }
+  }
+
+  .kpi-icon-box {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+
+    &.debt-bg-icon { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    &.purchases-bg-icon { background: rgba(var(--primary-rgb, 16, 185, 129), 0.1); color: var(--primary-color); }
+    &.returns-bg-icon { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+  }
+
+  .kpi-footer-row {
+    margin-top: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid var(--border-color, rgba(0,0,0,0.04));
+    font-size: 0.65rem;
+    color: var(--text-color-secondary);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+  }
+}
+
+.primary-color-text { color: var(--primary-color, #3b82f6) !important; }
+.orange-color-text { color: #f59e0b !important; }
+
+/* ═══════════ TabView Component ═══════════ */
+.imperial-tabs-card {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  backdrop-filter: var(--glass-blur, blur(10px));
+}
+
+::ng-deep .imperial-premium-tabview {
+  .p-tabview-nav {
+    background: var(--card-bg, #ffffff) !important;
+    border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
+    padding: 0.35rem 0.5rem 0 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+
+    li {
+      margin-bottom: -2px;
+
+      .p-tabview-nav-link {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+        color: var(--text-color-secondary) !important;
+        font-size: 0.76rem !important;
+        font-weight: 800 !important;
+        padding: 0.6rem 0.85rem !important;
+        transition: all 0.2s ease;
+        border-radius: 0 !important;
+
+        &:not(.p-disabled):focus {
+          box-shadow: none !important;
+        }
+
+        &:hover {
+          color: var(--primary-color) !important;
+        }
+      }
+
+      &.p-highlight {
+        .p-tabview-nav-link {
+          border-bottom-color: var(--primary-color) !important;
+          color: var(--primary-color) !important;
+        }
+      }
+    }
+  }
+
+  .p-tabview-panels {
+    padding: 0.5rem !important;
+    background: transparent !important;
+  }
+}
+
+.tab-header-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+
+  .tab-badge {
+    background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
+    color: var(--primary-color);
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 0.05rem 0.3rem;
+    border-radius: 10px;
+    border: 1px solid rgba(var(--primary-rgb, 16, 185, 129), 0.2);
+
+    &.warning-badge {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+      border-color: rgba(245, 158, 11, 0.2);
+    }
+  }
+}
+
+.tab-content-box {
+  padding: 0.25rem;
+}
+
+/* ═══════════ Compact Table Design ═══════════ */
+::ng-deep .imperial-compact-table {
+  .p-datatable-thead > tr > th {
+    background: var(--table-header-bg, var(--surface-hover, #f4f6f9)) !important;
+    color: var(--text-color-secondary) !important;
+    font-weight: 800;
+    font-size: 0.72rem;
+    padding: 0.45rem 0.6rem;
+    border: none;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.08)) !important;
+    text-transform: none;
+  }
+
+  .p-datatable-tbody > tr {
+    background: transparent !important;
+    transition: background 0.15s ease;
 
     &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      background: var(--surface-hover, rgba(0,0,0,0.03)) !important;
     }
+  }
 
-    .kpi-icon {
-        width: 3.5rem;
-        height: 3.5rem;
-        border-radius: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+  .p-datatable-tbody > tr > td {
+    padding: 0.45rem 0.6rem;
+    border: none;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.04)) !important;
+    font-size: 0.78rem;
+    color: var(--text-color);
+  }
+
+  .p-paginator {
+    background: transparent !important;
+    border: none !important;
+    padding: 0.25rem !important;
+
+    .p-paginator-pages .p-paginator-element {
+      min-width: 1.8rem !important;
+      height: 1.8rem !important;
+      font-size: 0.74rem !important;
     }
+  }
 }
 
-/* ── Tabs Content ─────────────────────────────────── */
-.content-tabs-card {
-    ::ng-deep .premium-tabview {
-        .p-tabview-nav {
-            background: #f8fafc;
-            border: none;
-            padding: 0.5rem 1rem 0;
-            display: flex;
-            gap: 0.5rem;
-
-            li {
-                .p-tabview-nav-link {
-                    background: transparent;
-                    border: none;
-                    color: #64748b;
-                    font-size: 0.875rem;
-                    padding: 1rem 1.5rem;
-                    border-radius: 12px 12px 0 0;
-                    transition: all 0.2s;
-
-                    &:not(.p-disabled):focus {
-                        box-shadow: none;
-                    }
-                }
-
-                &.p-highlight .p-tabview-nav-link {
-                    background: #fff;
-                    color: #3b82f6;
-                    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
-                }
-            }
-        }
-
-        .p-tabview-panels {
-            padding: 1.5rem;
-            background: #fff;
-        }
-    }
+.invoice-ref-text {
+  font-family: monospace;
+  font-weight: 800;
+  color: var(--primary-color);
+  font-size: 0.8rem;
 }
 
-/* ── Custom Table ─────────────────────────────────── */
-::ng-deep .custom-table {
-    .p-datatable-thead > tr > th {
-        background: #f1f5f9;
-        color: #475569;
-        font-weight: 700;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        padding: 1rem;
-        border: none;
-    }
+.payment-badge {
+  font-size: 0.66rem;
+  font-weight: 800;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  display: inline-block;
 
-    .p-datatable-tbody > tr > td {
-        padding: 0.85rem 1rem;
-        border-bottom: 1px solid #f1f5f9;
-    }
+  &.cash {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+  }
+
+  &.credit {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
 }
 
-/* ── Badges ───────────────────────────────────────── */
-.badge-pill {
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-
-    &-green {
-        background: #dcfce7;
-        color: #166534;
-    }
-
-    &-orange {
-        background: #ffedd5;
-        color: #9a3412;
-    }
+.price-text {
+  font-size: 0.82rem;
+  color: var(--text-color);
 }
 
-/* ── Loading Spinner ──────────────────────────────── */
-.premium-spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3b82f6;
+.status-tag {
+  font-size: 0.66rem;
+  font-weight: 800;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  display: inline-block;
+
+  &.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+  &.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+  }
+  &.danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+  }
+  &.info {
+    background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
+    color: var(--primary-color);
+  }
+}
+
+.view-action-btn {
+  width: 1.6rem !important;
+  height: 1.6rem !important;
+  color: var(--primary-color) !important;
+  &:hover {
+    background: rgba(var(--primary-rgb, 16, 185, 129), 0.08) !important;
+  }
+}
+
+.empty-table-placeholder {
+  text-align: center !important;
+  padding: 2.5rem !important;
+  color: var(--text-color-secondary);
+  font-size: 0.78rem;
+
+  i {
+    font-size: 1.8rem;
+    opacity: 0.35;
+    display: block;
+  }
+}
+
+/* ═══════════ Notes Tab styling ═══════════ */
+.notes-tab-box {
+  padding: 0.5rem;
+}
+
+.notes-card-interior {
+  background: var(--surface-hover, rgba(0,0,0,0.02));
+  border: 1px solid var(--border-color, rgba(0,0,0,0.08));
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+
+  .notes-header-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--text-color);
+    border-bottom: 1px dashed var(--border-color, rgba(0,0,0,0.12));
+    padding-bottom: 0.35rem;
+  }
+
+  .notes-text-body {
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: var(--text-color);
+  }
+
+  .empty-notes-prompt {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--text-color-secondary);
+    font-size: 0.74rem;
+
+    i {
+      font-size: 1.5rem;
+      display: block;
+      margin-bottom: 0.35rem;
+      opacity: 0.35;
+    }
+  }
+}
+
+/* ═══════════ Loading Ring ═══════════ */
+.imperial-loading-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+
+  .imperial-spinner-ring {
+    width: 32px;
+    height: 32px;
+    border: 3.5px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    border-top: 3.5px solid var(--primary-color, #3b82f6);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .loading-main-text {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  .loading-sub-text {
+    font-size: 0.7rem;
+    color: var(--text-color-secondary);
+    margin-top: 0.15rem;
+  }
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .fadein {
-    animation: fadeIn 0.4s ease-out forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Responsive ───────────────────────────────────── */
-@media (max-width: 991px) {
-    .profile-card {
-        margin-bottom: 2rem;
-        position: static !important;
-    }
+/* ═══════════ Confirm Dialog overriding ═══════════ */
+::ng-deep .imperial-confirm-dialog {
+  .p-dialog-header {
+    background: var(--modal-bg, #ffffff) !important;
+    color: var(--text-color) !important;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.08)) !important;
+    padding: 0.65rem 1rem !important;
+  }
+  .p-dialog-content {
+    background: var(--modal-bg, #ffffff) !important;
+    color: var(--text-color) !important;
+    padding: 1rem !important;
+    font-size: 0.85rem !important;
+  }
+  .p-dialog-footer {
+    background: var(--modal-bg, #ffffff) !important;
+    border-top: 1px solid var(--border-color, rgba(0,0,0,0.08)) !important;
+    padding: 0.5rem 1rem !important;
+  }
 }

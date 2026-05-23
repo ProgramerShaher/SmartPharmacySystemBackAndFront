@@ -19,10 +19,13 @@ import { MessageService } from 'primeng/api';
 // Services & Models
 import { FinancialService } from '../../core/services/financial.service';
 import { MasterDashboardService } from '../../core/services/master-dashboard.service';
+import { SettingsService } from '../../core/services/settings.service';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { KpiCardComponent, KpiCardData } from '../../shared/components/kpi-card/kpi-card.component';
 import { FinancialReport, PharmacyAccount } from '../../core/models/financial.models';
 import { MasterDashboardStats } from '../../core/models/master-dashboard.models';
+import { PharmacySettings } from '../../core/models/settings/pharmacy-settings.interface';
+import { environment } from '../../../environments/environment';
 
 /**
  * لوحة التحكم الموحدة - Unified Dashboard
@@ -56,12 +59,211 @@ import { MasterDashboardStats } from '../../core/models/master-dashboard.models'
         KpiCardComponent
     ],
     providers: [MessageService],
-    templateUrl: './dashboard.component.html',
+    template: `
+<div class="ultimate-dashboard" dir="rtl">
+    <p-toast position="top-center"></p-toast>
+
+    <div class="dashboard-header flex justify-content-between align-items-center mb-4">
+        <div class="dashboard-brand">
+            <div class="brand-logo" *ngIf="pharmacySettings().logoUrl; else dashboardFallbackLogo">
+                <img [src]="serverUrl + pharmacySettings().logoUrl" [alt]="pharmacySettings().pharmacyName">
+            </div>
+            <ng-template #dashboardFallbackLogo>
+                <div class="brand-logo brand-logo-fallback">
+                    <i class="pi pi-shop"></i>
+                </div>
+            </ng-template>
+
+            <div>
+                <h1 class="text-4xl font-bold text-color m-0 mb-2 gradient-text">
+                    {{ pharmacySettings().pharmacyName }}
+                </h1>
+                <p class="text-color-secondary m-0 text-lg">لوحة التحكم الرئيسية وإدارة مؤشرات الصيدلية</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <button pButton icon="pi pi-refresh" label="تحديث" class="p-button-outlined p-button-rounded"
+                (click)="refreshDashboard()" [loading]="isLoading()"></button>
+            <button pButton icon="pi pi-cog" class="p-button-outlined p-button-rounded p-button-secondary"></button>
+        </div>
+    </div>
+
+    <div class="grid mb-4">
+        <ng-container *ngIf="!isLoading() && kpiCards().length > 0; else skeletonCards">
+            <div class="col-12 md:col-6 lg:col-3" *ngFor="let card of kpiCards()">
+                <app-kpi-card [data]="card"></app-kpi-card>
+            </div>
+        </ng-container>
+
+        <ng-template #skeletonCards>
+            <div class="col-12 md:col-6 lg:col-3" *ngFor="let i of [1,2,3,4]">
+                <p-skeleton height="180px" borderRadius="16px"></p-skeleton>
+            </div>
+        </ng-template>
+    </div>
+
+    <div class="grid mb-4">
+        <div class="col-12 lg:col-8">
+            <div class="analytics-card">
+                <div class="flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="text-2xl font-bold text-color m-0 mb-1">
+                            <i class="pi pi-chart-line ml-2 text-emerald-500"></i>
+                            تحليل المبيعات والمشتريات
+                        </h3>
+                        <p class="text-color-secondary text-sm m-0">آخر 6 أشهر</p>
+                    </div>
+                    <p-tag value="مباشر" severity="success" icon="pi pi-circle-fill"></p-tag>
+                </div>
+                <div *ngIf="!isLoading() && salesVsPurchasesData; else chartSkeleton" style="height: 400px;">
+                    <p-chart type="line" [data]="salesVsPurchasesData" [options]="salesVsPurchasesOptions"
+                        height="400px"></p-chart>
+                </div>
+                <ng-template #chartSkeleton>
+                    <p-skeleton height="400px"></p-skeleton>
+                </ng-template>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-4">
+            <div class="analytics-card">
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold text-color m-0 mb-1">
+                        <i class="pi pi-box ml-2 text-blue-500"></i>
+                        توزيع المخزون
+                    </h3>
+                    <p class="text-color-secondary text-sm m-0">حسب الفئات</p>
+                </div>
+
+                <div *ngIf="!isLoading() && inventoryDistributionData" style="height: 350px;">
+                    <p-chart type="doughnut" [data]="inventoryDistributionData" [options]="inventoryDistributionOptions"
+                        height="350px"></p-chart>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid mb-4">
+        <div class="col-12 lg:col-7">
+            <div class="analytics-card">
+                <div class="flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-color m-0 mb-1">
+                            <i class="pi pi-star-fill ml-2 text-yellow-500"></i>
+                            أفضل الأدوية مبيعًا
+                        </h3>
+                        <p class="text-color-secondary text-sm m-0">أعلى 5 منتجات خلال الفترة</p>
+                    </div>
+                </div>
+                <p-table [value]="topSellingMedicines()" styleClass="p-datatable-sm">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="text-right">اسم الدواء</th>
+                            <th class="text-center">الكمية المباعة</th>
+                            <th class="text-center">الدفعات المتبقية</th>
+                            <th class="text-right">الإيراد</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-medicine let-rowIndex="rowIndex">
+                        <tr class="hover-row">
+                            <td>
+                                <div class="flex align-items-center gap-2">
+                                    <span class="rank-badge">{{ rowIndex + 1 }}</span>
+                                    <span class="font-semibold">{{ medicine.name }}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <p-tag [value]="medicine.soldQuantity" severity="success" [rounded]="true"></p-tag>
+                            </td>
+                            <td class="text-center">
+                                <span class="batch-indicator" [class.low-batches]="medicine.remainingBatches < 5">
+                                    {{ medicine.remainingBatches }} دفعة
+                                </span>
+                            </td>
+                            <td class="text-right">
+                                <span class="revenue-text">{{ medicine.revenue | number:'1.0-0' }} {{ pharmacySettings().baseCurrency }}</span>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+
+        <div class="col-12 lg:col-5">
+            <div class="analytics-card">
+                <div class="flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-color m-0 mb-1">
+                            <i class="pi pi-bell ml-2 text-orange-500"></i>
+                            التنبيهات الأخيرة
+                        </h3>
+                        <p class="text-color-secondary text-sm m-0">آخر الإشعارات المهمة</p>
+                    </div>
+                    <button pButton icon="pi pi-arrow-left" label="عرض الكل" class="p-button-text p-button-sm"
+                        [routerLink]="['/system-alerts']"></button>
+                </div>
+
+                <div class="alerts-timeline">
+                    <div *ngFor="let alert of recentAlerts()" class="alert-timeline-item" [class]="'alert-' + alert.type">
+                        <div class="alert-icon-container" [style.background-color]="alert.color + '20'">
+                            <i [class]="'pi ' + alert.icon" [style.color]="alert.color"></i>
+                        </div>
+                        <div class="alert-content">
+                            <h4 class="alert-title">{{ alert.title }}</h4>
+                            <p class="alert-message">{{ alert.message }}</p>
+                            <span class="alert-time">{{ alert.time }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid">
+        <div class="col-12">
+            <div class="quick-actions-panel">
+                <h3 class="text-xl font-bold text-color mb-3">
+                    <i class="pi pi-bolt ml-2"></i>
+                    إجراءات سريعة
+                </h3>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <button pButton label="إنشاء فاتورة بيع" icon="pi pi-plus"
+                            class="p-button-success w-full quick-action-btn" (click)="navigateToNewSale()">
+                            <span class="p-button-label">إنشاء فاتورة بيع</span>
+                        </button>
+                    </div>
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <button pButton label="إنشاء فاتورة شراء" icon="pi pi-shopping-bag"
+                            class="p-button-primary w-full quick-action-btn" (click)="navigateToNewPurchase()">
+                            <span class="p-button-label">إنشاء فاتورة شراء</span>
+                        </button>
+                    </div>
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <button pButton label="المالية" icon="pi pi-chart-bar"
+                            class="p-button-info w-full quick-action-btn" (click)="navigateToFinancial()">
+                            <span class="p-button-label">المالية</span>
+                        </button>
+                    </div>
+                    <div class="col-12 md:col-6 lg:col-3">
+                        <button pButton label="المخزون" icon="pi pi-box"
+                            class="p-button-warning w-full quick-action-btn" (click)="navigateToInventory()">
+                            <span class="p-button-label">المخزون</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    `,
     styleUrl: './dashboard.component.scss'
 })
 export class DashboardComponent implements OnInit, OnDestroy {
     private financialService = inject(FinancialService);
     private masterDashboardService = inject(MasterDashboardService);
+    private settingsService = inject(SettingsService);
     private router = inject(Router);
     private messageService = inject(MessageService);
     private platformId = inject(PLATFORM_ID);
@@ -74,6 +276,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     /** رصيد الصيدلية الحالي / Current Pharmacy Balance */
     pharmacyBalance = signal<number>(0);
+    pharmacySettings = signal<PharmacySettings>({
+        id: 0,
+        pharmacyName: 'الصيدلية الذكية',
+        baseCurrency: 'ر.ي'
+    });
+    readonly serverUrl = environment.apiUrl.replace('/api', '');
 
     /** مبيعات اليوم / Today's Sales */
     todaySales = signal<number>(0);
@@ -189,6 +397,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
 
     ngOnInit() {
+        this.loadPharmacySettings();
+
         if (isPlatformBrowser(this.platformId)) {
             this.initializeCharts();
             this.loadAllDashboardData();
@@ -278,6 +488,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
      * تحميل بيانات المبيعات مقابل المشتريات لآخر 6 أشهر
      * Load 6 Months Sales vs Purchases Trend
      */
+    private loadPharmacySettings(): void {
+        this.settingsService.getSettings().subscribe({
+            next: (settings: PharmacySettings) => {
+                this.pharmacySettings.set(settings);
+            },
+            error: () => {
+                // Keep the dashboard usable even if settings cannot be loaded.
+            }
+        });
+    }
+
     private load6MonthsTrend(): void {
         const currentYear = new Date().getFullYear();
 
@@ -354,7 +575,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 message: 'تم تحصيل 15,000 ريال من العميل أحمد',
                 time: 'منذ 3 ساعات',
                 icon: 'pi-check-circle',
-                color: '#10b981'
+                color: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981'
             },
             {
                 type: 'info',
@@ -476,13 +697,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
                     label: 'المبيعات',
                     data: salesData,
                     fill: false,
-                    borderColor: '#10b981',
-                    backgroundColor: '#10b981',
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
                     tension: 0.4,
                     borderWidth: 3,
                     pointRadius: 5,
                     pointHoverRadius: 7,
-                    pointBackgroundColor: '#10b981',
+                    pointBackgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
                 },
@@ -515,14 +736,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
                 {
               data: values,
               backgroundColor: [
-                  '#10b981', // Emerald
+                  getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', // Emerald
                   '#0ea5e9', // Sky Blue
                   '#f97316', // Orange
                   '#a855f7', // Purple
                   '#64748b'  // Slate
               ],
               hoverBackgroundColor: [
-                    '#059669',
+                    getComputedStyle(document.documentElement).getPropertyValue('--primary-600').trim() || '#059669',
                     '#0284c7',
                     '#ea580c',
                     '#9333ea',

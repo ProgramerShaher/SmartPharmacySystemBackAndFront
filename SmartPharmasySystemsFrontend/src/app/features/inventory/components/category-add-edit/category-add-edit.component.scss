@@ -32,7 +32,7 @@
 
     .p-inputtext:focus,
     textarea:focus {
-        border-color: #10b981 !important;
+        border-color: var(--primary-color) !important;
         background: #ffffff !important;
         box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
     }
@@ -59,7 +59,7 @@
     position: absolute;
     inset: 0 0 auto;
     height: 5px;
-    background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+    background: linear-gradient(90deg, var(--primary-color), #06b6d4, #6366f1);
 }
 
 .modal-title {
@@ -77,7 +77,7 @@
     flex-shrink: 0;
     border-radius: 13px;
     color: #ffffff;
-    background: linear-gradient(135deg, #0f766e, #10b981);
+    background: linear-gradient(135deg, #0f766e, var(--primary-color));
     box-shadow: 0 12px 24px rgba(16, 185, 129, 0.22);
 }
 
@@ -133,7 +133,7 @@
     overflow: hidden;
     border-radius: 18px;
     border: 1px dashed #b6d8d0;
-    background: linear-gradient(135deg, #f8fafc, #ecfdf5);
+    background: linear-gradient(135deg, #f8fafc, var(--primary-50));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -213,7 +213,7 @@
     border: 0;
     border-radius: 12px;
     font-weight: 900;
-    background: linear-gradient(135deg, #10b981, #0284c7);
+    background: linear-gradient(135deg, var(--primary-color), #0284c7);
     box-shadow: 0 12px 24px rgba(2, 132, 199, 0.18);
 }
 

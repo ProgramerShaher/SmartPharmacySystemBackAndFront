@@ -1,69 +1,55 @@
-<!-- Add/Edit Sidebar Drawer -->
-<p-sidebar [(visible)]="displayAddEditSidebar" position="left" [baseZIndex]="10000"
-    styleClass="w-full md:w-5 lg:w-4 p-sidebar-premium" [modal]="true" [showCloseIcon]="true">
-    <ng-template pTemplate="header">
-        <div class="flex align-items-center gap-2">
-            <div
-                class="icon-wrapper bg-indigo-50 text-indigo-600 border-circle w-2rem h-2rem flex align-items-center justify-content-center">
-                <i class="pi" [ngClass]="selectedCustomerId ? 'pi-user-edit' : 'pi-user-plus'"></i>
-            </div>
-            <h3 class="m-0 font-bold text-gray-800">{{ sideBarHeader() }}</h3>
-        </div>
-    </ng-template>
+<!-- Add/Edit Dialog Modal -->
+<p-dialog [(visible)]="displayAddEditSidebar" [header]="sideBarHeader()" [modal]="true" [style]="{width: '780px', 'max-height': '92vh'}"
+    styleClass="premium-dialog border-round-2xl overflow-hidden" [draggable]="false" [resizable]="false">
 
     <app-customer-add-edit *ngIf="displayAddEditSidebar()" [customerId]="selectedCustomerId" (onSave)="onAddEditSave()"
         (onClose)="onAddEditClose()">
     </app-customer-add-edit>
-</p-sidebar>
+</p-dialog>
 
-<div class="customer-container p-4 animate-fade-in" dir="rtl">
-    <!-- Header with Stats -->
-    <div class="premium-header mb-5">
-        <div
-            class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-5 gap-4">
-            <div class="header-title">
-                <h1 class="text-3xl font-bold m-0 flex align-items-center gap-3 text-gray-800">
-                    <div
-                        class="icon-wrapper bg-indigo-600 shadow-lg border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
-                        <i class="pi pi-users text-white text-xl"></i>
-                    </div>
-                    <span>إدارة العملاء</span>
-                </h1>
-                <p class="text-gray-500 mt-2 text-sm font-medium mr-6">لوحة تحكم شاملة لإدارة حسابات ومديونيات العملاء
-                </p>
+<div class="customer-container fadein" dir="rtl">
+    <!-- Header with Action Buttons -->
+    <div class="premium-header mb-3">
+        <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-3 gap-3">
+            <div class="header-title flex align-items-center gap-3">
+                <div class="icon-wrapper bg-indigo-600 shadow-lg border-round-xl w-2.8rem h-2.8rem flex align-items-center justify-content-center">
+                    <i class="pi pi-users text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold m-0 text-gray-800">إدارة حسابات العملاء</h1>
+                    <p class="text-gray-500 mt-1 text-xs font-medium">لوحة تحكم تفصيلية لمتابعة الأرصدة والمديونيات الائتمانية للعملاء</p>
+                </div>
             </div>
-            <div class="flex gap-3 w-full md:w-auto">
+            <div class="flex gap-2 w-full md:w-auto">
                 <p-button label="سندات القبض" icon="pi pi-money-bill" routerLink="/customers/receipts"
-                    styleClass="p-button-outlined p-button-secondary p-button-rounded h-3rem font-bold hover-scale">
+                    styleClass="p-button-outlined p-button-secondary p-button-rounded h-2.5rem font-bold hover-scale no-print">
                 </p-button>
-                <p-button label="إضافة عميل" icon="pi pi-plus" (onClick)="openAddCustomer()"
-                    styleClass="p-button-raised p-button-rounded h-3rem font-bold premium-btn-indigo shadow-4 hover-scale">
+                <p-button label="إضافة عميل جديد" icon="pi pi-plus" (onClick)="openAddCustomer()"
+                    styleClass="p-button-raised p-button-rounded h-2.5rem font-bold premium-btn-indigo shadow-4 hover-scale no-print">
                 </p-button>
             </div>
         </div>
 
-        <div class="grid mt-2 mb-4">
+        <!-- ═══════════ Unified Premium Stats Bar ═══════════ -->
+        <div class="grid mt-2 mb-3">
+            <!-- Total Customer Debt -->
             <div class="col-12 md:col-4">
                 <div class="stat-card glass-morphism debt h-full">
-                    <div class="flex justify-content-between">
-                        <div>
-                            <span class="block text-gray-500 font-bold mb-3 uppercase text-xs tracking-wider">إجمالي
-                                المديونية</span>
-                            <div class="text-gray-800 font-bold text-4xl">{{ totalDebt() | number }} <small
-                                    class="text-sm text-gray-400">ر.ي</small></div>
+                    <div class="flex justify-content-between align-items-center">
+                        <div class="stat-content">
+                            <span class="stat-label">إجمالي مديونية العملاء</span>
+                            <div class="stat-value">{{ totalDebt() | number }} <span class="stat-unit">ر.ي</span></div>
                         </div>
-                        <div
-                            class="stat-icon bg-red-50 text-red-500 border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
-                            <i class="pi pi-chart-line text-xl"></i>
+                        <div class="stat-icon bg-red-50 text-red-500">
+                            <i class="pi pi-chart-line text-lg"></i>
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <div class="flex justify-content-between mb-2">
-                            <span class="text-xs font-semibold text-gray-500">نسبة التحصيل</span>
+                    <div class="mt-3">
+                        <div class="flex justify-content-between mb-1">
+                            <span class="text-xs font-semibold text-gray-500">معدل التحصيل المالي</span>
                             <span class="text-xs font-bold text-gray-800">15%</span>
                         </div>
-                        <p-progressBar [value]="15" [showValue]="false"
-                            styleClass="h-4px border-round-lg"></p-progressBar>
+                        <p-progressBar [value]="15" [showValue]="false" styleClass="h-4px border-round-lg progress-bar-bar"></p-progressBar>
                     </div>
                 </div>
             </div>
@@ -71,20 +57,18 @@
             <!-- Active Customers Card -->
             <div class="col-12 md:col-4">
                 <div class="stat-card glass-morphism active-customers h-full">
-                    <div class="flex justify-content-between">
-                        <div>
-                            <span class="block text-gray-500 font-bold mb-3 uppercase text-xs tracking-wider">العملاء
-                                النشطون</span>
-                            <div class="text-gray-800 font-bold text-4xl">{{ activeCustomersCount() }}</div>
+                    <div class="flex justify-content-between align-items-center">
+                        <div class="stat-content">
+                            <span class="stat-label">العملاء النشطون حالياً</span>
+                            <div class="stat-value">{{ activeCustomersCount() }} <span class="stat-unit">عميل</span></div>
                         </div>
-                        <div
-                            class="stat-icon bg-indigo-50 text-indigo-500 border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
-                            <i class="pi pi-user-check text-xl"></i>
+                        <div class="stat-icon bg-indigo-50 text-indigo-500">
+                            <i class="pi pi-user-check text-lg"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-gray-500">
+                    <div class="mt-3 text-xs text-gray-500">
                         <span class="text-green-500 font-bold"><i class="pi pi-arrow-up mr-1 text-xs"></i> 12%+</span>
-                        هذا الشهر
+                        نشاط مبيعات وسداد مستمر هذا الشهر
                     </div>
                 </div>
             </div>
@@ -92,46 +76,17 @@
             <!-- Risk Status Card -->
             <div class="col-12 md:col-4">
                 <div class="stat-card glass-morphism risk h-full">
-                    <div class="flex justify-content-between">
-                        <div>
-                            <span class="block text-gray-500 font-bold mb-3 uppercase text-xs tracking-wider">ديون
-                                مرتفعة</span>
-                            <div class="text-gray-800 font-bold text-4xl">{{ highDebtCustomersCount() }}</div>
+                    <div class="flex justify-content-between align-items-center">
+                        <div class="stat-content">
+                            <span class="stat-label">ديون مرتفعة (مخاطر)</span>
+                            <div class="stat-value">{{ highDebtCustomersCount() }} <span class="stat-unit">عميل</span></div>
                         </div>
-                        <div
-                            class="stat-icon bg-orange-50 text-orange-500 border-round-xl w-3rem h-3rem flex align-items-center justify-content-center">
-                            <i class="pi pi-exclamation-triangle text-xl"></i>
+                        <div class="stat-icon bg-orange-50 text-orange-500">
+                            <i class="pi pi-exclamation-triangle text-lg"></i>
                         </div>
                     </div>
-                    <div class="mt-4 text-xs text-gray-500">
-                        عملاء > 5,000 ريال
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row (Integrated) -->
-        <div class="grid mb-4">
-            <div class="col-12 lg:col-8">
-                <div class="glass-panel p-4 h-full border-round-2xl shadow-1 bg-white">
-                    <h3 class="m-0 mb-4 font-bold text-gray-700 flex align-items-center gap-2 text-base">
-                        <i class="pi pi-chart-line text-emerald-500"></i>
-                        تحليل مستويات المديونية
-                    </h3>
-                    <div class="relative" style="height: 300px">
-                        <p-chart type="line" [data]="debtDistributionData" [options]="debtDistributionOptions" height="100%"
-                            width="100%"></p-chart>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 lg:col-4">
-                <div class="glass-panel p-4 h-full border-round-2xl shadow-1 bg-white">
-                    <h3 class="m-0 mb-4 font-bold text-gray-700 flex align-items-center gap-2 text-base">
-                        <i class="pi pi-users text-indigo-500"></i>
-                        حالة العملاء
-                    </h3>
-                    <div class="relative" style="height: 300px">
-                        <p-chart type="bar" [data]="activeStatusData" [options]="activeStatusOptions" height="100%" width="100%"></p-chart>
+                    <div class="mt-3 text-xs text-gray-500">
+                        عملاء تجاوزت مديونياتهم عتبة <span class="font-bold text-orange-600">5,000 ريال</span>
                     </div>
                 </div>
             </div>
@@ -139,19 +94,18 @@
     </div>
 
     <!-- Table Section -->
-    <div class="glass-panel p-0 overflow-hidden shadow-1 border-round-2xl bg-white">
+    <div class="glass-panel p-0 overflow-hidden shadow-1 border-round-2xl mb-4">
         <p-table [value]="customers()" [loading]="loading()" [paginator]="true" [rows]="10"
             [lazy]="true" (onLazyLoad)="loadCustomers($event)" [totalRecords]="totalRecords()"
             [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
             currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
-            styleClass="premium-table p-datatable-sm header-offset">
+            styleClass="premium-table p-datatable-sm header-offset imperial-statement-table">
 
             <ng-template pTemplate="caption">
-                <div
-                    class="flex justify-content-between align-items-center p-3 surface-50 border-bottom-1 surface-border">
+                <div class="flex justify-content-between align-items-center p-3 surface-50 border-bottom-1 surface-border no-print table-search-header-row">
                     <span class="p-input-icon-left w-full md:w-20rem">
                         <i class="pi pi-search text-gray-400"></i>
-                        <input pInputText type="text" placeholder="بحث سريع..."
+                        <input pInputText type="text" placeholder="بحث سريع في الاسم أو الجوال..."
                             class="w-full border-round-2xl border-none surface-100 text-sm py-2 px-3 focus:surface-0 focus:shadow-none transition-colors" />
                     </span>
                     <button pButton icon="pi pi-filter"
@@ -160,16 +114,16 @@
             </ng-template>
 
             <ng-template pTemplate="header">
-                <tr class="text-sm uppercase text-gray-500 bg-gray-50">
-                    <th class="font-semibold p-3 border-none text-right" style="width: 20%">العميل</th>
-                    <th class="font-semibold p-3 border-none text-right" style="width: 20%">بيانات الاتصال</th>
-                    <th class="font-semibold p-3 border-none text-center" style="width: 15%" pSortableColumn="creditLimit">سقف الدين
+                <tr>
+                    <th class="font-bold p-3 text-right" style="width: 25%">اسم العميل وعنوانه</th>
+                    <th class="font-bold p-3 text-right" style="width: 25%">بيانات الهاتف والبريد</th>
+                    <th class="font-bold p-3 text-center th-balance" style="width: 15%" pSortableColumn="creditLimit">سقف الائتمان المسموح
                         <p-sortIcon field="creditLimit"></p-sortIcon>
                     </th>
-                    <th class="font-semibold p-3 border-none text-center" style="width: 15%" pSortableColumn="balance">الرصيد <p-sortIcon
+                    <th class="font-bold p-3 text-center th-credit" style="width: 15%" pSortableColumn="balance">الرصيد القائم (مدين)<p-sortIcon
                             field="balance"></p-sortIcon></th>
-                    <th class="font-semibold p-3 border-none text-center" style="width: 10%">الحالة</th>
-                    <th class="text-center font-semibold p-3 border-none" style="width: 20%">الإجراءات</th>
+                    <th class="font-bold p-3 text-center" style="width: 10%">الحالة بالنظام</th>
+                    <th class="text-center font-bold p-3" style="width: 10%">الإجراءات</th>
                 </tr>
             </ng-template>
 
@@ -179,38 +133,38 @@
                         <div class="flex align-items-center gap-3">
                             <div class="avatar-circle shadow-1 text-sm font-bold flex-shrink-0"
                                 [style.background]="getRandomColor(customer.name)"
-                                style="width: 38px; height: 38px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;">
+                                style="width: 36px; height: 36px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;">
                                 {{ customer.name?.charAt(0) }}
                             </div>
                             <div class="flex flex-column">
                                 <span class="font-bold text-gray-800 text-sm mb-1">{{ customer.name }}</span>
                                 <small class="text-gray-500 text-xs flex align-items-center gap-1">
                                     <i class="pi pi-map-marker text-xs"></i>
-                                    {{ customer.address || 'بدون عنوان' }}
+                                    {{ customer.address || 'بدون عنوان مسجل' }}
                                 </small>
-                                </div>
-                                </div>
-                                </td>
-                                <td class="p-3 vertical-align-middle">
-                                    <div class="flex flex-column gap-2">
-                                        <div class="flex align-items-center gap-2 text-gray-600 bg-gray-50 px-2 py-1 border-round w-fit">
-                                            <i class="pi pi-phone text-xs text-indigo-500"></i>
-                                            <span class="font-mono text-sm font-medium" dir="ltr">{{ customer.phoneNumber || '-' }}</span>
-                                        </div>
-                                        <div *ngIf="customer.email" class="flex align-items-center gap-2 text-gray-500 px-2">
-                                            <i class="pi pi-envelope text-xs text-orange-400"></i>
-                                            <span class="text-xs">{{ customer.email }}</span>
                             </div>
                         </div>
                     </td>
-                    <td class="p-3 text-center vertical-align-middle">
+                    <td class="p-3 vertical-align-middle">
+                        <div class="flex flex-column gap-1">
+                            <div class="flex align-items-center gap-2 text-gray-600 bg-gray-50 px-2 py-1 border-round w-fit" style="background: var(--surface-hover) !important;">
+                                <i class="pi pi-phone text-xs text-indigo-500"></i>
+                                <span class="font-mono text-sm font-medium" dir="ltr">{{ customer.phoneNumber || '—' }}</span>
+                            </div>
+                            <div *ngIf="customer.email" class="flex align-items-center gap-2 text-gray-500 px-2 mt-1">
+                                <i class="pi pi-envelope text-xs text-orange-400"></i>
+                                <span class="text-xs">{{ customer.email }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center vertical-align-middle font-bold">
                         <span class="font-mono text-sm block text-gray-600" *ngIf="customer.creditLimit > 0">
                             {{ customer.creditLimit | number }}
                             <small class="text-xs text-gray-400 font-normal">ر.ي</small>
                         </span>
-                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 border-round"
+                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 border-round" style="background: var(--surface-hover) !important;"
                             *ngIf="!customer.creditLimit || customer.creditLimit === 0">
-                            مفتوح
+                            مفتوح (دون سقف)
                         </span>
                     </td>
                     <td class="p-3 text-center vertical-align-middle">
@@ -222,12 +176,12 @@
                     </td>
                     <td class="p-3 text-center vertical-align-middle">
                         <p-tag [severity]="customer.isActive ? 'success' : 'danger'"
-                            [value]="customer.isActive ? 'نشط' : 'خامل'" [rounded]="true"
+                            [value]="customer.isActive ? 'نشط' : 'موقف'" [rounded]="true"
                             styleClass="text-xs px-3 py-1 font-bold">
                         </p-tag>
                     </td>
                     <td class="text-center p-3 vertical-align-middle">
-                        <div class="flex justify-content-center gap-2">
+                        <div class="flex justify-content-center gap-2 no-print">
                             <button pButton icon="pi pi-eye"
                                 class="p-button-rounded p-button-text p-button-secondary w-2rem h-2rem hover:bg-gray-100 transition-colors"
                                 pTooltip="التفاصيل" tooltipPosition="top" [routerLink]="['/customers/detail', customer.id]"></button>
@@ -244,10 +198,9 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="5" class="text-center p-8">
+                    <td colspan="6" class="text-center p-8">
                         <div class="flex flex-column align-items-center">
-                            <div
-                                class="bg-gray-50 border-circle w-6rem h-6rem flex align-items-center justify-content-center mb-3">
+                            <div class="bg-gray-50 border-circle w-6rem h-6rem flex align-items-center justify-content-center mb-3" style="background: var(--surface-hover) !important;">
                                 <i class="pi pi-users text-4xl text-gray-300"></i>
                             </div>
                             <h3 class="text-gray-600 m-0 text-lg">لا يوجد عملاء</h3>

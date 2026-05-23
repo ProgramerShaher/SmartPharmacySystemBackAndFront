@@ -1,4 +1,4 @@
-﻿import { Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -77,14 +77,14 @@ export class InventoryMovementService {
     getMovementTypeLabel(type: number | string): string {
         const typeNum = typeof type === 'string' ? parseInt(type) : type;
         switch (typeNum) {
-            case 1: return 'توريد';
-            case 2: return 'بيع';
-            case 3: return 'مردود مشتريات';
-            case 4: return 'مردود مبيعات';
-            case 5: return 'تعديل مخزون';
-            case 6: return 'تالف';
-            case 7: return 'منتهي الصلاحية';
-            default: return 'غير معروف';
+            case 1: return '?????';
+            case 2: return '???';
+            case 3: return '????? ???????';
+            case 4: return '????? ??????';
+            case 5: return '????? ?????';
+            case 6: return '????';
+            case 7: return '????? ????????';
+            default: return '??? ?????';
         }
     }
 
@@ -110,16 +110,16 @@ export class InventoryMovementService {
     getReferenceTypeLabel(type: number | string): string {
         const typeNum = typeof type === 'string' ? parseInt(type) : type;
         switch (typeNum) {
-            case 1: return 'فاتورة مشتريات';
-            case 2: return 'فاتورة مبيعات';
-            case 3: return 'مردود مشتريات';
-            case 4: return 'مردود مبيعات';
-            case 5: return 'يدوي';
-            case 7: return 'رصيد افتتاحي';
-            case 8: return 'تعديل يدوي';
-            case 9: return 'سند صرف مورد';
-            case 10: return 'سند قبض عميل';
-            default: return 'غير معروف';
+            case 1: return '?????? ???????';
+            case 2: return '?????? ??????';
+            case 3: return '????? ???????';
+            case 4: return '????? ??????';
+            case 5: return '????';
+            case 7: return '???? ???????';
+            case 8: return '????? ????';
+            case 9: return '??? ??? ????';
+            case 10: return '??? ??? ????';
+            default: return '??? ?????';
         }
     }
 

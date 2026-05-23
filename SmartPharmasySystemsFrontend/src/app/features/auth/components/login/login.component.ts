@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../../../core/models';
+import { SettingsService } from '../../../../core/services/settings.service';
+import { PharmacySettings } from '../../../../core/models/settings/pharmacy-settings.interface';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
@@ -11,6 +13,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { RippleModule } from 'primeng/ripple';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
     selector: 'app-login',
@@ -25,20 +28,101 @@ import { RippleModule } from 'primeng/ripple';
       ToastModule,
         RippleModule,
         RouterModule
-    ],
-  templateUrl: './login.component.html',
+  ],
+  template: `
+    <div class="login-wrapper" dir="rtl">
+      <p-toast></p-toast>
+
+      <section class="login-card">
+        <div class="card-accent"></div>
+
+        <div class="login-header">
+          <div class="logo-box">
+            <img *ngIf="pharmacyLogoUrl; else defaultLoginLogo" [src]="pharmacyLogoUrl" [alt]="pharmacyName">
+            <ng-template #defaultLoginLogo>
+              <i class="pi pi-shield"></i>
+            </ng-template>
+          </div>
+          <div>
+            <h1>{{ pharmacyName }}</h1>
+            <p>تسجيل الدخول إلى نظام إدارة الصيدلية</p>
+          </div>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+          <label class="field-label" for="username">اسم المستخدم</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-user"></i>
+            <input pInputText id="username" formControlName="username" placeholder="مثال: admin" autocomplete="username" />
+          </span>
+
+          <label class="field-label" for="password">كلمة المرور</label>
+          <span class="p-input-icon-left w-full">
+            <i class="pi pi-lock"></i>
+            <p-password
+              inputId="password"
+              formControlName="password"
+              placeholder="أدخل كلمة المرور"
+              [toggleMask]="true"
+              [feedback]="false"
+              styleClass="w-full"
+              inputStyleClass="w-full"
+              autocomplete="current-password">
+            </p-password>
+          </span>
+
+          <div class="form-row">
+            <div class="remember">
+              <p-checkbox formControlName="rememberMe" [binary]="true" inputId="rem"></p-checkbox>
+              <label for="rem">تذكرني</label>
+            </div>
+            <a class="muted-link">نسيت كلمة المرور؟</a>
+          </div>
+
+          <p-button
+            type="submit"
+            label="تسجيل الدخول"
+            icon="pi pi-sign-in"
+            [loading]="loading"
+            [disabled]="loginForm.invalid"
+            styleClass="auth-submit w-full">
+          </p-button>
+
+          <div class="quick-actions">
+            <button type="button" class="quick-login-btn admin" (click)="quickLogin('admin')">
+              <i class="pi pi-user-edit"></i>
+              <span>مدير</span>
+            </button>
+            <button type="button" class="quick-login-btn pharmacist" (click)="quickLogin('pharmacist')">
+              <i class="pi pi-user"></i>
+              <span>صيدلي</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="login-footer">
+          ليس لديك حساب؟
+          <a routerLink="/auth/register">إنشاء حساب جديد</a>
+        </div>
+      </section>
+    </div>
+  `,
   styleUrls: ['./login.component.scss'],
   providers: [MessageService]
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
-    loading = false;
+  loading = false;
+  pharmacyName = 'الصيدلية الذكية';
+  pharmacyLogoUrl: string | null = null;
+  readonly serverUrl = environment.apiUrl.replace('/api', '');
 
     constructor(
         private fb: FormBuilder,
       private authService: AuthService,
       private router: Router,
-      private messageService: MessageService
+      private messageService: MessageService,
+      private settingsService: SettingsService
     ) { }
 
   ngOnInit() {
@@ -53,7 +137,18 @@ export class LoginComponent implements OnInit {
           password: ['', Validators.required],
           rememberMe: [false]
         });
+
+    this.loadPharmacySettings();
     }
+
+  private loadPharmacySettings(): void {
+    this.settingsService.getSettings().subscribe({
+      next: (settings: PharmacySettings) => {
+        this.pharmacyName = settings.pharmacyName || this.pharmacyName;
+        this.pharmacyLogoUrl = settings.logoUrl ? `${this.serverUrl}${settings.logoUrl}` : null;
+      }
+    });
+  }
 
     onSubmit() {
       if (this.loginForm.invalid) {

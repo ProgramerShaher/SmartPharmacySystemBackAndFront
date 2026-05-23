@@ -1,0 +1,186 @@
+<div class="warehouse-container p-4 animate-fade-in" dir="rtl">
+    <!-- Premium Header -->
+    <div class="flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div class="flex align-items-center gap-3">
+            <div class="icon-circle bg-gradient-warehouse">
+                <i class="pi pi-warehouse text-3xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-bold m-0 text-gray-800">المخازن</h1>
+                <p class="text-gray-500 text-sm mt-1">إدارة المخازن والمستودعات وتصنيفاتها</p>
+            </div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            <p-button icon="pi pi-filter-slash" [rounded]="true" [outlined]="true" severity="secondary"
+                pTooltip="مسح الفلاتر" tooltipPosition="bottom" (onClick)="resetFilters()"></p-button>
+            <p-button label="مخزن جديد" icon="pi pi-plus" [rounded]="true" severity="primary"
+                (onClick)="openAddDialog()"></p-button>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid mb-4">
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-cyan-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">إجمالي المخازن</span>
+                        <h3 class="text-3xl font-bold text-cyan-600 m-0">{{ totalCount() }}</h3>
+                    </div>
+                    <div class="bg-cyan-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-warehouse text-cyan-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">جميع المخازن المسجلة في النظام</div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-blue-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">رئيسية</span>
+                        <h3 class="text-3xl font-bold text-blue-600 m-0">{{ mainCount() }}</h3>
+                    </div>
+                    <div class="bg-blue-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-building text-blue-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">المخازن الرئيسية للفروع</div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-orange-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">فرعية</span>
+                        <h3 class="text-3xl font-bold text-orange-600 m-0">{{ branchCount() }}</h3>
+                    </div>
+                    <div class="bg-orange-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-sitemap text-orange-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">المخازن الفرعية والتوزيع</div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white h-full relative overflow-hidden hover-scale">
+                <div class="absolute right-0 top-0 h-full w-4px bg-red-500"></div>
+                <div class="flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="text-gray-500 font-bold text-xs uppercase block mb-2">تالف</span>
+                        <h3 class="text-3xl font-bold text-red-600 m-0">{{ damagedCount() }}</h3>
+                    </div>
+                    <div class="bg-red-50 w-3rem h-3rem border-circle flex align-items-center justify-content-center">
+                        <i class="pi pi-exclamation-triangle text-red-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="mt-2 text-xs text-gray-400">مخازن المواد التالفة</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Panel -->
+    <div class="glass-panel p-4 border-round-2xl shadow-1 bg-white mb-4">
+        <div class="flex flex-wrap gap-3 align-items-end">
+            <div class="flex-1 min-w-16rem">
+                <label class="block text-xs font-bold text-gray-500 mb-1">بحث</label>
+                <span class="p-input-icon-right w-full">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" class="w-full" placeholder="اسم المخزن..."
+                        [ngModel]="searchTerm()" (ngModelChange)="onSearch($event)" />
+                </span>
+            </div>
+            <div class="flex-1 min-w-12rem">
+                <label class="block text-xs font-bold text-gray-500 mb-1">الفرع</label>
+                <p-dropdown [options]="branches()" optionLabel="name" optionValue="id"
+                    [ngModel]="branchFilter()" (onChange)="branchFilter.set($event.value); onFilterChange()"
+                    placeholder="كل الفروع" [showClear]="true" class="w-full"></p-dropdown>
+            </div>
+            <div class="flex-1 min-w-12rem">
+                <label class="block text-xs font-bold text-gray-500 mb-1">النوع</label>
+                <p-dropdown [options]="typeOptions" optionLabel="label" optionValue="value"
+                    [ngModel]="typeFilter()" (onChange)="typeFilter.set($event.value); onFilterChange()"
+                    placeholder="كل الأنواع" class="w-full"></p-dropdown>
+            </div>
+            <div class="flex-shrink-0">
+                <button pButton icon="pi pi-refresh" label="تحديث" [rounded]="true" [outlined]="true"
+                    severity="info" (click)="loadWarehouses()" class="h-3rem"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="glass-panel border-round-2xl shadow-1 bg-white overflow-hidden">
+        <p-table [value]="warehouses()" [loading]="loading()" [paginator]="true" [rows]="15"
+            [rowsPerPageOptions]="[10,15,25,50]" [totalRecords]="totalRecords()" [showCurrentPageReport]="true"
+            currentPageReportTemplate="المخازن {first} إلى {last} من أصل {totalRecords}"
+            styleClass="p-datatable-sm premium-table" responsiveLayout="scroll"
+            sortField="createdAt" [sortOrder]="-1">
+            <ng-template pTemplate="caption">
+                <div class="flex justify-content-between align-items-center p-2">
+                    <span class="text-sm text-gray-500">
+                        <i class="pi pi-list ml-1"></i> قائمة المخازن
+                    </span>
+                    <span class="text-xs bg-cyan-50 text-cyan-700 px-3 py-1 border-round font-bold">
+                        {{ totalRecords() }} مخزن
+                    </span>
+                </div>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="name">الاسم <p-sortIcon field="name"></p-sortIcon></th>
+                    <th pSortableColumn="branchName">الفرع <p-sortIcon field="branchName"></p-sortIcon></th>
+                    <th pSortableColumn="typeName">النوع <p-sortIcon field="typeName"></p-sortIcon></th>
+                    <th pSortableColumn="createdAt">تاريخ الإنشاء <p-sortIcon field="createdAt"></p-sortIcon></th>
+                    <th style="width: 120px;">الإجراءات</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-warehouse>
+                <tr class="hover-scale-sm">
+                    <td class="font-bold text-gray-700">
+                        <i class="pi pi-warehouse ml-2 text-cyan-500"></i>
+                        {{ warehouse.name }}
+                    </td>
+                    <td>
+                        <span class="px-2 py-1 bg-gray-50 border-round text-sm text-gray-600">
+                            <i class="pi pi-building ml-1 text-gray-400"></i>
+                            {{ warehouse.branchName }}
+                        </span>
+                    </td>
+                    <td>
+                        <p-tag [value]="warehouse.typeName" [severity]="getTypeSeverity(warehouse.type)"
+                            [icon]="getTypeIcon(warehouse.type)" styleClass="px-3 py-1"></p-tag>
+                    </td>
+                    <td class="text-gray-500 text-sm">{{ warehouse.createdAt | date:'yyyy/MM/dd' }}</td>
+                    <td>
+                        <div class="flex gap-1">
+                            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+                                pTooltip="تعديل" tooltipPosition="top" (click)="openEditDialog(warehouse)"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                                pTooltip="حذف" tooltipPosition="top" (click)="confirmDelete(warehouse.id, warehouse.name)"></button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptydata">
+                <tr>
+                    <td colspan="5" class="text-center p-5">
+                        <div class="flex flex-column align-items-center gap-2 text-gray-400">
+                            <i class="pi pi-warehouse text-5xl"></i>
+                            <span class="font-bold text-lg">لا توجد مخازن</span>
+                            <span class="text-sm">لم يتم إضافة أي مخازن بعد. اضغط "مخزن جديد" للإضافة.</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast position="top-center"></p-toast>
+<app-warehouse-form [(visible)]="showFormDialog" [warehouse]="selectedWarehouse" [isEdit]="isEditMode"
+    (saved)="onFormSaved()" (cancelled)="onFormCancelled()"></app-warehouse-form>

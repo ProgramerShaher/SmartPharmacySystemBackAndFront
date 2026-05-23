@@ -2,7 +2,6 @@
  * 👑 IMPERIAL SALES MODULE - PREMIUM DESIGN
  * ==========================================
  * تصميم فخم وملكي لمديول المبيعات مع Glassmorphism
- * الألوان السيادية: الأخضر الملكي #28a745، الكحلي العميق، الأحمر الفاخر
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
@@ -17,8 +16,8 @@
     --imperial-success-dark: #218838;
     --imperial-success-light: rgba(40, 167, 69, 0.1);
 
-    --imperial-emerald: #10b981;
-    --imperial-emerald-dark: #059669;
+    --imperial-emerald: var(--primary-color);
+    --imperial-emerald-dark: var(--primary-600);
     --imperial-emerald-light: rgba(16, 185, 129, 0.1);
 
     --imperial-royal: #1e40af;
@@ -40,10 +39,11 @@
 
 /* 🏛️ Container */
 .sales-container {
-    background: var(--bg-gradient);
-    min-height: 100vh;
+    background: var(--bg-gradient) !important;
+    min-height: 100vh !important;
     padding: 0.75rem !important;
     direction: rtl;
+    color: var(--text-color) !important;
 }
 
 /* 👑 Imperial KPI Cards */
@@ -52,7 +52,7 @@
     padding: 1rem;
     border-radius: 14px;
     border: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-sm);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     color: white !important;
@@ -61,8 +61,8 @@
     justify-content: space-between;
 
     &:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-md);
     }
 
     &::after {
@@ -78,15 +78,10 @@
     }
 }
 
-/* 🎯 KPI Accent Bar - Removed for cleaner top-border design */
-.kpi-accent {
-    display: none;
-}
-
 /* 📊 KPI Typography */
 .kpi-label {
     display: block;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: rgba(255, 255, 255, 0.9);
     margin-bottom: 0.25rem;
@@ -95,7 +90,7 @@
 }
 
 .kpi-value {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 800;
     margin: 0;
     line-height: 1;
@@ -104,7 +99,7 @@
 }
 
 .kpi-currency {
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.8);
     font-weight: 700;
     margin-right: 0.3rem;
@@ -112,43 +107,31 @@
 
 /* 🎨 Color Variants */
 .text-success {
-    color: var(--imperial-success) !important;
+    color: #ffffff !important;
 }
 
 .text-emerald {
-    color: var(--imperial-emerald) !important;
+    color: #ffffff !important;
 }
 
 .text-royal {
-    color: var(--imperial-royal) !important;
+    color: #ffffff !important;
 }
 
 .text-crimson {
-    color: var(--imperial-crimson) !important;
+    color: #ffffff !important;
 }
 
-.bg-success-light {
-    background: var(--imperial-success-light) !important;
-}
+/* Gradients for KPI Cards */
+.sales-card { background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-color) 100%) !important; }
+.profit-card { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important; }
+.debts-card { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important; }
+.returns-card { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%) !important; }
 
-.bg-emerald-light {
-    background: var(--imperial-emerald-light) !important;
-}
-
-.bg-royal-light {
-    background: var(--imperial-royal-light) !important;
-}
-
-/* 🎨 Unique Card Backgrounds (Vibrant Gradients) */
-.sales-card { background: linear-gradient(135deg, #059669 0%, #10b981 100%); }
-.profit-card { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); }
-.debts-card { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%); }
-.returns-card { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%); }
-
-/* 🏷️ KPI Icon Wrapper (Glassmorphism) */
+/* 🏷️ KPI Icon Wrapper */
 .kpi-icon-wrapper {
-    width: 2.6rem;
-    height: 2.6rem;
+    width: 2.4rem;
+    height: 2.4rem;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -156,208 +139,199 @@
     background: rgba(255, 255, 255, 0.2) !important;
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 
     i {
-        font-size: 1.4rem;
+        font-size: 1.25rem;
         color: #ffffff !important;
-    }
-}
-
-/* 🎖️ KPI Badge */
-.kpi-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 0.375rem 0.75rem;
-    border-radius: 8px;
-
-    &.badge-emerald {
-        background: var(--imperial-emerald-light);
-        color: var(--imperial-emerald);
-    }
-
-    &.badge-royal {
-        background: var(--imperial-royal-light);
-        color: var(--imperial-royal);
     }
 }
 
 /* 🎭 Header Icon Circle */
 .icon-circle {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.2);
 }
 
 .bg-gradient-sales {
-    background: linear-gradient(135deg, var(--imperial-success), var(--imperial-emerald));
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-400)) !important;
 }
 
 /* 📋 Premium Table Styling */
 .glass-panel {
-    background: var(--glass-bg);
+    background: var(--card-bg) !important;
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: var(--glass-border);
+    border: var(--card-border) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
-::ng-deep {
-
+::ng-deep .sales-container {
     /* Table Header */
     .p-datatable .p-datatable-thead>tr>th {
-        background: #f1f5f9 !important;
-        color: #1e293b !important;
+        background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+        color: var(--primary-color-text) !important;
         font-weight: 800 !important;
         font-size: 0.75rem !important;
-        text-transform: none !important;
         padding: 0.75rem 0.5rem !important;
-        border-bottom: 2px solid var(--imperial-success) !important;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
         text-align: center !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     }
 
     /* Table Body */
     .p-datatable .p-datatable-tbody>tr {
+        background: var(--card-bg) !important;
+        color: var(--text-color) !important;
         transition: all 0.3s ease;
 
         &:hover {
-            background: rgba(40, 167, 69, 0.05) !important;
-            transform: scale(1.01);
+            background: var(--surface-hover) !important;
+        }
+
+        > td {
+            padding: 0.6rem 0.5rem !important;
+            font-size: 0.82rem !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            color: var(--text-color) !important;
         }
     }
 
-    .p-datatable .p-datatable-tbody>tr>td {
-        padding: 0.6rem 0.5rem !important;
-        font-size: 0.85rem !important;
-        border-bottom: 1px solid #e5e7eb !important;
-    }
+    /* Overrides for Amount/Profit Tag Containers (Tailwind inline classes overrides) */
+    .text-blue-700 { color: #3b82f6 !important; }
+    .bg-blue-50 { background: rgba(59, 130, 246, 0.15) !important; }
+    .border-blue-100 { border-color: rgba(59, 130, 246, 0.3) !important; }
+    
+    .text-emerald-700 { color: var(--primary-color) !important; }
+    .bg-emerald-50 { background: rgba(var(--primary-rgb), 0.15) !important; }
+    .border-emerald-100 { border-color: rgba(var(--primary-rgb), 0.3) !important; }
 
-    /* Status Tags - Making them solid and clear */
+    /* Custom Labels */
+    .text-gray-700 { color: var(--text-color) !important; }
+    .text-gray-600 { color: var(--text-color-secondary) !important; }
+    .text-gray-500 { color: var(--text-color-secondary) !important; }
+    .text-gray-400 { color: var(--text-color-secondary) !important; }
+
+    /* Status Tags */
     .p-tag {
         font-weight: 800 !important;
-        padding: 0.4rem 0.8rem !important;
-        border-radius: 6px !important;
-        font-size: 0.8rem !important;
+        padding: 0.25rem 0.55rem !important;
+        border-radius: 999px !important;
+        font-size: 0.68rem !important;
         border: none !important;
 
         &.p-tag-success {
-            background: #10b981 !important;
-            color: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2) !important;
+            background: rgba(var(--primary-rgb), 0.15) !important;
+            color: var(--primary-color) !important;
+            border: 1px solid rgba(var(--primary-rgb), 0.3) !important;
         }
 
         &.p-tag-warning {
-            background: #f59e0b !important;
-            color: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2) !important;
+            background: rgba(245, 158, 11, 0.15) !important;
+            color: #f59e0b !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
         }
 
         &.p-tag-danger {
-            background: #ef4444 !important;
-            color: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2) !important;
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #ef4444 !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
         }
 
         &.p-tag-info {
-            background: #3b82f6 !important;
-            color: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2) !important;
-        }
-    }
-
-    /* Action Buttons */
-    .p-button {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-
-        &.p-button-rounded {
-            &:hover {
-                transform: scale(1.15) rotate(5deg);
-            }
-        }
-
-        &.p-button-success {
-            background: var(--imperial-success) !important;
-            border-color: var(--imperial-success) !important;
-
-            &:hover {
-                background: var(--imperial-success-dark) !important;
-                box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4) !important;
-            }
-        }
-    }
-
-    /* Chart Styling */
-    .p-chart {
-        canvas {
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
+            background: rgba(59, 130, 246, 0.15) !important;
+            color: #3b82f6 !important;
+            border: 1px solid rgba(59, 130, 246, 0.3) !important;
         }
     }
 
     /* Paginator */
     .p-paginator {
-        background: transparent !important;
-        border: none !important;
-        padding: 1.5rem 1rem !important;
+        background: var(--card-bg) !important;
+        border-top: 1px solid var(--border-color) !important;
+        color: var(--text-color) !important;
+        padding: 0.55rem !important;
+        font-size: 0.75rem !important;
 
         .p-paginator-current {
-            color: var(--imperial-slate) !important;
+            color: var(--text-color-secondary) !important;
             font-weight: 600 !important;
         }
 
         .p-paginator-pages .p-paginator-page {
             border-radius: 8px !important;
-            transition: all 0.2s ease !important;
+            color: var(--text-color) !important;
 
             &.p-highlight {
-                background: #10b981 !important;
-                border-color: #10b981 !important;
-                color: white !important;
-                box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25) !important;
+                background: rgba(var(--primary-rgb), 0.1) !important;
+                color: var(--primary-color) !important;
+                border-color: var(--primary-color) !important;
             }
 
             &:hover:not(.p-highlight) {
-                background: rgba(16, 185, 129, 0.1) !important;
-                color: #10b981 !important;
+                background: var(--surface-hover) !important;
             }
         }
     }
 
     /* Dropdown & Calendar */
     .p-dropdown,
-    .p-calendar {
-        border-radius: 12px !important;
-        border: 2px solid #e5e7eb !important;
-        transition: all 0.3s ease !important;
+    .p-calendar .p-inputtext,
+    .p-inputtext {
+        border-radius: 10px !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        border: 2px solid var(--border-color) !important;
 
         &:hover {
-            border-color: var(--imperial-success) !important;
+            border-color: var(--primary-color) !important;
         }
 
-        &:focus,
-        &.p-focus {
-            border-color: var(--imperial-success) !important;
-            box-shadow: 0 0 0 4px var(--imperial-success-light) !important;
+        &:focus, &.p-focus {
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.15) !important;
         }
     }
 }
 
-/* 🎬 Animations */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
+/* Header dynamic containers */
+.sales-container > .flex.justify-content-between {
+    position: relative;
+    overflow: hidden;
+    padding: 0.85rem;
+    margin-bottom: 0.85rem !important;
+    border: var(--card-border) !important;
+    border-radius: 18px;
+    background: var(--card-bg) !important;
+    box-shadow: var(--shadow-sm) !important;
+    backdrop-filter: var(--glass-blur);
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.sales-container > .flex.justify-content-between::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-color), #06b6d4, #6366f1);
+}
+
+.sales-container h1 {
+    font-size: 1.45rem !important;
+    color: var(--text-color) !important;
+}
+
+.sales-container p {
+    font-size: 0.8rem !important;
+    color: var(--text-color-secondary) !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
@@ -366,291 +340,6 @@
 
 /* 📱 Responsive Design */
 @media (max-width: 768px) {
-    .sales-container {
-        padding: 1rem;
-    }
-
-    .imperial-kpi-card {
-        margin-bottom: 1rem;
-    }
-
-    .kpi-value {
-        font-size: 2rem;
-    }
-
-    .kpi-icon-wrapper {
-        width: 3rem;
-        height: 3rem;
-
-        i {
-            font-size: 1.5rem;
-        }
-    }
-}
-
-
-/* 🎯 Print Styles */
-@media print {
-    .sales-container {
-        background: white;
-    }
-
-    .imperial-kpi-card {
-        box-shadow: none;
-        border: 1px solid #e5e7eb;
-    }
-
-    .p-button,
-    .p-paginator {
-        display: none !important;
-    }
-}
-
-/* 🎯 Dynamic Action Buttons & Status Badges */
-.action-buttons-container {
-    gap: 0.5rem;
-}
-
-/* ✅ Approved Badge - Green Check */
-.approved-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    animation: approvedPulse 2s ease-in-out infinite;
-
-    i {
-        filter: drop-shadow(0 4px 12px rgba(40, 167, 69, 0.5));
-    }
-}
-
-@keyframes approvedPulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-
-    50% {
-        transform: scale(1.1);
-        opacity: 0.8;
-    }
-}
-
-/* 🔒 Cancelled Badge - Red Lock */
-.cancelled-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.7;
-
-    i {
-        filter: drop-shadow(0 4px 12px rgba(220, 38, 38, 0.5));
-    }
-}
-
-/* 🎬 Imperial Pulse Animation (for Approve button) */
-::ng-deep .imperial-pulse {
-    animation: imperialPulse 1.5s ease-in-out infinite !important;
-}
-
-@keyframes imperialPulse {
-
-    0%,
-    100% {
-        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-    }
-
-    50% {
-        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
-    }
-}
-
-/* ✨ Imperial Glow Animation (Softer) */
-::ng-deep .imperial-glow {
-    animation: imperialGlow 2.5s ease-in-out infinite !important;
-}
-
-@keyframes imperialGlow {
-
-    0%,
-    100% {
-        box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
-    }
-
-    50% {
-        box-shadow: 0 0 15px rgba(245, 158, 11, 0.5);
-    }
-}
-
-/* 🎨 Action Button Specific Styles */
-::ng-deep {
-    .action-btn-view:hover {
-        background: rgba(59, 130, 246, 0.1) !important;
-    }
-
-    .action-btn-approve:hover {
-        background: var(--imperial-success-light) !important;
-        transform: scale(1.2) !important;
-    }
-
-    .action-btn-edit:hover {
-        background: rgba(59, 130, 246, 0.1) !important;
-    }
-
-    .action-btn-delete:hover {
-        background: var(--imperial-crimson-light) !important;
-    }
-
-    .action-btn-print:hover {
-        background: rgba(107, 114, 128, 0.1) !important;
-    }
-
-    .action-btn-return:hover {
-        background: rgba(245, 158, 11, 0.1) !important;
-        transform: scale(1.2) rotate(-10deg) !important;
-    }
-
-    .action-btn-cancel:hover {
-        background: var(--imperial-crimson-light) !important;
-    }
-
-    .action-btn-disabled {
-        opacity: 0.4 !important;
-        cursor: not-allowed !important;
-    }
-}
-
-/* Compact luxury refresh */
-.sales-container {
-    background: #f8fafc;
-    padding: 0.75rem !important;
-    min-height: auto;
-}
-
-.sales-container > .flex.justify-content-between {
-    position: relative;
-    overflow: hidden;
-    padding: 0.85rem;
-    margin-bottom: 0.85rem !important;
-    border: 1px solid #e8edf3;
-    border-radius: 18px;
-    background: #ffffff;
-    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
-}
-
-.sales-container > .flex.justify-content-between::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 5px;
-    background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
-}
-
-.icon-circle {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-}
-
-.sales-container h1 {
-    font-size: 1.45rem !important;
-}
-
-.sales-container p {
-    font-size: 0.8rem !important;
-}
-
-.sales-container > .grid {
-    margin-bottom: 0.85rem !important;
-}
-
-.imperial-kpi-card {
-    min-height: 118px;
-    padding: 0.85rem;
-    border-radius: 16px;
-    box-shadow: 0 16px 34px rgba(15, 23, 42, 0.09);
-}
-
-.imperial-kpi-card:hover {
-    transform: translateY(-3px);
-}
-
-.kpi-value {
-    font-size: 1.35rem;
-}
-
-.kpi-icon-wrapper {
-    width: 2.2rem;
-    height: 2.2rem;
-}
-
-.glass-panel {
-    border: 1px solid #e8edf3;
-    border-radius: 18px !important;
-    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
-    background: #ffffff;
-}
-
-::ng-deep .sales-container .p-datatable .p-datatable-thead > tr > th {
-    padding: 0.58rem 0.65rem !important;
-    font-size: 0.72rem !important;
-    border-bottom: 1px solid #e8edf3 !important;
-}
-
-::ng-deep .sales-container .p-datatable .p-datatable-tbody > tr > td {
-    padding: 0.5rem 0.65rem !important;
-    font-size: 0.78rem !important;
-}
-
-::ng-deep .sales-container .p-tag {
-    padding: 0.24rem 0.55rem !important;
-    border-radius: 999px !important;
-    font-size: 0.68rem !important;
-}
-
-::ng-deep .sales-container .p-button.p-button-rounded {
-    width: 2.1rem;
-    height: 2.1rem;
-}
-
-::ng-deep .sales-container .p-button:not(.p-button-rounded) {
-    min-height: 2.2rem;
-    padding: 0.42rem 0.8rem;
-    border-radius: 11px;
-    font-size: 0.78rem;
-    font-weight: 850;
-}
-
-::ng-deep .sales-container .p-inputtext,
-::ng-deep .sales-container .p-dropdown,
-::ng-deep .sales-container .p-calendar .p-inputtext {
-    min-height: 2.15rem !important;
-    border-radius: 10px !important;
-    font-size: 0.78rem !important;
-}
-
-::ng-deep .sales-container .p-paginator {
-    padding: 0.55rem !important;
-    font-size: 0.75rem;
-}
-
-.action-buttons-container {
-    gap: 0.25rem;
-}
-
-@media (max-width: 760px) {
-    .sales-container > .flex.justify-content-between {
-        align-items: stretch !important;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .sales-container > .flex.justify-content-between > .flex:last-child {
-        flex-wrap: wrap;
-    }
-
-    .sales-container > .flex.justify-content-between > .flex:last-child ::ng-deep .p-button {
-        width: 100%;
-    }
+    .sales-container { padding: 1rem; }
+    .kpi-value { font-size: 1.35rem; }
 }

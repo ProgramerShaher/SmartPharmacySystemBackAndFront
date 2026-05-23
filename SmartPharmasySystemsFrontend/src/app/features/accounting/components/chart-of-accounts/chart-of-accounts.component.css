@@ -1,172 +1,433 @@
-.royal-container {
-    background-color: #f8fafc;
-    min-height: calc(100vh - 60px);
+.chart-wrapper {
+  background: #f8fafc;
+  min-height: calc(100vh - 60px);
+  padding: 12px;
 }
 
-.glass-header {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e2e8f0;
+/* ===== COMPACT HEADER ===== */
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 10px;
+  border: 1px solid #eef0f3;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
-.icon-box {
-    width: 48px;
-    height: 48px;
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 1.5rem;
+.header-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1rem;
 }
 
-/* Explorer Style Tree */
-::ng-deep .royal-tree-component {
-    padding: 1rem !important;
-    background: transparent !important;
-    border: none !important;
+.header-title {
+  font-weight: 800;
+  color: #1e3c72;
+  margin: 0;
+  font-size: 15px;
 }
 
-/* خطوط الربط العمودية */
-::ng-deep .royal-tree-component .p-treenode-children {
-    padding: 0 1.4rem 0 0 !important; /* إزاحة لليمين في RTL */
-    margin: 0;
-    position: relative;
+.header-badge {
+  font-size: 10px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
 }
 
-::ng-deep .royal-tree-component .p-treenode-children::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0.6rem; /* الخط العمودي الرئيسي */
-    bottom: 0.8rem;
-    width: 1.5px;
-    background: #cbd5e1;
+.header-divider {
+  width: 1px;
+  height: 20px;
+  background: #e2e8f0;
+  margin: 0 4px;
 }
 
-/* خطوط الربط الأفقية */
-::ng-deep .royal-tree-component .p-treenode-content {
-    position: relative;
-    padding: 0.5rem 0.75rem !important;
-    border-radius: 6px !important;
-    margin-bottom: 2px;
-    transition: all 0.2s ease;
-    border: 1px solid transparent !important;
+/* ===== TREE CARD ===== */
+.tree-card {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #eef0f3;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
 }
 
-::ng-deep .royal-tree-component .p-treenode-content::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: -0.8rem; /* الخط الأفقي المتجه للابن */
-    width: 0.8rem;
-    height: 1.5px;
-    background: #cbd5e1;
+/* ===== ROYAL TREE - COMPACT ===== */
+::ng-deep .royal-tree {
+  padding: 4px 0 !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 12px !important;
 }
 
-/* إخفاء الخط للأب الرئيسي الأول */
-::ng-deep .royal-tree-component > .p-tree-container > .p-treenode > .p-treenode-content::before {
-    display: none;
+/* ===== TREE NODE CONTENT ===== */
+::ng-deep .royal-tree .p-treenode-content {
+  padding: 3px 8px !important;
+  border-radius: 5px !important;
+  margin-bottom: 1px;
+  transition: background 0.15s ease;
+  border: 1px solid transparent !important;
+  min-height: 32px;
 }
 
-::ng-deep .royal-tree-component .p-treenode-content:hover {
-    background: #f1f5f9 !important;
-    border-color: #e2e8f0 !important;
+::ng-deep .royal-tree .p-treenode-content:hover {
+  background: #f8fafc !important;
+  border-color: #eef0f3 !important;
 }
 
-::ng-deep .royal-tree-component .p-treenode-content.p-highlight {
-    background: #eff6ff !important;
-    border-color: #3b82f6 !important;
-    color: #1e3c72 !important;
+::ng-deep .royal-tree .p-treenode-content.p-highlight {
+  background: #eef2ff !important;
+  border-color: #818cf8 !important;
 }
 
-/* سهم الفتح والإغلاق (Toggler) */
-::ng-deep .royal-tree-component .p-tree-toggler {
-    width: 20px !important;
-    height: 20px !important;
-    margin-left: 8px !important;
-    color: #64748b !important;
-    background: #fff !important;
-    border: 1px solid #e2e8f0 !important;
-    border-radius: 4px !important;
-    z-index: 2;
-    transition: all 0.2s ease;
+/* ===== TOGGLER (EXPAND/COLLAPSE ARROW) ===== */
+::ng-deep .royal-tree .p-tree-toggler {
+  width: 16px !important;
+  height: 16px !important;
+  margin-left: 6px !important;
+  color: #94a3b8 !important;
+  background: #fff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 3px !important;
+  z-index: 2;
+  transition: all 0.15s ease;
+  font-size: 8px !important;
 }
 
-::ng-deep .royal-tree-component .p-tree-toggler:hover {
-    background: #f8fafc !important;
-    color: #1e3c72 !important;
-    border-color: #1e3c72 !important;
+::ng-deep .royal-tree .p-tree-toggler:hover {
+  background: #f1f5f9 !important;
+  color: #1e3c72 !important;
+  border-color: #1e3c72 !important;
 }
 
-/* أيقونات المجلدات والملفات */
+::ng-deep .royal-tree .p-tree-toggler .p-tree-toggler-icon {
+  font-size: 8px !important;
+  width: 8px !important;
+  height: 8px !important;
+}
+
+/* ===== CONNECTOR LINES ===== */
+::ng-deep .royal-tree .p-treenode-children {
+  padding: 0 1rem 0 0 !important;
+  margin: 0;
+  position: relative;
+}
+
+::ng-deep .royal-tree .p-treenode-children::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0.45rem;
+  bottom: 0.6rem;
+  width: 1px;
+  background: #dde3ea;
+}
+
+::ng-deep .royal-tree .p-treenode-content {
+  position: relative;
+}
+
+::ng-deep .royal-tree .p-treenode-content::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -0.55rem;
+  width: 0.55rem;
+  height: 1px;
+  background: #dde3ea;
+}
+
+::ng-deep .royal-tree > .p-tree-container > .p-treenode > .p-treenode-content::before {
+  display: none;
+}
+
+/* ===== TREE NODE ITEM ===== */
+.tree-node {
+  width: 100%;
+}
+
+.node-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 8px;
+}
+
+.node-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
 .node-icon {
-    font-size: 1.1rem;
-    margin-left: 10px;
+  font-size: 0.85rem;
+  flex-shrink: 0;
 }
-.pi-folder-fill, .pi-folder-open-fill { color: #f59e0b; }
-.pi-file-fill { color: #94a3b8; font-size: 0.9rem; }
 
-/* بيانات العقدة */
-.node-label {
-    font-weight: 600;
-    color: #334155;
-    font-size: 14px;
+.icon-folder {
+  color: #f59e0b;
+}
+
+.icon-leaf {
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.node-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.node-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .node-code {
-    font-family: 'Inter', sans-serif;
-    color: #64748b;
-    font-size: 12px;
-    background: #f1f5f9;
-    padding: 1px 6px;
-    border-radius: 4px;
-    margin-right: 10px;
+  font-family: 'Inter', sans-serif;
+  color: #94a3b8;
+  font-size: 10px;
+  background: #f1f5f9;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
+.node-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ===== TYPE BADGE ===== */
+.type-badge {
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-weight: 600;
+  min-width: 48px;
+  text-align: center;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.type-asset { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.type-liability { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.type-equity { background: #f5f3ff; color: #5b21b6; border: 1px solid #ddd6fe; }
+.type-revenue { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.type-expense { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+
+/* ===== BALANCE ===== */
 .node-balance {
-    font-weight: 700;
-    font-size: 13px;
-    min-width: 90px;
-    text-align: left;
-}
-.positive { color: #10b981; }
-.negative { color: #ef4444; }
-
-.node-type-badge {
-    font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 600;
-    min-width: 65px;
-    text-align: center;
-}
-.type-asset { background: #ecfdf5; color: #065f46; border: 1px solid #10b98133; }
-.type-liability { background: #fef2f2; color: #991b1b; border: 1px solid #ef444433; }
-.type-equity { background: #f5f3ff; color: #5b21b6; border: 1px solid #8b5cf633; }
-.type-revenue { background: #eff6ff; color: #1e40af; border: 1px solid #3b82f633; }
-.type-expense { background: #fff7ed; color: #9a3412; border: 1px solid #f9731633; }
-
-/* الأزرار الملكية */
-.btn-glass-primary {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
-    border: none !important;
-    color: white !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2) !important;
+  font-weight: 700;
+  font-size: 11px;
+  min-width: 70px;
+  text-align: left;
+  direction: ltr;
+  font-family: 'Inter', monospace;
 }
 
-.btn-glass-secondary {
-    background: white !important;
-    border: 1px solid #e2e8f0 !important;
-    color: #475569 !important;
-    font-weight: 600 !important;
+.positive { color: #059669; }
+.negative { color: #dc2626; }
+
+/* ===== NODE ACTIONS ===== */
+.node-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.add-btn-small {
-    color: #3b82f6 !important;
-    width: 24px !important;
-    height: 24px !important;
+::ng-deep .node-actions .p-inputswitch {
+  width: 28px !important;
+  height: 16px !important;
+}
+
+::ng-deep .node-actions .p-inputswitch .p-inputswitch-slider::before {
+  width: 12px !important;
+  height: 12px !important;
+  margin-top: -6px !important;
+}
+
+::ng-deep .node-actions .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+  background: #059669 !important;
+}
+
+.btn-add-sub {
+  font-size: 0.7rem !important;
+  width: 22px !important;
+  height: 22px !important;
+  color: #6366f1 !important;
+}
+
+.btn-delete {
+  font-size: 0.65rem !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* ===== FILTER ===== */
+::ng-deep .royal-tree .p-tree-filter-container {
+  margin: 6px 8px 4px !important;
+}
+
+::ng-deep .royal-tree .p-tree-filter {
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  border-radius: 6px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #fafafa !important;
+  padding-right: 28px !important;
+}
+
+::ng-deep .royal-tree .p-tree-filter-icon {
+  right: 10px !important;
+  left: auto !important;
+  font-size: 11px !important;
+  color: #94a3b8 !important;
+  margin-top: -5px !important;
+  top: 50% !important;
+}
+
+/* ===== BUTTONS ===== */
+.btn-primary-sm {
+  background: linear-gradient(135deg, #1e3c72, #2a5298) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+  height: 28px !important;
+  box-shadow: 0 3px 8px rgba(30, 60, 114, 0.15) !important;
+  border-radius: 6px !important;
+}
+
+.btn-primary-sm .p-button-icon {
+  font-size: 11px !important;
+}
+
+.btn-ghost {
+  background: transparent !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  font-weight: 600 !important;
+  font-size: 10px !important;
+  padding: 3px 8px !important;
+  height: 26px !important;
+  border-radius: 6px !important;
+}
+
+.btn-ghost .p-button-icon {
+  font-size: 10px !important;
+}
+
+.btn-refresh {
+  font-size: 11px !important;
+  color: #64748b !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.empty-state i {
+  font-size: 2.5rem;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.empty-state h4 {
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 14px;
+  margin: 0 0 4px 0;
+}
+
+.empty-state p {
+  color: #b8c5d6;
+  font-size: 12px;
+  margin: 0 0 12px 0;
+}
+
+/* ===== DIALOG ===== */
+::ng-deep .royal-dialog .p-dialog-header {
+  padding: 12px 16px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+::ng-deep .royal-dialog .p-dialog-title {
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #1e3c72 !important;
+}
+
+::ng-deep .royal-dialog .p-dialog-content {
+  padding: 16px !important;
+}
+
+::ng-deep .royal-dialog .p-dialog-footer {
+  padding: 10px 16px !important;
+  border-top: 1px solid #f0f0f0 !important;
+}
+
+.dialog-label {
+  font-weight: 700;
+  font-size: 12px;
+  color: #334155;
+  margin-bottom: 4px;
+  display: block;
+}
+
+::ng-deep .royal-dialog .p-inputtext {
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+}
+
+::ng-deep .royal-dialog .p-dropdown {
+  width: 100%;
+}
+
+::ng-deep .royal-dialog .p-dropdown .p-dropdown-label {
+  font-size: 12px !important;
+  padding: 6px 10px !important;
+}
+
+.parent-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  font-size: 11px;
+  color: #4338ca;
+}
+
+::ng-deep .p-toast {
+  font-size: 12px;
 }

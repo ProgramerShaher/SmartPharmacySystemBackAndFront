@@ -154,12 +154,6 @@ export class ChartOfAccountsComponent implements OnInit {
     });
   }
 
-  formatCurrency(value: number): string {
-    if (value === null || value === undefined) return '-';
-    const num = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-    return `${num} ر.ي.`;
-  }
-
   getTypeNameArabic(type: string | number): string {
     if (type === null || type === undefined) return 'غير محدد';
 

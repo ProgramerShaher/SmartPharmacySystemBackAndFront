@@ -16,7 +16,7 @@
 }
 
 .bg-gradient-purchase {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600) 100%);
 }
 
 // Glass Panel
@@ -46,7 +46,7 @@
     font-family: 'Cairo', sans-serif;
 
     &:focus {
-        border-color: #10b981 !important;
+        border-color: var(--primary-color) !important;
         box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
     }
 }
@@ -59,7 +59,7 @@
         border-radius: 0.75rem !important;
 
         &:focus {
-            border-color: #10b981 !important;
+            border-color: var(--primary-color) !important;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
         }
     }
@@ -139,7 +139,7 @@
         }
 
         &.p-button-success {
-            color: #10b981;
+            color: var(--primary-color);
         }
 
         &.p-button-warning {
@@ -170,7 +170,7 @@
             border: 2px solid #e5e7eb !important;
 
             &:focus {
-                border-color: #10b981 !important;
+                border-color: var(--primary-color) !important;
                 box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
             }
         }
@@ -182,7 +182,7 @@
         border: 2px solid #e5e7eb !important;
 
         &:focus {
-            border-color: #10b981 !important;
+            border-color: var(--primary-color) !important;
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
         }
     }
@@ -261,7 +261,7 @@
     position: absolute;
     inset: 0 0 auto;
     height: 5px;
-    background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+    background: linear-gradient(90deg, #6366f1, #06b6d4, var(--primary-color));
 }
 
 .icon-circle {

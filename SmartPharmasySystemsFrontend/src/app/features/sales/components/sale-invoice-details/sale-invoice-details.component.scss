@@ -98,7 +98,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    color: #16a34a;
+    color: var(--primary-color);
     font-weight: 800;
     font-size: 1.1rem;
     transform: rotate(-5deg);
@@ -327,7 +327,7 @@
     .quantity-cell {
         .quantity-value {
             background: #f0fdf4;
-            color: #16a34a;
+            color: var(--primary-color);
             padding: 0.35rem 0.75rem;
             border-radius: 8px;
             font-weight: 800;

@@ -5,18 +5,20 @@
 }
 
 .returns-create-container {
-    background: #f8fafc;
+    background: var(--bg-gradient);
     min-height: 100vh;
     padding: 0.5rem !important;
+    color: var(--text-color);
 }
 
 /* 🎩 Header - Slim */
 .imperial-header {
-    background: white;
+    background: var(--card-bg) !important;
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    border-right: 3px solid #ef4444;
+    box-shadow: var(--shadow-sm) !important;
+    border: var(--card-border) !important;
+    border-right: 3px solid var(--primary-color) !important;
 }
 
 .status-badge {
@@ -27,9 +29,9 @@
     text-transform: uppercase;
     
     &.draft {
-        background: #eff6ff;
-        color: #2563eb;
-        border: 1px solid #dbeafe;
+        background: rgba(var(--primary-rgb), 0.15);
+        color: var(--primary-color);
+        border: 1px solid rgba(var(--primary-rgb), 0.3);
     }
 }
 
@@ -46,17 +48,17 @@
 
 /* 🃏 Premium Card - Ultra Compact */
 .premium-card {
-    background: white;
+    background: var(--card-bg) !important;
     border-radius: 8px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: var(--card-border) !important;
+    box-shadow: var(--shadow-sm) !important;
     
     .card-header {
         display: flex;
         align-items: center;
         gap: 0.4rem;
         font-size: 0.8rem;
-        color: #1e293b;
+        color: var(--text-color);
     }
 }
 
@@ -65,15 +67,15 @@
 
 /* 🏷️ Info Items */
 .info-item {
-    background: #f1f5f9;
+    background: var(--surface-hover) !important;
     padding: 0.4rem 0.75rem;
     border-radius: 6px;
-    border-right: 2px solid #cbd5e1;
+    border-right: 2px solid var(--border-color) !important;
 
     label {
         display: block;
         font-size: 0.65rem;
-        color: #64748b;
+        color: var(--text-color-secondary);
         font-weight: 600;
         margin-bottom: 0.1rem;
     }
@@ -81,20 +83,21 @@
     .info-value {
         font-size: 0.85rem;
         font-weight: 800;
-        color: #1e293b;
+        color: var(--text-color) !important;
     }
 }
 
 /* 📋 Compact Numeric Input */
 ::ng-deep .compact-numeric {
     .p-inputnumber-input {
-        border: 1px solid #e2e8f0 !important;
+        border: 1px solid var(--border-color) !important;
         border-radius: 6px !important;
-        background: #fff5f5 !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
         
         &:focus {
-            border-color: #f87171 !important;
-            box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.1) !important;
+            border-color: var(--primary-color) !important;
+            box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1) !important;
         }
     }
 }
@@ -108,7 +111,16 @@
 }
 
 .total-box {
-    border: 1px dashed #f87171;
+    background: rgba(var(--primary-rgb), 0.1) !important;
+    border: 1px dashed var(--primary-color) !important;
+    
+    span {
+        color: var(--primary-color) !important;
+    }
+    
+    div {
+        color: var(--primary-color) !important;
+    }
 }
 
 /* 🔄 Animations */
@@ -128,20 +140,66 @@
             padding: 0.45rem 0.75rem !important;
             border-radius: 6px !important;
             font-size: 0.8rem !important;
+            background: var(--input-bg) !important;
+            color: var(--text-color) !important;
+            border: 2px solid var(--border-color) !important;
+            
+            &:focus {
+                border-color: var(--primary-color) !important;
+            }
         }
     }
 
     .p-table-sm {
         .p-datatable-thead > tr > th {
-            padding: 0.4rem !important;
-            background: #f8fafc !important;
-            color: #475569 !important;
-            border-bottom: 1px solid #e2e8f0 !important;
+            padding: 0.5rem !important;
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+            color: var(--primary-color-text) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
             font-size: 0.75rem !important;
+            font-weight: 750 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+        }
+        .p-datatable-tbody > tr {
+            background: transparent !important;
         }
         .p-datatable-tbody > tr > td {
-            padding: 0.35rem !important;
-            font-size: 0.8rem !important;
+            padding: 0.45rem !important;
+            font-size: 0.82rem !important;
+            color: var(--text-color) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            background: transparent !important;
+        }
+        .p-datatable-tbody > tr:hover {
+            background: var(--surface-hover) !important;
+        }
+    }
+
+    .p-autocomplete-panel {
+        background: var(--modal-bg) !important;
+        border: var(--card-border) !important;
+        box-shadow: var(--shadow-lg) !important;
+        
+        .p-autocomplete-items {
+            background: var(--modal-bg) !important;
+            padding: 0.25rem 0 !important;
+            
+            .p-autocomplete-item {
+                color: var(--text-color) !important;
+                background: transparent !important;
+                transition: background 0.2s ease;
+                
+                &:hover {
+                    background: var(--surface-hover) !important;
+                }
+                
+                /* Intercept template styles to make them perfectly theme-compliant */
+                .text-gray-800 { color: var(--text-color) !important; }
+                .text-gray-500 { color: var(--text-color-secondary) !important; }
+                .text-gray-400 { color: var(--text-color-secondary) !important; }
+                .border-gray-100 { border-color: var(--border-color) !important; }
+                .text-green-600 { color: var(--primary-color) !important; }
+            }
         }
     }
 }

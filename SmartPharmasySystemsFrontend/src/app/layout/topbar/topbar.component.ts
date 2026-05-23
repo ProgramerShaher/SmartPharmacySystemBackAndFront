@@ -11,6 +11,7 @@ import { ConfirmationService } from 'primeng/api';
 import { ThemeService, Theme } from '../../core/services/theme.service';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
+import { ThemeSettingsComponent } from '../theme-settings/theme-settings.component';
 
 @Component({
     selector: 'app-topbar',
@@ -21,7 +22,8 @@ import { AlertService } from '../../core/services/alert.service';
         OverlayPanelModule,
         MenuModule,
         ConfirmDialogModule,
-        TooltipModule
+        TooltipModule,
+        ThemeSettingsComponent
     ],
     providers: [ConfirmationService],
     templateUrl: './topbar.component.html',

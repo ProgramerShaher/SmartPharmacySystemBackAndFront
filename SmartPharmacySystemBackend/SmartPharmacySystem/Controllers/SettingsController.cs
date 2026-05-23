@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Application.DTOs.Settings;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
@@ -71,13 +72,25 @@ public class SettingsController : ControllerBase
             var logoUrl = $"/uploads/logos/{uniqueFileName}";
 
             // Update the database with the new URL
-            var settings = _context.PharmacySettings.FirstOrDefault();
-            if (settings != null)
+            var settings = await _context.PharmacySettings.FirstOrDefaultAsync();
+            if (settings == null)
+            {
+                settings = new PharmacySettings
+                {
+                    PharmacyName = "الصيدلية الذكية",
+                    BaseCurrency = "ر.ي",
+                    LogoUrl = logoUrl
+                };
+
+                await _context.PharmacySettings.AddAsync(settings);
+            }
+            else
             {
                 settings.LogoUrl = logoUrl;
                 _context.Update(settings);
-                await _context.SaveChangesAsync();
             }
+
+            await _context.SaveChangesAsync();
 
             return Ok(new { LogoUrl = logoUrl, Message = "تم رفع الشعار بنجاح" });
         }

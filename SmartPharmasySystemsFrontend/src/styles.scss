@@ -140,18 +140,20 @@ body {
     .p-datatable {
         border-radius: var(--border-radius);
         overflow: hidden;
+        background: transparent !important;
 
         .p-datatable-thead>tr>th {
-            background: var(--table-header-bg);
-            color: var(--text-color);
-            border-bottom: 2px solid var(--border-color);
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+            color: var(--primary-color-text) !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
             font-weight: 700;
-            padding: 1rem;
+            padding: 1.1rem 1rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
         }
 
         .p-datatable-tbody>tr {
-            background: var(--card-bg);
-            color: var(--text-color);
+            background: var(--card-bg) !important;
+            color: var(--text-color) !important;
             transition: all 0.2s ease;
 
             &:hover {
@@ -161,58 +163,158 @@ body {
 
             >td {
                 padding: 1rem;
-                border-color: var(--border-color);
+                border-color: var(--border-color) !important;
+            }
+        }
+
+        .p-paginator {
+            background: var(--card-bg) !important;
+            border-color: var(--border-color) !important;
+            color: var(--text-color) !important;
+
+            .p-paginator-page,
+            .p-paginator-next,
+            .p-paginator-last,
+            .p-paginator-first,
+            .p-paginator-prev {
+                color: var(--text-color) !important;
+
+                &.p-highlight {
+                    background: rgba(var(--primary-rgb), 0.1) !important;
+                    color: var(--primary-color) !important;
+                    border-color: var(--primary-color) !important;
+                }
             }
         }
     }
 
     .p-inputtext,
     .p-inputnumber-input,
-    .p-password-input {
+    .p-password-input,
+    .p-dropdown,
+    .p-calendar .p-inputtext {
         border-radius: 0.75rem !important;
         padding: 0.75rem 1rem !important;
         background: var(--input-bg) !important;
+        color: var(--text-color) !important;
         border: 2px solid var(--border-color) !important;
         transition: all 0.2s ease !important;
 
-        &:focus {
+        &:focus,
+        &.p-focus {
             border-color: var(--primary-color) !important;
             box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1) !important;
         }
     }
 
-    .p-button {
+    .p-dropdown {
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+
+        .p-dropdown-label {
+            padding: 0.75rem 1rem !important;
+            color: var(--text-color) !important;
+        }
+
+        .p-dropdown-trigger {
+            color: var(--text-color-secondary) !important;
+        }
+
+        .p-dropdown-panel {
+            background: var(--modal-bg) !important;
+            border-color: var(--border-color) !important;
+
+            .p-dropdown-items {
+                .p-dropdown-item {
+                    color: var(--text-color) !important;
+
+                    &:hover {
+                        background: var(--surface-hover) !important;
+                    }
+
+                    &.p-highlight {
+                        background: rgba(var(--primary-rgb), 0.1) !important;
+                        color: var(--primary-color) !important;
+                    }
+                }
+            }
+        }
+    }
+
+    /* Primary and Accent Button Styles */
+    .p-button:not(.p-button-secondary):not(.p-button-outlined):not(.p-button-text):not(.p-button-danger):not(.p-button-warning):not(.p-button-success):not(.p-button-info) {
+        background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%) !important;
+        border-color: var(--primary-600) !important;
+        color: var(--primary-color-text) !important;
+        box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.15) !important;
         border-radius: 0.75rem;
-        padding: 0.6rem 1.5rem;
+        padding: 0.65rem 1.6rem;
         font-weight: 600;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
         &:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%) !important;
+            border-color: var(--primary-700) !important;
+            box-shadow: 0 8px 18px rgba(var(--primary-rgb), 0.3) !important;
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    /* Secondary Buttons and general base button shapes */
+    .p-button.p-button-secondary {
+        background: var(--surface-hover) !important;
+        border-color: var(--border-color) !important;
+        color: var(--text-color) !important;
+
+        &:hover {
+            background: var(--border-color) !important;
         }
     }
 
     .p-dialog {
-        border: var(--glass-border);
-        backdrop-filter: var(--glass-blur);
-        box-shadow: var(--shadow-lg);
+        background: var(--modal-bg) !important;
+        border: var(--glass-border) !important;
+        border-radius: var(--border-radius-lg) !important;
+        box-shadow: var(--shadow-lg) !important;
+        overflow: hidden;
 
         .p-dialog-header {
-            background: transparent;
-            padding: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+            color: var(--primary-color-text) !important;
+            padding: 1.25rem 1.5rem !important;
+            border-bottom: none !important;
+
+            .p-dialog-title {
+                font-weight: 800 !important;
+                font-size: 1.2rem !important;
+            }
+
+            .p-dialog-header-icon {
+                color: var(--primary-color-text) !important;
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background: rgba(255, 255, 255, 0.15) !important;
+                    border-radius: 50%;
+                }
+            }
         }
 
         .p-dialog-content {
-            background: transparent;
-            padding: 2rem 1.5rem;
+            background: var(--modal-bg) !important;
+            color: var(--text-color) !important;
+            padding: 2rem 1.5rem !important;
         }
 
         .p-dialog-footer {
-            background: transparent;
-            padding: 1rem 1.5rem;
-            border-top: 1px solid var(--border-color);
+            background: var(--modal-bg) !important;
+            padding: 1.25rem 1.5rem !important;
+            border-top: 1px solid var(--border-color) !important;
         }
     }
 }
@@ -262,10 +364,12 @@ body {
 .inventory-panel,
 .inventory-filter-panel,
 .inventory-stat-card {
-    background: #ffffff;
-    border: 1px solid #e8edf3;
+    background: var(--card-bg) !important;
+    border: var(--card-border) !important;
     border-radius: 18px;
-    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--shadow-md) !important;
+    color: var(--text-color) !important;
+    backdrop-filter: var(--glass-blur) !important;
 }
 
 .inventory-hero {
@@ -283,7 +387,7 @@ body {
     position: absolute;
     inset: 0 0 auto;
     height: 5px;
-    background: linear-gradient(90deg, #10b981, #06b6d4, #6366f1);
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-400), var(--primary-600));
 }
 
 .inventory-title {
@@ -302,8 +406,8 @@ body {
     flex-shrink: 0;
     border-radius: 14px;
     color: #ffffff;
-    background: linear-gradient(135deg, #0f766e, #0284c7);
-    box-shadow: 0 12px 24px rgba(2, 132, 199, 0.2);
+    background: linear-gradient(135deg, var(--primary-600), var(--primary-400));
+    box-shadow: 0 12px 24px rgba(var(--primary-rgb), 0.2);
 }
 
 .inventory-icon i {
@@ -312,7 +416,7 @@ body {
 
 .inventory-title h1 {
     margin: 0;
-    color: #0f172a;
+    color: var(--text-color) !important;
     font-size: 1.45rem;
     font-weight: 900;
     line-height: 1.2;
@@ -320,7 +424,7 @@ body {
 
 .inventory-title p {
     margin: 0.3rem 0 0;
-    color: #64748b;
+    color: var(--text-color-secondary) !important;
     font-size: 0.86rem;
     font-weight: 600;
 }
@@ -360,7 +464,7 @@ body {
 .inventory-filter label {
     display: block;
     margin-bottom: 0.35rem;
-    color: #475569;
+    color: var(--text-color-secondary) !important;
     font-size: 0.76rem;
     font-weight: 850;
 }
@@ -388,12 +492,12 @@ body {
     top: 0;
     width: 4px;
     height: 100%;
-    background: var(--accent, #10b981);
+    background: var(--primary-color);
 }
 
 .inventory-stat-card span {
     display: block;
-    color: #64748b;
+    color: var(--text-color-secondary) !important;
     font-size: 0.74rem;
     font-weight: 850;
     margin-bottom: 0.25rem;
@@ -401,25 +505,25 @@ body {
 
 .inventory-stat-card strong {
     display: block;
-    color: var(--accent, #10b981);
+    color: var(--primary-color) !important;
     font-size: 1.2rem;
     line-height: 1.2;
 }
 
 .inventory-stat-card small {
-    color: #94a3b8;
+    color: var(--text-color-secondary) !important;
     font-size: 0.7rem;
 }
 
 .inventory-empty {
     text-align: center;
     padding: 2.2rem !important;
-    color: #64748b;
+    color: var(--text-color-secondary) !important;
 }
 
 .inventory-empty i {
     display: block;
-    color: #cbd5e1;
+    color: var(--border-color) !important;
     font-size: 2rem;
     margin-bottom: 0.45rem;
 }
@@ -438,66 +542,82 @@ body {
 }
 
 .inventory-chip.green {
-    background: #ecfdf5;
-    color: #047857;
+    background: rgba(var(--primary-rgb), 0.1) !important;
+    color: var(--primary-color) !important;
 }
 
 .inventory-chip.blue {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3b82f6 !important;
 }
 
 .inventory-chip.indigo {
-    background: #eef2ff;
-    color: #4338ca;
+    background: rgba(99, 102, 241, 0.1) !important;
+    color: #6366f1 !important;
 }
 
 .inventory-chip.gray {
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--surface-hover) !important;
+    color: var(--text-color-secondary) !important;
 }
 
 .inventory-chip.red {
-    background: #fef2f2;
-    color: #dc2626;
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #ef4444 !important;
 }
 
 .inventory-chip.amber {
-    background: #fffbeb;
-    color: #b45309;
+    background: rgba(245, 158, 11, 0.1) !important;
+    color: #f59e0b !important;
 }
 
 .inventory-table {
     border-radius: 18px;
     overflow: hidden;
+    background: transparent !important;
 }
 
-.inventory-table .p-datatable-thead > tr > th {
-    background: #f8fafc !important;
-    color: #475569 !important;
-    border-color: #e8edf3 !important;
-    padding: 0.7rem 0.75rem !important;
-    font-size: 0.76rem !important;
-    font-weight: 900 !important;
+.inventory-table .p-datatable-thead>tr>th {
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+    color: var(--primary-color-text) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    padding: 0.85rem 0.75rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 750 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
-.inventory-table .p-datatable-tbody > tr > td {
-    border-color: #eef2f7 !important;
+.inventory-table .p-datatable-tbody>tr>td {
+    border-color: var(--border-color) !important;
     padding: 0.62rem 0.75rem !important;
     vertical-align: middle;
+    color: var(--text-color) !important;
+    background: var(--card-bg) !important;
 }
 
-.inventory-table .p-datatable-tbody > tr:hover {
-    background: #f8fafc !important;
+.inventory-table .p-datatable-tbody>tr:hover {
+    background: var(--surface-hover) !important;
 }
 
 .inventory-table .p-paginator {
-    background: #f8fafc !important;
-    border: 0 !important;
+    background: var(--card-bg) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-color) !important;
     padding: 0.55rem !important;
+    
+    .p-paginator-page, .p-paginator-next, .p-paginator-last, .p-paginator-first, .p-paginator-prev {
+        color: var(--text-color) !important;
+        
+        &.p-highlight {
+            background: rgba(var(--primary-rgb), 0.1) !important;
+            color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+        }
+    }
 }
 
 @media (max-width: 1100px) {
+
     .inventory-filter,
     .inventory-filter.wide,
     .inventory-filter.small {
@@ -539,5 +659,288 @@ body {
 
     .inventory-title p {
         font-size: 0.78rem;
+    }
+}
+
+/* ======================== */
+/* Theme Settings Sidebar   */
+/* ======================== */
+.theme-settings-sidebar.p-sidebar {
+    width: 350px !important;
+    height: 100vh !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.theme-settings-sidebar .p-sidebar-header {
+    display: none !important;
+}
+
+.theme-settings-sidebar .p-sidebar-content {
+    flex: 1 !important;
+    padding: 0 !important;
+    overflow-y: auto !important;
+    height: 100% !important;
+}
+
+/* ==========================================================================
+   GLOBAL PRINT STYLES - PROFESSIONAL RECEIPT & VOUCHER PRINTING
+   ========================================================================== */
+@media print {
+    /* 1. Hide all non-printable components globally */
+    app-sidebar,
+    .layout-sidebar,
+    app-topbar,
+    .layout-topbar,
+    .layout-footer,
+    .layout-mask,
+    p-toast,
+    p-confirmdialog,
+    .p-toast,
+    .p-confirmdialog,
+    .theme-settings-sidebar,
+    .inventory-hero,
+    .inventory-stats,
+    .inventory-filter-panel,
+    .inventory-panel,
+    .inventory-page,
+    .p-datatable,
+    .p-paginator,
+    button,
+    .p-button {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        overflow: hidden !important;
+    }
+
+    /* 2. Reset page and container dimensions for a perfect A4/A5 printout */
+    html, body, app-root, .layout-wrapper, .layout-main-container, .layout-content-scrollable, .content-wrapper {
+        background: #ffffff !important;
+        color: #000000 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        width: 100% !important;
+        height: auto !important;
+        min-height: auto !important;
+        position: static !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    /* 3. Ensure the printable voucher is visible and structured */
+    .printable-voucher {
+        display: block !important;
+        visibility: visible !important;
+        position: relative !important;
+        width: 100% !important;
+        max-width: 19cm !important;
+        margin: 0 auto !important;
+        padding: 0.5cm !important;
+        box-sizing: border-box !important;
+        direction: rtl !important;
+        font-family: 'Cairo', sans-serif !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+    }
+
+    .printable-voucher * {
+        visibility: visible !important;
+    }
+
+    .voucher-wrapper {
+        border: 2px solid #000000 !important;
+        padding: 1.5rem !important;
+        border-radius: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+        background: #ffffff !important;
+        position: relative !important;
+        box-sizing: border-box !important;
+        min-height: 12cm !important;
+    }
+
+    /* Header styling */
+    .voucher-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        border-bottom: 2px solid #000000 !important;
+        padding-bottom: 1rem !important;
+        width: 100% !important;
+    }
+
+    .right-header {
+        text-align: right !important;
+        flex: 1.2 !important;
+    }
+    .pharmacy-title {
+        display: block !important;
+        font-size: 1.3rem !important;
+        font-weight: 800 !important;
+        margin-bottom: 0.3rem !important;
+        color: #000000 !important;
+    }
+    .pharmacy-sub, .pharmacy-phone {
+        display: block !important;
+        font-size: 0.85rem !important;
+        color: #333333 !important;
+        font-weight: 600 !important;
+        margin-bottom: 0.15rem !important;
+    }
+
+    .center-header {
+        text-align: center !important;
+        flex: 1 !important;
+    }
+    .voucher-type-box {
+        border: 2px double #000000 !important;
+        padding: 0.6rem 1.2rem !important;
+        display: inline-block !important;
+        background: #f9f9f9 !important;
+        border-radius: 8px !important;
+    }
+    .voucher-type-title {
+        display: block !important;
+        font-size: 1.4rem !important;
+        font-weight: 900 !important;
+        letter-spacing: 1px !important;
+        color: #000000 !important;
+    }
+    .voucher-type-subtitle {
+        display: block !important;
+        font-size: 0.75rem !important;
+        font-weight: 800 !important;
+        color: #333333 !important;
+        margin-top: 0.1rem !important;
+    }
+
+    .left-header {
+        text-align: left !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.4rem !important;
+        flex: 1.2 !important;
+    }
+    .meta-row {
+        display: flex !important;
+        justify-content: flex-end !important;
+        gap: 0.5rem !important;
+        font-size: 0.95rem !important;
+        color: #000000 !important;
+    }
+    .meta-label {
+        font-weight: 800 !important;
+        min-width: 70px !important;
+        text-align: right !important;
+    }
+    .meta-value {
+        font-weight: 600 !important;
+    }
+
+    /* Amount Bar styling */
+    .amount-receipt-bar {
+        display: flex !important;
+        justify-content: flex-start !important;
+        margin: 0.5rem 0 !important;
+        width: 100% !important;
+    }
+    .amount-box {
+        border: 2px solid #000000 !important;
+        border-radius: 6px !important;
+        overflow: hidden !important;
+        display: flex !important;
+        align-items: stretch !important;
+        font-size: 1.4rem !important;
+        font-weight: 900 !important;
+    }
+    .amount-currency {
+        background: #eaeaea !important;
+        padding: 0.4rem 1rem !important;
+        border-left: 2px solid #000000 !important;
+        font-size: 0.95rem !important;
+        font-weight: 800 !important;
+        display: flex !important;
+        align-items: center !important;
+        color: #000000 !important;
+    }
+    .amount-number {
+        padding: 0.4rem 1.5rem !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: monospace, 'Cairo' !important;
+    }
+
+    /* Main receipt content grid */
+    .voucher-body-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1.2rem !important;
+        margin-top: 0.5rem !important;
+        width: 100% !important;
+    }
+    .grid-row {
+        display: flex !important;
+        align-items: flex-end !important;
+        border-bottom: 1.5px dashed #000000 !important;
+        padding-bottom: 0.4rem !important;
+        width: 100% !important;
+    }
+    .row-label {
+        width: 180px !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        color: #000000 !important;
+        flex-shrink: 0 !important;
+        text-align: right !important;
+    }
+    .row-content {
+        flex-grow: 1 !important;
+        font-size: 1.05rem !important;
+        text-align: right !important;
+        color: #000000 !important;
+        padding-right: 0.5rem !important;
+    }
+    .notes-content {
+        font-size: 0.95rem !important;
+        color: #333333 !important;
+        font-style: italic !important;
+    }
+
+    /* Signatures */
+    .voucher-signatures {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-top: 3.5rem !important;
+        width: 100% !important;
+    }
+    .sig-col {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 3rem !important;
+        width: 22% !important;
+    }
+    .sig-col span {
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        color: #000000 !important;
+    }
+    .sig-line {
+        width: 100% !important;
+        border-bottom: 1.5px dashed #555555 !important;
+    }
+    
+    @page {
+        size: A4 portrait;
+        margin: 1cm !important;
     }
 }

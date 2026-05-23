@@ -37,7 +37,7 @@
 }
 
 .header-content h2 i {
-    background: linear-gradient(135deg, #10b981, #34d399);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-400));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-size: 1.5rem;
@@ -144,7 +144,7 @@
 }
 
 .text-success {
-    color: #10b981 !important;
+    color: var(--primary-color) !important;
     font-weight: 700;
 }
 

@@ -62,7 +62,7 @@
     }
 
     /* Account Type Colors */
-    .type-asset { border-right: 4px solid #10b981 !important; }
+    .type-asset { border-right: 4px solid var(--primary-color) !important; }
     .type-liability { border-right: 4px solid #ef4444 !important; }
     .type-equity { border-right: 4px solid #8b5cf6 !important; }
     .type-revenue { border-right: 4px solid #3b82f6 !important; }
@@ -74,7 +74,7 @@
         color: #1e293b !important;
     }
 
-    .text-debit { color: #059669; font-weight: 700; }
+    .text-debit { color: var(--primary-600); font-weight: 700; }
     .text-credit { color: #dc2626; font-weight: 700; }
     .text-total { color: #1e3c72; font-weight: 800; font-size: 12px; }
 }
@@ -108,7 +108,7 @@
     color: white;
     font-weight: 800;
     
-    &.Asset { background: #10b981; }
+    &.Asset { background: var(--primary-color); }
     &.Liability { background: #ef4444; }
     &.Equity { background: #8b5cf6; }
     &.Revenue { background: #3b82f6; }

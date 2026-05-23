@@ -105,7 +105,7 @@
     position: absolute;
     inset: 0 0 auto;
     height: 5px;
-    background: linear-gradient(90deg, #6366f1, #06b6d4, #10b981);
+    background: linear-gradient(90deg, #6366f1, #06b6d4, var(--primary-color));
 }
 
 .dialog-title {
@@ -184,11 +184,11 @@
     padding: 0.75rem 0.9rem;
     border: 1px solid #bbf7d0;
     border-radius: 14px;
-    background: linear-gradient(135deg, #ecfdf5, #eff6ff);
+    background: linear-gradient(135deg, var(--primary-50), #eff6ff);
 }
 
 .item-total-box span {
-    color: #047857;
+    color: var(--primary-700);
     font-size: 0.78rem;
     font-weight: 900;
 }

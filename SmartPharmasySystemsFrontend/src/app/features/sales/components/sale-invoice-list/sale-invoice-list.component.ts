@@ -72,7 +72,7 @@ export class SaleInvoiceListComponent implements OnInit {
             datasets: [{
                 label: 'المبيعات اليومية',
                 data: Array(7).fill(0),
-                borderColor: '#10b981',
+                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 fill: true
             }]

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -72,13 +72,13 @@ export class MovementListComponent implements OnInit {
   endDate: Date | null = null;
 
   movementTypes = [
-    { label: 'توريد', value: StockMovementType.Purchase },
-    { label: 'بيع', value: StockMovementType.Sale },
-    { label: 'مردود مشتريات', value: StockMovementType.PurchaseReturn },
-    { label: 'مردود مبيعات', value: StockMovementType.SalesReturn },
-    { label: 'تعديل مخزون', value: StockMovementType.Adjustment },
-    { label: 'تالف', value: StockMovementType.Damage },
-    { label: 'منتهي الصلاحية', value: StockMovementType.Expiry }
+    { label: '?????', value: StockMovementType.Purchase },
+    { label: '???', value: StockMovementType.Sale },
+    { label: '????? ???????', value: StockMovementType.PurchaseReturn },
+    { label: '????? ??????', value: StockMovementType.SalesReturn },
+    { label: '????? ?????', value: StockMovementType.Adjustment },
+    { label: '????', value: StockMovementType.Damage },
+    { label: '????? ????????', value: StockMovementType.Expiry }
   ];
 
   constructor(
@@ -160,7 +160,7 @@ export class MovementListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading movements:', error);
-        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل حركات المخزون من قاعدة البيانات' });
+        this.messageService.add({ severity: 'error', summary: '???', detail: '??? ????? ????? ??????? ?? ????? ????????' });
         this.loading.set(false);
       }
     });
@@ -200,11 +200,11 @@ export class MovementListComponent implements OnInit {
   }
 
   exportPDF() {
-    this.messageService.add({ severity: 'info', summary: 'تصدير PDF', detail: 'سيتم تجهيز التصدير لاحقًا' });
+    this.messageService.add({ severity: 'info', summary: '????? PDF', detail: '???? ????? ??????? ??????' });
   }
 
   exportExcel() {
-    this.messageService.add({ severity: 'info', summary: 'تصدير Excel', detail: 'سيتم تجهيز التصدير لاحقًا' });
+    this.messageService.add({ severity: 'info', summary: '????? Excel', detail: '???? ????? ??????? ??????' });
   }
 
   isAddition(type: StockMovementType): boolean {
@@ -252,15 +252,15 @@ export class MovementListComponent implements OnInit {
       labels: trend.map(item => new Date(item.date).toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' })),
       datasets: [
         {
-          label: 'الإضافات',
+          label: '????????',
           data: trend.map(item => item.additions),
-          borderColor: '#10b981',
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
           backgroundColor: 'rgba(16, 185, 129, 0.12)',
           tension: 0.35,
           fill: true
         },
         {
-          label: 'الخصومات',
+          label: '????????',
           data: trend.map(item => item.deductions),
           borderColor: '#ef4444',
           backgroundColor: 'rgba(239, 68, 68, 0.10)',
@@ -272,9 +272,9 @@ export class MovementListComponent implements OnInit {
   }
 
   private updateCategoryChart(categories: any[]) {
-    const colors = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b'];
+    const colors = [getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b'];
     this.categoryDistributionData = {
-      labels: categories.map(item => item.categoryName || 'بدون تصنيف'),
+      labels: categories.map(item => item.categoryName || '???? ?????'),
       datasets: [{
         data: categories.map(item => item.quantity),
         backgroundColor: colors,

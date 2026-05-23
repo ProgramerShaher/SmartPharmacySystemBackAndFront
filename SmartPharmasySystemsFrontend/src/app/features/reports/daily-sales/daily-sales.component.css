@@ -4,9 +4,10 @@
     flex-direction: column;
     gap: 1.25rem;
     direction: rtl;
-    background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
+    background: var(--bg-gradient);
     min-height: 100vh;
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: var(--font-family);
+    color: var(--text-color);
 }
 
 /* --- Header Section (The Royal Look) --- */
@@ -68,9 +69,9 @@
 
 /* --- Premium Inputs & Buttons --- */
 :host ::ng-deep .p-calendar .p-inputtext {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
+    background: var(--input-bg) !important;
+    border: 2px solid var(--border-color) !important;
+    color: var(--text-color) !important;
     border-radius: 10px;
     padding: 0.5rem 1rem;
     backdrop-filter: blur(4px);
@@ -78,9 +79,8 @@
 }
 
 :host ::ng-deep .p-calendar .p-inputtext:focus {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: #38bdf8;
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2) !important;
 }
 
 :host ::ng-deep .p-button.p-button-sm {
@@ -90,13 +90,13 @@
 }
 
 :host ::ng-deep .p-button-info.p-outlined {
-    color: #38bdf8;
-    border-color: rgba(56, 189, 248, 0.5);
+    color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
 }
 
 :host ::ng-deep .p-button-info.p-outlined:hover {
-    background: rgba(56, 189, 248, 0.1);
-    border-color: #38bdf8;
+    background: rgba(var(--primary-rgb), 0.1) !important;
+    border-color: var(--primary-color) !important;
     transform: translateY(-1px);
 }
 
@@ -108,15 +108,15 @@
 }
 
 .summary-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
+    background: var(--card-bg);
+    backdrop-filter: var(--glass-blur);
     border-radius: 20px;
     padding: 1.25rem;
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    border: var(--card-border);
+    box-shadow: var(--shadow-md);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
@@ -132,14 +132,15 @@
 }
 
 .summary-card.sales::after { background: #0ea5e9; }
-.summary-card.profit::after { background: #10b981; }
+.summary-card.profit::after { background: var(--primary-color); }
 .summary-card.invoices::after { background: #6366f1; }
 .summary-card.items::after { background: #f59e0b; }
 
 .summary-card:hover {
     transform: translateY(-5px) scale(1.02);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    background: #ffffff;
+    box-shadow: var(--shadow-lg);
+    background: var(--card-bg);
+    border-color: var(--primary-color);
 }
 
 .summary-icon {
@@ -155,10 +156,10 @@
 
 .summary-icon i { position: relative; z-index: 1; }
 
-.summary-card.sales .summary-icon { background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0369a1; }
-.summary-card.profit .summary-icon { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; }
-.summary-card.invoices .summary-icon { background: linear-gradient(135deg, #eef2ff, #e0e7ff); color: #4338ca; }
-.summary-card.items .summary-icon { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #b45309; }
+.summary-card.sales .summary-icon { background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.3)); color: #0ea5e9; }
+.summary-card.profit .summary-icon { background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.15), rgba(var(--primary-rgb), 0.3)); color: var(--primary-color); }
+.summary-card.invoices .summary-icon { background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.3)); color: #6366f1; }
+.summary-card.items .summary-icon { background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.3)); color: #f59e0b; }
 
 .summary-icon::before {
     content: '';
@@ -179,7 +180,7 @@
 
 .summary-content .label {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--text-color-secondary);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -189,7 +190,7 @@
 .summary-content .value {
     font-size: 1.6rem;
     font-weight: 800;
-    color: #0f172a;
+    color: var(--text-color);
     line-height: 1;
 }
 
@@ -202,17 +203,18 @@
 
 :host ::ng-deep .chart-card, 
 :host ::ng-deep .top-items-card {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--card-bg) !important;
     border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: var(--card-border) !important;
+    box-shadow: var(--shadow-md) !important;
+    backdrop-filter: var(--glass-blur) !important;
 }
 
 .chart-card h3, .top-items-card h3 {
     margin: 0 0 1.5rem 0;
     font-size: 1.1rem;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-color);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -222,39 +224,42 @@
     content: '';
     width: 4px;
     height: 18px;
-    background: #38bdf8;
+    background: var(--primary-color);
     border-radius: 10px;
 }
 
 /* --- Table (Premium Compact) --- */
 :host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-thead > tr > th {
-    background-color: #f1f5f9;
-    color: #475569;
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+    color: var(--primary-color-text) !important;
     font-weight: 700;
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.05em;
     padding: 1rem 0.75rem;
     border: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 :host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-tbody > tr {
+    background: transparent !important;
     transition: all 0.2s;
 }
 
 :host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-tbody > tr:hover {
-    background-color: #f8fafc !important;
+    background-color: var(--surface-hover) !important;
     transform: scale(1.002);
 }
 
 :host ::ng-deep .p-datatable.p-datatable-sm .p-datatable-tbody > tr > td {
     padding: 0.75rem;
     font-size: 0.9rem;
-    color: #334155;
-    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: transparent !important;
 }
 
-.text-success { color: #10b981 !important; font-weight: 700; }
+.text-success { color: var(--primary-color) !important; font-weight: 700; }
 
 @media (max-width: 1200px) {
     .summary-cards { grid-template-columns: repeat(2, 1fr); }

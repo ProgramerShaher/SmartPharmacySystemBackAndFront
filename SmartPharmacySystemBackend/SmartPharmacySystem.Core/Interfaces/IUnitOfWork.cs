@@ -34,6 +34,22 @@ public interface IUnitOfWork
     IJournalEntryRepository JournalEntries { get; }
     IChequeRepository Cheques { get; }
     IPharmacySettingsRepository PharmacySettings { get; }
+    IEmployeeRepository Employees { get; }
+    IDepartmentRepository Departments { get; }
+    IAttendanceRepository Attendances { get; }
+    IMonthlySalaryRepository MonthlySalaries { get; }
+    IEmployeeLoanRepository EmployeeLoans { get; }
+    ICustomerLedgerRepository CustomerLedgers { get; }
+    IInterBranchSettlementRepository InterBranchSettlements { get; }
+    IDailyClosingRepository DailyClosings { get; }
+    IInventoryStockRepository InventoryStocks { get; }
+    IStockCountRepository StockCounts { get; }
+    IDamagedGoodsRepository DamagedGoods { get; }
+    IStockTransferRepository StockTransfers { get; }
+    IStockTransferItemRepository StockTransferItems { get; }
+    IMedicineWarehouseConfigRepository MedicineWarehouseConfigs { get; }
+    IWarehouseRepository Warehouses { get; }
+    IBranchRepository Branches { get; }
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

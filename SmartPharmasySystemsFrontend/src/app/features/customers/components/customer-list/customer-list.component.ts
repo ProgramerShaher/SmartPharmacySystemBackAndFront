@@ -17,6 +17,7 @@ import { CardModule } from 'primeng/card';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ChartModule } from 'primeng/chart';
 import { SidebarModule } from 'primeng/sidebar'; // Added
+import { DialogModule } from 'primeng/dialog';
 import { CustomerAddEditComponent } from '../customer-add-edit/customer-add-edit.component'; // Added
 
 @Component({
@@ -36,6 +37,7 @@ import { CustomerAddEditComponent } from '../customer-add-edit/customer-add-edit
     ProgressBarModule,
     ChartModule,
     SidebarModule, // Added
+    DialogModule,
     CustomerAddEditComponent // Added
   ],
   providers: [MessageService, ConfirmationService],
@@ -56,12 +58,6 @@ export class CustomerListComponent implements OnInit {
   activeCustomersCount = computed(() => this.customers().filter(c => c.isActive).length);
   highDebtCustomersCount = computed(() => this.customers().filter(c => (c.balance || 0) > 5000).length);
 
-  // Charts
-  activeStatusData: any;
-  activeStatusOptions: any;
-  debtDistributionData: any;
-  debtDistributionOptions: any;
-
   constructor(
     private customerService: CustomerService,
     private messageService: MessageService,
@@ -69,7 +65,6 @@ export class CustomerListComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.initChartOptions();
     this.loadCustomers();
     this.loadStatistics();
   }
@@ -77,42 +72,9 @@ export class CustomerListComponent implements OnInit {
   loadStatistics() {
     this.customerService.getStatistics().subscribe({
       next: (stats) => {
-        this.updateCharts(stats);
-        // Verify stats are loading
+        // Stats loaded successfully
       }
     });
-  }
-
-  initChartOptions() {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const textColor = documentStyle.getPropertyValue('--text-color');
-
-    this.activeStatusOptions = {
-      cutout: '60%',
-      plugins: {
-        legend: {
-          labels: {
-            color: textColor
-          }
-        }
-      }
-    };
-
-    this.debtDistributionOptions = {
-      cutout: '60%', // Make it a doughnut
-      plugins: {
-        legend: {
-          position: 'left', // Evaluate side legend for elegance
-          labels: {
-            color: textColor,
-            usePointStyle: true, // Elegant dots
-            font: {
-              family: 'Cairo, sans-serif'
-            }
-          }
-        }
-      }
-    };
   }
 
   totalRecords = signal(0);
@@ -148,33 +110,10 @@ export class CustomerListComponent implements OnInit {
     });
   }
 
-  updateCharts(stats: CustomerStatistics) {
-    this.activeStatusData = {
-      labels: ['نشط', 'خامل'],
-      datasets: [
-        {
-          data: [stats.activeCustomersCount, stats.inactiveCustomersCount],
-          backgroundColor: ['#10b981', '#ef4444'],
-          hoverBackgroundColor: ['#059669', '#dc2626']
-        }
-      ]
-    };
 
-    this.debtDistributionData = {
-      labels: ['منخفضة (<1000)', 'متوسطة (<5000)', 'مرتفعة (>5000)'],
-      datasets: [
-        {
-          data: [stats.lowDebtCount, stats.mediumDebtCount, stats.highDebtCustomersCount],
-          backgroundColor: ['#3b82f6', '#f59e0b', '#ef4444'],
-          hoverBackgroundColor: ['#2563eb', '#d97706', '#dc2626'],
-          borderWidth: 0 // Cleaner look without borders for doughnut
-        }
-      ]
-    };
-  }
 
   getRandomColor(name: string): string {
-    const colors = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
+    const colors = ['#6366f1', '#ec4899', '#f59e0b', getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#3b82f6', '#8b5cf6'];
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
       hash = name.charCodeAt(i) + ((hash << 5) - hash);

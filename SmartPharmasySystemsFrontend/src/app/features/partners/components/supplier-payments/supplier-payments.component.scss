@@ -1,106 +1,490 @@
-/* supplier-payments.component.scss */
+/* ================================================
+   SUPPLIER PAYMENTS - THEME-AWARE MICRO-COMPACT DESIGN
+   Fully uses CSS variables for dark/light + user color themes
+   ================================================ */
 
 .payments-shell {
-  padding: 0.5rem;
+  padding: 0.35rem;
+  direction: rtl;
 }
 
-/* --- Imperial Form Overrides --- */
+/* ---------- Micro Imperial Form ---------- */
 .imperial-form {
   .field-box {
-    margin-bottom: 1.25rem;
-    padding: 0 0.5rem;
+    padding: 0 0.4rem;
+    margin-bottom: 0.1rem;
   }
 
   .imperial-label {
     display: block;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #475569;
-    margin-bottom: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-color-secondary);
+    margin-bottom: 0.3rem;
   }
 
+  /* Supplier Row */
+  .supplier-section {
+    background: rgba(var(--primary-rgb), 0.04);
+    border: 1px solid rgba(var(--primary-rgb), 0.15);
+    border-radius: 8px;
+    padding: 0.65rem 0.75rem;
+    margin-bottom: 0.75rem;
+
+    .supplier-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+
+      @media (min-width: 600px) {
+        flex-direction: row;
+        align-items: flex-end;
+      }
+    }
+
+    .due-box {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: var(--card-bg);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 7px;
+      padding: 0.45rem 0.75rem;
+
+      .due-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-color-secondary);
+        white-space: nowrap;
+      }
+
+      .due-amount {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #ef4444;
+      }
+
+      .due-currency {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+    }
+  }
+
+  /* Invoice info notice */
+  .invoice-notice {
+    margin-top: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+
+    &.free-payment {
+      background: rgba(var(--primary-rgb), 0.06);
+      border-color: rgba(var(--primary-rgb), 0.2);
+      color: var(--primary-color);
+    }
+
+    &.linked-invoice {
+      background: rgba(34, 197, 94, 0.07);
+      border-color: rgba(34, 197, 94, 0.25);
+      color: #16a34a;
+    }
+
+    i {
+      font-size: 0.75rem;
+      margin-top: 0.05rem;
+      flex-shrink: 0;
+    }
+
+    span {
+      font-size: 0.7rem;
+      line-height: 1.45;
+      font-weight: 600;
+
+      strong {
+        font-weight: 800;
+      }
+    }
+  }
+
+  /* Amount inputgroup styling */
+  .amount-group {
+    display: flex;
+    align-items: stretch;
+
+    .currency-badge {
+      display: flex;
+      align-items: center;
+      padding: 0 0.65rem;
+      background: var(--surface-hover);
+      border: 1px solid var(--border-color);
+      border-left: none;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-color-secondary);
+    }
+  }
+
+  /* Form footer actions */
+  .footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.85rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    flex-wrap: wrap;
+  }
+
+  /* PrimeNG input overrides - FULLY THEMED */
   ::ng-deep {
-    .imperial-input, 
-    .imperial-input-number .p-inputtext,
-    .p-inputtext {
-      border-radius: 8px;
-      border: 1px solid #cbd5e1;
-      padding: 0.6rem 0.75rem;
-      font-size: 0.85rem;
-      background: #ffffff;
-      transition: all 0.2s;
+    .p-autocomplete {
       width: 100%;
 
-      &:enabled:focus, &:enabled:hover {
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-      }
-    }
-    
-    .p-calendar .p-inputtext {
-      border-radius: 0 8px 8px 0;
-    }
-    .p-calendar .p-button {
-      border-radius: 8px 0 0 8px;
-    }
-    
-    .imperial-inputgroup {
-      .p-inputnumber .p-inputtext {
-        border-radius: 0 8px 8px 0;
-      }
-      .p-inputgroup-addon {
-        border-radius: 8px 0 0 8px;
-        border: 1px solid #cbd5e1;
-        border-right: none;
-      }
-    }
-  }
+      .p-autocomplete-input {
+        width: 100%;
+        border-radius: 6px !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.4rem 0.65rem !important;
+        font-size: 0.8rem !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        height: 1.85rem !important;
 
-  .imperial-btn-primary {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+        &:focus {
+          border-color: var(--primary-color) !important;
+          box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.12) !important;
+        }
+      }
 
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+      .p-autocomplete-dropdown {
+        border-radius: 0 6px 6px 0 !important;
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: #fff !important;
+        height: 1.85rem !important;
+        width: 1.85rem !important;
+
+        .p-button-icon { font-size: 0.7rem !important; }
+      }
+
+      .p-autocomplete-panel {
+        background: var(--modal-bg) !important;
+        border: var(--card-border) !important;
+        border-radius: 8px !important;
+        box-shadow: var(--shadow-lg) !important;
+
+        .p-autocomplete-item {
+          color: var(--text-color) !important;
+          font-size: 0.8rem !important;
+          padding: 0.45rem 0.75rem !important;
+
+          &:hover, &.p-highlight {
+            background: var(--surface-hover) !important;
+          }
+        }
+      }
+    }
+
+    .p-calendar {
+      width: 100%;
+      height: 1.85rem !important;
+
+      .p-inputtext {
+        border-radius: 0 6px 6px 0 !important;
+        border: 1px solid var(--border-color) !important;
+        padding: 0.4rem 0.65rem !important;
+        font-size: 0.8rem !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        height: 1.85rem !important;
+
+        &:focus {
+          border-color: var(--primary-color) !important;
+          box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.12) !important;
+        }
+      }
+
+      .p-datepicker-trigger {
+        border-radius: 6px 0 0 6px !important;
+        background: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        color: #fff !important;
+        height: 1.85rem !important;
+        width: 1.85rem !important;
+
+        .p-button-icon { font-size: 0.7rem !important; }
+      }
+
+      .p-datepicker {
+        background: var(--modal-bg) !important;
+        border: var(--card-border) !important;
+        border-radius: 8px !important;
+        box-shadow: var(--shadow-lg) !important;
+
+        .p-datepicker-header {
+          background: var(--modal-bg) !important;
+          color: var(--text-color) !important;
+          border-bottom: 1px solid var(--border-color) !important;
+        }
+
+        .p-datepicker-calendar td {
+          padding: 0.15rem !important;
+
+          span {
+            color: var(--text-color) !important;
+            font-size: 0.78rem !important;
+            width: 1.8rem !important;
+            height: 1.8rem !important;
+
+            &:hover { background: var(--surface-hover) !important; }
+
+            &.p-highlight {
+              background: rgba(var(--primary-rgb), 0.15) !important;
+              color: var(--primary-color) !important;
+            }
+          }
+        }
+      }
+    }
+
+    .p-inputnumber {
+      width: 100%;
+
+      .p-inputtext {
+        border-radius: 6px 0 0 6px !important;
+        border: 1px solid var(--border-color) !important;
+        border-right: none !important;
+        padding: 0.4rem 0.65rem !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        background: var(--input-bg) !important;
+        color: var(--text-color) !important;
+        height: 1.85rem !important;
+
+        &:focus {
+          border-color: var(--primary-color) !important;
+          box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.12) !important;
+        }
+      }
+    }
+
+    input.imperial-input,
+    input[pInputText] {
+      border-radius: 6px !important;
+      border: 1px solid var(--border-color) !important;
+      padding: 0.4rem 0.65rem !important;
+      font-size: 0.8rem !important;
+      background: var(--input-bg) !important;
+      color: var(--text-color) !important;
+      height: 1.85rem !important;
+      width: 100% !important;
+
+      &:focus {
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.12) !important;
+        outline: none !important;
+      }
+
+      &::placeholder { color: var(--text-color-secondary) !important; opacity: 0.7; }
     }
   }
 }
 
-/* --- Ultra Compact Table --- */
-::ng-deep .imperial-table {
+/* ---------- Unpaid Invoices Table (inside dialog) ---------- */
+.unpaid-invoices-section {
+  margin-top: 0.65rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    background: rgba(var(--primary-rgb), 0.07);
+    padding: 0.4rem 0.65rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+}
+
+::ng-deep .unpaid-table {
   .p-datatable-thead > tr > th {
-    background: #f8fafc;
-    color: #475569;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid #e2e8f0;
+    background: var(--table-header-bg, var(--surface-hover)) !important;
+    color: var(--text-color-secondary) !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    padding: 0.35rem 0.6rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
   }
 
   .p-datatable-tbody > tr > td {
-    padding: 0.6rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 0.85rem;
+    padding: 0.32rem 0.6rem !important;
+    font-size: 0.75rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+    background: var(--card-bg) !important;
+  }
+
+  .p-datatable-tbody > tr:hover > td {
+    background: var(--surface-hover) !important;
+  }
+
+  .p-datatable-tbody > tr.selected-invoice > td {
+    background: rgba(var(--primary-rgb), 0.08) !important;
   }
 }
 
-/* Dialog Overrides */
+/* Invoice selection chips */
+.inv-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+
+  &.unpaid {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+
+  &.partial {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
+
+  &.selected {
+    background: rgba(var(--primary-rgb), 0.12);
+    color: var(--primary-color);
+    border: 1px solid rgba(var(--primary-rgb), 0.3);
+  }
+}
+
+/* ---------- Payments Table (standalone) ---------- */
+.table-card {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: var(--glass-blur);
+  padding: 0;
+}
+
+/* ---------- Dialog overrides ---------- */
 ::ng-deep .imperial-dialog {
   .p-dialog-header {
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    padding: 1rem 1.5rem;
-    .p-dialog-title { font-weight: 800; color: #0f172a; }
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+    border-bottom: none !important;
+    padding: 0.85rem 1.25rem !important;
+
+    .p-dialog-title {
+      font-weight: 800 !important;
+      color: #ffffff !important;
+      font-size: 1rem !important;
+    }
+
+    .p-dialog-header-icon {
+      color: #ffffff !important;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.15) !important;
+        border-radius: 50% !important;
+      }
+    }
   }
+
   .p-dialog-content {
-    padding: 1.5rem;
+    background: var(--modal-bg) !important;
+    color: var(--text-color) !important;
+    padding: 1rem !important;
+  }
+}
+
+/* ---------- Buttons ---------- */
+::ng-deep .payments-shell {
+  .imperial-btn-primary {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%) !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+    color: #ffffff !important;
+    box-shadow: 0 3px 8px rgba(var(--primary-rgb), 0.2) !important;
+    transition: all 0.2s !important;
+
+    &:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 5px 12px rgba(var(--primary-rgb), 0.35) !important;
+    }
+  }
+
+  .p-button-text.p-button-secondary {
+    color: var(--text-color-secondary) !important;
+    background: transparent !important;
+    font-size: 0.8rem !important;
+
+    &:hover {
+      background: var(--surface-hover) !important;
+      color: var(--text-color) !important;
+    }
+  }
+}
+
+/* ---------- Confirm Dialog themed ---------- */
+::ng-deep .imperial-confirm {
+  .p-dialog-header {
+    background: var(--modal-bg) !important;
+    color: var(--text-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+  }
+
+  .p-dialog-content {
+    background: var(--modal-bg) !important;
+    color: var(--text-color) !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--modal-bg) !important;
+    border-top: 1px solid var(--border-color) !important;
+  }
+}
+
+/* ---------- Toast themed ---------- */
+::ng-deep .p-toast {
+  .p-toast-message {
+    background: var(--modal-bg) !important;
+    border: var(--card-border) !important;
+    color: var(--text-color) !important;
+    border-radius: 8px !important;
+    box-shadow: var(--shadow-lg) !important;
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+  .imperial-form {
+    .supplier-section .supplier-row {
+      flex-direction: column;
+    }
+
+    .footer-actions {
+      flex-direction: column-reverse;
+
+      button { width: 100%; }
+    }
   }
 }

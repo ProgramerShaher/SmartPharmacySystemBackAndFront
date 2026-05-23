@@ -72,10 +72,10 @@
   }
   
   &.income {
-    border-right: 4px solid #10b981;
+    border-right: 4px solid var(--primary-color);
     
     .stat-icon {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-600) 100%);
     }
   }
   

@@ -13,6 +13,9 @@ import { TagModule } from 'primeng/tag';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ToastModule } from 'primeng/toast';
 import { ChartModule } from 'primeng/chart'; // Added
+import { SidebarModule } from 'primeng/sidebar';
+import { DialogModule } from 'primeng/dialog';
+import { CustomerAddEditComponent } from '../customer-add-edit/customer-add-edit.component';
 
 @Component({
   selector: 'app-customer-detail',
@@ -26,7 +29,10 @@ import { ChartModule } from 'primeng/chart'; // Added
     TagModule,
     ProgressBarModule,
     ToastModule,
-    ChartModule // Added
+    ChartModule, // Added
+    SidebarModule,
+    DialogModule,
+    CustomerAddEditComponent
   ],
   providers: [MessageService, DatePipe], // Added DatePipe
   templateUrl: './customer-detail.component.html',
@@ -35,6 +41,27 @@ import { ChartModule } from 'primeng/chart'; // Added
 export class CustomerDetailComponent implements OnInit {
   customer = signal<Customer | null>(null);
   loading = signal(false);
+
+  // Sidebar Modal Drawer Support
+  displayAddEditSidebar = signal(false);
+  selectedCustomerId: number | null = null;
+
+  openEdit(id: number) {
+    this.selectedCustomerId = id;
+    this.displayAddEditSidebar.set(true);
+  }
+
+  onAddEditSave() {
+    this.displayAddEditSidebar.set(false);
+    const id = this.customer()?.id;
+    if (id) {
+      this.loadCustomer(id);
+    }
+  }
+
+  onAddEditClose() {
+    this.displayAddEditSidebar.set(false);
+  }
 
   // Charts
   historyChartData: any;
@@ -154,8 +181,8 @@ export class CustomerDetailComponent implements OnInit {
       datasets: [
         {
           data: [35, 25, 15, 15, 10], // Mock percentages
-          backgroundColor: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#cbd5e1'],
-          hoverBackgroundColor: ['#4f46e5', '#db2777', '#059669', '#d97706', '#94a3b8'],
+          backgroundColor: ['#6366f1', '#ec4899', getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#f59e0b', '#cbd5e1'],
+          hoverBackgroundColor: ['#4f46e5', '#db2777', getComputedStyle(document.documentElement).getPropertyValue('--primary-600').trim() || '#059669', '#d97706', '#94a3b8'],
           borderWidth: 0
         }
       ]

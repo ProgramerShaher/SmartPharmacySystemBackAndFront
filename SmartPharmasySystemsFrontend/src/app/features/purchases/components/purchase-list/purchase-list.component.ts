@@ -96,8 +96,8 @@ export class PurchaseInvoiceListComponent implements OnInit {
             labels: [],
             datasets: [{
                 data: [],
-                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'],
-                hoverBackgroundColor: ['#059669', '#2563eb', '#d97706', '#7c3aed', '#4b5563']
+                backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'],
+                hoverBackgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-600').trim() || '#059669', '#2563eb', '#d97706', '#7c3aed', '#4b5563']
             }]
         };
 
@@ -134,7 +134,7 @@ export class PurchaseInvoiceListComponent implements OnInit {
             datasets: [{
                 label: 'المشتريات اليومية',
                 data: Array(7).fill(0),
-                borderColor: '#10b981',
+                borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
                 backgroundColor: 'rgba(16, 185, 129, 0.1)',
                 tension: 0.4,
                 fill: true,

@@ -254,11 +254,11 @@
 }
 
 .theme-success .icon-bubble {
-    color: #10b981;
+    color: var(--primary-color);
 }
 
 .theme-success .message-card::before {
-    background: #10b981;
+    background: var(--primary-color);
 }
 
 .theme-success .decorative-blob {

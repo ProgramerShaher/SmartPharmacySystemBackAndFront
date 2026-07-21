@@ -80,7 +80,7 @@ public class AuthService : IAuthService
         }
 
         // إنشاء JWT Token
-        var token = GenerateJwtToken(user, role.Name);
+        var token = await GenerateJwtTokenAsync(user, role.Name);
 
         _logger.LogInformation("Login successful for user: {Username}", request.Username);
 
@@ -160,14 +160,14 @@ public class AuthService : IAuthService
     /// إنشاء JWT Token
     /// Generate JWT token
     /// </summary>
-    private string GenerateJwtToken(Core.Entities.User user, string roleName)
+    private async Task<string> GenerateJwtTokenAsync(Core.Entities.User user, string roleName)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
@@ -177,6 +177,11 @@ public class AuthService : IAuthService
             new Claim("UserId", user.Id.ToString()),
             new Claim("RoleId", user.RoleId.ToString())
         };
+
+        // الحصول على تعيين الفرع الفعلي للمستخدم من قاعدة البيانات
+        var assignment = await _unitOfWork.EmployeeBranchAssignments.GetActiveAssignmentByUserIdAsync(user.Id);
+        var branchId = assignment != null ? assignment.BranchId.ToString() : "";
+        claims.Add(new Claim("BranchId", branchId));
 
         var expirationMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "480"); // Default 8 hours
         var token = new JwtSecurityToken(

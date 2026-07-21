@@ -47,7 +47,8 @@ public class JournalEntryRepository : IJournalEntryRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entry = await _context.JournalEntries.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entry = await _context.JournalEntries.FirstOrDefaultAsync(j => j.Id == id && !j.IsDeleted);
         if (entry != null)
         {
             entry.IsDeleted = true;

@@ -8,7 +8,7 @@ namespace SmartPharmacySystem.Application.DTOs.DailyClosings;
 public class DailyClosingDto
 {
     public int Id { get; set; }
-    public int BranchId { get; set; }
+    public int? BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
     public DateTime ClosingDate { get; set; }
     public ClosingStatus Status { get; set; }

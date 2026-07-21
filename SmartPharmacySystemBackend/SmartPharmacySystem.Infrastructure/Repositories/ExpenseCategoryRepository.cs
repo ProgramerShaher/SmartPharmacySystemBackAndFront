@@ -37,7 +37,8 @@ public class ExpenseCategoryRepository : IExpenseCategoryRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entity = await _context.ExpenseCategories.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.ExpenseCategories.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted);
         if (entity != null)
         {
             entity.IsDeleted = true;

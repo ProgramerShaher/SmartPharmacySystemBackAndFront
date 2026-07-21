@@ -6,7 +6,7 @@ using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Entities;
 
-public class StockTransfer : BaseEntity
+public class StockTransfer : BaseMultiBranchEntity
 {
     [Required]
     [MaxLength(50)]

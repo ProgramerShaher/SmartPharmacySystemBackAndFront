@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AlertService } from '../../core/services/alert.service';
 import { SettingsService } from '../../core/services/settings.service';
+import { AccountingService } from '../../core/services/accounting.service';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { environment } from '../../../environments/environment';
@@ -215,20 +216,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
             icon: 'pi pi-wallet',
             iconClass: 'icon-financial',
             match: '/financial',
-            extraMatches: ['/finance'],
             children: [
                 { label: 'الخزينة والأرصدة', route: '/financial/dashboard', icon: 'pi pi-wallet' },
-                { label: 'دفتر الأستاذ', route: '/financial/ledger', icon: 'pi pi-book' },
-                {
-                    key: 'expenses',
-                    label: 'المصروفات',
-                    icon: 'pi pi-money-bill',
-                    children: [
-                        { label: 'قائمة المصروفات', route: '/finance/expenses', icon: 'pi pi-list', exact: true },
-                        { label: 'إضافة مصروف', route: '/finance/expenses/add', icon: 'pi pi-plus-circle' },
-                        { label: 'فئات المصروفات', route: '/finance/expense-categories', icon: 'pi pi-tag' }
-                    ]
-                }
+                { label: 'دفتر الأستاذ', route: '/financial/ledger', icon: 'pi pi-book' }
+            ]
+        },
+        {
+            key: 'expenses',
+            label: 'المصروفات',
+            icon: 'pi pi-money-bill',
+            iconClass: 'icon-expenses',
+            match: '/finance',
+            children: [
+                { label: 'قائمة المصروفات', route: '/finance/expenses', icon: 'pi pi-list', exact: true },
+                { label: 'إضافة مصروف', route: '/finance/expenses/add', icon: 'pi pi-plus-circle' },
+                { label: 'فئات المصروفات', route: '/finance/expense-categories', icon: 'pi pi-tag' }
             ]
         },
         {
@@ -239,6 +241,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             match: '/accounting',
             children: [
                 { label: 'شجرة الحسابات', route: '/accounting/chart', icon: 'pi pi-list' },
+                { label: 'أرصدة الحسابات', route: '/accounting/balances', icon: 'pi pi-credit-card', badge: 'جديد' },
                 { label: 'القيود اليومية', route: '/accounting/journal', icon: 'pi pi-pencil' },
                 { label: 'ميزان المراجعة', route: '/accounting/trial-balance', icon: 'pi pi-balance-scale' },
                 { label: 'القوائم المالية', route: '/accounting/financial-statements', icon: 'pi pi-file-pdf' }
@@ -279,7 +282,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     constructor(
         private alertService: AlertService,
         private settingsService: SettingsService,
-        private router: Router
+        private router: Router,
+        private accountingService: AccountingService
     ) { }
 
     ngOnInit() {
@@ -304,6 +308,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.currentRoute = this.router.url;
         this.openActiveMenus();
     }
+
 
     toggleCollapsed() {
         this.collapseChange.emit(!this.isCollapsed);

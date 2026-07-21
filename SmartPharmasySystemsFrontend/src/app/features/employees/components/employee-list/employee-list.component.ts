@@ -1,9 +1,11 @@
 import { Component, OnInit, signal, computed, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { EmployeeService } from '../../services/employee.service';
-import { EmployeeDto } from '../../../../core/models';
+import { BranchService } from '../../../branches/services/branch.service';
+import { DepartmentService } from '../../../departments/services/department.service';
+import { EmployeeDto, BranchDto, DepartmentDto } from '../../../../core/models';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -57,6 +59,8 @@ interface ColumnDef {
 export class EmployeeListComponent implements OnInit {
     employees = signal<EmployeeDto[]>([]);
     filteredEmployees = signal<EmployeeDto[]>([]);
+    branches = signal<BranchDto[]>([]);
+    departments = signal<DepartmentDto[]>([]);
     loading = signal(false);
     showFilters = signal(false);
     showColumnManager = signal(false);
@@ -67,6 +71,10 @@ export class EmployeeListComponent implements OnInit {
     // Filters
     globalFilter = signal('');
     filters: { [key: string]: string } = {};
+
+    filterBranchId: number | undefined = undefined;
+    filterDepartmentId: number | undefined = undefined;
+    filterIsActive: string | undefined = undefined;
 
     // Columns definition
     columns = signal<ColumnDef[]>([
@@ -87,13 +95,36 @@ export class EmployeeListComponent implements OnInit {
 
     constructor(
         private employeeService: EmployeeService,
+        private branchService: BranchService,
+        private departmentService: DepartmentService,
         private router: Router,
+        private route: ActivatedRoute,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) {}
+    ) { }
 
     ngOnInit() {
-        this.loadEmployees();
+        this.loadBranches();
+        this.loadDepartments();
+        this.route.queryParams.subscribe(params => {
+            if (params['branchId']) {
+                this.filters['branchId'] = params['branchId'];
+                this.filterBranchId = +params['branchId'];
+            }
+            this.loadEmployees();
+        });
+    }
+
+    loadBranches() {
+        this.branchService.getActive().subscribe(data => this.branches.set(data));
+    }
+
+    loadDepartments() {
+        this.departmentService.getAll().subscribe(data => this.departments.set(data));
+    }
+
+    getBranchName(branchId: number): string {
+        return this.branches().find(b => b.id === branchId)?.name || `#${branchId}`;
     }
 
     loadEmployees() {
@@ -158,27 +189,26 @@ export class EmployeeListComponent implements OnInit {
             cols.map(c => c.field === field ? { ...c, visible: !c.visible } : c)
         );
     }
-
     openAddDialog() {
         this.isEditMode = false;
         this.selectedEmployee = null;
-        this.showFormDialog = true;
+        this.showFormDialog.set(true);
     }
 
     openEditDialog(employee: EmployeeDto) {
         this.isEditMode = true;
         this.selectedEmployee = { ...employee };
-        this.showFormDialog = true;
+        this.showFormDialog.set(true);
     }
 
     onFormSaved() {
-        this.showFormDialog = false;
+        this.showFormDialog.set(false);
         this.selectedEmployee = null;
         this.loadEmployees();
     }
 
     onFormCancelled() {
-        this.showFormDialog = false;
+        this.showFormDialog.set(false);
         this.selectedEmployee = null;
     }
 
@@ -212,5 +242,22 @@ export class EmployeeListComponent implements OnInit {
 
     getActiveLabel(isActive: boolean): string {
         return isActive ? 'نشط' : 'غير نشط';
+    }
+
+    resetFilters() {
+        this.globalFilter.set('');
+        this.filterBranchId = undefined;
+        this.filterDepartmentId = undefined;
+        this.filterIsActive = undefined;
+        this.filters = {};
+        this.applyFilters();
+    }
+
+    exportExcel() {
+        this.messageService.add({ severity: 'info', summary: 'تصدير', detail: 'تصدير إلى Excel قيد التطوير' });
+    }
+
+    exportPDF() {
+        this.messageService.add({ severity: 'info', summary: 'تصدير', detail: 'تصدير إلى PDF قيد التطوير' });
     }
 }

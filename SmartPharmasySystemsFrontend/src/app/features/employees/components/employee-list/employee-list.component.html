@@ -24,6 +24,14 @@
         </div>
     </div>
 
+    <!-- Filter Indicator Banner -->
+    <div *ngIf="filters['branchId']" class="flex align-items-center gap-2 mb-3 p-2 px-3 border-round-xl bg-indigo-50 border-1 border-indigo-200">
+        <i class="pi pi-filter text-indigo-500 text-base"></i>
+        <span class="text-indigo-700 text-sm font-bold">تصفية حسب الفرع: {{ getBranchName(+filters['branchId']) }}</span>
+        <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" styleClass="p-button-sm mr-auto"
+            (onClick)="filters['branchId'] = ''; filterBranchId = undefined; applyFilters()"></p-button>
+    </div>
+
     <!-- Filter Panel -->
     <div class="glass-panel p-3 mb-3 border-round-2xl" *ngIf="showFilters()">
         <div class="grid p-fluid">

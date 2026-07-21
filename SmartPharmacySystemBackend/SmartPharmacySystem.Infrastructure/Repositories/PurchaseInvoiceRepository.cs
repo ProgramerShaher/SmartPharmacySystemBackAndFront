@@ -29,7 +29,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .Include(i => i.Creator)
                 .Include(i => i.Approver)
                 .Include(i => i.Canceller)
-                .FirstOrDefaultAsync(i => i.Id == id);
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         }
 
         /// <summary>
@@ -53,13 +53,43 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public Task UpdateAsync(PurchaseInvoice entity)
         {
-            _context.PurchaseInvoices.Update(entity);
+            var trackedEntity = _context.PurchaseInvoices.Local.FirstOrDefault(e => e.Id == entity.Id);
+            if (trackedEntity != null)
+            {
+                _context.Entry(trackedEntity).CurrentValues.SetValues(entity);
+            }
+            else
+            {
+                // Disconnect navigation properties to avoid tracking conflicts with already tracked entities
+                entity.Creator = null;
+                entity.Approver = null;
+                entity.Canceller = null;
+                entity.Supplier = null;
+
+                if (entity.PurchaseInvoiceDetails != null)
+                {
+                    foreach (var detail in entity.PurchaseInvoiceDetails)
+                    {
+                        detail.Medicine = null;
+                        detail.Batch = null;
+                    }
+                }
+
+                var entry = _context.Entry(entity);
+                if (entry.State == EntityState.Detached)
+                {
+                    _context.PurchaseInvoices.Attach(entity);
+                }
+                entry.State = EntityState.Modified;
+            }
             return Task.CompletedTask;
         }
 
+
         public async Task DeleteAsync(int id)
         {
-            var entity = await _context.PurchaseInvoices.FindAsync(id);
+            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+            var entity = await _context.PurchaseInvoices.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
             if (entity != null)
             {
                 _context.PurchaseInvoices.Remove(entity);
@@ -68,7 +98,8 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public async Task SoftDeleteAsync(int id)
         {
-            var entity = await _context.PurchaseInvoices.FindAsync(id);
+            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+            var entity = await _context.PurchaseInvoices.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
             if (entity != null)
             {
                 entity.IsDeleted = true;
@@ -87,7 +118,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         {
             return await _context.PurchaseInvoices
                 .Include(i => i.PurchaseInvoiceDetails)
-                .FirstOrDefaultAsync(i => i.Id == id);
+                .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         }
 
         /// <summary>

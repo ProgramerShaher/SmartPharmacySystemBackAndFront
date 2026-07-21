@@ -32,7 +32,7 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
             .Include(s => s.Creator)
             .Include(s => s.Approver)
             .Include(s => s.Canceller)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
             .Include(s => s.Creator)
             .Include(s => s.Approver)
             .Include(s => s.Canceller)
-            .FirstOrDefaultAsync(s => s.Id == id);
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
     }
 
     /// <summary>
@@ -146,7 +146,8 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _context.SaleInvoices.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.SaleInvoices.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (entity != null)
         {
             _context.SaleInvoices.Remove(entity);
@@ -155,7 +156,8 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entity = await _context.SaleInvoices.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.SaleInvoices.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (entity != null)
         {
             entity.IsDeleted = true;

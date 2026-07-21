@@ -15,6 +15,7 @@ public class DepartmentRepository : IDepartmentRepository
     {
         return await _context.Departments
             .AsNoTracking()
+            .Include(d => d.Employees.Where(e => !e.IsDeleted))
             .FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
     }
 
@@ -22,12 +23,17 @@ public class DepartmentRepository : IDepartmentRepository
     {
         return await _context.Departments
             .AsNoTracking()
+            .Include(d => d.Employees.Where(e => !e.IsDeleted))
             .FirstOrDefaultAsync(d => d.Name == name && !d.IsDeleted);
     }
 
-    public async Task<IEnumerable<Department>> GetAllAsync(string? search = null)
+    public async Task<IEnumerable<Department>> GetAllAsync(string? search = null )
     {
-        var query = _context.Departments.AsNoTracking().Where(d => !d.IsDeleted).AsQueryable();
+        var query = _context.Departments
+            .AsNoTracking()
+            .Include(d => d.Employees.Where(e => !e.IsDeleted))
+            .Where(d => !d.IsDeleted)
+            .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(search))
             query = query.Where(d => d.Name.Contains(search));
@@ -49,7 +55,8 @@ public class DepartmentRepository : IDepartmentRepository
 
     public async Task DeleteAsync(int id)
     {
-        var department = await _context.Departments.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var department = await _context.Departments.FirstOrDefaultAsync(d => d.Id == id && !d.IsDeleted);
         if (department != null)
         {
             department.IsDeleted = true;

@@ -51,15 +51,15 @@ export class WarehouseFormComponent implements OnChanges {
         private warehouseService: WarehouseService,
         private branchService: BranchService,
         private messageService: MessageService
-    ) {
-        effect(() => {
-            if (this.visible) {
+    ) {}
+
+    ngOnChanges(changes: any) {
+        if (changes.visible && changes.visible.currentValue) {
+            if (this.branches().length === 0) {
                 this.loadBranches();
             }
-        });
-    }
-
-    ngOnChanges() {
+        }
+        
         if (this.warehouse) {
             this.model = {
                 branchId: this.warehouse.branchId,

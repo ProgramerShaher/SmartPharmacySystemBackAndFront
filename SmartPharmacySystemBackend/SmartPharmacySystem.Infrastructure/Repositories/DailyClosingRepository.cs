@@ -90,7 +90,8 @@ public class DailyClosingRepository : IDailyClosingRepository
 
     public async Task DeleteAsync(int id)
     {
-        var closing = await _context.DailyClosings.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var closing = await _context.DailyClosings.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
         if (closing != null)
         {
             closing.IsDeleted = true;

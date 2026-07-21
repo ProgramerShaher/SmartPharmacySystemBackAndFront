@@ -79,7 +79,8 @@ public class StockCountRepository : IStockCountRepository
 
     public async Task DeleteHeaderAsync(int id)
     {
-        var header = await _context.StockCountHeaders.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var header = await _context.StockCountHeaders.FirstOrDefaultAsync(h => h.Id == id && !h.IsDeleted);
         if (header != null)
         {
             header.IsDeleted = true;

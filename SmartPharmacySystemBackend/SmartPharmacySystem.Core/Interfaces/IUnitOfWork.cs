@@ -50,6 +50,7 @@ public interface IUnitOfWork
     IMedicineWarehouseConfigRepository MedicineWarehouseConfigs { get; }
     IWarehouseRepository Warehouses { get; }
     IBranchRepository Branches { get; }
+    IEmployeeBranchAssignmentRepository EmployeeBranchAssignments { get; }
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

@@ -16,7 +16,10 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public async Task<CustomerReceipt?> GetByIdAsync(int id)
         {
-            return await _context.CustomerReceipts.FindAsync(id);
+            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+            return await _context.CustomerReceipts
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
         }
 
         public async Task AddAsync(CustomerReceipt entity)
@@ -33,7 +36,8 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         public async Task<IEnumerable<CustomerReceipt>> GetByCustomerIdAsync(int customerId)
         {
             return await _context.CustomerReceipts
-                .Where(r => r.CustomerId == customerId && !r.IsCancelled)
+                .AsNoTracking()
+                .Where(r => r.CustomerId == customerId && !r.IsCancelled && !r.IsDeleted)
                 .OrderByDescending(r => r.ReceiptDate)
                 .ToListAsync();
         }
@@ -42,7 +46,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         {
             return await _context.CustomerReceipts
                 .Include(r => r.Customer)
-                .FirstOrDefaultAsync(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
         }
 
         public async Task<(IEnumerable<CustomerReceipt> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize, DateTime? fromDate, DateTime? toDate)
@@ -50,6 +54,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             var query = _context.CustomerReceipts
                 .Include(r => r.Customer)
                 .AsNoTracking()
+                .Where(r => !r.IsDeleted)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(search))
@@ -79,14 +84,14 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             var today = DateTime.UtcNow.Date;
             
             var totalCount = await _context.CustomerReceipts
-                .CountAsync(r => !r.IsCancelled);
+                .CountAsync(r => !r.IsCancelled && !r.IsDeleted);
 
             var totalAmount = await _context.CustomerReceipts
-                .Where(r => !r.IsCancelled)
+                .Where(r => !r.IsCancelled && !r.IsDeleted)
                 .SumAsync(r => r.Amount);
 
             var todayAmount = await _context.CustomerReceipts
-                .Where(r => !r.IsCancelled && r.ReceiptDate.Date == today)
+                .Where(r => !r.IsCancelled && !r.IsDeleted && r.ReceiptDate.Date == today)
                 .SumAsync(r => r.Amount);
 
             return (totalCount, totalAmount, todayAmount);

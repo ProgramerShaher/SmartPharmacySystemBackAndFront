@@ -5,6 +5,8 @@ namespace SmartPharmacySystem.Application.DTOs.Customers
     public class CustomerReceiptDto
     {
         public int Id { get; set; }
+        public int? BranchId { get; set; }
+        public string BranchName { get; set; } = string.Empty;
         public int CustomerId { get; set; }
         public string CustomerName { get; set; } = string.Empty;
         public decimal Amount { get; set; }

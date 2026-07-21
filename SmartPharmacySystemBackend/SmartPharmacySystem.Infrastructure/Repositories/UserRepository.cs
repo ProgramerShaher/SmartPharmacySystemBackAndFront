@@ -22,13 +22,14 @@ public class UserRepository : IUserRepository
     {
         return await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
     }
 
     public async Task<IEnumerable<User>> GetAllAsync()
     {
         return await _context.Users
             .Include(u => u.Role)
+            .Where(u => !u.IsDeleted)
             .ToListAsync();
     }
 
@@ -45,7 +46,8 @@ public class UserRepository : IUserRepository
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _context.Users.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (entity != null)
         {
             _context.Users.Remove(entity);
@@ -54,7 +56,8 @@ public class UserRepository : IUserRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entity = await _context.Users.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Users.FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted);
         if (entity != null)
         {
             entity.IsDeleted = true;
@@ -64,14 +67,14 @@ public class UserRepository : IUserRepository
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Users.AnyAsync(u => u.Id == id);
+        return await _context.Users.AsNoTracking().AnyAsync(u => u.Id == id && !u.IsDeleted);
     }
 
     public async Task<User> GetByUsernameAsync(string username)
     {
         return await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.Username == username);
+            .FirstOrDefaultAsync(u => u.Username == username && !u.IsDeleted);
     }
 
     public async Task<(IEnumerable<User> Items, int TotalCount)> GetPagedAsync(

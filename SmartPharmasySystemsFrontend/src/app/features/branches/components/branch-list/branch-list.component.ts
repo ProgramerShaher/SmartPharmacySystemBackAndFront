@@ -1,10 +1,11 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { BranchService } from '../../services/branch.service';
-import { BranchDto } from '../../../../core/models';
+import { BranchDto, CreateBranchDto } from '../../../../core/models';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -20,7 +21,7 @@ import { BranchFormComponent } from '../branch-form/branch-form.component';
     selector: 'app-branch-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule,
+        CommonModule, FormsModule, RouterLink, TableModule, ButtonModule, InputTextModule,
         TagModule, TooltipModule, ConfirmDialogModule, DropdownModule, ToastModule,
         BranchFormComponent
     ],
@@ -41,10 +42,19 @@ export class BranchListComponent implements OnInit {
 
     searchTerm = signal('');
     statusFilter = signal<string | undefined>(undefined);
-    typeFilter = signal<number | undefined>(undefined);
+    typeFilter = signal<string | number | undefined>(undefined);
     showFormDialog = signal(false);
     selectedBranch: BranchDto | null = null;
     isEditMode = false;
+    savingInline = signal(false);
+
+    newBranch: Partial<CreateBranchDto> = {
+        branchCode: '',
+        name: '',
+        location: '',
+        branchType: 2,
+        isActive: true
+    };
 
     statusOptions = [
         { label: 'الكل', value: undefined },
@@ -54,6 +64,11 @@ export class BranchListComponent implements OnInit {
 
     typeOptions = [
         { label: 'الكل', value: undefined },
+        { label: 'رئيسي', value: 'Main' },
+        { label: 'فرعي', value: 'Sub' }
+    ];
+
+    typeOptionsForCreate = [
         { label: 'رئيسي', value: 1 },
         { label: 'فرعي', value: 2 }
     ];
@@ -93,8 +108,8 @@ export class BranchListComponent implements OnInit {
     private computeStats(data: BranchDto[]) {
         this.activeCount.set(data.filter(b => b.isActive).length);
         this.inactiveCount.set(data.filter(b => !b.isActive).length);
-        this.mainCount.set(data.filter(b => b.branchType === 1).length);
-        this.subCount.set(data.filter(b => b.branchType === 2).length);
+        this.mainCount.set(data.filter(b => b.branchType === 1 || b.branchType === 'Main').length);
+        this.subCount.set(data.filter(b => b.branchType === 2 || b.branchType === 'Sub').length);
     }
 
     onSearch(value: string) {
@@ -152,5 +167,27 @@ export class BranchListComponent implements OnInit {
 
     getActiveSeverity(v: boolean) { return v ? 'success' : 'danger'; }
     getActiveLabel(v: boolean) { return v ? 'نشط' : 'غير نشط'; }
-    getTypeLabel(t: number) { return t === 1 ? 'رئيسي' : t === 2 ? 'فرعي' : '--'; }
+    getTypeLabel(t: string | number) { return (t === 1 || t === 'Main') ? 'رئيسي' : (t === 2 || t === 'Sub') ? 'فرعي' : '--'; }
+
+    resetNewBranch() {
+        this.newBranch = { branchCode: '', name: '', location: '', branchType: 2, isActive: true };
+    }
+
+    inlineCreateBranch() {
+        if (!this.newBranch.branchCode?.trim() || !this.newBranch.name?.trim() || this.savingInline()) return;
+        this.savingInline.set(true);
+        this.branchService.create(this.newBranch as CreateBranchDto).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', summary: 'تمت الإضافة', detail: `تم إضافة الفرع "${this.newBranch.name}" بنجاح` });
+                this.resetNewBranch();
+                this.savingInline.set(false);
+                this.loadBranches();
+            },
+            error: (err) => {
+                const msg = err?.error?.message || 'فشل إضافة الفرع';
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: msg });
+                this.savingInline.set(false);
+            }
+        });
+    }
 }

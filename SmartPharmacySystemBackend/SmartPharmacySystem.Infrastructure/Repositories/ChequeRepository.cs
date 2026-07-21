@@ -45,7 +45,8 @@ public class ChequeRepository : IChequeRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var cheque = await _context.Cheques.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var cheque = await _context.Cheques.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
         if (cheque != null)
         {
             cheque.IsDeleted = true;
@@ -103,7 +104,8 @@ public class ChequeRepository : IChequeRepository
 
     public async Task UpdateStatusAsync(int chequeId, ChequeStatus status)
     {
-        var cheque = await _context.Cheques.FindAsync(chequeId);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var cheque = await _context.Cheques.FirstOrDefaultAsync(c => c.Id == chequeId && !c.IsDeleted);
         if (cheque != null)
         {
             cheque.Status = status;

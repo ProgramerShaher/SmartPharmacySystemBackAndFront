@@ -22,6 +22,7 @@ namespace SmartPharmacySystem.Application.Services
         IJournalEntryService journalEntryService,
         IAlertService alertService,
         IBarcodeService barcodeService,
+        ICurrentUserService currentUserService,
         Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor) : ISaleInvoiceService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -33,6 +34,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IJournalEntryService _journalEntryService = journalEntryService;
         private readonly IAlertService _alertService = alertService;
         private readonly IBarcodeService _barcodeService = barcodeService;
+        private readonly ICurrentUserService _currentUserService = currentUserService;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<SaleInvoiceDto> CreateAsync(CreateSaleInvoiceDto dto, int userId)
@@ -174,10 +176,37 @@ namespace SmartPharmacySystem.Application.Services
                     throw new InvalidOperationException("لا يمكن حفظ فاتورة آجلة بدون ربطها بعميل.");
                 }
 
+                var currentBranchId = _currentUserService.GetCurrentBranchId();
+                if (!currentBranchId.HasValue)
+                    throw new InvalidOperationException("لا يمكن اعتماد الفاتورة بدون تحديد الفرع الحالي للمستخدم.");
+
                 // ✅ Optimized: Fetch all batches at once instead of one by one
                 var batchIds = invoice.SaleInvoiceDetails.Select(d => d.BatchId).Distinct().ToList();
                 var batches = await _unitOfWork.MedicineBatches.GetByIdsAsync(batchIds);
                 var batchDict = batches.ToDictionary(b => b.Id);
+
+                // Security/Isolation: MedicineBatch is not branch-filtered, so validate branch ownership via linked PurchaseInvoice (when present).
+                var purchaseInvoiceIds = batches
+                    .Where(b => b.PurchaseInvoiceId.HasValue)
+                    .Select(b => b.PurchaseInvoiceId!.Value)
+                    .Distinct()
+                    .ToList();
+
+                if (purchaseInvoiceIds.Count > 0)
+                {
+                    var purchaseInvoiceTasks = purchaseInvoiceIds.ToDictionary(
+                        purchaseInvoiceId => purchaseInvoiceId,
+                        purchaseInvoiceId => _unitOfWork.PurchaseInvoices.GetByIdAsync(purchaseInvoiceId));
+
+                    await Task.WhenAll(purchaseInvoiceTasks.Values);
+
+                    foreach (var batch in batches.Where(b => b.PurchaseInvoiceId.HasValue))
+                    {
+                        var purchaseInvoice = await purchaseInvoiceTasks[batch.PurchaseInvoiceId!.Value];
+                        if (purchaseInvoice == null || purchaseInvoice.BranchId != currentBranchId.Value)
+                            throw new InvalidOperationException($"التشغيلة {batch.CompanyBatchNumber} غير تابعة لفرعك الحالي ولا يمكن استخدامها في البيع.");
+                    }
+                }
 
                 // Validate all batches first
                 foreach (var detail in invoice.SaleInvoiceDetails)

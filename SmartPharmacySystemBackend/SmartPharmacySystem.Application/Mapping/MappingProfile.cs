@@ -91,6 +91,7 @@ namespace SmartPharmacySystem.Application.Mapping
             // SupplierPayment Mappings
             CreateMap<CreateSupplierPaymentDto, SupplierPayment>();
             CreateMap<SupplierPayment, SupplierPaymentDto>()
+                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : string.Empty))
                 .ReverseMap();
 
@@ -101,6 +102,7 @@ namespace SmartPharmacySystem.Application.Mapping
 
             // CustomerReceipt Mappings
             CreateMap<CustomerReceipt, CustomerReceiptDto>()
+                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : string.Empty))
                 .ReverseMap();
             CreateMap<CreateCustomerReceiptDto, CustomerReceipt>();
@@ -119,6 +121,7 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<CreateExpenseDto, Expense>();
             CreateMap<UpdateExpenseDto, Expense>();
             CreateMap<Expense, ExpenseDto>()
+                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
                 .ForMember(dest => dest.AccountName, opt => opt.MapFrom(src => src.Account != null ? src.Account.Name : string.Empty))
                 .ReverseMap();
@@ -153,6 +156,7 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<CreateStockMovementDto, InventoryMovement>();
             CreateMap<UpdateStockMovementDto, InventoryMovement>();
             CreateMap<InventoryMovement, StockMovementDto>()
+      .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
       .ForMember(dest => dest.FinancialDescription, opt => opt.MapFrom(src =>
           src.Notes.Contains("[FIN_DESC]")
           ? src.Notes.Split("[FIN_DESC]", StringSplitOptions.None)[1]
@@ -169,6 +173,7 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ForMember(dest => dest.CreatedBy, opt => opt.Ignore());
             CreateMap<UpdatePurchaseInvoiceDto, PurchaseInvoice>();
             CreateMap<PurchaseInvoice, PurchaseInvoiceDto>()
+                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : string.Empty))
                 .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.PurchaseInvoiceDetails)) // Map Items List
@@ -235,6 +240,7 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ForMember(dest => dest.CustomerId, opt => opt.MapFrom(src => src.CustomerId));
 
             CreateMap<SaleInvoice, SaleInvoiceDto>()
+                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.SaleInvoiceDetails))
                 .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.FullName : string.Empty))
                 .ForMember(dest => dest.ApprovedByName, opt => opt.MapFrom(src => src.Approver != null ? src.Approver.FullName : null))
@@ -316,6 +322,7 @@ namespace SmartPharmacySystem.Application.Mapping
 
             CreateMap<UpdatePurchaseReturnDto, PurchaseReturn>();
             CreateMap<PurchaseReturn, PurchaseReturnDto>()
+                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier != null ? src.Supplier.Name : string.Empty))
                 .ForMember(dest => dest.PurchaseInvoiceNumber, opt => opt.MapFrom(src => src.PurchaseInvoice != null ? src.PurchaseInvoice.SupplierInvoiceNumber : string.Empty))
                 .ForMember(dest => dest.TotalAmount, opt => opt.MapFrom(src => src.TotalAmount))
@@ -382,6 +389,7 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ForMember(dest => dest.SaleInvoice, opt => opt.Ignore());
 
             CreateMap<SalesReturn, SalesReturnDto>()
+                 .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                  .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.SaleInvoice != null ? src.SaleInvoice.CustomerName : string.Empty))
                  .ForMember(dest => dest.SaleInvoiceNumber, opt => opt.MapFrom(src => src.SaleInvoice != null ? src.SaleInvoice.SaleInvoiceNumber : string.Empty))
                  .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.SalesReturnDetails))
@@ -662,7 +670,8 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<CreateDepartmentDto, Department>();
             CreateMap<UpdateDepartmentDto, Department>()
                 .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
-            CreateMap<Department, DepartmentDto>();
+            CreateMap<Department, DepartmentDto>()
+                .ForMember(dest => dest.EmployeeCount, opt => opt.MapFrom(src => src.Employees != null ? src.Employees.Count : 0));
 
             // Employee Mappings
             CreateMap<CreateEmployeeDto, Employee>();
@@ -744,6 +753,7 @@ namespace SmartPharmacySystem.Application.Mapping
 
             // DailyClosing Mappings
             CreateMap<CreateDailyClosingDto, DailyClosing>()
+                .ForMember(dest => dest.BranchId, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCashSales, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCreditSales, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCardSales, opt => opt.Ignore())

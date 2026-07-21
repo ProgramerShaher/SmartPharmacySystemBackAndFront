@@ -24,6 +24,11 @@ export const ACCOUNTING_ROUTES: Routes = [
         loadComponent: () => import('./components/financial-statements/financial-statements.component').then(m => m.FinancialStatementsComponent),
         data: { title: 'القوائم المالية' }
       },
+      {
+        path: 'balances',
+        loadComponent: () => import('./components/accounts-balances/accounts-balances.component').then(m => m.AccountsBalancesComponent),
+        data: { title: 'أرصدة الحسابات' }
+      },
       { path: '', redirectTo: 'chart', pathMatch: 'full' }
     ]
   }

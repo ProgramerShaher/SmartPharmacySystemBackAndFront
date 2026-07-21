@@ -18,6 +18,14 @@
         </div>
     </div>
 
+    <!-- Filter Indicator Banner -->
+    <div *ngIf="branchFilter()" class="flex align-items-center gap-2 mb-4 p-2 px-3 border-round-xl bg-indigo-50 border-1 border-indigo-200">
+        <i class="pi pi-filter text-indigo-500 text-base"></i>
+        <span class="text-indigo-700 text-sm font-bold">تصفية حسب الفرع: {{ getBranchName(branchFilter()!) }}</span>
+        <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" styleClass="p-button-sm mr-auto"
+            (onClick)="branchFilter.set(undefined); onFilterChange()"></p-button>
+    </div>
+
     <!-- KPI Cards -->
     <div class="grid mb-4">
         <div class="col-12 md:col-3">

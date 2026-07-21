@@ -4,7 +4,7 @@ using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Entities
 {
-    public class CustomerReceipt : BaseEntity
+    public class CustomerReceipt : BaseMultiBranchEntity
     {
 
         public int CustomerId { get; set; }

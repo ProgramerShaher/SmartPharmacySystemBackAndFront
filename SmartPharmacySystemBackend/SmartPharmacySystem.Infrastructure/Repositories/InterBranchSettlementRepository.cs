@@ -73,7 +73,8 @@ public class InterBranchSettlementRepository : IInterBranchSettlementRepository
 
     public async Task DeleteAsync(int id)
     {
-        var settlement = await _context.InterBranchSettlements.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var settlement = await _context.InterBranchSettlements.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (settlement != null)
         {
             settlement.IsDeleted = true;

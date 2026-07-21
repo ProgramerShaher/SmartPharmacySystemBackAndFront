@@ -6,7 +6,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents purchase returns in the pharmacy system.
 /// Tracks returns of purchased medicines to suppliers.
 /// </summary>
-public class PurchaseReturn : BaseEntity
+public class PurchaseReturn : BaseMultiBranchEntity
 {
 
     /// <summary>

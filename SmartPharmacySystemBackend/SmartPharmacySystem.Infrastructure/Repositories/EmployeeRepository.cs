@@ -76,7 +76,8 @@ public class EmployeeRepository : IEmployeeRepository
 
     public async Task DeleteAsync(int id)
     {
-        var employee = await _context.Employees.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var employee = await _context.Employees.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         if (employee != null)
         {
             employee.IsDeleted = true;

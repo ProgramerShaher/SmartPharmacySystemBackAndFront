@@ -51,8 +51,8 @@
         <!-- User Profile Section -->
         <div class="user-control" (click)="userMenu.toggle($event)" pRipple>
             <div class="user-meta">
-                <span class="u-name">{{userName}}</span>
-                <span class="u-role">{{userRole}}</span>
+                <span class="u-name">مرحباً {{userName}}</span>
+                <span class="u-role">في {{branchName}} | {{userRole}}</span>
             </div>
             <div class="u-avatar-wrapper">
                 <img [src]="userAvatar" [alt]="userName">

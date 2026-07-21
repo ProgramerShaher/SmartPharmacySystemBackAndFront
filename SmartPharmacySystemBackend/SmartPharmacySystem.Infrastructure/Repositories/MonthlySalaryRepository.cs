@@ -82,7 +82,8 @@ public class MonthlySalaryRepository : IMonthlySalaryRepository
 
     public async Task DeleteAsync(int id)
     {
-        var salary = await _context.MonthlySalaries.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var salary = await _context.MonthlySalaries.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (salary != null)
         {
             salary.IsDeleted = true;

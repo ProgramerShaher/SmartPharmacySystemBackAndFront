@@ -39,6 +39,7 @@ public interface IApplicationDbContext
 
     // ===== Multi-Branch & Inventory =====
     DbSet<Branch> Branches { get; }
+    DbSet<EmployeeBranchAssignment> EmployeeBranchAssignments { get; }
     DbSet<Warehouse> Warehouses { get; }
     DbSet<InventoryStock> InventoryStocks { get; }
     DbSet<MedicineWarehouseConfig> MedicineWarehouseConfigs { get; }

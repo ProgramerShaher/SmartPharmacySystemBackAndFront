@@ -143,6 +143,9 @@ namespace SmartPharmacySystem.Infrastructure
         private IBranchRepository? _branches;
         public IBranchRepository Branches => _branches ??= new BranchRepository(_context);
 
+        private IEmployeeBranchAssignmentRepository? _employeeBranchAssignments;
+        public IEmployeeBranchAssignmentRepository EmployeeBranchAssignments => _employeeBranchAssignments ??= new EmployeeBranchAssignmentRepository(_context);
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

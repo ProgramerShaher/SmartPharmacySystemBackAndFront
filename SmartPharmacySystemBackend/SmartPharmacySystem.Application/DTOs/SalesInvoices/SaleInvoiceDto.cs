@@ -13,6 +13,9 @@ public class SaleInvoiceDto
     /// </summary>
     public int Id { get; set; }
 
+    public int? BranchId { get; set; }
+    public string BranchName { get; set; } = string.Empty;
+
     /// <summary>
     /// تاريخ فاتورة البيع
     /// </summary>

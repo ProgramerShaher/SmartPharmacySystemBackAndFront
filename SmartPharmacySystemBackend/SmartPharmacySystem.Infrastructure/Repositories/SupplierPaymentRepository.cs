@@ -16,12 +16,17 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public async Task<SupplierPayment?> GetByIdAsync(int id)
         {
-            return await _context.SupplierPayments.FindAsync(id);
+            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+            return await _context.SupplierPayments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted);
         }
 
         public async Task<IEnumerable<SupplierPayment>> GetAllAsync()
         {
             return await _context.SupplierPayments
+                .AsNoTracking()
+                .Where(p => !p.IsDeleted)
                 .OrderByDescending(p => p.PaymentDate)
                 .ToListAsync();
         }

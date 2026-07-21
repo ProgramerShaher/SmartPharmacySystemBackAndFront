@@ -74,7 +74,8 @@ public class AttendanceRepository : IAttendanceRepository
 
     public async Task DeleteAsync(int id)
     {
-        var attendance = await _context.Attendances.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var attendance = await _context.Attendances.FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
         if (attendance != null)
         {
             attendance.IsDeleted = true;

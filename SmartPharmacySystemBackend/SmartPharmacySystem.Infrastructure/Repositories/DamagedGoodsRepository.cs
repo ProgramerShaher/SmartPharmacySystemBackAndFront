@@ -103,7 +103,8 @@ public class DamagedGoodsRepository : IDamagedGoodsRepository
 
     public async Task DeleteAsync(int id)
     {
-        var record = await _context.DamagedGoodsRecords.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var record = await _context.DamagedGoodsRecords.FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
         if (record != null)
         {
             record.IsDeleted = true;

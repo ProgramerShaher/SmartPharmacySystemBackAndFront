@@ -64,7 +64,8 @@ public class EmployeeLoanRepository : IEmployeeLoanRepository
 
     public async Task DeleteAsync(int id)
     {
-        var loan = await _context.EmployeeLoans.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var loan = await _context.EmployeeLoans.FirstOrDefaultAsync(l => l.Id == id && !l.IsDeleted);
         if (loan != null)
         {
             loan.IsDeleted = true;

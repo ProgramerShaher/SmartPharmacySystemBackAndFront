@@ -8,6 +8,8 @@ namespace SmartPharmacySystem.Application.DTOs.Expense;
 public class ExpenseDto
 {
     public int Id { get; set; }
+    public int? BranchId { get; set; }
+    public string BranchName { get; set; } = string.Empty;
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public string ExpenseType => CategoryName; // Alias for backward compatibility

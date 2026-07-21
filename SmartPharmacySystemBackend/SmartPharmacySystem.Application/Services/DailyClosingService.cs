@@ -54,7 +54,11 @@ public class DailyClosingService : IDailyClosingService
 
     public async Task<DailyClosingDto> CreateAsync(CreateDailyClosingDto dto)
     {
-        if (await _unitOfWork.DailyClosings.ExistsAsync(dto.BranchId, dto.ClosingDate))
+        var currentBranchId = _currentUserService.GetCurrentBranchId();
+        if (!currentBranchId.HasValue)
+            throw new InvalidOperationException("لا يمكن إنشاء إغلاق يومي بدون تحديد الفرع الحالي للمستخدم.");
+
+        if (await _unitOfWork.DailyClosings.ExistsAsync(currentBranchId.Value, dto.ClosingDate))
             throw new InvalidOperationException("تم إنشاء إغلاق يومي لهذا التاريخ بالفعل");
 
         var closing = _mapper.Map<DailyClosing>(dto);

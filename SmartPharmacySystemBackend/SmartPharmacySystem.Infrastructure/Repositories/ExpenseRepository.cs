@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
-using SmartPharmacySystem.Infrastructure.Data;
 
 namespace SmartPharmacySystem.Infrastructure.Repositories;
 
@@ -49,7 +48,8 @@ public class ExpenseRepository : IExpenseRepository
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _context.Expenses.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Expenses.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         if (entity != null)
         {
             _context.Expenses.Remove(entity);
@@ -58,7 +58,8 @@ public class ExpenseRepository : IExpenseRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entity = await _context.Expenses.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Expenses.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         if (entity != null)
         {
             entity.IsDeleted = true;
@@ -68,7 +69,7 @@ public class ExpenseRepository : IExpenseRepository
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Expenses.AnyAsync(e => e.Id == id);
+        return await _context.Expenses.AsNoTracking().AnyAsync(e => e.Id == id && !e.IsDeleted);
     }
 
     public async Task<(IEnumerable<Expense> Items, int TotalCount)> GetPagedAsync(

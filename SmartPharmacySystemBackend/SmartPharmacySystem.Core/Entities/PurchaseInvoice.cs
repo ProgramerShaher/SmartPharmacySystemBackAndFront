@@ -7,7 +7,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a purchase invoice in the pharmacy system.
 /// Purchase invoices record medicine purchases from suppliers.
 /// </summary>
-public class PurchaseInvoice : BaseEntity
+public class PurchaseInvoice : BaseMultiBranchEntity
 {
 
     /// <summary>

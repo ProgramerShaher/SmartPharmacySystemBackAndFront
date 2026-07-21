@@ -122,7 +122,8 @@ public class InventoryStockRepository : IInventoryStockRepository
 
     public async Task DeleteAsync(int id)
     {
-        var stock = await _context.InventoryStocks.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var stock = await _context.InventoryStocks.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (stock != null)
         {
             stock.IsDeleted = true;

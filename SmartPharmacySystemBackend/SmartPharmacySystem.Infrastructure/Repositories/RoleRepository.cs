@@ -51,7 +51,8 @@ public class RoleRepository : IRoleRepository
 
     public async Task DeleteAsync(int id)
     {
-        var role = await _context.Roles.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var role = await _context.Roles.FirstOrDefaultAsync(r => r.Id == id);
         if (role != null)
         {
             _context.Roles.Remove(role);

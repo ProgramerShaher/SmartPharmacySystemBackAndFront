@@ -15,7 +15,7 @@ export class DepartmentService {
         let params = new HttpParams();
         if (search) params = params.set('search', search);
 
-        return this.http.get<ApiResponse<any>>(this.apiUrl, { params })
+        return this.http.get<ApiResponse<DepartmentDto[]>>(this.apiUrl, { params })
             .pipe(map(r => Array.isArray(r.data) ? r.data : []));
     }
 

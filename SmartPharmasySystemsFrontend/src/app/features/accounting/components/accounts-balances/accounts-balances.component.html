@@ -1,0 +1,206 @@
+<div class="balances-page" dir="rtl">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-info">
+      <div class="header-icon">
+        <i class="pi pi-credit-card"></i>
+      </div>
+      <div>
+        <h1>أرصدة الحسابات</h1>
+        <p>عرض جميع الحسابات مع الرصيد الافتتاحي والرصيد الحالي</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-refresh" (click)="loadData()" [disabled]="loading()">
+        <i class="pi pi-refresh" [class.spin]="loading()"></i>
+        تحديث
+      </button>
+      <button class="btn-print" (click)="printPage()">
+        <i class="pi pi-print"></i>
+        طباعة
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-row" *ngIf="!loading()">
+    <div class="summary-card">
+      <div class="card-icon icon-total"><i class="pi pi-wallet"></i></div>
+      <div class="card-body">
+        <span class="card-label">الرصيد الحالي الإجمالي</span>
+        <span class="card-value" [class.positive]="totalCurrent() >= 0" [class.negative]="totalCurrent() < 0">
+          {{ totalCurrent() | number:'1.2-2' }}
+        </span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon icon-opening"><i class="pi pi-history"></i></div>
+      <div class="card-body">
+        <span class="card-label">الرصيد الافتتاحي الإجمالي</span>
+        <span class="card-value" [class.positive]="totalOpening() >= 0" [class.negative]="totalOpening() < 0">
+          {{ totalOpening() | number:'1.2-2' }}
+        </span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon icon-count"><i class="pi pi-list"></i></div>
+      <div class="card-body">
+        <span class="card-label">إجمالي الحسابات</span>
+        <span class="card-value neutral">{{ filteredRows().length }}</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon icon-pos"><i class="pi pi-arrow-up"></i></div>
+      <div class="card-body">
+        <span class="card-label">أرصدة دائنة</span>
+        <span class="card-value positive">{{ positiveCount() }}</span>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="card-icon icon-neg"><i class="pi pi-arrow-down"></i></div>
+      <div class="card-body">
+        <span class="card-label">أرصدة مدينة</span>
+        <span class="card-value negative">{{ negativeCount() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="filters-bar" *ngIf="!loading()">
+    <div class="search-box">
+      <i class="pi pi-search"></i>
+      <input
+        type="text"
+        id="account-search"
+        placeholder="ابحث باسم الحساب أو الكود..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
+    <div class="type-filter">
+      <button
+        *ngFor="let t of accountTypes"
+        class="filter-btn"
+        [class.active]="selectedType() === t.value"
+        (click)="selectedType.set(t.value)"
+        [id]="'filter-' + t.value"
+      >{{ t.label }}</button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="spinner"></div>
+    <p>جاري تحميل البيانات...</p>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card" *ngIf="!loading()">
+    <div class="table-header">
+      <span class="results-count">
+        <i class="pi pi-list"></i>
+        {{ filteredRows().length }} حساب
+      </span>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="accounts-table">
+        <thead>
+          <tr>
+            <th class="col-code">الكود</th>
+            <th class="col-name">اسم الحساب</th>
+            <th class="col-type">النوع</th>
+            <th class="col-level">المستوى</th>
+            <th class="col-status">الحالة</th>
+            <th class="col-opening">الرصيد الافتتاحي</th>
+            <th class="col-balance">الرصيد الحالي</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            *ngFor="let row of filteredRows()"
+            class="account-row"
+            [class.main-account]="row.isMainAccount"
+          >
+            <!-- الكود -->
+            <td class="col-code">
+              <span class="code-badge">{{ row.code }}</span>
+            </td>
+
+            <!-- الاسم مع مسافة بادئة حسب المستوى -->
+            <td class="col-name">
+              <div class="account-name" [style.padding-right.rem]="(row.level - 1) * 1.1">
+                <i class="pi pi-folder-open main-icon" *ngIf="row.isMainAccount"></i>
+                <i class="pi pi-minus sub-icon"        *ngIf="!row.isMainAccount"></i>
+                <span [class.main-label]="row.isMainAccount">{{ row.name }}</span>
+              </div>
+            </td>
+
+            <!-- النوع -->
+            <td class="col-type">
+              <span class="type-badge" [ngClass]="getTypeClass(row.accountType)">
+                <i [class]="getTypeIcon(row.accountType)"></i>
+                {{ row.typeName }}
+              </span>
+            </td>
+
+            <!-- المستوى -->
+            <td class="col-level">
+              <span class="level-dot" [ngClass]="'level-' + row.level">{{ row.level }}</span>
+            </td>
+
+            <!-- الحالة -->
+            <td class="col-status">
+              <span class="status-pill" [class.active]="row.isActive" [class.inactive]="!row.isActive">
+                <i class="pi" [class.pi-check-circle]="row.isActive" [class.pi-times-circle]="!row.isActive"></i>
+                {{ row.isActive ? 'نشط' : 'موقوف' }}
+              </span>
+            </td>
+
+            <!-- الرصيد الافتتاحي -->
+            <td class="col-opening">
+              <span
+                class="balance-value"
+                [class.positive]="row.openingBalance > 0"
+                [class.negative]="row.openingBalance < 0"
+                [class.zero]="row.openingBalance === 0"
+              >
+                <ng-container *ngIf="row.openingBalance !== 0">
+                  {{ row.openingBalance | number:'1.2-2' }}
+                </ng-container>
+                <span *ngIf="row.openingBalance === 0" class="zero-dash">—</span>
+              </span>
+            </td>
+
+            <!-- الرصيد الحالي -->
+            <td class="col-balance">
+              <span
+                class="balance-value"
+                [class.positive]="row.currentBalance > 0"
+                [class.negative]="row.currentBalance < 0"
+                [class.zero]="row.currentBalance === 0"
+              >
+                <ng-container *ngIf="row.currentBalance !== 0">
+                  {{ row.currentBalance | number:'1.2-2' }}
+                </ng-container>
+                <span *ngIf="row.currentBalance === 0" class="zero-dash">—</span>
+              </span>
+            </td>
+          </tr>
+
+          <!-- Empty -->
+          <tr *ngIf="filteredRows().length === 0">
+            <td colspan="7">
+              <div class="empty-state">
+                <i class="pi pi-inbox"></i>
+                <p>لا توجد حسابات تطابق البحث</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

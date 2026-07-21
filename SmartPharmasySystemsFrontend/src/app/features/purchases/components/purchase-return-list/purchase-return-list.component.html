@@ -1,114 +1,104 @@
-<div class="page-container animate-fade-in" dir="rtl">
-    <!-- Header Section -->
-    <header class="page-header glass-panel mb-4 return-purchase-header">
-        <div class="header-content">
-            <div class="title-section">
-                <div class="icon-wrapper return-purchase">
-                    <i class="pi pi-refresh"></i>
-                </div>
-                <div class="text-wrapper">
-                    <h1 class="m-0 text-3xl font-bold">مرتجع المشتريات</h1>
-                    <p class="m-0 opacity-70">إدارة المرتجعات للموردين وتسوية المخزون</p>
-                </div>
-            </div>
-            <div class="action-section">
-                <p-button label="إضافة مرتجع" icon="pi pi-plus"
-                    styleClass="p-button-raised p-button-secondary p-button-lg" (onClick)="createReturn()"></p-button>
-            </div>
-        </div>
-    </header>
+<div class="return-container" dir="rtl">
+  <p-toast></p-toast>
+  <p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
 
-    <!-- Content Card -->
-    <div class="glass-panel p-0 overflow-hidden">
-        <p-table #dt [value]="returns" [rows]="10" [paginator]="true" [loading]="loading"
-            [globalFilterFields]="['purchaseInvoiceNumber', 'supplierName', 'id']" responsiveLayout="scroll"
-            [breakpoint]="'960px'" styleClass="p-datatable-sm" [showCurrentPageReport]="true"
-            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}">
-
-            <ng-template pTemplate="caption">
-                <div class="table-header-box p-3 flex justify-content-between align-items-center flex-wrap gap-3">
-                    <span class="p-input-icon-left w-full md:w-30rem">
-                        <i class="pi pi-search"></i>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
-                            placeholder="بحث في المرتجعات..." class="w-full h-3rem no-border" />
-                    </span>
-                    <div class="flex gap-2">
-                        <p-button icon="pi pi-refresh" severity="secondary" rounded outlined text
-                            (onClick)="loadReturns()"></p-button>
-                    </div>
-                </div>
-            </ng-template>
-
-            <ng-template pTemplate="header">
-                <tr>
-                    <th pSortableColumn="id">رقم المرتجع <p-sortIcon field="id"></p-sortIcon></th>
-                    <th pSortableColumn="purchaseInvoiceNumber">الفاتورة الأصل <p-sortIcon
-                            field="purchaseInvoiceNumber"></p-sortIcon></th>
-                    <th pSortableColumn="supplierName">المورد <p-sortIcon field="supplierName"></p-sortIcon></th>
-                    <th pSortableColumn="returnDate">التاريخ <p-sortIcon field="returnDate"></p-sortIcon></th>
-                    <th pSortableColumn="totalAmount" class="text-center">الإجمالي <p-sortIcon
-                            field="totalAmount"></p-sortIcon></th>
-                    <th pSortableColumn="status" class="text-center">الحالة <p-sortIcon field="status"></p-sortIcon>
-                    </th>
-                    <th class="text-center">الإجراءات</th>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="body" let-ret>
-                <tr class="fadein">
-                    <td>
-                        <span class="font-bold text-lg text-purple-500">#{{ret.id}}</span>
-                    </td>
-                    <td>
-                        <span class="text-blue-500 font-bold underline cursor-pointer"
-                            [routerLink]="['/purchases/invoices', ret.purchaseInvoiceId]">
-                            {{ret.purchaseInvoiceNumber}}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="font-medium">{{ret.supplierName}}</span>
-                    </td>
-                    <td>
-                        <div class="flex align-items-center gap-2">
-                            <i class="pi pi-calendar opacity-50"></i>
-                            {{ret.returnDate | date:'dd/MM/yyyy'}}
-                        </div>
-                    </td>
-                    <td class="text-center">
-                        <span class="amount-badge danger">{{ret.totalAmount | number:'1.0-2'}} ر.ي</span>
-                    </td>
-                    <td class="text-center">
-                        <p-tag [severity]="ret.statusColor" [value]="ret.statusName" [icon]="ret.statusIcon"
-                            styleClass="px-3 border-round-lg shadow-1"></p-tag>
-                    </td>
-                    <td class="text-center">
-                        <div class="flex justify-content-center gap-1">
-                            <!-- DRAFT STATUS: Edit, Delete, Approve -->
-                            <ng-container *ngIf="ret.status === 'Draft'">
-                                <!-- Note: If Approve function exists in TS, add it here. Assuming standard 'approveReturn' -->
-                                <p-button icon="pi pi-check-circle" severity="success" rounded text pTooltip="اعتماد" tooltipPosition="top"
-                                    (onClick)="approveReturn(ret)"></p-button>
-                                <p-button icon="pi pi-pencil" severity="warning" rounded text pTooltip="تعديل"
-                                    (onClick)="editReturn(ret)"></p-button>
-                                <p-button icon="pi pi-trash" severity="danger" rounded text pTooltip="حذف" (onClick)="deleteReturn(ret)"></p-button>
-                            </ng-container>
-                            
-                            <!-- APPROVED STATUS: View -->
-                            <ng-container *ngIf="ret.status === 'Approved'">
-                                <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل"
-                                    (onClick)="viewReturn(ret)"></p-button>
-                            </ng-container>
-                            
-                            <!-- CANCELLED STATUS: View -->
-                            <ng-container *ngIf="ret.status === 'Cancelled'">
-                                <p-button icon="pi pi-eye" severity="info" rounded text pTooltip="عرض التفاصيل" (onClick)="viewReturn(ret)"></p-button>
-                            </ng-container>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-refresh"></i></div>
+      <div>
+        <h1>مرتجع المشتريات</h1>
+        <p>إدارة المرتجعات للموردين وتسوية المخزون</p>
+      </div>
     </div>
+    <div class="actions no-print">
+      <p-button label="إضافة مرتجع" icon="pi pi-plus" [rounded]="true" severity="primary" size="small" (onClick)="createReturn()"></p-button>
+      <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadReturns()"></p-button>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <section class="table-panel">
+    <p-table #dt [value]="returns" [rows]="10" [paginator]="true" [loading]="loading"
+        [globalFilterFields]="['purchaseInvoiceNumber', 'supplierName', 'id']" responsiveLayout="scroll"
+        styleClass="p-datatable-sm compact-table" [showCurrentPageReport]="true"
+        currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}">
+
+        <ng-template pTemplate="caption">
+            <div class="table-header-box p-2 flex justify-content-between align-items-center flex-wrap gap-2 no-print">
+                <span class="p-input-icon-left w-full md:w-25rem">
+                    <i class="pi pi-search" style="font-size: 0.85rem;"></i>
+                    <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                        placeholder="بحث في المرتجعات..." class="w-full h-2rem no-border" style="font-size: 0.78rem;" />
+                </span>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th>رقم المرتجع</th>
+                <th>الفاتورة الأصل</th>
+                <th>المورد</th>
+                <th>التاريخ</th>
+                <th class="text-center">الإجمالي</th>
+                <th class="text-center">الحالة</th>
+                <th class="text-center no-print">الإجراءات</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-ret>
+            <tr class="fadein">
+                <td>
+                    <span class="ref-number">#{{ret.id}}</span>
+                </td>
+                <td>
+                    <span class="ref-number text-blue-500 font-bold underline cursor-pointer"
+                        [routerLink]="['/purchases/invoices', ret.purchaseInvoiceId]">
+                        {{ret.purchaseInvoiceNumber}}
+                    </span>
+                </td>
+                <td>
+                    <strong class="user-name">{{ret.supplierName}}</strong>
+                </td>
+                <td>
+                    <span class="date-main">{{ret.returnDate | date:'dd/MM/yyyy'}}</span>
+                </td>
+                <td class="text-center">
+                    <span class="amount-badge-danger">{{ret.totalAmount | number:'1.0-2'}} ر.ي</span>
+                </td>
+                <td class="text-center">
+                    <p-tag [severity]="ret.statusColor" [value]="ret.statusName" [icon]="ret.statusIcon"
+                        styleClass="px-2 py-1 text-xs border-round shadow-1"></p-tag>
+                </td>
+                <td class="text-center no-print">
+                    <div class="flex justify-content-center gap-1">
+                        <!-- DRAFT STATUS: Edit, Delete, Approve -->
+                        <ng-container *ngIf="ret.status === 'Draft'">
+                            <p-button icon="pi pi-check-circle" severity="success" [rounded]="true" [text]="true" size="small" pTooltip="اعتماد" tooltipPosition="top"
+                                (onClick)="approveReturn(ret)"></p-button>
+                            <p-button icon="pi pi-pencil" severity="warning" [rounded]="true" [text]="true" size="small" pTooltip="تعديل" tooltipPosition="top"
+                                (onClick)="editReturn(ret)"></p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" size="small" pTooltip="حذف" tooltipPosition="top" (onClick)="deleteReturn(ret)"></p-button>
+                        </ng-container>
+                        
+                        <!-- APPROVED / CANCELLED STATUS: View -->
+                        <ng-container *ngIf="ret.status !== 'Draft'">
+                            <p-button icon="pi pi-eye" severity="info" [rounded]="true" [text]="true" size="small" pTooltip="عرض التفاصيل" tooltipPosition="top"
+                                (onClick)="viewReturn(ret)"></p-button>
+                        </ng-container>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="7" class="empty-message">
+                <i class="pi pi-inbox"></i>
+                <span>لا توجد مرتجعات مشتريات</span>
+              </td>
+            </tr>
+        </ng-template>
+    </p-table>
+  </section>
 </div>
-<p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
-<p-toast></p-toast>

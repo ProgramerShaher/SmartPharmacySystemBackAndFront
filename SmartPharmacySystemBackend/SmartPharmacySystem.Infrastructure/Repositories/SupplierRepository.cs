@@ -58,7 +58,8 @@ public class SupplierRepository : ISupplierRepository
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _context.Suppliers.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Suppliers.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (entity != null)
         {
             _context.Suppliers.Remove(entity);
@@ -67,7 +68,8 @@ public class SupplierRepository : ISupplierRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entity = await _context.Suppliers.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Suppliers.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (entity != null)
         {
             entity.IsDeleted = true;

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SmartPharmacySystem.Core.Entities
 {
-    public class SupplierPayment : BaseEntity
+    public class SupplierPayment : BaseMultiBranchEntity
     {
 
         public int SupplierId { get; set; }

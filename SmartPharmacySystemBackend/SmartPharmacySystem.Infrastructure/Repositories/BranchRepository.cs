@@ -44,6 +44,7 @@ public class BranchRepository : IBranchRepository
 
         return await query
             .Include(b => b.Warehouses)
+            .Include(b => b.Employees)
             .OrderBy(b => b.BranchCode)
             .ToListAsync();
     }
@@ -62,7 +63,8 @@ public class BranchRepository : IBranchRepository
 
     public async Task DeleteAsync(int id)
     {
-        var branch = await _context.Branches.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var branch = await _context.Branches.FirstOrDefaultAsync(b => b.Id == id && !b.IsDeleted);
         if (branch != null)
         {
             branch.IsDeleted = true;
@@ -82,6 +84,8 @@ public class BranchRepository : IBranchRepository
     {
         return await _context.Branches
             .AsNoTracking()
+            .Include(b => b.Warehouses)
+            .Include(b => b.Employees)
             .Where(b => b.IsActive && !b.IsDeleted)
             .OrderBy(b => b.Name)
             .ToListAsync();
@@ -96,6 +100,8 @@ public class BranchRepository : IBranchRepository
     {
         return await _context.Branches
             .AsNoTracking()
+            .Include(b => b.Warehouses)
+            .Include(b => b.Employees)
             .Where(b => b.BranchType == type && !b.IsDeleted)
             .OrderBy(b => b.Name)
             .ToListAsync();

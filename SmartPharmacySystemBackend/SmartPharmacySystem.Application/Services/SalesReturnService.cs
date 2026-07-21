@@ -109,6 +109,14 @@ namespace SmartPharmacySystem.Application.Services
                     var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId)
                         ?? throw new KeyNotFoundException($"التشغيلة {detail.BatchId} غير موجودة");
 
+                    // Security/Isolation: ensure the batch belongs to the same branch as the original invoice (when traceable).
+                    if (invoice.BranchId.HasValue && batch.PurchaseInvoiceId.HasValue)
+                    {
+                        var purchaseInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(batch.PurchaseInvoiceId.Value);
+                        if (purchaseInvoice == null || purchaseInvoice.BranchId != invoice.BranchId.Value)
+                            throw new InvalidOperationException("فشل اعتماد المرتجع: التشغيلة لا تتبع نفس فرع الفاتورة الأصلية.");
+                    }
+
                     batch.RemainingQuantity += detail.Quantity;
                     batch.SoldQuantity -= detail.Quantity;
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
@@ -190,6 +198,13 @@ namespace SmartPharmacySystem.Application.Services
                         var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
                         if (batch != null)
                         {
+                            // Security/Isolation: ensure the batch belongs to the same branch as the original invoice (when traceable).
+                            if (invoice?.BranchId != null && batch.PurchaseInvoiceId.HasValue)
+                            {
+                                var purchaseInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(batch.PurchaseInvoiceId.Value);
+                                if (purchaseInvoice == null || purchaseInvoice.BranchId != invoice.BranchId.Value)
+                                    throw new InvalidOperationException("فشل إلغاء المرتجع: التشغيلة لا تتبع نفس فرع الفاتورة الأصلية.");
+                            }
                             if (batch.RemainingQuantity < detail.Quantity)
                                 throw new InvalidOperationException($"لا يمكن إلغاء المرتجع: الرصيد في الدفعة {batch.CompanyBatchNumber} أقل من الكمية التي سيتم خصمها بالمرتجع.");
 

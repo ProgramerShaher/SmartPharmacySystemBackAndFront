@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { WarehouseService } from '../../services/warehouse.service';
@@ -61,6 +62,7 @@ export class WarehouseListComponent implements OnInit {
     constructor(
         private warehouseService: WarehouseService,
         private branchService: BranchService,
+        private route: ActivatedRoute,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
     ) {
@@ -69,7 +71,12 @@ export class WarehouseListComponent implements OnInit {
 
     ngOnInit() {
         this.loadBranches();
-        this.loadWarehouses();
+        this.route.queryParams.subscribe(params => {
+            if (params['branchId']) {
+                this.branchFilter.set(+params['branchId']);
+            }
+            this.loadWarehouses();
+        });
     }
 
     loadBranches() {

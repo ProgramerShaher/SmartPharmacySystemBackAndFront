@@ -7,7 +7,6 @@ namespace SmartPharmacySystem.Application.DTOs.DailyClosings;
 /// </summary>
 public class CreateDailyClosingDto
 {
-    [Required(ErrorMessage = "الفرع مطلوب")]
     public int BranchId { get; set; }
 
     [Required(ErrorMessage = "تاريخ الإغلاق مطلوب")]

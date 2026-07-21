@@ -89,7 +89,8 @@ public class CustomerLedgerRepository : ICustomerLedgerRepository
 
     public async Task DeleteAsync(int id)
     {
-        var entry = await _context.CustomerLedgers.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entry = await _context.CustomerLedgers.FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
         if (entry != null)
         {
             entry.IsDeleted = true;

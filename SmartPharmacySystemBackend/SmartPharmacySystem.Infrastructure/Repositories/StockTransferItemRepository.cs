@@ -43,7 +43,8 @@ public class StockTransferItemRepository : IStockTransferItemRepository
 
     public async Task DeleteAsync(int id)
     {
-        var item = await _context.StockTransferItems.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var item = await _context.StockTransferItems.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         if (item != null)
         {
             item.IsDeleted = true;

@@ -9,7 +9,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents a sale invoice in the pharmacy system.
 /// Sale invoices record medicine sales to customers.
 /// </summary>
-public class SaleInvoice : BaseEntity
+public class SaleInvoice : BaseMultiBranchEntity
 {
 
     /// <summary>
@@ -101,6 +101,8 @@ public class SaleInvoice : BaseEntity
     /// Collection of sales returns related to this invoice.
     /// </summary>
     public ICollection<SalesReturn> SalesReturns { get; set; }
+
+    // Multi-Branch Properties Inherited from BaseMultiBranchEntity
 
     // Navigation Properties
 

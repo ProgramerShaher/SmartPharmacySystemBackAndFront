@@ -7,7 +7,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents expenses in the pharmacy system.
 /// Tracks all non-medicine related expenditures.
 /// </summary>
-public class Expense : BaseEntity
+public class Expense : BaseMultiBranchEntity
 {
 
     /// <summary>

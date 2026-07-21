@@ -68,7 +68,8 @@ public class WarehouseRepository : IWarehouseRepository
 
     public async Task DeleteAsync(int id)
     {
-        var warehouse = await _context.Warehouses.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var warehouse = await _context.Warehouses.FirstOrDefaultAsync(w => w.Id == id && !w.IsDeleted);
         if (warehouse != null)
         {
             warehouse.IsDeleted = true;

@@ -4,7 +4,9 @@ using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
 
 using SmartPharmacySystem.Application.Interfaces.Data;
-
+using SmartPharmacySystem.Application.Interfaces;
+using System.Threading;
+using System.Threading.Tasks;
 namespace SmartPharmacySystem.Infrastructure.Data;
 
 /// <summary>
@@ -13,11 +15,17 @@ namespace SmartPharmacySystem.Infrastructure.Data;
 /// </summary>
 public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    private readonly ICurrentUserService _currentUserService;
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentUserService currentUserService) : base(options)
     {
+        _currentUserService = currentUserService;
         // Increase timeout for heavy queries
         this.Database.SetCommandTimeout(60);
     }
+
+    // Dynamic Runtime Property evaluated per DB request
+    public int? CurrentBranchId => _currentUserService.GetCurrentBranchId();
 
     // DbSets for all entities
     public DbSet<User> Users { get; set; } = null!;
@@ -55,6 +63,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     // ===== Multi-Branch & Inventory =====
     public DbSet<Branch> Branches { get; set; } = null!;
+    public DbSet<EmployeeBranchAssignment> EmployeeBranchAssignments { get; set; } = null!;
     public DbSet<Warehouse> Warehouses { get; set; } = null!;
     public DbSet<InventoryStock> InventoryStocks { get; set; } = null!;
     public DbSet<MedicineWarehouseConfig> MedicineWarehouseConfigs { get; set; } = null!;
@@ -79,6 +88,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     // ===== Notifications =====
     public DbSet<Notification> Notifications { get; set; } = null!;
+
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -121,6 +132,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
             entity.Property(e => e.TotalCost).HasPrecision(18, 2);
             entity.Property(e => e.TotalProfit).HasPrecision(18, 2);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // SupplierPayment Configuration
@@ -134,6 +152,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => e.PaymentDate);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Customer Configuration
@@ -153,6 +178,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(e => e.CustomerId)
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(e => e.ReceiptDate);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<FinancialTransaction>(entity =>
@@ -192,6 +224,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(e => e.Account)
                   .WithMany()
                   .HasForeignKey(e => e.AccountId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -293,6 +332,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasForeignKey(pi => pi.CancelledBy)
             .OnDelete(DeleteBehavior.Restrict);
 
+        // Dynamic Multi-Branch Tenant Filter
+        modelBuilder.Entity<PurchaseInvoice>()
+            .HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+        // Configure Foreign Key Constraints
+        modelBuilder.Entity<PurchaseInvoice>()
+            .HasOne(pi => pi.Branch)
+            .WithMany()
+            .HasForeignKey(pi => pi.BranchId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // PurchaseInvoiceDetail - PurchaseInvoice
         modelBuilder.Entity<PurchaseInvoiceDetail>()
             .HasOne(pid => pid.PurchaseInvoice)
@@ -344,6 +394,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasOne(si => si.Customer)
             .WithMany(c => c.SaleInvoices)
             .HasForeignKey(si => si.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Dynamic Multi-Branch Tenant Filter
+        modelBuilder.Entity<SaleInvoice>()
+            .HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+        // Configure Foreign Key Constraints
+        modelBuilder.Entity<SaleInvoice>()
+            .HasOne(s => s.Branch)
+            .WithMany()
+            .HasForeignKey(s => s.BranchId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // SaleInvoice - User Audit
@@ -407,6 +468,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .WithMany(mb => mb.InventoryMovements)
             .HasForeignKey(im => im.BatchId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        // Dynamic Multi-Branch Tenant Filter
+        modelBuilder.Entity<InventoryMovement>()
+            .HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+        // Configure Foreign Key Constraints
+        modelBuilder.Entity<InventoryMovement>()
+            .HasOne(e => e.Branch)
+            .WithMany()
+            .HasForeignKey(e => e.BranchId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Alert - MedicineBatch
         modelBuilder.Entity<Alert>()
@@ -551,6 +623,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 .OnDelete(DeleteBehavior.NoAction);
 
             entity.Property(pr => pr.TotalAmount).HasPrecision(18, 2);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // PurchaseReturnDetail - PurchaseReturn
@@ -695,6 +774,69 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Location).HasMaxLength(250);
             entity.Property(e => e.BranchType).HasConversion<int>();
             entity.HasIndex(e => e.BranchCode).IsUnique();
+
+            // Seed Branches 1 and 2
+            entity.HasData(
+                new Branch
+                {
+                    Id = 1,
+                    BranchCode = "BR-001",
+                    Name = "الفرع الرئيسي",
+                    Location = "المركز الرئيسي",
+                    BranchType = BranchType.Main,
+                    IsActive = true,
+                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new Branch
+                {
+                    Id = 2,
+                    BranchCode = "BR-002",
+                    Name = "فرع السليمانية",
+                    Location = "حي السليمانية",
+                    BranchType = BranchType.Sub,
+                    IsActive = true,
+                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }
+            );
+        });
+
+        // EmployeeBranchAssignment Configuration
+        modelBuilder.Entity<EmployeeBranchAssignment>(entity =>
+        {
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => new { e.UserId, e.BranchId });
+            entity.HasIndex(e => e.IsActive);
+
+            // Seed initial branch assignments for existing seed users
+            entity.HasData(
+                new EmployeeBranchAssignment
+                {
+                    Id = 1,
+                    UserId = 1, // admin
+                    BranchId = 1, // Main branch
+                    AssignedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    IsActive = true,
+                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                },
+                new EmployeeBranchAssignment
+                {
+                    Id = 2,
+                    UserId = 2, // pharmacist
+                    BranchId = 2, // Sub branch
+                    AssignedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                    IsActive = true,
+                    CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                }
+            );
         });
 
         // Warehouse Configuration
@@ -784,6 +926,15 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(e => e.ReceivedByUser)
                   .WithMany()
                   .HasForeignKey(e => e.ReceivedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // Dynamic Multi-Branch Tenant Filter
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            // Configure Foreign Key Constraints
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 
@@ -1038,6 +1189,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.ActualCash).HasPrecision(18, 2);
             entity.Property(e => e.Status).HasConversion<int>();
 
+            entity.Property(e => e.BranchId).IsRequired();
+
             entity.HasOne(e => e.Branch)
                   .WithMany()
                   .HasForeignKey(e => e.BranchId)
@@ -1054,6 +1207,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             entity.HasIndex(e => new { e.BranchId, e.ClosingDate }).IsUnique();
+
+            // Dynamic Multi-Branch Tenant Filter
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
         });
 
         // ==================== Notifications Configuration ====================
@@ -1369,6 +1525,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public override int SaveChanges()
     {
         ApplyBaseEntityAuditLogic();
+        ApplyMultiBranchLogic();
         HandleInvoiceNumberImmutability();
         return base.SaveChanges();
     }
@@ -1376,8 +1533,24 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         ApplyBaseEntityAuditLogic();
+        ApplyMultiBranchLogic();
         HandleInvoiceNumberImmutability();
         return base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void ApplyMultiBranchLogic()
+    {
+        foreach (var entry in ChangeTracker.Entries<BaseMultiBranchEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                // Auto-inject current user's BranchId to the new invoice
+                if (CurrentBranchId.HasValue)
+                {
+                    entry.Entity.BranchId = CurrentBranchId.Value;
+                }
+            }
+        }
     }
 
     private void ApplyBaseEntityAuditLogic()

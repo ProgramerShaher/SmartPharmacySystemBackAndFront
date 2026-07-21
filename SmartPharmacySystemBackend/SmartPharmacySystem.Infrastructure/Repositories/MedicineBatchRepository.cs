@@ -12,23 +12,23 @@ namespace SmartPharmacySystem.Infrastructure.Repositories;
 /// </summary>
 public class MedicineBatchRepository : IMedicineBatchRepository
 {
-    private readonly ApplicationDbContext _db;
+    private readonly ApplicationDbContext _context;
 
-    public MedicineBatchRepository(ApplicationDbContext db)
+    public MedicineBatchRepository(ApplicationDbContext context)
     {
-        _db = db;
+        _context = context;
     }
 
     /// <inheritdoc/>
     public async Task AddAsync(MedicineBatch batch)
     {
-        await _db.MedicineBatches.AddAsync(batch);
+        await _context.MedicineBatches.AddAsync(batch);
     }
 
     /// <inheritdoc/>
     public async Task UpdateAsync(MedicineBatch batch)
     {
-        _db.MedicineBatches.Update(batch);
+        _context.MedicineBatches.Update(batch);
         await Task.CompletedTask;
     }
 
@@ -36,14 +36,14 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     public async Task DeleteAsync(MedicineBatch batch)
     {
         batch.IsDeleted = true;
-        _db.MedicineBatches.Update(batch);
+        _context.MedicineBatches.Update(batch);
         await Task.CompletedTask;
     }
 
     /// <inheritdoc/>
     public async Task<MedicineBatch?> GetByIdAsync(int? id)
     {
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             // Removed: .Include(b => b.InventoryMovements) - not needed, use RemainingQuantity
@@ -56,7 +56,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     public async Task<IEnumerable<MedicineBatch>> GetByIdsAsync(IEnumerable<int> ids)
     {
         var idList = ids.ToList();
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => idList.Contains(b.Id) && !b.IsDeleted)
@@ -69,7 +69,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         if (string.IsNullOrWhiteSpace(barcode))
             return null;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -83,7 +83,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             return null;
 
         var dateOnly = expiryDate.Date;
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .FirstOrDefaultAsync(b => b.BatchBarcode == barcode
@@ -97,7 +97,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         if (string.IsNullOrWhiteSpace(companyBatchNumber))
             return null;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .FirstOrDefaultAsync(b => b.CompanyBatchNumber == companyBatchNumber && !b.IsDeleted);
@@ -109,7 +109,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         if (string.IsNullOrWhiteSpace(batchNumber))
             return null;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -121,7 +121,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     /// <inheritdoc/>
     public async Task<IEnumerable<MedicineBatch>> GetBatchesByMedicineIdAsync(int medicineId, bool includeDeleted = false)
     {
-        var query = _db.MedicineBatches
+        var query = _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -142,7 +142,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     {
         var now = DateTime.UtcNow.Date;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -161,7 +161,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     {
         var now = DateTime.UtcNow.Date;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Where(b => !b.IsDeleted
@@ -179,7 +179,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         var now = DateTime.UtcNow.Date;
         var thresholdDate = now.AddDays(daysThreshold);
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -196,7 +196,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     {
         var now = DateTime.UtcNow.Date;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -208,7 +208,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     /// <inheritdoc/>
     public async Task<IEnumerable<MedicineBatch>> GetBatchesByStatusAsync(string status)
     {
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -222,7 +222,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     /// </summary>
     public async Task<IEnumerable<MedicineBatch>> GetAllAsync(string? searchFilter = null, bool includeDeleted = false)
     {
-        var query = _db.MedicineBatches
+        var query = _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
@@ -253,7 +253,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         if (string.IsNullOrWhiteSpace(batchNumber))
             return false;
 
-        var query = _db.MedicineBatches
+        var query = _context.MedicineBatches
             .AsNoTracking()
             .Where(b => b.MedicineId == medicineId
                         && b.CompanyBatchNumber == batchNumber
@@ -271,7 +271,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         if (string.IsNullOrWhiteSpace(barcode))
             return false;
 
-        var query = _db.MedicineBatches
+        var query = _context.MedicineBatches
             .AsNoTracking()
             .Where(b => b.BatchBarcode == barcode && !b.IsDeleted);
 
@@ -286,7 +286,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     {
         var now = DateTime.UtcNow.Date;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Where(b => !b.IsDeleted
@@ -304,7 +304,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
         var now = DateTime.UtcNow.Date;
         var thresholdDate = now.AddDays(3);
 
-        var batchesToUpdate = await _db.MedicineBatches
+        var batchesToUpdate = await _context.MedicineBatches
             .Where(b => !b.IsDeleted
                         && b.Status == "Active"
                         && b.ExpiryDate.Date < thresholdDate)
@@ -332,7 +332,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     {
         var now = DateTime.UtcNow.Date;
 
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Where(b => !b.IsDeleted
                         && b.MedicineId == medicineId
@@ -344,7 +344,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     /// <inheritdoc/>
     public async Task<int> GetTotalQuantityAsync(int medicineId)
     {
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Where(b => !b.IsDeleted && b.MedicineId == medicineId)
             .SumAsync(b => b.RemainingQuantity);
@@ -353,7 +353,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     /// <inheritdoc/>
     public async Task<IEnumerable<MedicineBatch>> GetAllWithMedicineAsync()
     {
-        return await _db.MedicineBatches
+        return await _context.MedicineBatches
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)

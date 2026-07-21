@@ -47,4 +47,10 @@ public interface ICurrentUserService
     /// Is user pharmacist
     /// </summary>
     bool IsPharmacist { get; }
+
+    /// <summary>
+    /// معرف الفرع الحالي
+    /// Current branch ID
+    /// </summary>
+    int? GetCurrentBranchId();
 }

@@ -137,6 +137,10 @@ namespace SmartPharmacySystem.Application.Services
                     if (batch == null)
                         throw new KeyNotFoundException($"الدفعة {detail.BatchId} غير موجودة");
 
+                    // Security/Isolation: ensure the batch belongs to the same purchase invoice (and thus branch context) as the return.
+                    if (batch.PurchaseInvoiceId.HasValue && batch.PurchaseInvoiceId.Value != ret.PurchaseInvoiceId)
+                        throw new InvalidOperationException("فشل اعتماد مرتجع الشراء: الدفعة لا تتبع نفس فاتورة الشراء المرتبطة بالمرتجع.");
+
                     if (batch.RemainingQuantity < detail.Quantity)
                         throw new InvalidOperationException($"الكمية غير كافية في الدفعة {batch.CompanyBatchNumber}. المتاح: {batch.RemainingQuantity}");
 
@@ -217,6 +221,10 @@ namespace SmartPharmacySystem.Application.Services
                             var batch = detail.Batch ?? await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
                             if (batch != null)
                             {
+                                // Security/Isolation: ensure the batch belongs to the same purchase invoice (and thus branch context) as the return.
+                                if (batch.PurchaseInvoiceId.HasValue && batch.PurchaseInvoiceId.Value != ret.PurchaseInvoiceId)
+                                    throw new InvalidOperationException("فشل إلغاء مرتجع الشراء: الدفعة لا تتبع نفس فاتورة الشراء المرتبطة بالمرتجع.");
+
                                 batch.RemainingQuantity += detail.Quantity;
                                 batch.Quantity += detail.Quantity;
                                 batch.Status = "Active";

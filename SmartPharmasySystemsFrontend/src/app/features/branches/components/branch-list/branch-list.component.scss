@@ -70,6 +70,31 @@
                 border: none;
                 padding: 0.5rem 1rem;
             }
+            .p-datatable-tfoot > tr.inline-add-row {
+                background: linear-gradient(135deg, rgba(34,197,94,0.05), rgba(99,102,241,0.04)) !important;
+                border-top: 2px dashed #22c55e66;
+
+                > td {
+                    padding: 0.55rem 0.75rem;
+                }
+
+                input.p-inputtext {
+                    padding: 0.4rem 0.65rem;
+                    border-radius: 8px;
+                    font-size: 0.82rem;
+                    border: 1px solid #d1d5db;
+                    &:focus {
+                        border-color: #22c55e;
+                        box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
+                    }
+                }
+
+                .p-dropdown {
+                    .p-dropdown-label { font-size: 0.82rem; padding: 0.4rem 0.65rem; }
+                }
+            }
+
+            .p-datatable-tfoot > tr:not(.inline-add-row) td { padding: 0; }
         }
 
         .p-dropdown {

@@ -23,6 +23,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IJournalEntryService _journalEntryService;
         private readonly IAlertService _alertService;
         private readonly IBarcodeService _barcodeService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
 
         public PurchaseInvoiceService(
@@ -35,6 +36,7 @@ namespace SmartPharmacySystem.Application.Services
             IJournalEntryService journalEntryService,
             IAlertService alertService,
             IBarcodeService barcodeService,
+            ICurrentUserService currentUserService,
             Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
@@ -46,6 +48,7 @@ namespace SmartPharmacySystem.Application.Services
             _journalEntryService = journalEntryService;
             _alertService = alertService;
             _barcodeService = barcodeService;
+            _currentUserService = currentUserService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -104,6 +107,7 @@ namespace SmartPharmacySystem.Application.Services
         private async Task<int> GetOrCreateBatchIdAsync(int medicineId, string? barcode, string? companyBatch, DateTime expiry, int? userId)
         {
             MedicineBatch? existingBatch = null;
+            var currentBranchId = _currentUserService.GetCurrentBranchId();
 
             // 1. البحث بالباركود أولاً
             if (!string.IsNullOrEmpty(barcode))
@@ -117,7 +121,21 @@ namespace SmartPharmacySystem.Application.Services
                 existingBatch = await _unitOfWork.MedicineBatches.GetByCompanyBatchNumberAsync(companyBatch);
             }
 
-            if (existingBatch != null) return existingBatch.Id;
+            // Security/Isolation:
+            // MedicineBatch isn't branch-filtered, so do NOT reuse an existing batch unless we can prove it belongs
+            // to the current branch context (via linked PurchaseInvoice). Otherwise create a new placeholder batch.
+            if (existingBatch != null && currentBranchId.HasValue && existingBatch.PurchaseInvoiceId.HasValue)
+            {
+                var linkedInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(existingBatch.PurchaseInvoiceId.Value);
+                if (linkedInvoice != null && linkedInvoice.BranchId == currentBranchId.Value)
+                    return existingBatch.Id;
+
+                existingBatch = null;
+            }
+
+            // If we found a batch but can't prove it's for the current branch, treat it as non-existent to avoid cross-branch reuse.
+            if (existingBatch != null)
+                existingBatch = null;
 
             var newBatch = new MedicineBatch
             {

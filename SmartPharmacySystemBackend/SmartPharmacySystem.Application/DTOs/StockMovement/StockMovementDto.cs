@@ -5,6 +5,8 @@ namespace SmartPharmacySystem.Application.DTOs.StockMovement;
 public class StockMovementDto
 {
     public int Id { get; set; }
+    public int? BranchId { get; set; }
+    public string BranchName { get; set; } = string.Empty;
     public int MedicineId { get; set; }
     public int? BatchId { get; set; }
     public StockMovementType MovementType { get; set; }

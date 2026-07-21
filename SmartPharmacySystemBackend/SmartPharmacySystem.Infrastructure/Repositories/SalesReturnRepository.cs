@@ -29,17 +29,19 @@ public class SalesReturnRepository : ISalesReturnRepository
             .Include(r => r.Creator)
             .Include(r => r.Approver)
             .Include(r => r.Canceller)
-            .FirstOrDefaultAsync(r => r.Id == id);
+            .FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
     }
 
     public async Task<IEnumerable<SalesReturn>> GetAllAsync()
     {
         return await _context.SalesReturns
+            .AsNoTracking()
             .Include(r => r.SaleInvoice)
             .Include(r => r.SalesReturnDetails)
             .Include(r => r.Creator)
             .Include(r => r.Approver)
             .Include(r => r.Canceller)
+            .Where(r => !r.IsDeleted)
             .OrderByDescending(r => r.ReturnDate)
             .ToListAsync();
     }
@@ -57,7 +59,8 @@ public class SalesReturnRepository : ISalesReturnRepository
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _context.SalesReturns.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.SalesReturns.FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
         if (entity != null)
         {
             _context.SalesReturns.Remove(entity);
@@ -66,30 +69,26 @@ public class SalesReturnRepository : ISalesReturnRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entity = await _context.SalesReturns.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.SalesReturns.FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted);
         if (entity != null)
         {
-            // Assuming no IsDeleted property on SalesReturn yet, using Remove or assuming inheritance.
-            // As per previous pattern, we should verify IsDeleted exists or add it.
-            // Checking: I did NOT add IsDeleted to SalesReturn entity.
-            // However, most entities seem to have it. I'll check if compilation fails.
-            // Safest is to perform physical delete if column doesn't exist, 
-            // but the interface demands SoftDelete.
-            // I will implement as Physical delete for now to pass interface requirement.
-            _context.SalesReturns.Remove(entity);
+            entity.IsDeleted = true;
+            _context.SalesReturns.Update(entity);
         }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.SalesReturns.AnyAsync(x => x.Id == id);
+        return await _context.SalesReturns.AsNoTracking().AnyAsync(x => x.Id == id && !x.IsDeleted);
     }
 
     public async Task<IEnumerable<SalesReturn>> GetBySaleInvoiceIdAsync(int saleInvoiceId)
     {
         return await _context.SalesReturns
+            .AsNoTracking()
             .Include(r => r.SalesReturnDetails)
-            .Where(r => r.SaleInvoiceId == saleInvoiceId)
+            .Where(r => r.SaleInvoiceId == saleInvoiceId && !r.IsDeleted)
             .ToListAsync();
     }
 }

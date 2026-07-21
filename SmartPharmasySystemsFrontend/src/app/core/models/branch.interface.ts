@@ -3,7 +3,7 @@ export interface BranchDto {
     branchCode: string;
     name: string;
     location?: string;
-    branchType: number;
+    branchType: string | number;
     branchTypeName: string;
     isActive: boolean;
     warehouseCount: number;
@@ -15,7 +15,7 @@ export interface CreateBranchDto {
     branchCode: string;
     name: string;
     location?: string;
-    branchType: number;
+    branchType: string | number;
     isActive: boolean;
 }
 
@@ -23,7 +23,7 @@ export interface UpdateBranchDto {
     id: number;
     branchCode: string;
     name: string;
-    branchType: number;
+    branchType: string | number;
     location?: string;
     isActive: boolean;
 }
@@ -31,5 +31,5 @@ export interface UpdateBranchDto {
 export interface BranchQueryDto {
     search?: string;
     isActive?: boolean;
-    branchType?: number;
+    branchType?: string | number;
 }

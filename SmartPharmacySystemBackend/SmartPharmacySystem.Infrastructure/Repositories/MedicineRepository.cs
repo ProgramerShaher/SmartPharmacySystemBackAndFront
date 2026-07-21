@@ -23,7 +23,7 @@ public class MedicineRepository : IMedicineRepository
     {
         return await _context.Medicines
             .Include(m => m.Category)
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
     }
 
     public async Task<IEnumerable<Medicine>> GetAllAsync()
@@ -49,7 +49,8 @@ public class MedicineRepository : IMedicineRepository
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await _context.Medicines.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Medicines.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
         if (entity != null)
         {
             _context.Medicines.Remove(entity);
@@ -58,7 +59,8 @@ public class MedicineRepository : IMedicineRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var entity = await _context.Medicines.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var entity = await _context.Medicines.FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
         if (entity != null)
         {
             entity.IsDeleted = true;

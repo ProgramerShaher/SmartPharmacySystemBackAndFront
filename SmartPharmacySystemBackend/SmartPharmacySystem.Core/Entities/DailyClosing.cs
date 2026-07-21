@@ -5,11 +5,8 @@ using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Entities;
 
-public class DailyClosing : BaseEntity
+public class DailyClosing : BaseMultiBranchEntity
 {
-    [Required]
-    public int BranchId { get; set; }
-
     [Required]
     public DateTime ClosingDate { get; set; }
 
@@ -59,9 +56,6 @@ public class DailyClosing : BaseEntity
 
     public int? ApprovedByUserId { get; set; }
     public DateTime? ApprovedAt { get; set; }
-
-    // Navigation properties
-    public virtual Branch Branch { get; set; } = null!;
 
     [ForeignKey("SubmittedByUserId")]
     public virtual User SubmittedByUser { get; set; } = null!;

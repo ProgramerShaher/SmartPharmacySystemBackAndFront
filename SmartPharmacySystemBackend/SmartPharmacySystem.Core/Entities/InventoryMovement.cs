@@ -6,7 +6,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// Represents inventory movements in the pharmacy system.
 /// Tracks all changes to medicine stock levels.
 /// </summary>
-public class InventoryMovement : BaseEntity
+public class InventoryMovement : BaseMultiBranchEntity
 {
 
     /// <summary>

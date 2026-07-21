@@ -26,7 +26,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             return await _context.Customers
                 .Include(c => c.SaleInvoices)
                 .Include(c => c.Receipts)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
         }
 
         /// <summary>
@@ -36,6 +36,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         {
             return await _context.Customers
                 .AsNoTracking()
+                .Where(c => !c.IsDeleted)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
@@ -53,7 +54,8 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public async Task DeleteAsync(int id)
         {
-            var entity = await _context.Customers.FindAsync(id);
+            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+            var entity = await _context.Customers.FirstOrDefaultAsync(c => c.Id == id && !c.IsDeleted);
             if (entity != null)
             {
                 _context.Customers.Remove(entity);
@@ -64,7 +66,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         {
             return await _context.Customers
                 .AsNoTracking()
-                .AnyAsync(c => c.Id == id);
+                .AnyAsync(c => c.Id == id && !c.IsDeleted);
         }
 
         /// <summary>
@@ -75,6 +77,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         {
             var query = _context.Customers
                 .AsNoTracking()
+                .Where(c => !c.IsDeleted)
                 .AsQueryable();
 
             // ✅ Optimized: StartsWith for indexed search
@@ -104,7 +107,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         {
             return await _context.Customers
                 .AsNoTracking()
-                .Where(c => c.Balance > 0 && c.IsActive)
+                .Where(c => c.Balance > 0 && c.IsActive && !c.IsDeleted)
                 .OrderByDescending(c => c.Balance)
                 .Take(count)
                 .ToListAsync();
@@ -112,7 +115,8 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public async Task UpdateBalanceAsync(int customerId, decimal amount)
         {
-            var customer = await _context.Customers.FindAsync(customerId);
+            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+            var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Id == customerId && !c.IsDeleted);
             if (customer != null)
             {
                 customer.Balance += amount;

@@ -46,4 +46,10 @@ public class CurrentUserService : ICurrentUserService
     public bool IsAdmin => Role?.Equals("Admin", StringComparison.OrdinalIgnoreCase) ?? false;
 
     public bool IsPharmacist => Role?.Equals("Pharmacist", StringComparison.OrdinalIgnoreCase) ?? false;
+
+    public int? GetCurrentBranchId()
+    {
+        var branchIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("BranchId")?.Value;
+        return int.TryParse(branchIdClaim, out var branchId) ? branchId : null;
+    }
 }

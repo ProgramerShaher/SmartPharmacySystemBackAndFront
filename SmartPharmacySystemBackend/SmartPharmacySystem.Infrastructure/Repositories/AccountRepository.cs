@@ -67,7 +67,8 @@ public class AccountRepository : IAccountRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        var account = await _context.Accounts.FindAsync(id);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == id && !a.IsDeleted);
         if (account != null)
         {
             account.IsDeleted = true;
@@ -87,7 +88,8 @@ public class AccountRepository : IAccountRepository
 
     public async Task UpdateBalanceAsync(int accountId, decimal amount)
     {
-        var account = await _context.Accounts.FindAsync(accountId);
+        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
+        var account = await _context.Accounts.FirstOrDefaultAsync(a => a.Id == accountId && !a.IsDeleted);
         if (account != null)
         {
             account.CurrentBalance += amount;

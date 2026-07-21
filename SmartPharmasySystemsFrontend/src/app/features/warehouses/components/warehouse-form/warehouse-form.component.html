@@ -23,13 +23,13 @@
                     <label for="branchId">الفرع <span class="text-red-500">*</span></label>
                     <p-dropdown id="branchId" [options]="branches()" optionLabel="name" optionValue="id"
                         [(ngModel)]="model.branchId" placeholder="اختر الفرع" [showClear]="true"
-                        [style]="{ width: '100%' }"></p-dropdown>
+                        [style]="{ width: '100%' }" appendTo="body"></p-dropdown>
                 </div>
                 <div class="field">
                     <label for="type">نوع المخزن <span class="text-red-500">*</span></label>
                     <p-dropdown id="type" [options]="typeOptions" optionLabel="label" optionValue="value"
                         [(ngModel)]="model.type" placeholder="اختر النوع"
-                        [style]="{ width: '100%' }"></p-dropdown>
+                        [style]="{ width: '100%' }" appendTo="body"></p-dropdown>
                 </div>
                 <div class="field">
                     <label for="name">اسم المخزن <span class="text-red-500">*</span></label>

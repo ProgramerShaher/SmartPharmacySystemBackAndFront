@@ -14,6 +14,7 @@ import { MedicineBatch, StockMovementType } from '../../../../core/models';
 import { differenceInDays, isBefore } from 'date-fns';
 import { DialogModule } from 'primeng/dialog';
 import { BatchActionsDialogComponent } from '../batch-actions-dialog/batch-actions-dialog.component';
+import { BatchDetailsComponent } from '../batch-details/batch-details.component';
 
 @Component({
     selector: 'app-batch-list',
@@ -28,7 +29,8 @@ import { BatchActionsDialogComponent } from '../batch-actions-dialog/batch-actio
         TagModule,
         TooltipModule,
         DialogModule,
-        BatchActionsDialogComponent
+        BatchActionsDialogComponent,
+        BatchDetailsComponent
     ],
     templateUrl: './batch-list.component.html',
     styleUrls: ['./batch-list.component.scss']
@@ -41,6 +43,8 @@ export class BatchListComponent implements OnInit {
     // Dialog state
     displayActionDialog = false;
     selectedBatch: MedicineBatch | null = null;
+    displayDetailsDialog = false;
+    selectedBatchId: number | null = null;
 
     // Filters
     searchTerm = '';
@@ -117,7 +121,8 @@ export class BatchListComponent implements OnInit {
     }
 
     viewBatch(id: number) {
-        this.router.navigate(['/inventory/batches/details', id]);
+        this.selectedBatchId = id;
+        this.displayDetailsDialog = true;
     }
 
     showAction(batch: MedicineBatch) {

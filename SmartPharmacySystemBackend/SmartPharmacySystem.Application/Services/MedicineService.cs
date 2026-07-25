@@ -27,6 +27,15 @@ namespace SmartPharmacySystem.Application.Services
             medicine.CreatedAt = DateTime.UtcNow;
             medicine.IsDeleted = false;
 
+            if (medicine.MedicineUnits != null)
+            {
+                foreach (var unit in medicine.MedicineUnits)
+                {
+                    unit.CreatedAt = DateTime.UtcNow;
+                    unit.IsDeleted = false;
+                }
+            }
+
             await _unitOfWork.Medicines.AddAsync(medicine);
             await _unitOfWork.SaveChangesAsync();
 
@@ -40,6 +49,39 @@ namespace SmartPharmacySystem.Application.Services
 
             _mapper.Map(dto, medicine);
             medicine.UpdatedAt = DateTime.UtcNow;
+
+            // Sync units
+            if (dto.MedicineUnits != null)
+            {
+                // Remove units that are not in the DTO anymore
+                var dtoUnitIds = dto.MedicineUnits.Where(u => u.Id > 0).Select(u => u.Id).ToList();
+                var unitsToRemove = medicine.MedicineUnits.Where(u => !dtoUnitIds.Contains(u.Id)).ToList();
+                foreach (var unit in unitsToRemove)
+                {
+                    medicine.MedicineUnits.Remove(unit);
+                }
+
+                // Add or update units
+                foreach (var unitDto in dto.MedicineUnits)
+                {
+                    if (unitDto.Id > 0)
+                    {
+                        var existingUnit = medicine.MedicineUnits.FirstOrDefault(u => u.Id == unitDto.Id);
+                        if (existingUnit != null)
+                        {
+                            _mapper.Map(unitDto, existingUnit);
+                            existingUnit.UpdatedAt = DateTime.UtcNow;
+                        }
+                    }
+                    else
+                    {
+                        var newUnit = _mapper.Map<MedicineUnit>(unitDto);
+                        newUnit.CreatedAt = DateTime.UtcNow;
+                        newUnit.IsDeleted = false;
+                        medicine.MedicineUnits.Add(newUnit);
+                    }
+                }
+            }
 
             await _unitOfWork.Medicines.UpdateAsync(medicine);
             await _unitOfWork.SaveChangesAsync();

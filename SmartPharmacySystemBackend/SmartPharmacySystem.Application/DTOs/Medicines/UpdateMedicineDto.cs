@@ -85,4 +85,14 @@ public class UpdateMedicineDto
     /// ملاحظات
     /// </summary>
     public string Notes { get; set; } = string.Empty;
+
+    /// <summary>
+    /// اسم الوحدة الصغرى الأساسية
+    /// </summary>
+    public string BaseUnitName { get; set; } = "حبة";
+
+    /// <summary>
+    /// الوحدات المتعددة للدواء
+    /// </summary>
+    public List<MedicineUnitDto> MedicineUnits { get; set; } = new List<MedicineUnitDto>();
 }

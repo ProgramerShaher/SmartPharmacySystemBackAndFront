@@ -12,10 +12,12 @@ import { ChartModule } from 'primeng/chart';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
+import { BadgeModule } from 'primeng/badge';
 
 import { MasterDashboardService } from '../../core/services/master-dashboard.service';
 import {
   CriticalStockItem,
+  ExtendedDashboard,
   MasterDashboardStats
 } from '../../core/models/master-dashboard.models';
 
@@ -29,11 +31,12 @@ import {
     ButtonModule,
     SkeletonModule,
     ToastModule,
-    TableModule
+    TableModule,
+    BadgeModule
   ],
   providers: [MessageService],
   templateUrl: './master-dashboard.component.html',
-  styleUrl: './master-dashboard.component.css'
+  styleUrl: './master-dashboard.component.scss'
 })
 export class MasterDashboardComponent implements OnInit, OnDestroy {
   private readonly dashboardService = inject(MasterDashboardService);
@@ -51,37 +54,38 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
   inventoryData = computed(() => this.dashboardData()?.inventoryIntelligence ?? null);
   operationalData = computed(() => this.dashboardData()?.operationalPulse ?? null);
   systemOverview = computed(() => this.dashboardData()?.systemOverview ?? null);
+  extended = computed(() => this.dashboardData()?.extended ?? null);
 
   formatCurrency(value: number): string {
-    return new Intl.NumberFormat('ar-YE', {
-      style: 'currency',
-      currency: 'YER',
+    const formattedNum = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(value ?? 0).replace('YER', 'ر.ي');
+    }).format(value ?? 0);
+    return `${formattedNum} ر.ي`;
+  }
+
+  formatNumber(value: number): string {
+    return new Intl.NumberFormat('en-US').format(value ?? 0);
   }
 
   topMetrics = computed(() => {
     const financial = this.financialData();
     const inventory = this.inventoryData();
-
-    if (!financial || !inventory) {
-      return [];
-    }
-
+    const ext = this.extended();
+    if (!financial || !inventory) return [];
     return [
       {
         title: 'مبيعات اليوم',
-        value: this.formatCurrency(financial.todayApprovedSales),
-        hint: `آخر 30 يوم ${this.formatCurrency(financial.totalSalesLast30Days)}`,
+        value: this.formatCurrency(ext?.todaySalesTotal ?? financial.todayApprovedSales),
+        hint: `آخر 30 يوم: ${this.formatCurrency(financial.totalSalesLast30Days)}`,
         icon: 'pi pi-shopping-bag',
         tone: 'indigo',
         route: '/sales'
       },
       {
-        title: 'صافي الربح',
-        value: this.formatCurrency(financial.todayNetProfit),
-        hint: `30 يوم ${this.formatCurrency(financial.netProfitLast30Days)}`,
+        title: 'صافي ربح الشهر',
+        value: this.formatCurrency(ext?.netProfitThisMonth ?? financial.netProfitLast30Days),
+        hint: `آخر 30 يوم: ${this.formatCurrency(financial.netProfitLast30Days)}`,
         icon: 'pi pi-chart-line',
         tone: 'emerald',
         route: '/reports/net-profit'
@@ -89,7 +93,7 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
       {
         title: 'السيولة الحالية',
         value: this.formatCurrency(financial.totalLiquidity),
-        hint: `صندوق ${this.formatCurrency(financial.cashBalance)} • بنك ${this.formatCurrency(financial.bankBalance)}`,
+        hint: `صندوق ${this.formatCurrency(financial.cashBalance)}`,
         icon: 'pi pi-wallet',
         tone: 'cyan',
         route: '/financial/ledger'
@@ -97,10 +101,26 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
       {
         title: 'قيمة المخزون',
         value: this.formatCurrency(inventory.totalInventoryValue),
-        hint: `${inventory.totalStockQuantity} وحدة • ${inventory.criticalStockItems.length} أصناف حرجة`,
+        hint: `${this.formatNumber(inventory.totalStockQuantity)} وحدة`,
         icon: 'pi pi-box',
         tone: 'gold',
         route: '/inventory/medicines'
+      },
+      {
+        title: 'المصروفات/الشهر',
+        value: this.formatCurrency(ext?.totalExpensesThisMonth ?? financial.totalExpensesLast30Days),
+        hint: `30 يوم: ${this.formatCurrency(financial.totalExpensesLast30Days)}`,
+        icon: 'pi pi-minus-circle',
+        tone: 'rose',
+        route: '/finance/expenses'
+      },
+      {
+        title: 'رواتب الشهر',
+        value: this.formatCurrency(ext?.totalSalariesThisMonth ?? 0),
+        hint: `${this.formatNumber(ext?.employeeCount ?? 0)} موظف`,
+        icon: 'pi pi-users',
+        tone: 'violet',
+        route: '/hr/salaries'
       }
     ];
   });
@@ -108,92 +128,58 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
   systemCards = computed(() => {
     const overview = this.systemOverview();
     const inventory = this.inventoryData();
-
-    if (!overview || !inventory) {
-      return [];
-    }
-
+    if (!overview || !inventory) return [];
     return [
-      { title: 'فواتير البيع', value: overview.salesInvoicesCount, icon: 'pi pi-receipt', route: '/sales', tone: 'indigo' },
-      { title: 'فواتير الشراء', value: overview.purchaseInvoicesCount, icon: 'pi pi-cart-plus', route: '/purchases', tone: 'cyan' },
-      { title: 'مرتجعات البيع', value: overview.salesReturnsCount, icon: 'pi pi-undo', route: '/sales/returns', tone: 'rose' },
-      { title: 'مرتجعات الشراء', value: overview.purchaseReturnsCount, icon: 'pi pi-replay', route: '/purchases/returns', tone: 'gold' },
-      { title: 'الأدوية', value: overview.medicinesCount, icon: 'pi pi-box', route: '/inventory/medicines', tone: 'emerald' },
-      { title: 'الدفعات النشطة', value: inventory.activeBatches, icon: 'pi pi-database', route: '/inventory/batches', tone: 'cyan' },
-      { title: 'العملاء', value: overview.customersCount, icon: 'pi pi-users', route: '/customers', tone: 'indigo' },
-      { title: 'الموردين', value: overview.suppliersCount, icon: 'pi pi-truck', route: '/partners/suppliers', tone: 'gold' },
-      { title: 'التنبيهات', value: overview.activeAlertsCount, icon: 'pi pi-bell', route: '/system-alerts', tone: 'rose' },
-      { title: 'وثائق اليوم', value: overview.todayDocumentsCount, icon: 'pi pi-calendar-clock', route: '/reports/daily-sales', tone: 'emerald' }
+      { title: 'فواتير البيع', value: this.formatNumber(overview.salesInvoicesCount), icon: 'pi pi-receipt', route: '/sales', tone: 'indigo' },
+      { title: 'فواتير الشراء', value: this.formatNumber(overview.purchaseInvoicesCount), icon: 'pi pi-cart-plus', route: '/purchases', tone: 'cyan' },
+      { title: 'مرتجعات البيع', value: this.formatNumber(overview.salesReturnsCount), icon: 'pi pi-undo', route: '/sales/returns', tone: 'rose' },
+      { title: 'مرتجعات الشراء', value: this.formatNumber(overview.purchaseReturnsCount), icon: 'pi pi-replay', route: '/purchases/returns', tone: 'gold' },
+      { title: 'الأدوية', value: this.formatNumber(overview.medicinesCount), icon: 'pi pi-box', route: '/inventory/medicines', tone: 'emerald' },
+      { title: 'الدفعات النشطة', value: this.formatNumber(inventory.activeBatches), icon: 'pi pi-database', route: '/inventory/batches', tone: 'cyan' },
+      { title: 'العملاء', value: this.formatNumber(overview.customersCount), icon: 'pi pi-user', route: '/customers', tone: 'indigo' },
+      { title: 'الموردين', value: this.formatNumber(overview.suppliersCount), icon: 'pi pi-truck', route: '/partners/suppliers', tone: 'gold' },
+      { title: 'التنبيهات', value: this.formatNumber(overview.activeAlertsCount), icon: 'pi pi-bell', route: '/system-alerts', tone: 'rose' },
+      { title: 'وثائق اليوم', value: this.formatNumber(overview.todayDocumentsCount), icon: 'pi pi-calendar-clock', route: '/reports/daily-sales', tone: 'emerald' }
     ];
   });
 
   financeSnapshot = computed(() => {
     const financial = this.financialData();
-
-    if (!financial) {
-      return [];
-    }
-
+    if (!financial) return [];
     return [
-      {
-        label: 'لنا عند العملاء',
-        value: this.formatCurrency(financial.customerReceivables),
-        tone: 'emerald'
-      },
-      {
-        label: 'علينا للموردين',
-        value: this.formatCurrency(financial.supplierPayables),
-        tone: 'rose'
-      },
-      {
-        label: 'المديونية الصافية',
-        value: this.formatCurrency(financial.netDebt),
-        tone: financial.netDebt > 0 ? 'cyan' : 'gold'
-      }
+      { label: 'لنا عند العملاء', value: this.formatCurrency(financial.customerReceivables), tone: 'emerald' },
+      { label: 'علينا للموردين', value: this.formatCurrency(financial.supplierPayables), tone: 'rose' },
+      { label: 'المديونية الصافية', value: this.formatCurrency(financial.netDebt), tone: financial.netDebt > 0 ? 'cyan' : 'gold' }
     ];
   });
 
   inventoryHealth = computed(() => {
     const inventory = this.inventoryData();
-
-    if (!inventory) {
-      return [];
-    }
-
+    if (!inventory) return [];
     return [
-      {
-        label: 'أقل من 3 أشهر',
-        value: `${inventory.expiryRadar.percentageLessThan3Months}%`,
-        tone: 'rose'
-      },
-      {
-        label: '3 إلى 6 أشهر',
-        value: `${inventory.expiryRadar.percentage3To6Months}%`,
-        tone: 'gold'
-      },
-      {
-        label: '6 إلى 12 شهر',
-        value: `${inventory.expiryRadar.percentage6To12Months}%`,
-        tone: 'indigo'
-      },
-      {
-        label: 'أكثر من سنة',
-        value: `${inventory.expiryRadar.percentageMoreThan12Months}%`,
-        tone: 'emerald'
-      }
+      { label: 'أقل من 3 أشهر', value: `${inventory.expiryRadar.percentageLessThan3Months}%`, tone: 'rose' },
+      { label: '3 إلى 6 أشهر', value: `${inventory.expiryRadar.percentage3To6Months}%`, tone: 'gold' },
+      { label: '6 إلى 12 شهر', value: `${inventory.expiryRadar.percentage6To12Months}%`, tone: 'indigo' },
+      { label: 'أكثر من سنة', value: `${inventory.expiryRadar.percentageMoreThan12Months}%`, tone: 'emerald' }
     ];
   });
 
-  activityPreview = computed(() => this.operationalData()?.activityStream.slice(0, 6) ?? []);
+  activityPreview = computed(() => this.operationalData()?.activityStream.slice(0, 8) ?? []);
   criticalStockPreview = computed(() => this.inventoryData()?.criticalStockItems.slice(0, 6) ?? []);
-  fullActivity = computed(() => this.operationalData()?.activityStream ?? []);
+  topMedicines = computed(() => this.extended()?.topSellingMedicines ?? []);
+  warehouseStock = computed(() => this.extended()?.warehouseStock ?? []);
 
+  // Charts
   cashFlowChartData: any;
   cashFlowChartOptions: any;
+  sixMonthChartData: any;
+  sixMonthChartOptions: any;
+  weeklyChartData: any;
+  weeklyChartOptions: any;
+  categoryInventoryData: any;
+  categoryInventoryOptions: any;
   cashierPerformanceChartData: any;
   cashierPerformanceChartOptions: any;
-  inventoryDistributionData: any;
-  inventoryDistributionOptions: any;
   hourlyActivityChartData: any;
   hourlyActivityChartOptions: any;
 
@@ -202,7 +188,6 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
       this.isLoading.set(false);
       return;
     }
-
     this.initializeCharts();
     this.loadDashboardData();
     this.startAutoRefresh();
@@ -214,26 +199,11 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
 
   refreshDashboard(): void {
     this.loadDashboardData();
-    this.messageService.add({
-      severity: 'success',
-      summary: 'تم التحديث',
-      detail: 'تم تحديث بيانات لوحة التحكم',
-      life: 2000
-    });
-  }
-
-  navigateToFinancialReport(): void {
-    this.router.navigate(['/financial/dashboard']);
-  }
-
-  navigateToInventoryReport(): void {
-    this.router.navigate(['/inventory/medicines']);
+    this.messageService.add({ severity: 'success', summary: 'تم التحديث', detail: 'تم تحديث بيانات لوحة التحكم', life: 2000 });
   }
 
   navigateToRoute(route: string): void {
-    if (route) {
-      this.router.navigateByUrl(route);
-    }
+    if (route) this.router.navigateByUrl(route);
   }
 
   navigateToDocument(operationType: string, referenceId: number): void {
@@ -248,48 +218,31 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
       InventoryMovement: '/inventory/movements',
       Payment: '/financial/ledger'
     };
-
     const basePath = routes[operationType] || '/';
     this.router.navigate([`${basePath}/${referenceId}`]);
   }
 
   getActivityIcon(type: string): string {
     const icons: Record<string, string> = {
-      SaleInvoice: 'pi-shopping-cart',
-      PurchaseInvoice: 'pi-shopping-bag',
-      SalesReturn: 'pi-replay',
-      PurchaseReturn: 'pi-arrow-circle-left',
-      SupplierPayment: 'pi-wallet',
-      CustomerReceipt: 'pi-money-bill',
-      Expense: 'pi-minus-circle',
-      InventoryMovement: 'pi-sync',
-      Payment: 'pi-credit-card'
+      SaleInvoice: 'pi-shopping-cart', PurchaseInvoice: 'pi-shopping-bag',
+      SalesReturn: 'pi-replay', PurchaseReturn: 'pi-arrow-circle-left',
+      SupplierPayment: 'pi-wallet', CustomerReceipt: 'pi-money-bill',
+      Expense: 'pi-minus-circle', InventoryMovement: 'pi-sync', Payment: 'pi-credit-card'
     };
-
     return icons[type] || 'pi-file';
   }
 
   getActivityColor(type: string): string {
     const colors: Record<string, string> = {
-      SaleInvoice: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
-      PurchaseInvoice: '#6366f1',
-      SalesReturn: '#f43f5e',
-      PurchaseReturn: '#f59e0b',
-      SupplierPayment: '#e11d48',
-      CustomerReceipt: '#0ea5e9',
-      Expense: '#7c3aed',
-      InventoryMovement: '#64748b',
-      Payment: '#4f46e5'
+      SaleInvoice: '#10b981', PurchaseInvoice: '#6366f1', SalesReturn: '#f43f5e',
+      PurchaseReturn: '#f59e0b', SupplierPayment: '#e11d48', CustomerReceipt: '#0ea5e9',
+      Expense: '#7c3aed', InventoryMovement: '#64748b', Payment: '#4f46e5'
     };
-
     return colors[type] || '#64748b';
   }
 
   formatTime(date: Date | string): string {
-    return new Date(date).toLocaleTimeString('ar-SA', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    return new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   }
 
   getStockSeverity(item: CriticalStockItem): string {
@@ -302,7 +255,6 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
 
   private loadDashboardData(): void {
     this.isLoading.set(true);
-
     this.dashboardService.getMasterDashboardStats().subscribe({
       next: (data) => {
         this.dashboardData.set(data);
@@ -311,174 +263,129 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading dashboard data:', err);
-        this.messageService.add({
-          severity: 'error',
-          summary: 'خطأ',
-          detail: 'فشل تحميل بيانات لوحة التحكم',
-          life: 3000
-        });
+        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل بيانات لوحة التحكم', life: 3000 });
         this.isLoading.set(false);
       }
     });
   }
 
   private initializeCharts(): void {
-    const labelFont = { family: 'Cairo, sans-serif', size: 11, weight: '700' as const };
-    const axisColor = '#64748b';
+    const labelFont = { family: 'Cairo, sans-serif', size: 10, weight: '700' as const };
+    const axisColor = '#94a3b8';
     const gridColor = 'rgba(148, 163, 184, 0.08)';
+    const tooltipOpts = this.buildTooltipOptions();
+    const tooltipCount = this.buildTooltipOptions('count');
 
     this.cashFlowChartOptions = {
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'top',
-          align: 'end',
-          labels: { color: '#0f172a', font: labelFont, usePointStyle: true }
-        },
-        tooltip: this.buildTooltipOptions()
-      },
-      scales: {
-        x: { ticks: { color: axisColor, font: labelFont }, grid: { display: false } },
-        y: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor } }
-      }
+      maintainAspectRatio: false, locale: 'en-US',
+      plugins: { legend: { position: 'top', align: 'end', labels: { color: '#0f172a', font: labelFont, usePointStyle: true, boxWidth: 8 } }, tooltip: tooltipOpts },
+      scales: { x: { ticks: { color: axisColor, font: labelFont }, grid: { display: false } }, y: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor, drawBorder: false } } },
+      interaction: { mode: 'index', intersect: false }
+    };
+
+    this.sixMonthChartOptions = {
+      maintainAspectRatio: false, locale: 'en-US',
+      plugins: { legend: { position: 'top', align: 'end', labels: { color: '#0f172a', font: labelFont, usePointStyle: true, boxWidth: 8 } }, tooltip: tooltipOpts },
+      scales: { x: { ticks: { color: axisColor, font: labelFont }, grid: { display: false } }, y: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor } } }
+    };
+
+    this.weeklyChartOptions = {
+      maintainAspectRatio: false, locale: 'en-US',
+      plugins: { legend: { position: 'top', align: 'end', labels: { color: '#0f172a', font: labelFont, usePointStyle: true, boxWidth: 8 } }, tooltip: tooltipOpts },
+      scales: { x: { stacked: false, ticks: { color: axisColor, font: labelFont }, grid: { display: false } }, y: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor } } }
+    };
+
+    this.categoryInventoryOptions = {
+      maintainAspectRatio: false, locale: 'en-US', cutout: '70%',
+      plugins: { legend: { position: 'right', labels: { color: '#0f172a', font: labelFont, usePointStyle: true, padding: 10, boxWidth: 8 } }, tooltip: this.buildTooltipOptions('currency') }
     };
 
     this.cashierPerformanceChartOptions = {
-      indexAxis: 'y',
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: this.buildTooltipOptions('currency') },
-      scales: {
-        x: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor } },
-        y: { ticks: { color: '#0f172a', font: labelFont }, grid: { display: false } }
-      }
-    };
-
-    this.inventoryDistributionOptions = {
-      maintainAspectRatio: false,
-      cutout: '75%',
-      plugins: {
-        legend: { position: 'bottom', labels: { color: '#0f172a', font: labelFont, usePointStyle: true, padding: 20 } },
-        tooltip: this.buildTooltipOptions('currency')
-      }
+      indexAxis: 'y', maintainAspectRatio: false, locale: 'en-US',
+      plugins: { legend: { display: false }, tooltip: tooltipOpts },
+      scales: { x: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor } }, y: { ticks: { color: '#0f172a', font: labelFont }, grid: { display: false } } }
     };
 
     this.hourlyActivityChartOptions = {
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: this.buildTooltipOptions('count') },
-      scales: {
-        x: { ticks: { color: axisColor, font: labelFont }, grid: { display: false } },
-        y: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor } }
-      }
+      maintainAspectRatio: false, locale: 'en-US',
+      plugins: { legend: { display: false }, tooltip: tooltipCount },
+      scales: { x: { ticks: { color: axisColor, font: labelFont }, grid: { display: false } }, y: { ticks: { color: axisColor, font: labelFont }, grid: { color: gridColor } } }
     };
   }
 
   private updateCharts(data: MasterDashboardStats): void {
     const financial = data.financialIntelligence;
-    const inventory = data.inventoryIntelligence;
     const operational = data.operationalPulse;
+    const ext = data.extended;
+    const palette = ['#6366f1', '#10b981', '#f59e0b', '#06b6d4', '#f43f5e', '#8b5cf6', '#ec4899', '#14b8a6'];
 
-    const cashFlow = this.normalizeCashFlowSeries(
-      financial?.cashFlowInLast30Days ?? [],
-      financial?.cashFlowOutLast30Days ?? []
-    );
-
+    // Cash Flow (Smooth Area Chart)
+    const cashFlow = this.normalizeCashFlowSeries(financial?.cashFlowInLast30Days ?? [], financial?.cashFlowOutLast30Days ?? []);
     this.cashFlowChartData = {
       labels: cashFlow.labels,
       datasets: [
-        {
-          label: 'التدفق الداخل',
-          data: cashFlow.inbound,
-          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981',
-          backgroundColor: 'rgba(16, 185, 129, 0.08)',
-          fill: true,
-          tension: 0.4,
-          borderWidth: 3,
-          pointRadius: 0,
-          pointHoverRadius: 6
-        },
-        {
-          label: 'التدفق الخارج',
-          data: cashFlow.outbound,
-          borderColor: '#6366f1',
-          backgroundColor: 'rgba(99, 102, 241, 0.08)',
-          fill: true,
-          tension: 0.4,
-          borderWidth: 3,
-          pointRadius: 0,
-          pointHoverRadius: 6
-        }
+        { label: 'التدفق الداخل', data: cashFlow.inbound, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.15)', fill: true, tension: 0.4, borderWidth: 3, pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: '#fff', pointBorderColor: '#10b981', pointBorderWidth: 2 },
+        { label: 'التدفق الخارج', data: cashFlow.outbound, borderColor: '#f43f5e', backgroundColor: 'rgba(244,63,94,0.15)', fill: true, tension: 0.4, borderWidth: 3, pointRadius: 0, pointHoverRadius: 5, pointBackgroundColor: '#fff', pointBorderColor: '#f43f5e', pointBorderWidth: 2 }
       ]
     };
 
-    const cashierPerformance = (operational?.cashierPerformance ?? [])
-      .slice()
-      .sort((a, b) => b.totalSales - a.totalSales)
-      .slice(0, 6);
+    // Six-month trend
+    const trend = ext?.sixMonthTrend ?? [];
+    this.sixMonthChartData = {
+      labels: trend.map(t => t.monthLabel),
+      datasets: [
+        { label: 'المبيعات', data: trend.map(t => this.toNumber(t.salesAmount)), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3 },
+        { label: 'المشتريات', data: trend.map(t => this.toNumber(t.purchasesAmount)), borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4, borderWidth: 2, pointRadius: 3 },
+        { label: 'صافي الربح', data: trend.map(t => this.toNumber(t.netProfit)), borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)', fill: false, tension: 0.4, borderWidth: 2, pointRadius: 3, borderDash: [4, 3] }
+      ]
+    };
 
+    // Weekly documents
+    const weekly = ext?.weeklyDocuments ?? [];
+    this.weeklyChartData = {
+      labels: weekly.map(w => w.dayLabel),
+      datasets: [
+        { label: 'مبيعات', data: weekly.map(w => this.toNumber(w.salesAmount)), backgroundColor: 'rgba(16,185,129,0.8)', borderRadius: 4, maxBarThickness: 14 },
+        { label: 'مشتريات', data: weekly.map(w => this.toNumber(w.purchasesAmount)), backgroundColor: 'rgba(99,102,241,0.8)', borderRadius: 4, maxBarThickness: 14 },
+        { label: 'مردودات بيع', data: weekly.map(w => this.toNumber(w.salesReturnsAmount)), backgroundColor: 'rgba(244,63,94,0.8)', borderRadius: 4, maxBarThickness: 14 },
+        { label: 'مردودات شراء', data: weekly.map(w => this.toNumber(w.purchaseReturnsAmount)), backgroundColor: 'rgba(245,158,11,0.8)', borderRadius: 4, maxBarThickness: 14 }
+      ]
+    };
+
+    // Category inventory
+    const catInv = ext?.inventoryByCategory ?? [];
+    this.categoryInventoryData = {
+      labels: catInv.map(c => c.categoryName),
+      datasets: [{ data: catInv.map(c => this.toNumber(c.inventoryValue)), backgroundColor: palette, borderWidth: 0, hoverOffset: 8 }]
+    };
+
+    // Cashier performance
+    const cashierPerf = (operational?.cashierPerformance ?? []).sort((a, b) => b.totalSales - a.totalSales).slice(0, 6);
     this.cashierPerformanceChartData = {
-      labels: cashierPerformance.map((c) => c.username),
-      datasets: [
-        {
-          data: cashierPerformance.map((c) => this.toNumber(c.totalSales)),
-          borderRadius: 8,
-          maxBarThickness: 20,
-          backgroundColor: ['#6366f1', getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#f59e0b', '#06b6d4', '#f43f5e', '#8b5cf6']
-        }
-      ]
+      labels: cashierPerf.map(c => c.username),
+      datasets: [{ data: cashierPerf.map(c => this.toNumber(c.totalSales)), borderRadius: 6, maxBarThickness: 18, backgroundColor: palette }]
     };
 
-    const supplierData = (inventory?.inventoryBySupplier ?? [])
-      .slice()
-      .sort((a, b) => b.inventoryValue - a.inventoryValue)
-      .slice(0, 5);
-    this.inventoryDistributionData = {
-      labels: supplierData.map((s) => s.supplierName),
-      datasets: [
-        {
-          data: supplierData.map((s) => this.toNumber(s.inventoryValue)),
-          backgroundColor: [getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', '#6366f1', '#f59e0b', '#06b6d4', '#8b5cf6'],
-          hoverOffset: 12,
-          borderWidth: 0
-        }
-      ]
-    };
-
-    const hourlyHeatMap = (operational?.hourlyHeatMap ?? []).slice().sort((a, b) => a.hour - b.hour);
+    // Hourly activity
+    const hourly = (operational?.hourlyHeatMap ?? []).sort((a, b) => a.hour - b.hour);
     this.hourlyActivityChartData = {
-      labels: hourlyHeatMap.map((h) => `${h.hour}:00`),
-      datasets: [
-        {
-          data: hourlyHeatMap.map((h) => this.toNumber(h.transactionCount)),
-          borderRadius: 8,
-          maxBarThickness: 16,
-          backgroundColor: '#6366f1'
-        }
-      ]
+      labels: hourly.map(h => `${h.hour}:00`),
+      datasets: [{ data: hourly.map(h => this.toNumber(h.transactionCount)), borderRadius: 4, maxBarThickness: 14, backgroundColor: '#6366f1' }]
     };
   }
 
   private startAutoRefresh(): void {
     this.refreshSubscription = interval(30000)
       .pipe(switchMap(() => this.dashboardService.getMasterDashboardStats()))
-      .subscribe({
-        next: (data) => {
-          this.dashboardData.set(data);
-          this.updateCharts(data);
-        },
-        error: (err) => console.error('Auto-refresh error:', err)
-      });
+      .subscribe({ next: (data) => { this.dashboardData.set(data); this.updateCharts(data); }, error: (err) => console.error('Auto-refresh error:', err) });
   }
 
   private buildTooltipOptions(type: 'currency' | 'count' = 'currency'): any {
     return {
-      rtl: true,
-      backgroundColor: '#0f172a',
-      titleColor: '#f8fafc',
-      bodyColor: '#cbd5e1',
-      cornerRadius: 12,
-      padding: 12,
-      titleFont: { family: 'Cairo, sans-serif', size: 13, weight: '900' },
-      bodyFont: { family: 'Cairo, sans-serif', size: 12 },
+      rtl: true, backgroundColor: '#0f172a', titleColor: '#f8fafc', bodyColor: '#cbd5e1',
+      cornerRadius: 8, padding: 10,
+      titleFont: { family: 'Cairo, sans-serif', size: 12, weight: '900' },
+      bodyFont: { family: 'Cairo, sans-serif', size: 11 },
       callbacks: {
         label: (context: any) => {
           const value = this.toNumber(context.parsed?.y ?? context.parsed?.x ?? context.raw);
@@ -494,13 +401,13 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
   ): { labels: string[]; inbound: number[]; outbound: number[] } {
     const inboundByDate = this.toAmountMap(inbound);
     const outboundByDate = this.toAmountMap(outbound);
-    const dateKeys = Array.from(new Set([...inboundByDate.keys(), ...outboundByDate.keys()]))
-      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-
+    const dateKeys = Array.from(new Set([...inboundByDate.keys(), ...outboundByDate.keys()])).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    
     return {
-      labels: dateKeys.map((date) =>
-        new Date(date).toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' })
-      ),
+      labels: dateKeys.map((date) => {
+        const d = new Date(date);
+        return `${d.getDate()} ${d.toLocaleDateString('ar-EG', { month: 'short' })}`;
+      }),
       inbound: dateKeys.map((date) => inboundByDate.get(date) ?? 0),
       outbound: dateKeys.map((date) => outboundByDate.get(date) ?? 0)
     };
@@ -509,11 +416,7 @@ export class MasterDashboardComponent implements OnInit, OnDestroy {
   private toAmountMap(items: Array<{ date: Date | string; amount: number }>): Map<string, number> {
     return items.reduce((map, item) => {
       const date = new Date(item.date);
-
-      if (Number.isNaN(date.getTime())) {
-        return map;
-      }
-
+      if (Number.isNaN(date.getTime())) return map;
       const key = date.toISOString().slice(0, 10);
       map.set(key, (map.get(key) ?? 0) + this.toNumber(item.amount));
       return map;

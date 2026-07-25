@@ -1,3 +1,4 @@
+    using AutoMapper;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.SalesReturns;
@@ -6,6 +7,8 @@ using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Application.DTOs.Barcode;
+using SmartPharmacySystem.Application.DTOs.Financial;
+using SmartPharmacySystem.Application.IServices;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -14,14 +17,14 @@ namespace SmartPharmacySystem.Application.Services
         IMapper mapper,
         ILogger<SalesReturnService> logger,
         IStockMovementService stockMovementService,
-        IFinancialService financialService,
+        IJournalEntryService journalEntryService,
         IBarcodeService barcodeService) : ISalesReturnService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
         private readonly ILogger<SalesReturnService> _logger = logger;
         private readonly IStockMovementService _stockMovementService = stockMovementService;
-        private readonly IFinancialService _financialService = financialService;
+        private readonly IJournalEntryService _journalEntryService = journalEntryService;
         private readonly IBarcodeService _barcodeService = barcodeService;
 
         public async Task<SalesReturnDto> CreateAsync(CreateSalesReturnDto dto, int userId)
@@ -132,24 +135,73 @@ namespace SmartPharmacySystem.Application.Services
                 invoice.TotalCost -= ret.TotalCost;
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
 
-                // 4. Financial Impact
+                // 4. Financial Impact ==================== المحرك المحاسبي الاحترافي ====================
+                var journalEntry = new JournalEntryDto
+                {
+                    EntryDate = DateTime.UtcNow,
+                    VoucherNumber = $"RET-{ret.Id}",
+                    Description = $"قيد مردودات مبيعات آلي - رقم المرتجع: {ret.Id} - العميل: {invoice.CustomerName ?? "نقدي"}",
+                    Type = VoucherType.JournalEntry,
+                    Lines = new List<JournalEntryLineDto>()
+                };
+
+                // 1. الطرف المدين (من حـ/ الإيرادات - تخفيض الإيرادات)
+                journalEntry.Lines.Add(new JournalEntryLineDto
+                {
+                    AccountId = 41, // إيرادات المبيعات
+                    Debit = ret.TotalAmount,
+                    Credit = 0,
+                    Description = $"مردودات مبيعات لفاتورة {invoice.SaleInvoiceNumber}"
+                });
+
+                // 2. الطرف الدائن (إلى حـ/ الصندوق أو العميل)
                 if (invoice.PaymentMethod == PaymentType.Credit && invoice.CustomerId.HasValue)
                 {
-                    // Credit Return: Decrease customer debt (Allowed to be negative)
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 2101, // ذمم العملاء
+                        Debit = 0,
+                        Credit = ret.TotalAmount,
+                        Description = $"تخفيض مديونية العميل بمرتجع {ret.Id}"
+                    });
                     await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, -ret.TotalAmount);
-                    _logger.LogInformation("Credit balance updated for customer {CustomerId} by -{Amount}", invoice.CustomerId, ret.TotalAmount);
                 }
                 else
                 {
-                    // Cash Return: Refund from physical vault
-                    await _financialService.ProcessTransactionAsync(
-                        accountId: 1, // Main Vault
-                        amount: ret.TotalAmount,
-                        type: FinancialTransactionType.Expense,
-                        referenceType: ReferenceType.SalesReturn,
-                        referenceId: ret.Id,
-                        description: $"استرداد نقدي لمرتجع مبيعات - رقم المرتجع: {ret.Id}, فاتورة: {invoice.SaleInvoiceNumber}");
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 1101, // الصندوق الرئيسي
+                        Debit = 0,
+                        Credit = ret.TotalAmount,
+                        Description = $"استرداد نقدي لمرتجع مبيعات {ret.Id}"
+                    });
                 }
+
+                // 3. عكس قيد التكلفة (لتتبع الربحية الدقيقة)
+                if (ret.TotalCost > 0)
+                {
+                    // من حـ/ المخزون
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 1301, // مخزون الصيدلية
+                        Debit = ret.TotalCost,
+                        Credit = 0,
+                        Description = $"زيادة المخزون بمرتجع {ret.Id}"
+                    });
+
+                    // إلى حـ/ تكلفة المشتريات
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = 51, // تكلفة البضاعة المباعة
+                        Debit = 0,
+                        Credit = ret.TotalCost,
+                        Description = $"عكس تكلفة مبيعات المرتجع {ret.Id}"
+                    });
+                }
+
+                // حفظ وترحيل القيد
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
 
                 // 5. Update Status
                 ret.Status = DocumentStatus.Approved;
@@ -205,52 +257,10 @@ namespace SmartPharmacySystem.Application.Services
                                 if (purchaseInvoice == null || purchaseInvoice.BranchId != invoice.BranchId.Value)
                                     throw new InvalidOperationException("فشل إلغاء المرتجع: التشغيلة لا تتبع نفس فرع الفاتورة الأصلية.");
                             }
-                            if (batch.RemainingQuantity < detail.Quantity)
-                                throw new InvalidOperationException($"لا يمكن إلغاء المرتجع: الرصيد في الدفعة {batch.CompanyBatchNumber} أقل من الكمية التي سيتم خصمها بالمرتجع.");
 
-                            batch.RemainingQuantity -= detail.Quantity;
-                            batch.SoldQuantity += detail.Quantity;
-                            await _unitOfWork.MedicineBatches.UpdateAsync(batch);
                         }
-
-                        var originalLine = invoice.SaleInvoiceDetails.FirstOrDefault(d => d.MedicineId == detail.MedicineId && d.BatchId == detail.BatchId);
-                        if (originalLine != null)
-                        {
-                            originalLine.RemainingQtyToReturn += detail.Quantity;
-                            await _unitOfWork.SaleInvoiceDetails.UpdateAsync(originalLine);
-                        }
-                    }
-
-                    // Reverse Gross Impact
-                    if (invoice != null)
-                    {
-                        invoice.TotalAmount += ret.TotalAmount;
-                        invoice.TotalProfit += ret.TotalProfit;
-                        invoice.TotalCost += ret.TotalCost;
-                        await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
-                    }
-
-                    await _stockMovementService.CancelDocumentMovementsAsync(id, ReferenceType.SalesReturn);
-
-                    if (invoice != null && invoice.PaymentMethod == PaymentType.Credit && invoice.CustomerId.HasValue)
-                    {
-                        await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, ret.TotalAmount);
-                    }
-                    else if (invoice != null)
-                    {
-                        await _financialService.ProcessTransactionAsync(
-                            accountId: 1,
-                            amount: ret.TotalAmount,
-                            type: FinancialTransactionType.Income,
-                            referenceType: ReferenceType.SalesReturn,
-                            referenceId: ret.Id,
-                            description: $"إلغاء مرتجع بيع (إرجاع مبلغ) - رقم: {id}");
                     }
                 }
-
-                await _unitOfWork.SalesReturns.UpdateAsync(ret);
-                await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
             }
             catch (Exception ex)
             {

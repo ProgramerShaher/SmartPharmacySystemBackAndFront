@@ -14,6 +14,8 @@ import { TableModule } from 'primeng/table';
 import { ChartModule } from 'primeng/chart';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
+import { DialogModule } from 'primeng/dialog';
+import { BatchDetailsComponent } from '../batch-details/batch-details.component';
 
 @Component({
     selector: 'app-medicine-details',
@@ -29,7 +31,9 @@ import { MenuItem } from 'primeng/api';
         TooltipModule,
         TableModule,
         ChartModule,
-        MenuModule
+        MenuModule,
+        DialogModule,
+        BatchDetailsComponent
     ],
     templateUrl: './medicine-details.component.html',
     styleUrls: ['./medicine-details.component.scss']
@@ -38,6 +42,10 @@ export class MedicineDetailsComponent implements OnInit {
     medicine: MedicineDto | null = null;
     batches: MedicineBatchResponseDto[] = [];
     loading = true;
+
+    // Batch Details Dialog
+    displayDetailsDialog = false;
+    selectedBatchId: number | null = null;
 
     // Quick Actions Menu
     actions: MenuItem[] = [];
@@ -141,6 +149,11 @@ export class MedicineDetailsComponent implements OnInit {
         console.log('Edit clicked');
     }
 
+    viewBatchDetails(batchId: number) {
+        this.selectedBatchId = batchId;
+        this.displayDetailsDialog = true;
+    }
+
     getStatusSeverity(status: string): 'success' | 'danger' {
         return status === 'Active' ? 'success' : 'danger';
     }
@@ -161,5 +174,30 @@ export class MedicineDetailsComponent implements OnInit {
 
     getCurrentStock(): number {
         return this.medicine?.totalQuantity || 0;
+    }
+
+    getFormattedStock(totalStock: number): string {
+        if (!this.medicine) return '';
+        if (totalStock <= 0) return 'لا يوجد مخزون';
+        
+        let remaining = totalStock;
+        const parts: string[] = [];
+        
+        // Sort units descending by conversion factor
+        const sortedUnits = [...(this.medicine.medicineUnits || [])].sort((a, b) => b.conversionFactor - a.conversionFactor);
+        
+        for (const unit of sortedUnits) {
+            const count = Math.floor(remaining / unit.conversionFactor);
+            if (count > 0) {
+                parts.push(`${count} ${unit.name}`);
+                remaining = remaining % unit.conversionFactor;
+            }
+        }
+        
+        if (remaining > 0 || parts.length === 0) {
+            parts.push(`${remaining} ${this.medicine.baseUnitName || 'حبة'}`);
+        }
+        
+        return parts.join(' و ');
     }
 }

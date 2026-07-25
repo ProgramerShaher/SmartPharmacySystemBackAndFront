@@ -13,7 +13,8 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { ToolbarModule } from 'primeng/toolbar';
-import { ChartModule } from 'primeng/chart'; // Import ChartModule
+import { ChartModule } from 'primeng/chart';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
     selector: 'app-sales-return-list',
@@ -28,7 +29,8 @@ import { ChartModule } from 'primeng/chart'; // Import ChartModule
         ConfirmDialogModule,
         CardModule,
         ToolbarModule,
-        ChartModule
+        ChartModule,
+        ToastModule
     ],
     templateUrl: './sales-return-list.component.html',
     styleUrls: ['./sales-return-list.component.scss'],

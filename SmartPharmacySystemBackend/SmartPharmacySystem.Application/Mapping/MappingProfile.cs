@@ -65,6 +65,9 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<Medicine, MedicineDetailsDto>()
                 .IncludeBase<Medicine, MedicineDto>();
 
+            // MedicineUnit Mappings
+            CreateMap<MedicineUnitDto, MedicineUnit>().ReverseMap();
+
             // Supplier Mappings
             CreateMap<CreateSupplierDto, Supplier>();
             CreateMap<UpdateSupplierDto, Supplier>();

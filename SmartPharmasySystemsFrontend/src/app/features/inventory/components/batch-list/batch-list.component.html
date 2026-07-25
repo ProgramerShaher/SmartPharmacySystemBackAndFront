@@ -128,3 +128,9 @@
 <app-batch-actions-dialog *ngIf="displayActionDialog" [visible]="displayActionDialog" [batch]="selectedBatch"
     (onClose)="displayActionDialog = false" (onSuccess)="onActionSuccess()">
 </app-batch-actions-dialog>
+
+<!-- Batch Details Dialog -->
+<app-batch-details *ngIf="displayDetailsDialog"
+                   [(visible)]="displayDetailsDialog"
+                   [batchId]="selectedBatchId">
+</app-batch-details>

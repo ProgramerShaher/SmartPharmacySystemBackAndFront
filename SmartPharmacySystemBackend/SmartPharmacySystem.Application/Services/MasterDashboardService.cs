@@ -44,6 +44,13 @@ public class MasterDashboardService : IMasterDashboardService
             var movements = ((await _unitOfWork.InventoryMovements.GetAllAsync()) ?? Enumerable.Empty<InventoryMovement>()).ToList();
             var financialTransactions = (await GetFinancialTransactionsSafeAsync(thirtyDaysAgo, today.AddDays(1))).ToList();
             var mainAccount = await GetMainAccountSafeAsync();
+            var categories = ((await _unitOfWork.Categories.GetAllAsync()) ?? Enumerable.Empty<Category>()).ToList();
+            var employees = ((await _unitOfWork.Employees.GetAllAsync()) ?? Enumerable.Empty<Employee>()).Where(x => !x.IsDeleted).ToList();
+            var warehouses = ((await _unitOfWork.Warehouses.GetAllAsync()) ?? Enumerable.Empty<Warehouse>()).ToList();
+            var saleDetails = ((await _unitOfWork.SaleInvoiceDetails.GetAllAsync()) ?? Enumerable.Empty<SaleInvoiceDetail>()).ToList();
+            var inventoryStocks = ((await _unitOfWork.InventoryStocks.SearchAsync()) ?? Enumerable.Empty<InventoryStock>()).ToList();
+            // Salary totals via optimized repo method
+            var totalSalariesThisMonth = await _unitOfWork.MonthlySalaries.GetTotalPayrollAsync(today.Month, today.Year);
 
             var inventory = BuildInventoryIntelligence(batches, medicines, purchases, suppliers, alerts);
 
@@ -84,7 +91,22 @@ public class MasterDashboardService : IMasterDashboardService
                     customerReceipts,
                     expenses,
                     movements,
-                    users)
+                    users),
+                Extended = BuildExtendedDashboard(
+                    today,
+                    sales,
+                    purchases,
+                    salesReturns,
+                    purchaseReturns,
+                    expenses,
+                    medicines,
+                    batches,
+                    categories,
+                    employees,
+                    warehouses,
+                    inventoryStocks,
+                    saleDetails,
+                    totalSalariesThisMonth)
             };
 
             stopwatch.Stop();
@@ -521,6 +543,200 @@ public class MasterDashboardService : IMasterDashboardService
                 };
             })
             .ToList();
+    }
+
+    private static ExtendedDashboardDto BuildExtendedDashboard(
+        DateTime today,
+        List<SaleInvoice> sales,
+        List<PurchaseInvoice> purchases,
+        List<SalesReturn> salesReturns,
+        List<PurchaseReturn> purchaseReturns,
+        List<Expense> expenses,
+        List<Medicine> medicines,
+        List<MedicineBatch> batches,
+        List<Category> categories,
+        List<Employee> employees,
+        List<Warehouse> warehouses,
+        List<InventoryStock> inventoryStocks,
+        List<SaleInvoiceDetail> saleDetails,
+        decimal totalSalariesThisMonth)
+    {
+        var approvedSales = sales.Where(x => x.Status == DocumentStatus.Approved).ToList();
+        var approvedPurchases = purchases.Where(x => x.Status == DocumentStatus.Approved).ToList();
+        var approvedSalesReturns = salesReturns.Where(x => x.Status == DocumentStatus.Approved).ToList();
+        var approvedPurchaseReturns = purchaseReturns.Where(x => x.Status == DocumentStatus.Approved).ToList();
+
+        // ==============================
+        // 1. Top Selling Medicines (last 30 days)
+        // ==============================
+        var thirtyDaysAgo = today.AddDays(-30);
+        var recentApprovedSaleIds = approvedSales
+            .Where(x => IsInRange(x.InvoiceDate, thirtyDaysAgo, today.AddDays(1)))
+            .Select(x => x.Id)
+            .ToHashSet();
+
+        var medicineDict = medicines.ToDictionary(m => m.Id, m => m.Name);
+
+        var topSelling = saleDetails
+            .Where(d => recentApprovedSaleIds.Contains(d.SaleInvoiceId))
+            .GroupBy(d => d.MedicineId)
+            .Select(g => new TopSellingMedicineDto
+            {
+                MedicineId = g.Key,
+                MedicineName = medicineDict.TryGetValue(g.Key, out var n) ? n : $"دواء #{g.Key}",
+                TotalQuantitySold = g.Sum(x => x.Quantity),
+                TotalRevenue = g.Sum(x => x.TotalLineAmount)
+            })
+            .OrderByDescending(x => x.TotalQuantitySold)
+            .Take(10)
+            .ToList();
+
+        // ==============================
+        // 2. Six-Month Trend
+        // ==============================
+        var sixMonthsAgo = today.AddMonths(-5);
+        var sixMonthStart = new DateTime(sixMonthsAgo.Year, sixMonthsAgo.Month, 1);
+        var arabicMonths = new[] { "يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر" };
+
+        var sixMonthTrend = Enumerable.Range(0, 6).Select(i =>
+        {
+            var d = sixMonthStart.AddMonths(i);
+            var monthSales = approvedSales
+                .Where(x => x.InvoiceDate.Year == d.Year && x.InvoiceDate.Month == d.Month)
+                .Sum(x => x.TotalAmount);
+            var monthPurchases = approvedPurchases
+                .Where(x => x.PurchaseDate.Year == d.Year && x.PurchaseDate.Month == d.Month)
+                .Sum(x => x.TotalAmount);
+            var monthReturns = approvedSalesReturns
+                .Where(x => x.ReturnDate.Year == d.Year && x.ReturnDate.Month == d.Month)
+                .Sum(x => x.TotalAmount);
+            var monthExpenses = expenses
+                .Where(x => x.ExpenseDate.Year == d.Year && x.ExpenseDate.Month == d.Month)
+                .Sum(x => x.Amount);
+            var monthCOGS = approvedSales
+                .Where(x => x.InvoiceDate.Year == d.Year && x.InvoiceDate.Month == d.Month)
+                .Sum(x => x.TotalCost);
+
+            return new MonthlyTrendDto
+            {
+                Year = d.Year,
+                Month = d.Month,
+                MonthLabel = arabicMonths[d.Month - 1],
+                SalesAmount = monthSales,
+                PurchasesAmount = monthPurchases,
+                NetProfit = monthSales - monthReturns - monthCOGS - monthExpenses
+            };
+        }).ToList();
+
+        // ==============================
+        // 3. Weekly Documents (last 7 days)
+        // ==============================
+        var weekStart = today.AddDays(-6);
+        var dayNames = new[] { "الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت" };
+
+        var weeklyDocs = Enumerable.Range(0, 7).Select(i =>
+        {
+            var d = weekStart.AddDays(i);
+            return new WeeklyDocumentDto
+            {
+                DayLabel = dayNames[(int)d.DayOfWeek],
+                SalesAmount = approvedSales.Where(x => x.InvoiceDate.Date == d.Date).Sum(x => x.TotalAmount),
+                PurchasesAmount = approvedPurchases.Where(x => x.PurchaseDate.Date == d.Date).Sum(x => x.TotalAmount),
+                SalesReturnsAmount = approvedSalesReturns.Where(x => x.ReturnDate.Date == d.Date).Sum(x => x.TotalAmount),
+                PurchaseReturnsAmount = approvedPurchaseReturns.Where(x => x.ReturnDate.Date == d.Date).Sum(x => x.TotalAmount)
+            };
+        }).ToList();
+
+        // ==============================
+        // 4. Inventory By Category
+        // ==============================
+        var medicineCategories = medicines.ToDictionary(m => m.Id, m => m.CategoryId);
+        var categoryNames = categories.ToDictionary(c => c.Id, c => c.Name);
+
+        var inventoryByCategory = batches
+            .Where(b => b.RemainingQuantity > 0)
+            .GroupBy(b =>
+            {
+                var catId = medicineCategories.TryGetValue(b.MedicineId, out var cid) ? cid : null;
+                return catId;
+            })
+            .Select(g => new CategoryInventoryDto
+            {
+                CategoryId = g.Key ?? 0,
+                CategoryName = g.Key.HasValue && categoryNames.TryGetValue(g.Key.Value, out var cn) ? cn : "غير مصنف",
+                InventoryValue = g.Sum(b => b.RemainingQuantity * b.UnitPurchasePrice),
+                ItemCount = g.Select(b => b.MedicineId).Distinct().Count()
+            })
+            .OrderByDescending(x => x.InventoryValue)
+            .Take(8)
+            .ToList();
+
+        // ==============================
+        // 5. Warehouse Stock (from InventoryStocks, not MedicineBatch)
+        // ==============================
+        var stocksByWarehouse = inventoryStocks
+            .GroupBy(s => s.WarehouseId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var medicineUnitPrices = batches
+            .GroupBy(b => b.MedicineId)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(b => b.EntryDate).FirstOrDefault()?.UnitPurchasePrice ?? 0);
+
+        var warehouseStock = warehouses.Select(w =>
+        {
+            var stocks = stocksByWarehouse.TryGetValue(w.Id, out var s) ? s : new List<InventoryStock>();
+            var totalItems = stocks.Select(x => x.MedicineId).Distinct().Count();
+            var totalValue = stocks.Sum(x => x.Quantity * (medicineUnitPrices.TryGetValue(x.MedicineId, out var p) ? p : 0));
+            return new WarehouseStockDto
+            {
+                WarehouseId = w.Id,
+                WarehouseName = w.Name,
+                TotalItems = totalItems,
+                TotalValue = totalValue
+            };
+        })
+        .Where(x => x.TotalItems > 0)
+        .OrderByDescending(x => x.TotalValue)
+        .ToList();
+
+        // ==============================
+        // 6. Salary, Expense, Today Totals
+        // ==============================
+        var thisMonth = today.Month;
+        var thisYear = today.Year;
+
+        var totalExpensesThisMonth = expenses
+            .Where(e => e.ExpenseDate.Month == thisMonth && e.ExpenseDate.Year == thisYear)
+            .Sum(e => e.Amount);
+
+        var todaySalesTotal = approvedSales
+            .Where(x => x.InvoiceDate.Date == today.Date)
+            .Sum(x => x.TotalAmount);
+
+        var monthlyReturns = approvedSalesReturns
+            .Where(x => x.ReturnDate.Month == thisMonth && x.ReturnDate.Year == thisYear)
+            .Sum(x => x.TotalAmount);
+        var monthlyCOGS = approvedSales
+            .Where(x => x.InvoiceDate.Month == thisMonth && x.InvoiceDate.Year == thisYear)
+            .Sum(x => x.TotalCost);
+        var monthlySales = approvedSales
+            .Where(x => x.InvoiceDate.Month == thisMonth && x.InvoiceDate.Year == thisYear)
+            .Sum(x => x.TotalAmount);
+        var netProfitThisMonth = monthlySales - monthlyReturns - monthlyCOGS - totalExpensesThisMonth;
+
+        return new ExtendedDashboardDto
+        {
+            TopSellingMedicines = topSelling,
+            SixMonthTrend = sixMonthTrend,
+            WeeklyDocuments = weeklyDocs,
+            InventoryByCategory = inventoryByCategory,
+            WarehouseStock = warehouseStock,
+            TotalSalariesThisMonth = totalSalariesThisMonth,
+            EmployeeCount = employees.Count,
+            TotalExpensesThisMonth = totalExpensesThisMonth,
+            TodaySalesTotal = todaySalesTotal,
+            NetProfitThisMonth = netProfitThisMonth
+        };
     }
 
     private async Task<IEnumerable<FinancialTransaction>> GetFinancialTransactionsSafeAsync(DateTime start, DateTime end)

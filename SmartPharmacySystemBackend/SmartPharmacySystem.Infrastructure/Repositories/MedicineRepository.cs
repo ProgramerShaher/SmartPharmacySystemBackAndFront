@@ -23,6 +23,7 @@ public class MedicineRepository : IMedicineRepository
     {
         return await _context.Medicines
             .Include(m => m.Category)
+            .Include(m => m.MedicineUnits)
             .FirstOrDefaultAsync(m => m.Id == id && !m.IsDeleted);
     }
 
@@ -31,6 +32,7 @@ public class MedicineRepository : IMedicineRepository
         return await _context.Medicines
             .AsNoTracking()
             .Include(m => m.Category)
+            .Include(m => m.MedicineUnits)
             .Where(m => !m.IsDeleted)
             .OrderBy(m => m.Name)
             .ToListAsync();
@@ -109,6 +111,7 @@ public class MedicineRepository : IMedicineRepository
         var query = _context.Medicines
             .AsNoTracking()
             .Include(m => m.Category)
+            .Include(m => m.MedicineUnits)
             .Where(m => !m.IsDeleted)
             .AsQueryable();
 

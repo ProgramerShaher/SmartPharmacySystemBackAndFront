@@ -8,33 +8,14 @@ public class MasterDashboardStatsDto
 {
     public SystemOverviewDto SystemOverview { get; set; } = new();
 
-    // ============================================
-    // 1. رادار الرخاء المالي (Financial Intelligence Hub)
-    // ============================================
-
-    /// <summary>
-    /// صافي الربح الفعلي = (المبيعات المعتمدة - المرتجعات) - COGS - المصاريف
-    /// Net Profit = (Approved Sales - Returns) - COGS - Expenses
-    /// </summary>
     public FinancialIntelligenceDto FinancialIntelligence { get; set; } = new();
 
-    // ============================================
-    // 2. الاستخبارات المخزنية واللوجستية (Inventory & Logistics IQ)
-    // ============================================
-
-    /// <summary>
-    /// تقييم رأس المال الساكن - Inventory valuation
-    /// </summary>
     public InventoryIntelligenceDto InventoryIntelligence { get; set; } = new();
 
-    // ============================================
-    // 3. الرقابة التشغيلية وأداء الموظفين (Operational Pulse)
-    // ============================================
-
-    /// <summary>
-    /// نبض النظام - System activity and performance
-    /// </summary>
     public OperationalPulseDto OperationalPulse { get; set; } = new();
+
+    /// <summary>البيانات الموسعة للوحة التحكم المتقدمة</summary>
+    public ExtendedDashboardDto Extended { get; set; } = new();
 }
 
 /// <summary>
@@ -310,4 +291,98 @@ public class HourlyHeatMapDto
     public int Hour { get; set; } // 0-23
     public decimal TotalSales { get; set; }
     public int TransactionCount { get; set; }
+}
+
+/// <summary>
+/// Top Selling Medicine
+/// </summary>
+public class TopSellingMedicineDto
+{
+    public int MedicineId { get; set; }
+    public string MedicineName { get; set; } = string.Empty;
+    public int TotalQuantitySold { get; set; }
+    public decimal TotalRevenue { get; set; }
+}
+
+/// <summary>
+/// Monthly Trend Item (for 6-month chart)
+/// </summary>
+public class MonthlyTrendDto
+{
+    public int Year { get; set; }
+    public int Month { get; set; }
+    public string MonthLabel { get; set; } = string.Empty;
+    public decimal SalesAmount { get; set; }
+    public decimal PurchasesAmount { get; set; }
+    public decimal NetProfit { get; set; }
+}
+
+/// <summary>
+/// Weekly document statistics (Sales/Purchases/Returns per day)
+/// </summary>
+public class WeeklyDocumentDto
+{
+    public string DayLabel { get; set; } = string.Empty;
+    public decimal SalesAmount { get; set; }
+    public decimal PurchasesAmount { get; set; }
+    public decimal SalesReturnsAmount { get; set; }
+    public decimal PurchaseReturnsAmount { get; set; }
+}
+
+/// <summary>
+/// Inventory by Category (for doughnut chart)
+/// </summary>
+public class CategoryInventoryDto
+{
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; } = string.Empty;
+    public decimal InventoryValue { get; set; }
+    public int ItemCount { get; set; }
+}
+
+/// <summary>
+/// Warehouse Stock Summary
+/// </summary>
+public class WarehouseStockDto
+{
+    public int WarehouseId { get; set; }
+    public string WarehouseName { get; set; } = string.Empty;
+    public int TotalItems { get; set; }
+    public decimal TotalValue { get; set; }
+}
+
+/// <summary>
+/// Extended Dashboard Stats - new sections
+/// </summary>
+public class ExtendedDashboardDto
+{
+    /// <summary>أكثر الأدوية مبيعاً خلال 30 يوم</summary>
+    public List<TopSellingMedicineDto> TopSellingMedicines { get; set; } = new();
+
+    /// <summary>اتجاه المبيعات والمشتريات خلال 6 أشهر</summary>
+    public List<MonthlyTrendDto> SixMonthTrend { get; set; } = new();
+
+    /// <summary>المبيعات والمشتريات والمردودات خلال الأسبوع</summary>
+    public List<WeeklyDocumentDto> WeeklyDocuments { get; set; } = new();
+
+    /// <summary>توزيع المخزون حسب التصنيف</summary>
+    public List<CategoryInventoryDto> InventoryByCategory { get; set; } = new();
+
+    /// <summary>المخزون في كل مخزن</summary>
+    public List<WarehouseStockDto> WarehouseStock { get; set; } = new();
+
+    /// <summary>إجمالي الرواتب هذا الشهر</summary>
+    public decimal TotalSalariesThisMonth { get; set; }
+
+    /// <summary>عدد الموظفين</summary>
+    public int EmployeeCount { get; set; }
+
+    /// <summary>إجمالي المصروفات هذا الشهر</summary>
+    public decimal TotalExpensesThisMonth { get; set; }
+
+    /// <summary>إجمالي المبيعات اليوم</summary>
+    public decimal TodaySalesTotal { get; set; }
+
+    /// <summary>صافي الربح هذا الشهر</summary>
+    public decimal NetProfitThisMonth { get; set; }
 }

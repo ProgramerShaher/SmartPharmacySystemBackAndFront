@@ -1,83 +1,182 @@
-<div class="master-dashboard-container" dir="rtl">
-  <div class="dashboard-shell">
-    <header class="dashboard-header">
+<div class="sales-container" dir="rtl">
+  <!-- Header -->
+  <header class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-desktop"></i></div>
       <div>
-        <div class="eyebrow">لوحة التحكم الرئيسية</div>
-        <h1 class="dashboard-title">
-          <i class="pi pi-chart-line"></i>
-          مركز متابعة النظام
-        </h1>
-        <p class="dashboard-subtitle">
-          ملخص مباشر للمبيعات، المشتريات، المخزون، العملاء، الموردين، التنبيهات وآخر العمليات من قاعدة البيانات.
-        </p>
+        <h1>مركز متابعة النظام</h1>
+        <p>ملخص مباشر شامل · يتحدث تلقائياً كل 30 ثانية</p>
       </div>
+    </div>
+    <div class="actions">
+      <button pButton type="button" icon="pi pi-chart-bar" class="p-button-sm p-button-outlined" (click)="navigateToRoute('/reports')"></button>
+      <button pButton type="button" icon="pi pi-refresh" class="p-button-sm" (click)="refreshDashboard()" [loading]="isLoading()"></button>
+    </div>
+  </header>
 
-      <div class="header-actions">
-        <button
-          pButton
-          type="button"
-          icon="pi pi-chart-bar"
-          label="التقارير"
-          class="p-button-sm p-button-text action-button"
-          (click)="navigateToRoute('/reports')">
-        </button>
-        <button
-          pButton
-          type="button"
-          icon="pi pi-refresh"
-          label="تحديث"
-          class="p-button-sm action-button refresh-button"
-          (click)="refreshDashboard()"
-          [loading]="isLoading()">
-        </button>
+  @if (isLoading()) {
+    <div class="loading-area">
+      <p-skeleton height="56px" class="w-full mb-2 block"></p-skeleton>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem;margin-bottom:.5rem">
+        @for (i of [1,2,3,4,5,6]; track i) { <p-skeleton height="56px" class="block"></p-skeleton> }
       </div>
-    </header>
+      <p-skeleton height="180px" class="w-full block"></p-skeleton>
+    </div>
+  }
 
-    @if (isLoading()) {
-      <div class="loading-grid">
-        <p-skeleton height="84px" styleClass="border-round-lg"></p-skeleton>
-        <div class="metrics-loading">
-          @for (item of [1, 2, 3, 4]; track item) {
-            <p-skeleton height="112px" styleClass="border-round-lg"></p-skeleton>
+  @if (!isLoading() && financialData() && inventoryData() && operationalData() && systemOverview()) {
+    <main class="dashboard-layout">
+
+      <!-- ====== KPI TOP ROW (6 cards) ====== -->
+      <section class="kpi-grid">
+        @for (metric of topMetrics(); track metric.title) {
+          <button class="kpi-card" [ngClass]="metric.tone" (click)="navigateToRoute(metric.route)">
+            <i [class]="metric.icon + ' kpi-bg-icon'"></i>
+            <span class="kpi-label">{{ metric.title }}</span>
+            <strong class="kpi-value">{{ metric.value }}</strong>
+            <small class="kpi-hint">{{ metric.hint }}</small>
+          </button>
+        }
+      </section>
+
+      <!-- ====== SYSTEM CHIPS ====== -->
+      <div class="panel chips-panel">
+        <div class="system-grid">
+          @for (card of systemCards(); track card.title) {
+            <button class="sys-chip" [ngClass]="card.tone" (click)="navigateToRoute(card.route)">
+              <i [class]="card.icon"></i>
+              <div class="chip-info">
+                <strong>{{ card.value }}</strong>
+                <span>{{ card.title }}</span>
+              </div>
+            </button>
           }
         </div>
-        <p-skeleton height="320px" styleClass="border-round-lg"></p-skeleton>
       </div>
-    }
 
-    @if (!isLoading() && financialData() && inventoryData() && operationalData() && systemOverview()) {
-      <main class="dashboard-grid">
-        <section class="metrics-grid">
-          @for (metric of topMetrics(); track metric.title) {
-            <button type="button" class="metric-card" [ngClass]="'tone-' + metric.tone" (click)="navigateToRoute(metric.route)">
-              <span class="metric-icon">
-                <i [class]="metric.icon"></i>
-              </span>
-              <span class="metric-content">
-                <span class="metric-title">{{ metric.title }}</span>
-                <strong class="metric-value">{{ metric.value }}</strong>
-                <span class="metric-hint">{{ metric.hint }}</span>
-              </span>
-            </button>
-          }
-        </section>
+      <!-- ====== MAIN GRID: Charts Left | Side Right ====== -->
+      <div class="main-columns">
 
-        <section class="system-grid">
-          @for (card of systemCards(); track card.title) {
-            <button type="button" class="system-card" [ngClass]="'tone-' + card.tone" (click)="navigateToRoute(card.route)">
-              <i [class]="card.icon"></i>
-              <span>{{ card.title }}</span>
-              <strong>{{ card.value }}</strong>
-            </button>
-          }
-        </section>
+        <!-- Charts Column -->
+        <div class="col-main">
 
-        <section class="insights-strip">
-          <div class="mini-panel">
-            <div class="mini-panel-title">المشهد المالي</div>
-            <div class="mini-stat-list">
+          <!-- Row 1: Six-Month Trend + Weekly Docs -->
+          <div class="charts-row">
+            <div class="panel chart-panel chart-wide">
+              <div class="panel-head">
+                <div><h3>تحليل المبيعات والمشتريات</h3><p>المقارنة الشهرية خلال آخر 6 أشهر</p></div>
+              </div>
+              <p-chart type="line" [data]="sixMonthChartData" [options]="sixMonthChartOptions" height="120px"></p-chart>
+            </div>
+            <div class="panel chart-panel">
+              <div class="panel-head">
+                <div><h3>أداء الأسبوع</h3><p>مبيعات/مشتريات/مردودات آخر 7 أيام</p></div>
+              </div>
+              <p-chart type="bar" [data]="weeklyChartData" [options]="weeklyChartOptions" height="120px"></p-chart>
+            </div>
+          </div>
+
+          <!-- Row 2: Cash Flow + Hourly Activity -->
+          <div class="charts-row">
+            <div class="panel chart-panel chart-wide">
+              <div class="panel-head">
+                <div><h3>التدفق النقدي</h3><p>السيولة الداخلة والخارجة خلال 30 يوم</p></div>
+              </div>
+              <p-chart type="line" [data]="cashFlowChartData" [options]="cashFlowChartOptions" height="110px"></p-chart>
+            </div>
+            <div class="panel chart-panel">
+              <div class="panel-head">
+                <div><h3>زخم العمليات</h3><p>الفواتير المعتمدة حسب الساعة (اليوم)</p></div>
+              </div>
+              <p-chart type="bar" [data]="hourlyActivityChartData" [options]="hourlyActivityChartOptions" height="110px"></p-chart>
+            </div>
+          </div>
+
+          <!-- Row 3: Category Inventory + Cashier Performance -->
+          <div class="charts-row">
+            <div class="panel chart-panel">
+              <div class="panel-head">
+                <div><h3>توزيع المخزون حسب الصنف</h3><p>قيمة المخزون موزعة على التصنيفات</p></div>
+              </div>
+              <p-chart type="doughnut" [data]="categoryInventoryData" [options]="categoryInventoryOptions" height="130px"></p-chart>
+            </div>
+            <div class="panel chart-panel">
+              <div class="panel-head">
+                <div><h3>أداء الموظفين</h3><p>إجمالي مبيعات كل موظف اليوم</p></div>
+              </div>
+              <p-chart type="bar" [data]="cashierPerformanceChartData" [options]="cashierPerformanceChartOptions" height="130px"></p-chart>
+            </div>
+          </div>
+
+          <!-- Row 4: Top Medicines + Warehouse Stock -->
+          <div class="charts-row">
+            <!-- Top Medicines -->
+            <div class="panel table-card">
+              <div class="panel-head">
+                <h3>أكثر الأدوية مبيعاً</h3>
+                <span class="badge-pill emerald">آخر 30 يوم</span>
+              </div>
+              <p-table [value]="topMedicines()" styleClass="p-datatable-sm compact-table">
+                <ng-template pTemplate="header">
+                  <tr>
+                    <th>#</th>
+                    <th>الدواء</th>
+                    <th>الكمية</th>
+                    <th>الإيراد</th>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                  <tr class="clickable-row" (click)="navigateToRoute('/inventory/medicines/details/' + item.medicineId)">
+                    <td><span class="rank-badge" [ngClass]="i < 3 ? 'rank-top' : 'rank-normal'">{{ i + 1 }}</span></td>
+                    <td><div class="medicine-name">{{ item.medicineName }}</div></td>
+                    <td><strong style="font-family: Consolas; color: #10b981;">{{ item.totalQuantitySold }}</strong></td>
+                    <td><span class="rev-value">{{ formatCurrency(item.totalRevenue) }}</span></td>
+                  </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                  <tr><td colspan="4" class="empty-msg"><i class="pi pi-info-circle"></i> لا توجد بيانات مبيعات بعد</td></tr>
+                </ng-template>
+              </p-table>
+            </div>
+
+            <!-- Warehouse Stock -->
+            <div class="panel table-card">
+              <div class="panel-head">
+                <h3>المخزون في كل مخزن</h3>
+                <span class="badge-pill gold">المستودعات</span>
+              </div>
+              @if (warehouseStock().length > 0) {
+                <div class="warehouse-list">
+                  @for (w of warehouseStock(); track w.warehouseId) {
+                    <div class="warehouse-item">
+                      <div class="warehouse-info">
+                        <i class="pi pi-building"></i>
+                        <div>
+                          <div class="warehouse-name">{{ w.warehouseName }}</div>
+                          <small>{{ formatNumber(w.totalItems) }} صنف</small>
+                        </div>
+                      </div>
+                      <div class="warehouse-value">{{ formatCurrency(w.totalValue) }}</div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="empty-msg"><i class="pi pi-building"></i> لا توجد مستودعات محددة</div>
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Side Column -->
+        <div class="col-side">
+
+          <!-- Financial Snapshot -->
+          <div class="panel side-panel">
+            <div class="panel-head"><h3>المشهد المالي</h3></div>
+            <div class="mini-list">
               @for (item of financeSnapshot(); track item.label) {
-                <div class="mini-stat" [ngClass]="'tone-' + item.tone">
+                <div class="mini-item" [ngClass]="item.tone">
                   <span>{{ item.label }}</span>
                   <strong>{{ item.value }}</strong>
                 </div>
@@ -85,142 +184,62 @@
             </div>
           </div>
 
-          <div class="mini-panel">
-            <div class="mini-panel-title">حالة الصلاحية</div>
-            <div class="mini-stat-list compact-grid">
+          <!-- Expiry Radar -->
+          <div class="panel side-panel">
+            <div class="panel-head"><h3>حالة الصلاحية</h3></div>
+            <div class="mini-list">
               @for (item of inventoryHealth(); track item.label) {
-                <div class="mini-stat" [ngClass]="'tone-' + item.tone">
+                <div class="mini-item" [ngClass]="item.tone">
                   <span>{{ item.label }}</span>
                   <strong>{{ item.value }}</strong>
                 </div>
               }
             </div>
           </div>
-        </section>
 
-        <section class="charts-grid">
-          <article class="panel chart-panel wide">
+          <!-- Critical Stock Alerts -->
+          <div class="panel side-panel alerts-panel">
             <div class="panel-head">
-              <div>
-                <h3>تدفق السيولة خلال 30 يوم</h3>
-                <p>الدخل والمصروفات من الحركات المالية الفعلية.</p>
-              </div>
-              <button pButton type="button" icon="pi pi-list" label="دفتر الأستاذ" class="p-button-sm p-button-text inline-action" (click)="navigateToRoute('/financial/ledger')"></button>
+              <h3>تنبيهات المخزون</h3>
+              <i class="pi pi-bell" style="color:#f43f5e;font-size:.85rem"></i>
             </div>
-            <div class="chart-wrap lg">
-              <p-chart type="line" [data]="cashFlowChartData" [options]="cashFlowChartOptions"></p-chart>
-            </div>
-          </article>
-
-          <article class="panel chart-panel">
-            <div class="panel-head">
-              <div>
-                <h3>أداء الموظفين اليوم</h3>
-                <p>حسب إجمالي مبيعات كل مستخدم.</p>
-              </div>
-              <button pButton type="button" icon="pi pi-users" label="التقرير" class="p-button-sm p-button-text inline-action" (click)="navigateToRoute('/reports/employee-performance')"></button>
-            </div>
-            <div class="chart-wrap md">
-              <p-chart type="bar" [data]="cashierPerformanceChartData" [options]="cashierPerformanceChartOptions"></p-chart>
-            </div>
-          </article>
-
-          <article class="panel chart-panel">
-            <div class="panel-head">
-              <div>
-                <h3>توزيع قيمة المخزون</h3>
-                <p>حسب الموردين أو التصنيفات المتاحة.</p>
-              </div>
-              <button pButton type="button" icon="pi pi-box" label="المخزون" class="p-button-sm p-button-text inline-action" (click)="navigateToInventoryReport()"></button>
-            </div>
-            <div class="chart-wrap sm">
-              <p-chart type="doughnut" [data]="inventoryDistributionData" [options]="inventoryDistributionOptions"></p-chart>
-            </div>
-          </article>
-
-          <article class="panel chart-panel">
-            <div class="panel-head">
-              <div>
-                <h3>زخم العمليات حسب الساعة</h3>
-                <p>عدد فواتير البيع المعتمدة خلال اليوم.</p>
-              </div>
-            </div>
-            <div class="chart-wrap sm">
-              <p-chart type="bar" [data]="hourlyActivityChartData" [options]="hourlyActivityChartOptions"></p-chart>
-            </div>
-          </article>
-        </section>
-
-        <section class="detail-grid">
-          <article class="panel activity-panel">
-            <div class="panel-head">
-              <div>
-                <h3>آخر العمليات من النظام</h3>
-                <p>اضغط على أي عملية للانتقال إلى مصدرها.</p>
-              </div>
-            </div>
-
-            <div class="activity-list">
-              @for (activity of fullActivity(); track activity.operationType + '-' + activity.referenceId + '-' + activity.timestamp) {
-                <button
-                  type="button"
-                  class="activity-item"
-                  (click)="activity.sourceRoute ? navigateToRoute(activity.sourceRoute) : navigateToDocument(activity.operationType, activity.referenceId)">
-                  <span class="activity-icon" [style.color]="getActivityColor(activity.operationType)">
-                    <i [class]="'pi ' + getActivityIcon(activity.operationType)"></i>
-                  </span>
-                  <span class="activity-body">
-                    <strong>{{ activity.description }}</strong>
-                    <small>{{ activity.entityName }} • {{ activity.username }} • {{ formatTime(activity.timestamp) }}</small>
-                  </span>
-                  <span class="activity-amount">{{ formatCurrency(activity.amount) }}</span>
-                </button>
-              }
-            </div>
-          </article>
-
-          <article class="panel stock-panel">
-            <div class="panel-head">
-              <div>
-                <h3>تنبيهات المخزون</h3>
-                <p>الأصناف التي وصلت أو اقتربت من حد إعادة الطلب.</p>
-              </div>
-              <button pButton type="button" icon="pi pi-bell" label="كل التنبيهات" class="p-button-sm p-button-text inline-action" (click)="navigateToRoute('/system-alerts')"></button>
-            </div>
-
-            <p-table
-              [value]="criticalStockPreview()"
-              styleClass="p-datatable-sm compact-table"
-              [scrollable]="true"
-              scrollHeight="360px">
-              <ng-template pTemplate="header">
-                <tr>
-                  <th>الصنف</th>
-                  <th class="text-center">الرصيد</th>
-                  <th class="text-center">حد الطلب</th>
-                  <th class="text-center">الحالة</th>
-                </tr>
-              </ng-template>
+            <p-table [value]="criticalStockPreview()" styleClass="p-datatable-sm compact-table">
               <ng-template pTemplate="body" let-item>
                 <tr class="clickable-row" (click)="navigateToRoute('/inventory/medicines/details/' + item.medicineId)">
                   <td>
                     <div class="stock-name">{{ item.medicineName }}</div>
+                    <div class="muted">حد الطلب: {{ item.reorderPoint }}</div>
                   </td>
-                  <td class="text-center stock-number">{{ item.currentStock }}</td>
-                  <td class="text-center">{{ item.reorderPoint }}</td>
-                  <td class="text-center">
-                    <span class="severity-badge" [ngClass]="stockSeverityClass(item)">
-                      {{ getStockSeverity(item) }}
-                    </span>
+                  <td style="text-align:left">
+                    <span class="severity-badge" [ngClass]="stockSeverityClass(item)">{{ item.currentStock }}</span>
                   </td>
                 </tr>
               </ng-template>
             </p-table>
-          </article>
-        </section>
-      </main>
-    }
-  </div>
+          </div>
 
-  <p-toast position="top-left"></p-toast>
+          <!-- Activity Stream -->
+          <div class="panel side-panel activity-panel">
+            <div class="panel-head"><h3>آخر العمليات</h3></div>
+            <div class="activity-list">
+              @for (activity of activityPreview(); track activity.timestamp) {
+                <button type="button" class="act-item"
+                  (click)="activity.sourceRoute ? navigateToRoute(activity.sourceRoute) : navigateToDocument(activity.operationType, activity.referenceId)">
+                  <div class="act-icon" [style.color]="getActivityColor(activity.operationType)">
+                    <i [class]="'pi ' + getActivityIcon(activity.operationType)"></i>
+                  </div>
+                  <div class="act-body">
+                    <strong>{{ activity.description }}</strong>
+                    <small>{{ activity.username }} · {{ formatTime(activity.timestamp) }}</small>
+                  </div>
+                </button>
+              }
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  }
 </div>
+<p-toast position="top-left"></p-toast>

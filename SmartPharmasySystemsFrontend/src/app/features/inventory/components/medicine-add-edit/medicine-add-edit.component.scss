@@ -337,3 +337,118 @@
         width: 100%;
     }
 }
+
+// Medicine Units Section Styling
+.form-field.span-4,
+.span-4 {
+    grid-column: span 4;
+}
+
+.medicine-units-section {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-block: 0.5rem;
+
+    .units-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 0.6rem;
+    }
+
+    .font-bold {
+        font-weight: 800;
+        font-size: 0.82rem;
+        color: #1e293b;
+    }
+
+    .add-unit-btn {
+        font-weight: 700;
+        font-size: 0.72rem !important;
+    }
+
+    .empty-units-message {
+        border-style: dashed !important;
+        font-size: 0.76rem;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    // Unit grid item card
+    .unit-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.85rem;
+        margin-top: 0.65rem;
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.03);
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0.75rem;
+        align-items: end;
+        transition: all 0.2s ease;
+
+        &:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 6px 15px rgba(15, 23, 42, 0.06);
+        }
+
+        .unit-field {
+            display: flex;
+            flex-direction: column;
+
+            label {
+                display: block;
+                margin-bottom: 0.25rem;
+                color: #475569;
+                font-size: 0.7rem;
+                font-weight: 800;
+            }
+        }
+
+        .barcode-field {
+            display: flex;
+            flex-direction: row !important;
+            align-items: flex-end;
+            gap: 0.5rem;
+
+            .barcode-input-wrapper {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: column;
+                
+                label {
+                    display: block;
+                    margin-bottom: 0.25rem;
+                    color: #475569;
+                    font-size: 0.7rem;
+                    font-weight: 800;
+                }
+            }
+
+            .remove-unit-btn {
+                flex-shrink: 0;
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        @media (max-width: 860px) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            .barcode-field {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 540px) {
+            grid-template-columns: 1fr;
+            .barcode-field {
+                grid-column: auto;
+            }
+        }
+    }
+}
+

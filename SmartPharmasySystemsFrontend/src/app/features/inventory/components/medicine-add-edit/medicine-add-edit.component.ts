@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
@@ -73,8 +73,30 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
             soldByUnit: [true],
             status: ['Active'],
             imageUrl: [''],
-            notes: ['']
+            notes: [''],
+            baseUnitName: ['حبة', Validators.required],
+            medicineUnits: this.fb.array([])
         }, { validators: this.priceValidator });
+    }
+
+    get medicineUnits(): FormArray {
+        return this.medicineForm.get('medicineUnits') as FormArray;
+    }
+
+    addUnit() {
+        const unitForm = this.fb.group({
+            id: [0],
+            name: ['', Validators.required],
+            conversionFactor: [1, [Validators.required, Validators.min(1)]],
+            defaultPurchasePrice: [0, [Validators.required, Validators.min(0)]],
+            defaultSalePrice: [0, [Validators.required, Validators.min(0)]],
+            barcode: ['']
+        });
+        this.medicineUnits.push(unitForm);
+    }
+
+    removeUnit(index: number) {
+        this.medicineUnits.removeAt(index);
     }
 
     onFileSelected(event: any) {
@@ -117,8 +139,22 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['visible'] && this.visible) {
+            this.medicineUnits.clear();
             if (this.medicine) {
                 this.medicineForm.patchValue(this.medicine);
+                if (this.medicine.medicineUnits) {
+                    this.medicine.medicineUnits.forEach(unit => {
+                        const unitForm = this.fb.group({
+                            id: [unit.id || 0],
+                            name: [unit.name, Validators.required],
+                            conversionFactor: [unit.conversionFactor, [Validators.required, Validators.min(1)]],
+                            defaultPurchasePrice: [unit.defaultPurchasePrice, [Validators.required, Validators.min(0)]],
+                            defaultSalePrice: [unit.defaultSalePrice, [Validators.required, Validators.min(0)]],
+                            barcode: [unit.barcode || '']
+                        });
+                        this.medicineUnits.push(unitForm);
+                    });
+                }
             } else {
                 this.medicineForm.reset({
                     defaultPurchasePrice: 0,
@@ -126,7 +162,8 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
                     minAlertQuantity: 5,
                     reorderLevel: 10,
                     soldByUnit: true,
-                    status: 'Active'
+                    status: 'Active',
+                    baseUnitName: 'حبة'
                 });
             }
         }

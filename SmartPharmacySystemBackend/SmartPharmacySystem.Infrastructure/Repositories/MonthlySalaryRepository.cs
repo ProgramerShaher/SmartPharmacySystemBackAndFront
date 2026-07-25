@@ -106,6 +106,6 @@ public class MonthlySalaryRepository : IMonthlySalaryRepository
         if (branchId.HasValue)
             query = query.Where(s => s.BranchId == branchId.Value);
 
-        return await query.SumAsync(s => s.NetSalary);
+        return await query.SumAsync(s => s.BasicSalary + s.TotalAllowances + s.TotalBonuses - s.TotalDeductions);
     }
 }

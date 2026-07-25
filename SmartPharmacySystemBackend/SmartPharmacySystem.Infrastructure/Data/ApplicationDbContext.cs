@@ -34,6 +34,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<PharmacySettings> PharmacySettings { get; set; } = null!;
     public DbSet<Medicine> Medicines { get; set; } = null!;
     public DbSet<MedicineBatch> MedicineBatches { get; set; } = null!;
+    public DbSet<MedicineUnit> MedicineUnits { get; set; } = null!;
     public DbSet<Supplier> Suppliers { get; set; } = null!;
     public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; } = null!;
     public DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; } = null!;
@@ -276,6 +277,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .WithMany(m => m.MedicineBatches)
             .HasForeignKey(mb => mb.MedicineId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // MedicineUnit - Medicine
+        modelBuilder.Entity<MedicineUnit>()
+            .HasOne(mu => mu.Medicine)
+            .WithMany(m => m.MedicineUnits)
+            .HasForeignKey(mu => mu.MedicineId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MedicineUnit>(entity =>
+        {
+            entity.Property(mu => mu.DefaultPurchasePrice).HasPrecision(18, 2);
+            entity.Property(mu => mu.DefaultSalePrice).HasPrecision(18, 2);
+            entity.HasIndex(mu => mu.Barcode).IsUnique().HasFilter("[Barcode] IS NOT NULL");
+        });
 
         // MedicineBatch Configuration
         modelBuilder.Entity<MedicineBatch>(entity =>

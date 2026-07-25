@@ -22,6 +22,8 @@ import { SearchIcon } from 'primeng/icons/search';
 
 interface ReturnItem {
     id: number; // SaleInvoiceDetailId
+    medicineId: number;
+    batchId: number;
     medicineName: string;
     batchNumber: string;
     originalQuantity: number;
@@ -139,7 +141,7 @@ export class SalesReturnCreateComponent implements OnInit {
     loadInvoiceForReturn(invoiceId: number) {
         this.salesService.getById(invoiceId).subscribe({
             next: (invoice) => {
-                if (invoice.status !== DocumentStatus.Approved) {
+                if (!this.isApprovedInvoice(invoice)) {
                     this.messageService.add({
                         severity: 'warn',
                         summary: 'تنبيه',
@@ -159,6 +161,8 @@ export class SalesReturnCreateComponent implements OnInit {
 
                     return {
                         id: item.id,
+                        medicineId: item.medicineId,
+                        batchId: item.batchId,
                         medicineName: item.medicineName || 'Unknown',
                         batchNumber: item.companyBatchNumber || '', // Correct property
                         originalQuantity: item.quantity,
@@ -272,10 +276,12 @@ export class SalesReturnCreateComponent implements OnInit {
             saleInvoiceId: this.selectedInvoice.id,
             returnDate: this.returnDate.toISOString(),
             reason: this.reason,
-            items: itemsToReturn.map(item => ({
-                saleInvoiceDetailId: item.id,
+            details: itemsToReturn.map(item => ({
+                salesReturnId: 0,
+                medicineId: item.medicineId,
+                batchId: item.batchId,
                 quantity: item.returnQuantity,
-                returnPrice: item.salePrice
+                salePrice: item.salePrice
             }))
         };
 

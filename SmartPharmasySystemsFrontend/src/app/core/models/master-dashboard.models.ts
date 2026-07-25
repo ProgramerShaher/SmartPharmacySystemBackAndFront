@@ -8,6 +8,7 @@ export interface MasterDashboardStats {
   financialIntelligence: FinancialIntelligence;
   inventoryIntelligence: InventoryIntelligence;
   operationalPulse: OperationalPulse;
+  extended: ExtendedDashboard;
 }
 
 export interface SystemOverview {
@@ -168,4 +169,59 @@ export interface HourlyHeatMap {
   hour: number; // 0-23
   totalSales: number;
   transactionCount: number;
+}
+
+// ============================================
+// 4. Extended Dashboard Data
+// ============================================
+
+export interface TopSellingMedicine {
+  medicineId: number;
+  medicineName: string;
+  totalQuantitySold: number;
+  totalRevenue: number;
+}
+
+export interface MonthlyTrend {
+  year: number;
+  month: number;
+  monthLabel: string;
+  salesAmount: number;
+  purchasesAmount: number;
+  netProfit: number;
+}
+
+export interface WeeklyDocument {
+  dayLabel: string;
+  salesAmount: number;
+  purchasesAmount: number;
+  salesReturnsAmount: number;
+  purchaseReturnsAmount: number;
+}
+
+export interface CategoryInventory {
+  categoryId: number;
+  categoryName: string;
+  inventoryValue: number;
+  itemCount: number;
+}
+
+export interface WarehouseStock {
+  warehouseId: number;
+  warehouseName: string;
+  totalItems: number;
+  totalValue: number;
+}
+
+export interface ExtendedDashboard {
+  topSellingMedicines: TopSellingMedicine[];
+  sixMonthTrend: MonthlyTrend[];
+  weeklyDocuments: WeeklyDocument[];
+  inventoryByCategory: CategoryInventory[];
+  warehouseStock: WarehouseStock[];
+  totalSalariesThisMonth: number;
+  employeeCount: number;
+  totalExpensesThisMonth: number;
+  todaySalesTotal: number;
+  netProfitThisMonth: number;
 }

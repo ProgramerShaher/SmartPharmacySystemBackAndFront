@@ -24,6 +24,13 @@
                 [forceSelection]="true" [disabled]="isEdit"></p-autoComplete>
         </div>
 
+        <div class="dialog-field span-2" *ngIf="itemForm.get('medicineId')?.value">
+            <label>وحدة البيع / التوريد</label>
+            <p-dropdown [options]="unitOptions" placeholder="اختر وحدة البيع/التوريد..."
+                formControlName="selectedUnit" appendTo="body" (onChange)="onUnitSelect($event.value)"
+                [disabled]="isEdit"></p-dropdown>
+        </div>
+
         <div class="dialog-field span-2" *ngIf="invoiceType === 'Sales'">
             <label>الدفعة المخزنية (Batch)</label>
             <div class="flex gap-2">

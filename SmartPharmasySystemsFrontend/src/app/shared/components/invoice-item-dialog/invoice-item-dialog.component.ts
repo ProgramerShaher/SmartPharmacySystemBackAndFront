@@ -53,6 +53,10 @@ export class InvoiceItemDialogComponent implements OnInit {
     isSyncing = false;
     msgs: Message[] = []; 
 
+    unitOptions: any[] = [];
+    baseUnitName = 'حبة';
+    selectedMedicine: Medicine | null = null;
+
     constructor(
         private fb: FormBuilder,
         private inventoryService: InventoryService,
@@ -69,7 +73,8 @@ export class InvoiceItemDialogComponent implements OnInit {
             bonusQuantity: [0],
             price: [0, [Validators.required, Validators.min(0)]],
             salePrice: [0],
-            unitCost: [0]
+            unitCost: [0],
+            selectedUnit: ['base', Validators.required]
         });
 
         this.itemForm.valueChanges.subscribe(val => {
@@ -136,21 +141,62 @@ export class InvoiceItemDialogComponent implements OnInit {
     }
 
     onMedicineSelect(medicine: Medicine) {
+        this.selectedMedicine = medicine;
+        this.baseUnitName = medicine.baseUnitName || 'حبة';
+
+        // Build options list
+        this.unitOptions = [
+            {
+                label: `${this.baseUnitName} (وحدة صغرى أساسية)`,
+                value: 'base',
+                conversionFactor: 1,
+                purchasePrice: medicine.defaultPurchasePrice || 0,
+                salePrice: medicine.defaultSalePrice || 0
+            }
+        ];
+
+        if (medicine.medicineUnits && medicine.medicineUnits.length > 0) {
+            medicine.medicineUnits.forEach(u => {
+                this.unitOptions.push({
+                    label: `${u.name} (تحتوي على ${u.conversionFactor} ${this.baseUnitName})`,
+                    value: u.id,
+                    conversionFactor: u.conversionFactor,
+                    purchasePrice: u.defaultPurchasePrice,
+                    salePrice: u.defaultSalePrice
+                });
+            });
+        }
+
         const patchData: any = {
             medicineId: medicine.id,
-            medicineName: medicine.name
+            medicineName: medicine.name,
+            selectedUnit: 'base'
         };
 
         if (!this.isEdit) {
             patchData.price = this.invoiceType === 'Sales'
                 ? (medicine.defaultSalePrice || 0)
                 : (medicine.defaultPurchasePrice || 0);
+            patchData.salePrice = medicine.defaultSalePrice || 0;
         }
 
         this.itemForm.patchValue(patchData, { emitEvent: true });
 
         if (this.invoiceType === 'Sales') {
             this.loadBatches(medicine.id);
+        }
+    }
+
+    onUnitSelect(unitVal: any) {
+        const option = this.unitOptions.find(o => o.value === unitVal);
+        if (option) {
+            const patch: any = {
+                price: this.invoiceType === 'Sales' ? option.salePrice : option.purchasePrice
+            };
+            if (this.invoiceType === 'Purchase') {
+                patch.salePrice = option.salePrice;
+            }
+            this.itemForm.patchValue(patch);
         }
     }
 
@@ -283,6 +329,26 @@ export class InvoiceItemDialogComponent implements OnInit {
         if (this.itemForm.invalid) return;
 
         const val = this.itemForm.getRawValue();
+        
+        // Find selected unit conversion factor
+        const selectedUnitVal = val.selectedUnit;
+        const option = this.unitOptions.find(o => o.value === selectedUnitVal);
+        const factor = option ? option.conversionFactor : 1;
+
+        // If it's a packaging unit, append its name to the medicine name for user reference
+        if (option && selectedUnitVal !== 'base') {
+            const unitName = option.label.split(' ')[0]; // E.g., "علبة"
+            val.medicineName = `${val.medicineName} (${unitName})`;
+        }
+
+        // Convert values to base units
+        val.quantity = (val.quantity || 0) * factor;
+        val.bonusQuantity = (val.bonusQuantity || 0) * factor;
+        val.price = (val.price || 0) / factor;
+        if (val.salePrice) {
+            val.salePrice = val.salePrice / factor;
+        }
+
         if (this.invoiceType === 'Sales' && val.quantity > this.maxQuantity && !this.isEdit) {
             this.messageService.add({ severity: 'error', summary: 'خطأ في الكمية', detail: `الكمية المتاحة هي ${this.maxQuantity} فقط` });
             return;

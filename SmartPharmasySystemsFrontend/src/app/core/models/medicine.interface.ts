@@ -2,11 +2,22 @@ import { Category } from './category.interface';
 import { MedicineBatch } from './medicine-batch.interface';
 import { InventoryMovement } from './inventory-movement.interface';
 
+export interface MedicineUnit {
+    id?: number;
+    name: string;
+    conversionFactor: number;
+    defaultPurchasePrice: number;
+    defaultSalePrice: number;
+    barcode?: string;
+}
+
 /**
  * Medicine interface - matches backend Medicine entity 100%
  */
 export interface Medicine {
     id: number;
+    baseUnitName?: string;
+    medicineUnits?: MedicineUnit[];
     internalCode?: string;
     name: string;
     scientificName?: string;
@@ -55,6 +66,8 @@ export interface CreateMedicineDto {
     soldByUnit: boolean;
     imageUrl?: string;
     notes?: string;
+    baseUnitName?: string;
+    medicineUnits?: MedicineUnit[];
 }
 
 /**
@@ -76,6 +89,8 @@ export interface UpdateMedicineDto {
     status?: string;
     imageUrl?: string;
     notes?: string;
+    baseUnitName?: string;
+    medicineUnits?: MedicineUnit[];
 }
 
 /**
@@ -122,6 +137,8 @@ export interface MedicineDto {
     createdAt?: string;
     updatedAt?: string;
     description?: string;
+    baseUnitName?: string;
+    medicineUnits?: MedicineUnit[];
 }
 
 export interface MedicineDetailsDto extends MedicineDto {

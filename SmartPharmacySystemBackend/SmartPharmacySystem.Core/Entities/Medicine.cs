@@ -93,6 +93,12 @@ public class Medicine : BaseEntity
 
 
     /// <summary>
+    /// Name of the base unit (e.g. Pill, Ampoule, Bottle).
+    /// اسم الوحدة الصغرى الأساسية (مثل حبة، أمبول، علبة/قارورة)
+    /// </summary>
+    public string BaseUnitName { get; set; } = "حبة";
+
+    /// <summary>
     /// Navigation property to the category.
     /// </summary>
     public Category Category { get; set; }
@@ -106,4 +112,9 @@ public class Medicine : BaseEntity
     /// Collection of inventory movements for this medicine.
     /// </summary>
     public ICollection<InventoryMovement> InventoryMovements { get; set; }
+
+    /// <summary>
+    /// Collection of packaging/sub units for this medicine.
+    /// </summary>
+    public ICollection<MedicineUnit> MedicineUnits { get; set; } = new List<MedicineUnit>();
 }

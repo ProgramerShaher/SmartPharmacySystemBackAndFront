@@ -11,10 +11,14 @@
     </div>
 
     <div class="actions no-print">
-      <p-button icon="pi pi-filter" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="الفلاتر" tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
-      <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger" pTooltip="تصدير PDF" tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
-      <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success" pTooltip="تصدير Excel" tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
-      <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadMovements(); loadKPIStats()" [loading]="loading()"></p-button>
+      <p-button icon="pi pi-filter" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="الفلاتر"
+        tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
+      <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger" pTooltip="تصدير PDF"
+        tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
+      <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success" pTooltip="تصدير Excel"
+        tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
+      <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom"
+        (onClick)="loadMovements(); loadKPIStats()" [loading]="loading()"></p-button>
     </div>
   </div>
 
@@ -50,7 +54,7 @@
         </div>
         <i class="pi pi-chart-line"></i>
       </div>
-      <p-chart type="line" [data]="movementTrendData" [options]="movementTrendOptions" height="220px"></p-chart>
+      <p-chart type="line" [data]="movementTrendData" [options]="movementTrendOptions" height="200px"></p-chart>
     </section>
 
     <section class="panel category-panel">
@@ -61,45 +65,40 @@
         </div>
         <i class="pi pi-chart-pie"></i>
       </div>
-      <p-chart type="doughnut" [data]="categoryDistributionData" [options]="categoryDistributionOptions" height="220px"></p-chart>
+      <p-chart type="doughnut" [data]="categoryDistributionData" [options]="categoryDistributionOptions"
+        height="220px"></p-chart>
     </section>
   </div>
 
   <section class="filters-panel no-print" *ngIf="showFilters()">
     <div class="filter-field">
       <label>بحث</label>
-      <input pInputText [(ngModel)]="query.search" placeholder="الدواء، التشغيلة، المرجع، الملاحظة" (keyup.enter)="loadMovements()">
+      <input pInputText [(ngModel)]="query.search" placeholder="الدواء، التشغيلة، المرجع، الملاحظة"
+        (keyup.enter)="loadMovements()">
     </div>
     <div class="filter-field">
       <label>نوع الحركة</label>
-      <p-dropdown [options]="movementTypes" [(ngModel)]="query.movementType" optionLabel="label" optionValue="value" placeholder="كل الأنواع" [showClear]="true" (onChange)="loadMovements()"></p-dropdown>
+      <p-dropdown [options]="movementTypes" [(ngModel)]="query.movementType" optionLabel="label" optionValue="value"
+        placeholder="كل الأنواع" [showClear]="true" (onChange)="loadMovements()"></p-dropdown>
     </div>
     <div class="filter-field">
       <label>من تاريخ</label>
-      <p-calendar [(ngModel)]="startDate" [showIcon]="true" dateFormat="yy-mm-dd" placeholder="من" (onSelect)="onDateChange()"></p-calendar>
+      <p-calendar [(ngModel)]="startDate" [showIcon]="true" dateFormat="yy-mm-dd" placeholder="من"
+        (onSelect)="onDateChange()"></p-calendar>
     </div>
     <div class="filter-field">
       <label>إلى تاريخ</label>
-      <p-calendar [(ngModel)]="endDate" [showIcon]="true" dateFormat="yy-mm-dd" placeholder="إلى" (onSelect)="onDateChange()"></p-calendar>
+      <p-calendar [(ngModel)]="endDate" [showIcon]="true" dateFormat="yy-mm-dd" placeholder="إلى"
+        (onSelect)="onDateChange()"></p-calendar>
     </div>
     <p-button icon="pi pi-search" label="عرض" size="small" (onClick)="loadMovements()"></p-button>
   </section>
 
   <section class="table-panel">
-    <p-table
-      [value]="movements()"
-      [rows]="query.pageSize"
-      [totalRecords]="totalRecords()"
-      [loading]="loading()"
-      [paginator]="true"
-      [rowsPerPageOptions]="[10, 15, 25, 50]"
-      [lazy]="true"
-      (onLazyLoad)="onPageChange($event)"
-      styleClass="p-datatable-sm compact-table"
-      responsiveLayout="scroll"
-      dataKey="id"
-      currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} حركة"
-      [showCurrentPageReport]="true">
+    <p-table [value]="movements()" [rows]="query.pageSize" [totalRecords]="totalRecords()" [loading]="loading()"
+      [paginator]="true" [rowsPerPageOptions]="[10, 15, 25, 50]" [lazy]="true" (onLazyLoad)="onPageChange($event)"
+      styleClass="p-datatable-sm compact-table" responsiveLayout="scroll" dataKey="id"
+      currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} حركة" [showCurrentPageReport]="true">
 
       <ng-template pTemplate="header">
         <tr>
@@ -118,31 +117,36 @@
       <ng-template pTemplate="body" let-movement let-expanded="expanded">
         <tr>
           <td class="toggle-col">
-            <button type="button" pButton [pRowToggler]="movement" class="p-button-text p-button-rounded p-button-sm" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-left'"></button>
+            <button type="button" pButton [pRowToggler]="movement" class="p-button-text p-button-rounded p-button-sm"
+              [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-left'"></button>
           </td>
           <td>
             <span class="date-main">{{ movement.date | date:'dd/MM/yyyy' }}</span>
             <small class="date-time">{{ movement.date | date:'HH:mm' }}</small>
           </td>
           <td>
-            <span [class]="getTypeClass(movement.movementType)">{{ movement.movementTypeLabel || getMovementTypeLabel(movement.movementType) }}</span>
+            <span [class]="getTypeClass(movement.movementType)">{{ movement.movementTypeLabel ||
+              getMovementTypeLabel(movement.movementType) }}</span>
           </td>
           <td>
             <strong class="medicine-name">{{ movement.medicineName || '-' }}</strong>
             <small class="muted">كود: {{ movement.medicineId }}</small>
           </td>
           <td><span class="batch-chip">{{ movement.batchNumber || '-' }}</span></td>
-          <td class="text-center"><span [class]="getQuantityClass(movement)">{{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}</span></td>
+          <td class="text-center"><span [class]="getQuantityClass(movement)">{{ movement.quantity > 0 ? '+' : '' }}{{
+              movement.quantity }}</span></td>
           <td>
             <strong class="user-name">{{ movement.createdByName || 'غير محدد' }}</strong>
             <small class="muted">ID: {{ movement.createdBy || '-' }}</small>
           </td>
           <td>
             <strong class="ref-number">{{ movement.referenceNumber || '-' }}</strong>
-            <small class="ref-type">{{ movement.referenceTypeLabel || getReferenceTypeLabel(movement.referenceType) }}</small>
+            <small class="ref-type">{{ movement.referenceTypeLabel || getReferenceTypeLabel(movement.referenceType)
+              }}</small>
           </td>
           <td class="text-center no-print">
-            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(movement)"></p-button>
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+              pTooltip="عرض التفاصيل" tooltipPosition="top" (onClick)="viewDetails(movement)"></p-button>
           </td>
         </tr>
       </ng-template>

@@ -54,7 +54,10 @@
                         <div>
                             <span class="block text-500 font-medium mb-3">إجمالي المخزون</span>
                             <div class="text-900 font-bold text-3xl">{{medicine.totalQuantity}} <small
-                                    class="text-500 text-lg">وحدة</small></div>
+                                    class="text-500 text-lg">{{medicine.baseUnitName || 'حبة'}}</small></div>
+                            <div class="text-sm font-bold text-teal-700 mt-2" *ngIf="medicine.totalQuantity && medicine.totalQuantity > 0">
+                                تعادل: {{ getFormattedStock(medicine.totalQuantity) }}
+                            </div>
                         </div>
                         <div class="flex align-items-center justify-content-center bg-teal-100 border-round-xl"
                             style="width: 3.5rem; height: 3.5rem">
@@ -145,6 +148,27 @@
                                 <span class="block text-500 font-medium mb-2">الوصف</span>
                                 <p class="m-0 text-700 line-height-3">{{medicine.description || 'لا يوجد وصف'}}</p>
                             </li>
+                            <li class="py-3 border-bottom-1 border-100" *ngIf="medicine.medicineUnits && medicine.medicineUnits.length > 0">
+                                <span class="block text-700 font-bold mb-3 flex align-items-center gap-2">
+                                    <i class="pi pi-clone text-teal-600"></i> وحدات التعبئة المتعددة والأسعار
+                                </span>
+                                <div class="flex flex-column gap-2">
+                                    <div class="border-1 border-100 border-round p-2 surface-50 flex justify-content-between text-sm">
+                                        <span class="font-bold text-600">الوحدة الصغرى ({{medicine.baseUnitName || 'حبة'}})</span>
+                                        <span class="text-700 font-bold">شراء: {{medicine.defaultPurchasePrice | currency:'YER'}} | بيع: {{medicine.defaultSalePrice | currency:'YER'}}</span>
+                                    </div>
+                                    <div *ngFor="let unit of medicine.medicineUnits" class="border-1 border-200 border-round p-2 bg-white flex justify-content-between align-items-center shadow-1 text-sm">
+                                        <div class="flex flex-column">
+                                            <span class="font-bold text-800">{{unit.name}}</span>
+                                            <small class="text-500">تحتوي على {{unit.conversionFactor}} {{medicine.baseUnitName || 'حبة'}}</small>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="text-xs text-600">شراء: <strong class="text-800">{{unit.defaultPurchasePrice | currency:'YER'}}</strong></div>
+                                            <div class="text-xs text-600">بيع: <strong class="text-800">{{unit.defaultSalePrice | currency:'YER'}}</strong></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
                             <li class="py-3">
                                 <span class="block text-500 font-medium mb-2">ملاحظات</span>
                                 <p class="m-0 text-700 line-height-3 text-sm surface-100 p-3 border-round">{{medicine.notes ||
@@ -170,16 +194,19 @@
                         <p-table [value]="batches" [rowHover]="true" styleClass="p-datatable-gridlines p-datatable-sm"
                             responsiveLayout="scroll">
                             <ng-template pTemplate="header">
-                                <tr class="bg-gray-50">
+                                <tr class="bg-gray-50 text-xs">
                                     <th>رقم التشغيلة</th>
                                     <th>تاريخ الانتهاء</th>
-                                    <th>الكمية</th>
-                                    <th>الموقع المتبقي</th>
+                                    <th>سعر الشراء</th>
+                                    <th>سعر البيع</th>
+                                    <th>الكمية المتبقية</th>
+                                    <th>موقع التخزين</th>
                                     <th>الحالة</th>
+                                    <th class="text-center">إجراءات</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-batch>
-                                <tr [ngClass]="{'bg-red-50': batch.isExpired, 'bg-orange-50': batch.isExpiringSoon}">
+                                <tr [ngClass]="{'bg-red-50': batch.isExpired, 'bg-orange-50': batch.isExpiringSoon}" class="text-xs">
                                     <td class="font-bold">{{batch.companyBatchNumber}}</td>
                                     <td class="font-mono">
                                         <div class="flex flex-column">
@@ -187,17 +214,27 @@
                                             <span class="text-xs text-500">{{batch.daysUntilExpiry}} يوم</span>
                                         </div>
                                     </td>
-                                    <td class="font-bold text-teal-700">{{batch.remainingQuantity}}</td>
+                                    <td class="font-mono text-blue-700 font-bold">{{batch.unitPurchasePrice | currency:'YER'}}</td>
+                                    <td class="font-mono text-green-700 font-bold">{{batch.retailPrice | currency:'YER'}}</td>
+                                    <td class="font-bold text-teal-700">
+                                        {{batch.remainingQuantity}} {{medicine.baseUnitName || 'حبة'}}
+                                        <div class="text-xs text-500 font-normal mt-1" *ngIf="medicine.medicineUnits && medicine.medicineUnits.length > 0 && batch.remainingQuantity > 0">
+                                            ({{ getFormattedStock(batch.remainingQuantity) }})
+                                        </div>
+                                    </td>
                                     <td class="text-sm text-600">{{batch.storageLocation || '-'}}</td>
                                     <td>
                                         <p-tag [severity]="getBatchStatusSeverity(batch)"
                                             [value]="batch.isExpired ? 'منتهية' : (batch.isExpiringSoon ? 'قريبة' : 'صالحة')"></p-tag>
                                     </td>
+                                    <td class="text-center">
+                                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm p-button-secondary" (click)="viewBatchDetails(batch.id)" pTooltip="عرض التفاصيل"></button>
+                                    </td>
                                     </tr>
                                     </ng-template>
                                     <ng-template pTemplate="emptymessage">
                                         <tr>
-                                            <td colspan="5" class="text-center p-4">
+                                            <td colspan="8" class="text-center p-4">
                                                 <div class="flex flex-column align-items-center">
                                                     <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
                                                     <span class="text-gray-500">لا توجد دفعات مخزنية متاحة</span>
@@ -218,3 +255,9 @@
         <p-progressSpinner strokeWidth="4"></p-progressSpinner>
     </div>
 </ng-template>
+
+<!-- Batch Details Dialog -->
+<app-batch-details *ngIf="displayDetailsDialog"
+                   [(visible)]="displayDetailsDialog"
+                   [batchId]="selectedBatchId">
+</app-batch-details>

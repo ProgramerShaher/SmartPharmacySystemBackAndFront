@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, SimpleChanges, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InventoryService } from '../../services/inventory.service';
-import { MedicineBatch, StockCardDto } from '../../../../core/models';
+import { MedicineBatch, StockCardDto, MedicineDto } from '../../../../core/models';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -29,24 +29,38 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     templateUrl: './batch-details.component.html',
     styleUrl: './batch-details.component.scss'
 })
-export class BatchDetailsComponent implements OnInit {
+export class BatchDetailsComponent implements OnInit, OnChanges {
+    @Input() visible = false;
+    @Input() batchId: number | null = null;
+    @Output() visibleChange = new EventEmitter<boolean>();
+
     batch: MedicineBatch | null = null;
+    medicine: MedicineDto | null = null;
     stockCard: StockCardDto[] = [];
     loading = true;
     displayActionDialog = false;
+    unitsBreakdownHtml: string = '';
 
     constructor(
-        private route: ActivatedRoute,
-        private router: Router,
         private inventoryService: InventoryService,
         private messageService: MessageService
     ) { }
 
     ngOnInit() {
-        const id = this.route.snapshot.params['id'];
-        if (id) {
-            this.loadBatch(id);
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['batchId'] && this.batchId && this.visible) {
+            this.loadBatch(this.batchId);
         }
+        if (changes['visible'] && this.visible && this.batchId) {
+            this.loadBatch(this.batchId);
+        }
+    }
+
+    closeDialog() {
+        this.visible = false;
+        this.visibleChange.emit(this.visible);
     }
 
     loadBatch(id: number) {
@@ -74,6 +88,7 @@ export class BatchDetailsComponent implements OnInit {
 
                 this.batch = data;
                 if (this.batch.medicineId) {
+                    this.loadMedicineDetails(this.batch.medicineId);
                     this.loadStockCard(this.batch.medicineId, id);
                 } else {
                     this.loading = false;
@@ -164,7 +179,63 @@ export class BatchDetailsComponent implements OnInit {
         return 'success';
     }
 
-    goBack() {
-        this.router.navigate(['/inventory/batches']);
+    loadMedicineDetails(medicineId: number) {
+        this.inventoryService.getMedicineById(medicineId).subscribe({
+            next: (data) => {
+                this.medicine = data;
+                this.calculateUnitsBreakdown();
+            },
+            error: (err) => {
+                console.error('Failed to load medicine details for batch units calculation');
+            }
+        });
+    }
+
+    calculateUnitsBreakdown() {
+        if (!this.batch || !this.medicine || !this.medicine.medicineUnits?.length) {
+            this.unitsBreakdownHtml = '';
+            return;
+        }
+
+        const remaining = this.batch.remainingQuantity;
+        let html = '';
+        let currentQty = remaining;
+
+        // Ensure units are sorted descending by conversion factor
+        const units = [...this.medicine.medicineUnits].sort((a, b) => b.conversionFactor - a.conversionFactor);
+
+        units.forEach((unit, index) => {
+            if (currentQty >= unit.conversionFactor) {
+                const count = Math.floor(currentQty / unit.conversionFactor);
+                currentQty = currentQty % unit.conversionFactor;
+
+                // Add separator if not first item
+                if (html !== '') {
+                    html += ` <span class="text-400 mx-1">+</span> `;
+                }
+
+                html += `
+                    <span class="inline-flex align-items-center gap-1 bg-primary-50 text-primary-800 px-2 py-1 border-round-md font-bold text-sm">
+                        <i class="pi pi-box text-xs"></i>
+                        <span>${count} ${unit.name}</span>
+                    </span>
+                `;
+            }
+        });
+
+        // Add base unit if remainder exists or if it's the only quantity
+        if (currentQty > 0 || (remaining > 0 && html === '')) {
+            if (html !== '') {
+                html += ` <span class="text-400 mx-1">+</span> `;
+            }
+            html += `
+                <span class="inline-flex align-items-center gap-1 bg-teal-50 text-teal-800 px-2 py-1 border-round-md font-bold text-sm">
+                    <i class="pi pi-stop text-xs"></i>
+                    <span>${currentQty} ${this.medicine.baseUnitName || 'وحدة'}</span>
+                </span>
+            `;
+        }
+
+        this.unitsBreakdownHtml = html || '<span class="text-500 font-bold">لا يوجد مخزون</span>';
     }
 }

@@ -1,345 +1,257 @@
-/**
- * 👑 IMPERIAL SALES MODULE - PREMIUM DESIGN
- * ==========================================
- * تصميم فخم وملكي لمديول المبيعات مع Glassmorphism
- */
-
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap');
-
-:host {
-    font-family: 'Cairo', sans-serif !important;
-}
-
-/* 🎨 Imperial Color Palette */
-:root {
-    --imperial-success: #28a745;
-    --imperial-success-dark: #218838;
-    --imperial-success-light: rgba(40, 167, 69, 0.1);
-
-    --imperial-emerald: var(--primary-color);
-    --imperial-emerald-dark: var(--primary-600);
-    --imperial-emerald-light: rgba(16, 185, 129, 0.1);
-
-    --imperial-royal: #1e40af;
-    --imperial-royal-dark: #1e3a8a;
-    --imperial-royal-light: rgba(30, 64, 175, 0.1);
-
-    --imperial-crimson: #dc2626;
-    --imperial-crimson-dark: #b91c1c;
-    --imperial-crimson-light: rgba(220, 38, 38, 0.1);
-
-    --imperial-gold: #f59e0b;
-    --imperial-navy: #1e293b;
-    --imperial-slate: #475569;
-
-    --glass-bg: rgba(255, 255, 255, 0.95);
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --shadow-imperial: 0 20px 60px rgba(0, 0, 0, 0.12);
-}
-
-/* 🏛️ Container */
 .sales-container {
-    background: var(--bg-gradient) !important;
-    min-height: 100vh !important;
-    padding: 0.75rem !important;
-    direction: rtl;
-    color: var(--text-color) !important;
+  min-height: 100vh;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
+  color: #1e293b;
 }
 
-/* 👑 Imperial KPI Cards */
-.imperial-kpi-card {
-    position: relative;
-    padding: 1rem;
-    border-radius: 14px;
-    border: none;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    color: white !important;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-
-    &:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-md);
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 100%;
-        height: 100%;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        pointer-events: none;
-    }
+.page-header,
+.panel,
+.filters-panel,
+.table-panel,
+.kpi-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
 }
 
-/* 📊 KPI Typography */
-.kpi-label {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 0.25rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-.kpi-value {
-    font-size: 1.5rem;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1;
-    color: #ffffff !important;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
 }
 
-.kpi-currency {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 700;
-    margin-right: 0.3rem;
-}
-
-/* 🎨 Color Variants */
-.text-success {
-    color: #ffffff !important;
-}
-
-.text-emerald {
-    color: #ffffff !important;
-}
-
-.text-royal {
-    color: #ffffff !important;
-}
-
-.text-crimson {
-    color: #ffffff !important;
-}
-
-/* Gradients for KPI Cards */
-.sales-card { background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-color) 100%) !important; }
-.profit-card { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%) !important; }
-.debts-card { background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%) !important; }
-.returns-card { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%) !important; }
-
-/* 🏷️ KPI Icon Wrapper */
-.kpi-icon-wrapper {
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.2) !important;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-
-    i {
-        font-size: 1.25rem;
-        color: #ffffff !important;
-    }
-}
-
-/* 🎭 Header Icon Circle */
 .icon-circle {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.2);
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
 }
 
-.bg-gradient-sales {
-    background: linear-gradient(135deg, var(--primary-600), var(--primary-400)) !important;
+.icon-circle i { font-size: 1rem; }
+
+h1 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 
-/* 📋 Premium Table Styling */
-.glass-panel {
-    background: var(--card-bg) !important;
-    backdrop-filter: var(--glass-blur);
-    border: var(--card-border) !important;
-    box-shadow: var(--shadow-md) !important;
+.page-header p,
+.panel-head p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.65rem;
 }
 
-::ng-deep .sales-container {
-    /* Table Header */
-    .p-datatable .p-datatable-thead>tr>th {
-        background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
-        color: var(--primary-color-text) !important;
-        font-weight: 800 !important;
-        font-size: 0.75rem !important;
-        padding: 0.75rem 0.5rem !important;
-        border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
-        text-align: center !important;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
-    }
+.actions { display: flex; gap: 0.35rem; align-items: center; }
 
-    /* Table Body */
-    .p-datatable .p-datatable-tbody>tr {
-        background: var(--card-bg) !important;
-        color: var(--text-color) !important;
-        transition: all 0.3s ease;
-
-        &:hover {
-            background: var(--surface-hover) !important;
-        }
-
-        > td {
-            padding: 0.6rem 0.5rem !important;
-            font-size: 0.82rem !important;
-            border-bottom: 1px solid var(--border-color) !important;
-            color: var(--text-color) !important;
-        }
-    }
-
-    /* Overrides for Amount/Profit Tag Containers (Tailwind inline classes overrides) */
-    .text-blue-700 { color: #3b82f6 !important; }
-    .bg-blue-50 { background: rgba(59, 130, 246, 0.15) !important; }
-    .border-blue-100 { border-color: rgba(59, 130, 246, 0.3) !important; }
-    
-    .text-emerald-700 { color: var(--primary-color) !important; }
-    .bg-emerald-50 { background: rgba(var(--primary-rgb), 0.15) !important; }
-    .border-emerald-100 { border-color: rgba(var(--primary-rgb), 0.3) !important; }
-
-    /* Custom Labels */
-    .text-gray-700 { color: var(--text-color) !important; }
-    .text-gray-600 { color: var(--text-color-secondary) !important; }
-    .text-gray-500 { color: var(--text-color-secondary) !important; }
-    .text-gray-400 { color: var(--text-color-secondary) !important; }
-
-    /* Status Tags */
-    .p-tag {
-        font-weight: 800 !important;
-        padding: 0.25rem 0.55rem !important;
-        border-radius: 999px !important;
-        font-size: 0.68rem !important;
-        border: none !important;
-
-        &.p-tag-success {
-            background: rgba(var(--primary-rgb), 0.15) !important;
-            color: var(--primary-color) !important;
-            border: 1px solid rgba(var(--primary-rgb), 0.3) !important;
-        }
-
-        &.p-tag-warning {
-            background: rgba(245, 158, 11, 0.15) !important;
-            color: #f59e0b !important;
-            border: 1px solid rgba(245, 158, 11, 0.3) !important;
-        }
-
-        &.p-tag-danger {
-            background: rgba(239, 68, 68, 0.15) !important;
-            color: #ef4444 !important;
-            border: 1px solid rgba(239, 68, 68, 0.3) !important;
-        }
-
-        &.p-tag-info {
-            background: rgba(59, 130, 246, 0.15) !important;
-            color: #3b82f6 !important;
-            border: 1px solid rgba(59, 130, 246, 0.3) !important;
-        }
-    }
-
-    /* Paginator */
-    .p-paginator {
-        background: var(--card-bg) !important;
-        border-top: 1px solid var(--border-color) !important;
-        color: var(--text-color) !important;
-        padding: 0.55rem !important;
-        font-size: 0.75rem !important;
-
-        .p-paginator-current {
-            color: var(--text-color-secondary) !important;
-            font-weight: 600 !important;
-        }
-
-        .p-paginator-pages .p-paginator-page {
-            border-radius: 8px !important;
-            color: var(--text-color) !important;
-
-            &.p-highlight {
-                background: rgba(var(--primary-rgb), 0.1) !important;
-                color: var(--primary-color) !important;
-                border-color: var(--primary-color) !important;
-            }
-
-            &:hover:not(.p-highlight) {
-                background: var(--surface-hover) !important;
-            }
-        }
-    }
-
-    /* Dropdown & Calendar */
-    .p-dropdown,
-    .p-calendar .p-inputtext,
-    .p-inputtext {
-        border-radius: 10px !important;
-        background: var(--input-bg) !important;
-        color: var(--text-color) !important;
-        border: 2px solid var(--border-color) !important;
-
-        &:hover {
-            border-color: var(--primary-color) !important;
-        }
-
-        &:focus, &.p-focus {
-            border-color: var(--primary-color) !important;
-            box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.15) !important;
-        }
-    }
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-/* Header dynamic containers */
-.sales-container > .flex.justify-content-between {
-    position: relative;
-    overflow: hidden;
-    padding: 0.85rem;
-    margin-bottom: 0.85rem !important;
-    border: var(--card-border) !important;
-    border-radius: 18px;
-    background: var(--card-bg) !important;
-    box-shadow: var(--shadow-sm) !important;
-    backdrop-filter: var(--glass-blur);
+.kpi-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
-.sales-container > .flex.justify-content-between::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 5px;
-    background: linear-gradient(90deg, var(--primary-color), #06b6d4, #6366f1);
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
 }
 
-.sales-container h1 {
-    font-size: 1.45rem !important;
-    color: var(--text-color) !important;
+.kpi-card.sales::before { background: var(--primary-color); }
+.kpi-card.profit::before { background: #10b981; }
+.kpi-card.debts::before { background: #3b82f6; }
+.kpi-card.returns::before { background: #ef4444; }
+
+.kpi-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.65rem;
+  font-weight: 800;
+  margin-bottom: 0.1rem;
 }
 
-.sales-container p {
-    font-size: 0.8rem !important;
-    color: var(--text-color-secondary) !important;
+.kpi-card strong {
+  display: block;
+  font-size: 1.1rem;
+  line-height: 1.2;
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.kpi-card.sales strong { color: var(--primary-600); }
+.kpi-card.profit strong { color: #10b981; }
+.kpi-card.debts strong { color: #3b82f6; }
+.kpi-card.returns strong { color: #dc2626; }
+
+.kpi-card small { color: #94a3b8; font-size: 0.6rem; }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-.animate-fade-in {
-    animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+.panel {
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
-/* 📱 Responsive Design */
-@media (max-width: 768px) {
-    .sales-container { padding: 1rem; }
-    .kpi-value { font-size: 1.35rem; }
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.45rem;
+}
+
+.panel-head h3 {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #0f172a;
+}
+
+.panel-head i { color: #2563eb; font-size: 1rem; }
+
+.filters-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  align-items: end;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-field label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.table-panel {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.type-pill,
+.batch-chip,
+.movement-qty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.25rem;
+  border-radius: 999px;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.type-green { background: #dcfce7; color: #15803d; }
+.type-blue { background: #dbeafe; color: #1d4ed8; }
+.type-amber { background: #fef3c7; color: #b45309; }
+.type-red { background: #fee2e2; color: #b91c1c; }
+.type-gray { background: #f1f5f9; color: #475569; }
+
+.date-main,
+.medicine-name,
+.user-name,
+.ref-number {
+  display: block;
+  font-size: 0.7rem;
+}
+
+.date-main { color: #0f766e; font-weight: 800; }
+.date-time { color: #64748b; font-size: 0.68rem; }
+.medicine-name { color: #1d4ed8; }
+.user-name { color: #7c3aed; }
+.ref-number { color: #0f172a; font-family: Consolas, monospace; }
+.ref-type { color: #f97316; font-size: 0.68rem; font-weight: 700; }
+.muted { display: block; color: #94a3b8; font-size: 0.66rem; margin-top: 0.1rem; }
+.text-center { text-align: center; }
+
+.empty-message {
+  text-align: center;
+  padding: 2rem !important;
+  color: #64748b;
+}
+.empty-message i { display: block; font-size: 2rem; color: #cbd5e1; margin-bottom: 0.4rem; }
+
+:host ::ng-deep {
+  .compact-table .p-datatable-thead > tr > th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .compact-table .p-datatable-tbody > tr > td {
+    padding: 0.3rem 0.5rem;
+    border-color: #eef2f7;
+    vertical-align: middle;
+  }
+
+  .compact-table .p-datatable-tbody > tr:hover {
+    background: #f8fafc !important;
+  }
+
+  .p-paginator {
+    padding: 0.3rem;
+    background: #f8fafc;
+    border: 0;
+    font-size: 0.65rem;
+  }
+
+  .p-button.p-button-sm,
+  .p-button.p-button-icon-only {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .p-inputtext,
+  .p-dropdown,
+  .p-calendar .p-inputtext {
+    min-height: 1.8rem;
+    font-size: 0.7rem;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .sales-container { background: white; padding: 0; }
+  .page-header,
+  .panel,
+  .table-panel,
+  .kpi-card { box-shadow: none; }
 }

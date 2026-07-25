@@ -37,5 +37,7 @@ namespace SmartPharmacySystem.Application.DTOs.PurchaseInvoice
 
         [Required]
         public int SupplierId { get; set; }
+
+        public int? WarehouseId { get; set; }
     }
 }

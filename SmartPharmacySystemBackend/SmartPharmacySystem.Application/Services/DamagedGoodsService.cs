@@ -3,6 +3,7 @@ using SmartPharmacySystem.Application.DTOs.DamagedGoods;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.IServices;
 using SmartPharmacySystem.Application.Wrappers;
+using SmartPharmacySystem.Application.DTOs.Financial;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Core.Interfaces;
@@ -16,6 +17,7 @@ public class DamagedGoodsService : IDamagedGoodsService
     private readonly IMapper _mapper;
     private readonly ICurrentUserService _currentUserService;
     private readonly INotificationService _notificationService;
+    private readonly IJournalEntryService _journalEntryService;
     private readonly ILogger<DamagedGoodsService> _logger;
 
     public DamagedGoodsService(
@@ -23,12 +25,14 @@ public class DamagedGoodsService : IDamagedGoodsService
         IMapper mapper,
         ICurrentUserService currentUserService,
         INotificationService notificationService,
+        IJournalEntryService journalEntryService,
         ILogger<DamagedGoodsService> logger)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _currentUserService = currentUserService;
         _notificationService = notificationService;
+        _journalEntryService = journalEntryService;
         _logger = logger;
     }
 
@@ -69,6 +73,7 @@ public class DamagedGoodsService : IDamagedGoodsService
         var record = _mapper.Map<DamagedGoodsRecord>(dto);
         record.Status = RecordStatus.PendingApproval;
         record.RecordedByUserId = _currentUserService.UserId ?? 0;
+        record.DamageValue = await CalculateDamageValueAsync(dto.MedicineId, dto.BatchNumber, dto.Quantity);
 
         await _unitOfWork.DamagedGoods.AddAsync(record);
         await _unitOfWork.SaveChangesAsync();
@@ -202,6 +207,37 @@ public class DamagedGoodsService : IDamagedGoodsService
             record.ApprovedAt = DateTime.UtcNow;
             await _unitOfWork.DamagedGoods.UpdateAsync(record);
 
+            if (record.DamageValue > 0)
+            {
+                var journalEntry = new JournalEntryDto
+                {
+                    EntryDate = DateTime.UtcNow,
+                    VoucherNumber = record.DamageCode,
+                    Description = $"قيد إتلاف أدوية آلي - إذن رقم: {record.DamageCode}",
+                    Type = VoucherType.JournalEntry,
+                    Lines = new List<JournalEntryLineDto>
+                    {
+                        new()
+                        {
+                            AccountId = 5206,
+                            Debit = record.DamageValue,
+                            Credit = 0,
+                            Description = $"خسائر أدوية تالفة - {record.DamageCode}"
+                        },
+                        new()
+                        {
+                            AccountId = 1301,
+                            Debit = 0,
+                            Credit = record.DamageValue,
+                            Description = $"تخفيض مخزون أدوية تالفة - {record.DamageCode}"
+                        }
+                    }
+                };
+
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, approvedByUserId);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, approvedByUserId);
+            }
+
             await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.CommitAsync();
 
@@ -244,5 +280,17 @@ public class DamagedGoodsService : IDamagedGoodsService
     public async Task<bool> CodeExistsAsync(string damageCode, int? excludeId = null)
     {
         return await _unitOfWork.DamagedGoods.CodeExistsAsync(damageCode, excludeId);
+    }
+
+    private async Task<decimal> CalculateDamageValueAsync(int medicineId, string batchNumber, int quantity)
+    {
+        var batch = await _unitOfWork.MedicineBatches.GetByMedicineIdAndBatchNumberAsync(medicineId, batchNumber);
+        if (batch != null && batch.UnitPurchasePrice > 0)
+            return Math.Round(batch.UnitPurchasePrice * quantity, 2);
+
+        var medicine = await _unitOfWork.Medicines.GetByIdAsync(medicineId)
+            ?? throw new KeyNotFoundException("Medicine was not found.");
+
+        return Math.Round(medicine.MovingAverageCost * quantity, 2);
     }
 }

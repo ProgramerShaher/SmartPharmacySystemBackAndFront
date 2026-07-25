@@ -11,6 +11,8 @@ export interface PurchaseInvoice {
     id: number;
     supplierId: number;
     supplierName: string;
+    warehouseId: number;
+    warehouseName: string;
     supplierInvoiceNumber?: string | null;
     purchaseInvoiceNumber: string;
     purchaseDate: string; // ISO Date
@@ -50,6 +52,7 @@ export interface PurchaseInvoice {
  */
 export interface CreatePurchaseInvoiceDto {
     supplierId: number;
+    warehouseId?: number | null;
     supplierInvoiceNumber?: string | null;
     purchaseDate: string; // ISO date string
     paymentMethod: PaymentType;
@@ -64,6 +67,7 @@ export interface CreatePurchaseInvoiceDto {
 export interface UpdatePurchaseInvoiceDto {
     id: number;
     supplierId: number;
+    warehouseId?: number | null;
     supplierInvoiceNumber?: string | null;
     purchaseDate: string;
     paymentMethod: PaymentType;

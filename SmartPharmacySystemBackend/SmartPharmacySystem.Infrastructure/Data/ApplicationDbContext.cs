@@ -298,6 +298,12 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<PurchaseInvoice>()
+            .HasOne(pi => pi.Warehouse)
+            .WithMany()
+            .HasForeignKey(pi => pi.WarehouseId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PurchaseInvoice>()
             .HasIndex(pi => pi.PurchaseInvoiceNumber)
             .IsUnique();
 
@@ -665,6 +671,72 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<InvoiceNumberSequence>()
             .HasIndex(isq => new { isq.Prefix, isq.Year })
             .IsUnique();
+        // ==================== StockTransfer Configuration ====================
+
+        modelBuilder.Entity<StockTransfer>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+            entity.Property(t => t.TransferCode).IsRequired().HasMaxLength(50);
+            entity.Property(t => t.Status).HasConversion<int>();
+            entity.Property(t => t.TransferType).HasConversion<int>();
+            entity.Property(t => t.Notes).HasMaxLength(500);
+
+            // Multi-Branch tenant filter
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            // Source Warehouse FK
+            entity.HasOne(t => t.SourceWarehouse)
+                  .WithMany()
+                  .HasForeignKey(t => t.SourceWarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // Destination Warehouse FK
+            entity.HasOne(t => t.DestinationWarehouse)
+                  .WithMany()
+                  .HasForeignKey(t => t.DestinationWarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // RequestedBy User FK
+            entity.HasOne(t => t.RequestedByUser)
+                  .WithMany()
+                  .HasForeignKey(t => t.RequestedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // ApprovedBy User FK (nullable)
+            entity.HasOne(t => t.ApprovedByUser)
+                  .WithMany()
+                  .HasForeignKey(t => t.ApprovedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // DispatchedBy User FK (nullable)
+            entity.HasOne(t => t.DispatchedByUser)
+                  .WithMany()
+                  .HasForeignKey(t => t.DispatchedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // ReceivedBy User FK (nullable)
+            entity.HasOne(t => t.ReceivedByUser)
+                  .WithMany()
+                  .HasForeignKey(t => t.ReceivedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // Items collection
+            entity.HasMany(t => t.Items)
+                  .WithOne(i => i.StockTransfer)
+                  .HasForeignKey(i => i.StockTransferId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StockTransferItem>(entity =>
+        {
+            entity.HasKey(i => i.Id);
+            entity.Property(i => i.BatchNumber).HasMaxLength(100);
+
+            entity.HasOne(i => i.Medicine)
+                  .WithMany()
+                  .HasForeignKey(i => i.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
 
         // ==================== User & Role Configuration ====================
 
@@ -929,7 +1001,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .OnDelete(DeleteBehavior.Restrict);
 
             // Dynamic Multi-Branch Tenant Filter
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId);
 
             // Configure Foreign Key Constraints
             entity.HasOne(e => e.Branch)
@@ -1209,7 +1281,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasIndex(e => new { e.BranchId, e.ClosingDate }).IsUnique();
 
             // Dynamic Multi-Branch Tenant Filter
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId);
         });
 
         // ==================== Notifications Configuration ====================
@@ -1479,7 +1551,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             // 5. المصروفات (Expenses)
             new Account { Id = 5, Code = "5", Name = "المصروفات", Type = AccountType.Expense, IsMainAccount = true, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
             new Account { Id = 51, Code = "51", Name = "تكلفة المشتريات", Type = AccountType.Expense, IsMainAccount = false, ParentId = 5, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
-            new Account { Id = 52, Code = "52", Name = "مصروفات تشغيلية", Type = AccountType.Expense, IsMainAccount = false, ParentId = 5, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) }
+            new Account { Id = 52, Code = "52", Name = "مصروفات تشغيلية", Type = AccountType.Expense, IsMainAccount = false, ParentId = 5, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) },
+            new Account { Id = 5206, Code = "5206", Name = "خسائر الأدوية التالفة", Type = AccountType.Expense, IsMainAccount = false, ParentId = 52, IsActive = true, CreatedAt = new DateTime(2025, 1, 1) }
         );
 
 

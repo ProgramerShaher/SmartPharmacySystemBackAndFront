@@ -35,6 +35,8 @@ public class CreatePurchaseInvoiceDto
     [EnumDataType(typeof(PaymentType))]
     public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
+    public int? WarehouseId { get; set; }
+
     /// <summary>
     /// ملاحظات
     /// </summary>

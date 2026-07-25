@@ -182,7 +182,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-warehouses',
             match: '/warehouses',
             children: [
-                { label: 'جميع المخازن', route: '/warehouses', icon: 'pi pi-warehouse', exact: true }
+                { label: 'جميع المخازن', route: '/warehouses', icon: 'pi pi-warehouse', exact: true },
+                { label: 'التحويلات المخزنية', route: '/warehouses/transfers', icon: 'pi pi-sync' },
+                { label: 'الأدوية التالفة', route: '/warehouses/damaged', icon: 'pi pi-exclamation-triangle' }
             ]
         },
         {

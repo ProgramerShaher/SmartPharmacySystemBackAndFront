@@ -1,0 +1,230 @@
+<div class="pos-container animate-fade-in" dir="rtl">
+    <!-- Header Panel -->
+    <header class="pos-header glass-panel transfer-accent">
+        <div class="header-left">
+            <div class="header-title">
+                <h1 class="m-0 font-bold">حركات التحويل المخزني</h1>
+                <div class="header-subtitle flex align-items-center gap-2">
+                    <span class="status-dot approved"></span>
+                    <span class="opacity-70">إدارة اللوجستيات وسلسلة الإمداد</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button pButton label="طلب تحويل مخزني جديد" icon="pi pi-plus" class="p-button-success" (click)="navigateToCreate()"></button>
+        </div>
+    </header>
+
+    <!-- Stats Cards Grid -->
+    <div class="grid mt-4">
+        <div class="col-12 md:col-3">
+            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
+                <i class="pi pi-file-edit text-4xl text-warning mb-2"></i>
+                <div class="text-sm opacity-70">الطلبات المعلقة</div>
+                <div class="text-2xl font-bold mt-1 text-warning-dark">
+                    {{ countTransfersByStatus(1) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
+                <i class="pi pi-truck text-4xl text-info mb-2"></i>
+                <div class="text-sm opacity-70">شحنات في الطريق</div>
+                <div class="text-2xl font-bold mt-1 text-info-dark">
+                    {{ countTransfersByStatus(3) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
+                <i class="pi pi-check-circle text-4xl text-success mb-2"></i>
+                <div class="text-sm opacity-70">مكتملة الاستلام</div>
+                <div class="text-2xl font-bold mt-1 text-success-dark">
+                    {{ countTransfersByStatus(4) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 md:col-3">
+            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
+                <i class="pi pi-refresh text-4xl text-primary mb-2"></i>
+                <div class="text-sm opacity-70">إجمالي التحويلات</div>
+                <div class="text-2xl font-bold mt-1 text-primary-dark">
+                    {{ transfers.length }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="glass-panel p-3 mt-3 flex flex-wrap gap-3 align-items-center justify-content-between elevation-hover">
+        <div class="flex flex-wrap gap-3 align-items-center">
+            <div class="filter-field">
+                <label class="block text-xs font-bold mb-1 opacity-70">المخزن المرسل</label>
+                <p-dropdown [options]="warehouses" [(ngModel)]="sourceWarehouseId" optionLabel="name" optionValue="id" 
+                    [showClear]="true" placeholder="اختر مخزن المصدر..." (onChange)="loadTransfers()"></p-dropdown>
+            </div>
+            <div class="filter-field">
+                <label class="block text-xs font-bold mb-1 opacity-70">المخزن المستلم</label>
+                <p-dropdown [options]="warehouses" [(ngModel)]="destinationWarehouseId" optionLabel="name" optionValue="id" 
+                    [showClear]="true" placeholder="اختر مخزن الوجهة..." (onChange)="loadTransfers()"></p-dropdown>
+            </div>
+            <div class="filter-field">
+                <label class="block text-xs font-bold mb-1 opacity-70">الحالة</label>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" 
+                    (onChange)="loadTransfers()"></p-dropdown>
+            </div>
+        </div>
+        <button pButton label="تحديث البيانات" icon="pi pi-refresh" outlined (click)="loadTransfers()"></button>
+    </div>
+
+    <!-- Data Table -->
+    <div class="glass-panel p-0 overflow-hidden mt-3 elevation-hover">
+        <p-table [value]="transfers" [loading]="loading" responsiveLayout="scroll" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>رقم التحويل</th>
+                    <th>مخزن المصدر</th>
+                    <th>مخزن الوجهة</th>
+                    <th class="text-center">تاريخ الطلب</th>
+                    <th class="text-center">حالة التحويل</th>
+                    <th class="text-center">طالب التحويل</th>
+                    <th class="text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-transfer>
+                <tr>
+                    <td class="font-bold text-primary">{{ transfer.transferCode }}</td>
+                    <td>{{ transfer.sourceWarehouseName }}</td>
+                    <td>{{ transfer.destinationWarehouseName }}</td>
+                    <td class="text-center">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td class="text-center">
+                        <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
+                    </td>
+                    <td class="text-center">{{ transfer.requestedByUserName }}</td>
+                    <td class="text-center flex justify-content-center gap-1">
+                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-info p-button-text" 
+                            pTooltip="تفاصيل المستند" (click)="viewDetails(transfer)"></button>
+                        
+                        <button *ngIf="transfer.status === 1" pButton icon="pi pi-check" 
+                            class="p-button-rounded p-button-success p-button-text" 
+                            pTooltip="اعتماد الطلب" (click)="approveTransfer(transfer)"></button>
+                        
+                        <button *ngIf="transfer.status === 2" pButton icon="pi pi-truck" 
+                            class="p-button-rounded p-button-warning p-button-text" 
+                            pTooltip="شحن البضاعة" (click)="dispatchTransfer(transfer)"></button>
+                        
+                        <button *ngIf="transfer.status === 3" pButton icon="pi pi-download" 
+                            class="p-button-rounded p-button-primary p-button-text" 
+                            pTooltip="تأكيد الاستلام" (click)="openReceiveDialog(transfer)"></button>
+                        
+                        <button *ngIf="transfer.status === 1" pButton icon="pi pi-trash" 
+                            class="p-button-rounded p-button-danger p-button-text" 
+                            pTooltip="حذف الطلب" (click)="deleteTransfer(transfer)"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="text-center p-5 opacity-50">
+                        <i class="pi pi-inbox text-5xl mb-2"></i>
+                        <p class="m-0">لا توجد حركات تحويل مخزني مطابقة للبحث</p>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Details Dialog -->
+<p-dialog header="تفاصيل حركة التحويل المخزني" [(visible)]="displayDetailDialog" [modal]="true" 
+    [style]="{width: '70vw'}" [draggable]="false" [resizable]="false" styleClass="pos-dialog" dir="rtl">
+    <div *ngIf="selectedTransfer" class="p-fluid">
+        <div class="grid">
+            <div class="col-12 md:col-6 mb-2">
+                <span class="font-bold opacity-60 text-xs block mb-1">كود المستند</span>
+                <span class="text-lg font-bold text-indigo-900">{{ selectedTransfer.transferCode }}</span>
+            </div>
+            <div class="col-12 md:col-6 mb-2">
+                <span class="font-bold opacity-60 text-xs block mb-1">الحالة الحالية</span>
+                <p-tag [severity]="getStatusSeverity(selectedTransfer.status)" [value]="getStatusLabel(selectedTransfer.status)"></p-tag>
+            </div>
+            <div class="col-12 md:col-6 mb-2">
+                <span class="font-bold opacity-60 text-xs block mb-1">المستودع المصدر</span>
+                <span>{{ selectedTransfer.sourceWarehouseName }}</span>
+            </div>
+            <div class="col-12 md:col-6 mb-2">
+                <span class="font-bold opacity-60 text-xs block mb-1">المستودع الوجهة</span>
+                <span>{{ selectedTransfer.destinationWarehouseName }}</span>
+            </div>
+        </div>
+
+        <p-table [value]="selectedTransfer.items" class="mt-4" responsiveLayout="scroll" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>اسم الدواء / الصنف</th>
+                    <th class="text-center">التشغيلة</th>
+                    <th class="text-center">الكمية المطلوبة</th>
+                    <th class="text-center" *ngIf="selectedTransfer.status >= 3">الكمية المستلمة</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr>
+                    <td class="font-bold">{{ item.medicineName }}</td>
+                    <td class="text-center">
+                        <span class="batch-tag indigo">{{ item.batchNumber }}</span>
+                    </td>
+                    <td class="text-center font-bold">{{ item.quantity }}</td>
+                    <td class="text-center font-bold text-green-600" *ngIf="selectedTransfer.status >= 3">
+                        {{ item.receivedQuantity !== null ? item.receivedQuantity : '-' }}
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <div class="mt-4 opacity-75 text-sm" *ngIf="selectedTransfer.notes">
+            <strong>ملاحظات التحويل:</strong> {{ selectedTransfer.notes }}
+        </div>
+    </div>
+</p-dialog>
+
+<!-- Receive Confirmation Dialog -->
+<p-dialog header="تأكيد الاستلام ومطابقة الكميات" [(visible)]="displayReceiveDialog" [modal]="true" 
+    [style]="{width: '80vw'}" [draggable]="false" [resizable]="false" styleClass="pos-dialog" dir="rtl">
+    <div class="p-fluid">
+        <p class="mb-4 text-sm opacity-80">يرجى فحص الشحنة ومطابقة الكميات الفعلية الواصلة وتدوين أي عجز أو تالف في حقل الملاحظات.</p>
+        
+        <p-table [value]="receiveItems" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>الصنف</th>
+                    <th class="text-center">رقم التشغيلة</th>
+                    <th class="text-center">الكمية المرسلة</th>
+                    <th class="text-center" style="width: 150px">الكمية المستلمة</th>
+                    <th>سبب الرفض / العجز (إن وُجد)</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr>
+                    <td class="font-bold">{{ item.medicineName }}</td>
+                    <td class="text-center">
+                        <span class="batch-tag indigo">{{ item.batchNumber }}</span>
+                    </td>
+                    <td class="text-center font-bold">{{ item.quantity }}</td>
+                    <td class="text-center">
+                        <p-inputNumber [(ngModel)]="item.receivedQuantity" [min]="0" [max]="item.quantity" class="p-inputtext-sm"></p-inputNumber>
+                    </td>
+                    <td>
+                        <input pInputText [(ngModel)]="item.rejectionReason" placeholder="اذكر سبب النقص أو التلف هنا..." class="p-inputtext-sm" />
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <div class="flex justify-content-end gap-3 mt-4">
+            <button pButton label="إلغاء" class="p-button-text p-button-secondary" (click)="displayReceiveDialog = false"></button>
+            <button pButton label="اعتماد ومطابقة المخازن" icon="pi pi-check" class="p-button-success" (click)="confirmReceive()"></button>
+        </div>
+    </div>
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}" acceptButtonStyleClass="p-button-success" rejectButtonStyleClass="p-button-text"></p-confirmDialog>

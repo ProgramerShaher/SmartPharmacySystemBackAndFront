@@ -1,0 +1,76 @@
+<div class="pos-container animate-fade-in" dir="rtl">
+    <!-- Header with Glassmorphism -->
+    <header class="pos-header glass-panel damaged-accent">
+        <div class="header-left">
+            <button pButton icon="pi pi-arrow-right" class="p-button-rounded p-button-text back-btn" (click)="backToList()"></button>
+            <div class="header-title">
+                <h1 class="m-0 font-bold">تسجيل بضاعة تالفة</h1>
+                <div class="header-subtitle flex align-items-center gap-2">
+                    <span class="status-dot danger"></span>
+                    <span class="opacity-70">طلب تسوية مخزنية وإهلاك أدوية</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right flex gap-2">
+            <button pButton label="حفظ المستند" icon="pi pi-check-circle" class="p-button-danger" [loading]="saving"
+                (click)="saveRecord()"></button>
+        </div>
+    </header>
+
+    <div class="pos-content-grid mt-4">
+        <!-- Main Form Area -->
+        <main class="pos-main">
+            <form [formGroup]="damagedForm">
+                <!-- Record Form Card -->
+                <section class="glass-panel p-4 mb-3 elevation-hover">
+                    <div class="section-header mb-3">
+                        <i class="pi pi-info-circle text-danger mr-2"></i>
+                        <h3 class="m-0">بيانات الإهلاك والتلف</h3>
+                    </div>
+                    
+                    <div class="grid p-fluid">
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-1 text-primary">المخزن الأصلي (مكان التلف)</label>
+                            <p-dropdown [options]="warehouses" formControlName="sourceWarehouseId" optionLabel="name" optionValue="id"
+                                placeholder="اختر المستودع..." [filter]="true" filterBy="name"
+                                styleClass="h-2.5rem" appendTo="body"></p-dropdown>
+                        </div>
+                        
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-1 text-primary">اختر الصنف المتضرر</label>
+                            <p-dropdown [options]="availableMedicines" formControlName="selectedStockItem" 
+                                placeholder="ابحث واختر الصنف والتشغيلة..." [filter]="true" filterBy="label"
+                                [disabled]="!damagedForm.get('sourceWarehouseId')?.value"
+                                styleClass="h-2.5rem" appendTo="body"></p-dropdown>
+                        </div>
+
+                        <div class="col-12 md:col-4 field" *ngIf="damagedForm.get('selectedStockItem')?.value">
+                            <label class="font-bold text-sm block mb-1 opacity-70">الرصيد المتاح حالياً</label>
+                            <div class="text-2xl font-bold p-2 bg-indigo-50 border-round text-center">
+                                {{ damagedForm.get('availableQuantity')?.value }}
+                            </div>
+                        </div>
+
+                        <div class="col-12 md:col-4 field" *ngIf="damagedForm.get('selectedStockItem')?.value">
+                            <label class="font-bold text-sm block mb-1 text-danger">كمية التالف (المراد إهلاكها)</label>
+                            <p-inputNumber formControlName="quantity" [min]="1" 
+                                [max]="damagedForm.get('availableQuantity')?.value || 1" 
+                                styleClass="h-2.5rem text-center"></p-inputNumber>
+                        </div>
+
+                        <div class="col-12 md:col-4 field">
+                            <label class="font-bold text-sm block mb-1 text-primary">نوع التلف / سبب الإتلاف</label>
+                            <p-dropdown [options]="damageTypes" formControlName="damageType" optionLabel="label" optionValue="value"
+                                styleClass="h-2.5rem" appendTo="body"></p-dropdown>
+                        </div>
+
+                        <div class="col-12 field mt-2">
+                            <label class="font-bold text-sm block mb-1">تفاصيل أو شرح إضافي</label>
+                            <input pInputText formControlName="reason" placeholder="اكتب تفاصيل إضافية عن سبب التلف..." class="h-2.5rem" />
+                        </div>
+                    </div>
+                </section>
+            </form>
+        </main>
+    </div>
+</div>

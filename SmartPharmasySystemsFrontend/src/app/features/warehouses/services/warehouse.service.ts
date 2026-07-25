@@ -54,4 +54,9 @@ export class WarehouseService {
         return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`)
             .pipe(map(r => r.data));
     }
+
+    getInventoryStocks(warehouseId: number): Observable<any[]> {
+        return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/InventoryStocks/warehouse/${warehouseId}`)
+            .pipe(map(r => r.data || []));
+    }
 }

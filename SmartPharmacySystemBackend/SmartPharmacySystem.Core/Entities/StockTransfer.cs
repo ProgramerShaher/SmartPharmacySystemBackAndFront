@@ -25,7 +25,7 @@ public class StockTransfer : BaseMultiBranchEntity
     public TransferType TransferType { get; set; } = TransferType.Manual;
 
     [Required]
-    public int RequestedByUserId { get; set; }
+    public int RequestedByUserId { get; set; } 
 
     public int? ApprovedByUserId { get; set; }
     public DateTime? ApprovedAt { get; set; }

@@ -59,6 +59,12 @@
                             <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" optionLabel="label" optionValue="value"
                                 [disabled]="isReadOnly" styleClass="h-2.5rem" appendTo="body"></p-dropdown>
                         </div>
+                        <div class="col-12 md:col-6 field">
+                            <label class="font-bold text-sm block mb-1">المخزن المستلم</label>
+                            <p-dropdown [options]="warehouses" formControlName="warehouseId" optionLabel="name" optionValue="id"
+                                placeholder="اختر مخزن التوريد..." [filter]="true" filterBy="name" [disabled]="isReadOnly"
+                                styleClass="h-2.5rem" appendTo="body"></p-dropdown>
+                        </div>
                     </div>
                 </section>
                 

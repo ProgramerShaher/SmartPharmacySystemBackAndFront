@@ -246,6 +246,9 @@ namespace SmartPharmacySystem.Application.Services
 
                     // Initialize remaining quantity to return
                     detail.RemainingQtyToReturn = detail.Quantity;
+
+                    // Deduct from InventoryStock
+                    await DecreaseInventoryStockAsync(invoice.BranchId ?? 0, detail.MedicineId, batch.CompanyBatchNumber, detail.Quantity);
                 }
 
                 // ==================== المحرك المحاسبي الاحترافي ====================
@@ -376,6 +379,9 @@ namespace SmartPharmacySystem.Application.Services
                         batch.RemainingQuantity += detail.Quantity;
                         batch.SoldQuantity -= detail.Quantity;
                         await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+
+                        // Re-add to InventoryStock
+                        await IncreaseInventoryStockAsync(invoice.BranchId ?? 0, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity);
                     }
                 }
 
@@ -451,6 +457,9 @@ namespace SmartPharmacySystem.Application.Services
                             batch.RemainingQuantity += detail.Quantity;
                             batch.SoldQuantity -= detail.Quantity;
                             await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+
+                            // Re-add to InventoryStock
+                            await IncreaseInventoryStockAsync(invoice.BranchId ?? 0, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity);
                         }
                     }
 
@@ -730,6 +739,56 @@ namespace SmartPharmacySystem.Application.Services
             }
 
             return result;
+        }
+
+        private async Task IncreaseInventoryStockAsync(int branchId, int medicineId, string batchNumber, DateTime expiryDate, int quantity)
+        {
+            var warehouse = await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Main)
+                ?? await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Branch);
+
+            if (warehouse == null)
+            {
+                _logger.LogWarning("No sales warehouse found for branch {BranchId}.", branchId);
+                return;
+            }
+
+            var stock = await _unitOfWork.InventoryStocks.GetByWarehouseMedicineBatchAsync(warehouse.Id, medicineId, batchNumber);
+            if (stock == null)
+            {
+                stock = new InventoryStock
+                {
+                    WarehouseId = warehouse.Id,
+                    MedicineId = medicineId,
+                    BatchNumber = batchNumber,
+                    ExpiryDate = expiryDate,
+                    Quantity = quantity
+                };
+                await _unitOfWork.InventoryStocks.AddAsync(stock);
+                return;
+            }
+
+            stock.Quantity += quantity;
+            stock.ExpiryDate = expiryDate;
+            await _unitOfWork.InventoryStocks.UpdateAsync(stock);
+        }
+
+        private async Task DecreaseInventoryStockAsync(int branchId, int medicineId, string batchNumber, int quantity)
+        {
+            var warehouse = await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Main)
+                ?? await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Branch);
+
+            if (warehouse == null)
+            {
+                _logger.LogWarning("No sales warehouse found for branch {BranchId}.", branchId);
+                return;
+            }
+
+            var stock = await _unitOfWork.InventoryStocks.GetByWarehouseMedicineBatchAsync(warehouse.Id, medicineId, batchNumber);
+            if (stock != null)
+            {
+                stock.Quantity = Math.Max(0, stock.Quantity - quantity);
+                await _unitOfWork.InventoryStocks.UpdateAsync(stock);
+            }
         }
     }
 }

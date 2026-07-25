@@ -30,6 +30,8 @@ export * from './employee.interface';
 export * from './branch.interface';
 export * from './department.interface';
 export * from './warehouse.interface';
+export * from './stock-transfer.interface';
+export * from './damaged-goods.interface';
 
 // Re-export PagedResult for convenience
 export type { PagedResult } from './api-response.interface';

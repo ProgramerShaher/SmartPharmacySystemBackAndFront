@@ -1,0 +1,119 @@
+<div class="pos-container animate-fade-in" dir="rtl">
+    <!-- Header Panel -->
+    <header class="pos-header glass-panel damaged-accent">
+        <div class="header-left">
+            <div class="header-title">
+                <h1 class="m-0 font-bold">إهلاك السلع والأدوية التالفة</h1>
+                <div class="header-subtitle flex align-items-center gap-2">
+                    <span class="status-dot danger"></span>
+                    <span class="opacity-70">إدارة الهوالك والتوالف والتسويات المالية</span>
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <button pButton label="تسجيل بضاعة تالفة جديدة" icon="pi pi-plus" class="p-button-danger" (click)="navigateToCreate()"></button>
+        </div>
+    </header>
+
+    <!-- Stats Cards Grid -->
+    <div class="grid mt-4">
+        <div class="col-12 md:col-4">
+            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
+                <i class="pi pi-exclamation-triangle text-4xl text-warning mb-2"></i>
+                <div class="text-sm opacity-70">إذن إتلاف معلق</div>
+                <div class="text-2xl font-bold mt-1 text-warning-dark">
+                    {{ pendingCount }}
+                </div>
+            </div>
+        </div>
+        <div class="col-12 md:col-4">
+            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
+                <i class="pi pi-chart-line text-4xl text-danger mb-2"></i>
+                <div class="text-sm opacity-70">إجمالي الخسائر المالية</div>
+                <div class="text-2xl font-bold mt-1 text-danger-dark">
+                    {{ calculateTotalLoss() | number:'1.0-0' }} <small>ر.ي</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 md:col-4">
+            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
+                <i class="pi pi-box text-4xl text-primary mb-2"></i>
+                <div class="text-sm opacity-70">إجمالي الأصناف المهلكة</div>
+                <div class="text-2xl font-bold mt-1 text-primary-dark">
+                    {{ records.length }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="glass-panel p-3 mt-3 flex flex-wrap gap-3 align-items-center justify-content-between elevation-hover">
+        <div class="flex flex-wrap gap-3 align-items-center">
+            <div class="filter-field">
+                <label class="block text-xs font-bold mb-1 opacity-70">المستودع</label>
+                <p-dropdown [options]="warehouses" [(ngModel)]="selectedWarehouseId" optionLabel="name" optionValue="id" 
+                    [showClear]="true" placeholder="اختر المستودع..." (onChange)="loadRecords()"></p-dropdown>
+            </div>
+            <div class="filter-field">
+                <label class="block text-xs font-bold mb-1 opacity-70">الحالة</label>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" 
+                    (onChange)="loadRecords()"></p-dropdown>
+            </div>
+        </div>
+        <button pButton label="تحديث البيانات" icon="pi pi-refresh" outlined (click)="loadRecords()"></button>
+    </div>
+
+    <!-- Data Table -->
+    <div class="glass-panel p-0 overflow-hidden mt-3 elevation-hover">
+        <p-table [value]="records" [loading]="loading" responsiveLayout="scroll" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>رمز المستند</th>
+                    <th>المخزن الأصلي</th>
+                    <th>اسم الدواء</th>
+                    <th class="text-center">رقم التشغيلة</th>
+                    <th class="text-center">الكمية</th>
+                    <th class="text-right">قيمة التالف</th>
+                    <th class="text-center">سبب التلف</th>
+                    <th class="text-center">الحالة</th>
+                    <th class="text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-record>
+                <tr>
+                    <td class="font-bold text-primary">{{ record.damageCode }}</td>
+                    <td>{{ record.sourceWarehouseName }}</td>
+                    <td class="font-bold">{{ record.medicineName }}</td>
+                    <td class="text-center">
+                        <span class="batch-tag indigo">{{ record.batchNumber }}</span>
+                    </td>
+                    <td class="text-center font-bold text-lg">{{ record.quantity }}</td>
+                    <td class="text-right font-bold text-red-600">{{ record.damageValue | number:'1.0-2' }} ر.ي</td>
+                    <td class="text-center">{{ getDamageTypeLabel(record.damageType) }}</td>
+                    <td class="text-center">
+                        <p-tag [severity]="getStatusSeverity(record.status)" [value]="getStatusLabel(record.status)" [rounded]="true"></p-tag>
+                    </td>
+                    <td class="text-center flex justify-content-center gap-1">
+                        <button *ngIf="record.status === 1" pButton icon="pi pi-verified" 
+                            class="p-button-rounded p-button-success p-button-text" 
+                            pTooltip="اعتماد الإهلاك وترحيل القيد" (click)="approveRecord(record)"></button>
+                        
+                        <button *ngIf="record.status === 1" pButton icon="pi pi-trash" 
+                            class="p-button-rounded p-button-danger p-button-text" 
+                            pTooltip="حذف الطلب" (click)="deleteRecord(record)"></button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="9" class="text-center p-5 opacity-50">
+                        <i class="pi pi-inbox text-5xl mb-2"></i>
+                        <p class="m-0">لا توجد سجلات توالف مطابقة للبحث</p>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<p-confirmDialog [style]="{width: '450px'}" acceptButtonStyleClass="p-button-danger" rejectButtonStyleClass="p-button-text"></p-confirmDialog>

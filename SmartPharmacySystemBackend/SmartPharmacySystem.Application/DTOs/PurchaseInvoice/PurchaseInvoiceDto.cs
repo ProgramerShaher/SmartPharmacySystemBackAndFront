@@ -21,6 +21,9 @@ public class PurchaseInvoiceDto
     /// </summary>
     public int SupplierId { get; set; }
 
+    public int WarehouseId { get; set; }
+    public string WarehouseName { get; set; } = string.Empty;
+
     /// <summary>
     /// اسم المورد
     /// </summary>

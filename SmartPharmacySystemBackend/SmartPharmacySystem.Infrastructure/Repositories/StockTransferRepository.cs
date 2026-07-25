@@ -60,7 +60,7 @@ public class StockTransferRepository : IStockTransferRepository
             .Include(t => t.DestinationWarehouse)
             .Include(t => t.Items)
             .Include(t => t.RequestedByUser)
-            .OrderByDescending(t => t.CreatedAt)
+            .OrderByDescending(t => t.Id)
             .ToListAsync();
     }
 

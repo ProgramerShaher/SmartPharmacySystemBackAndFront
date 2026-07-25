@@ -4,7 +4,8 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { ActivatedRoute, Router } from '@angular/router';
 import { PurchaseInvoiceService } from '../../services/purchase-invoice.service';
 import { SupplierService } from '../../../partners/services/supplier.service';
-import { PurchaseInvoice, Supplier, DocumentStatus } from '../../../../core/models';
+import { PurchaseInvoice, Supplier, DocumentStatus, WarehouseDto, WarehouseType } from '../../../../core/models';
+import { WarehouseService } from '../../../warehouses/services/warehouse.service';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -57,6 +58,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     currentInvoiceId: number | null = null;
     editingIndex: number | null = null;
     suppliers: Supplier[] = [];
+    warehouses: WarehouseDto[] = [];
     status: DocumentStatus = DocumentStatus.Draft;
 
     paymentMethods = [
@@ -68,6 +70,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         private fb: FormBuilder,
         private purchaseService: PurchaseInvoiceService,
         private supplierService: SupplierService,
+        private warehouseService: WarehouseService,
         private route: ActivatedRoute,
         private router: Router,
         private messageService: MessageService,
@@ -76,6 +79,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     ) {
         this.purchaseForm = this.fb.group({
             supplierId: [null, Validators.required],
+            warehouseId: [null, Validators.required],
             supplierInvoiceNumber: ['', null],
             purchaseDate: [new Date(), Validators.required],
             paymentMethod: [1, Validators.required],
@@ -86,6 +90,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
     ngOnInit() {
         this.loadSuppliers();
+        this.loadWarehouses();
         const id = this.route.snapshot.params['id'];
         if (id) {
             this.isEditMode = true;
@@ -181,6 +186,18 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
     loadSuppliers() {
         this.supplierService.getAll({ pageSize: 1000 }).subscribe((res: any) => this.suppliers = res.items);
+    }
+
+    loadWarehouses() {
+        this.warehouseService.getAll().subscribe((warehouses) => {
+            this.warehouses = warehouses;
+            if (!this.purchaseForm.get('warehouseId')?.value) {
+                const defaultWarehouse = warehouses.find(w => w.type === WarehouseType.Main) || warehouses[0];
+                if (defaultWarehouse) {
+                    this.purchaseForm.patchValue({ warehouseId: defaultWarehouse.id });
+                }
+            }
+        });
     }
 
     get isReadOnly() {
@@ -307,6 +324,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
         const payload = {
             supplierId: formValue.supplierId,
+            warehouseId: formValue.warehouseId,
             supplierInvoiceNumber: formValue.supplierInvoiceNumber || null,
             purchaseDate: formValue.purchaseDate,
             paymentMethod: formValue.paymentMethod,
@@ -353,6 +371,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
         const payload = {
             supplierId: formValue.supplierId,
+            warehouseId: formValue.warehouseId,
             supplierInvoiceNumber: formValue.supplierInvoiceNumber || null,
             purchaseDate: formValue.purchaseDate,
             paymentMethod: formValue.paymentMethod,

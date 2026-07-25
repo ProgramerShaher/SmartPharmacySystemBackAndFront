@@ -61,6 +61,7 @@ namespace SmartPharmacySystem.Application.Services
             invoice.CreatedAt = DateTime.UtcNow;
             invoice.CreatedBy = userId;
             invoice.Status = DocumentStatus.Draft;
+            invoice.WarehouseId = await ResolveReceivingWarehouseIdAsync(dto.WarehouseId);
             invoice.PurchaseInvoiceDetails = new List<PurchaseInvoiceDetail>();
 
             decimal calculatedTotal = 0;
@@ -170,6 +171,7 @@ namespace SmartPharmacySystem.Application.Services
             invoice.SupplierInvoiceNumber = dto.SupplierInvoiceNumber;
             invoice.PurchaseDate = dto.PurchaseDate;
             invoice.PaymentMethod = dto.PaymentMethod;
+            invoice.WarehouseId = await ResolveReceivingWarehouseIdAsync(dto.WarehouseId);
             invoice.Notes = dto.Notes;
 
             // Clear Existing Details
@@ -259,6 +261,7 @@ namespace SmartPharmacySystem.Application.Services
                     detail.TrueUnitCost = trueUnitCost;
 
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+                    await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity + detail.BonusQuantity);
 
                     // Update Medicine MAC & Default Pricing
                     var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
@@ -380,10 +383,12 @@ namespace SmartPharmacySystem.Application.Services
                         var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
                         if (batch != null)
                         {
-                            batch.Quantity -= (detail.Quantity + detail.BonusQuantity);
-                            batch.RemainingQuantity -= (detail.Quantity + detail.BonusQuantity);
+                            var quantity = detail.Quantity + detail.BonusQuantity;
+                            batch.Quantity -= quantity;
+                            batch.RemainingQuantity -= quantity;
                             if (batch.RemainingQuantity <= 0) batch.Status = "Empty";
                             await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+                            await DecreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, quantity);
                         }
                     }
 
@@ -573,6 +578,7 @@ namespace SmartPharmacySystem.Application.Services
                     CreatedAt = DateTime.UtcNow,
                     ApprovedBy = userId,
                     ApprovedAt = DateTime.UtcNow,
+                    WarehouseId = await ResolveReceivingWarehouseIdAsync(dto.WarehouseId),
                     PurchaseInvoiceNumber = await _invoiceNumberGenerator.GeneratePurchaseInvoiceNumberAsync()
                 };
 
@@ -610,6 +616,7 @@ namespace SmartPharmacySystem.Application.Services
                 detail.TrueUnitCost = trueUnitCost;
 
                 await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+                await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity + detail.BonusQuantity);
 
                 // Update Medicine MAC & Default Pricing
                 var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
@@ -737,7 +744,64 @@ namespace SmartPharmacySystem.Application.Services
                 // We don't block purchase because they might be buying a NEW batch of the same medicine
             }
 
-            return result;
+                return result;
+        }
+
+        private async Task<int> ResolveReceivingWarehouseIdAsync(int? requestedWarehouseId)
+        {
+            if (requestedWarehouseId.HasValue && requestedWarehouseId.Value > 0)
+            {
+                var selectedWarehouse = await _unitOfWork.Warehouses.GetByIdAsync(requestedWarehouseId.Value)
+                    ?? throw new KeyNotFoundException($"Warehouse {requestedWarehouseId.Value} was not found.");
+                return selectedWarehouse.Id;
+            }
+
+            var currentBranchId = _currentUserService.GetCurrentBranchId()
+                ?? throw new InvalidOperationException("Cannot resolve default receiving warehouse without a current branch.");
+
+            var mainWarehouse = await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(currentBranchId, WarehouseType.Main);
+            if (mainWarehouse != null)
+                return mainWarehouse.Id;
+
+            var branchWarehouse = await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(currentBranchId, WarehouseType.Branch);
+            if (branchWarehouse != null)
+                return branchWarehouse.Id;
+
+            throw new InvalidOperationException($"No receiving warehouse is configured for branch {currentBranchId}.");
+        }
+
+        private async Task IncreaseInventoryStockAsync(int warehouseId, int medicineId, string batchNumber, DateTime expiryDate, int quantity)
+        {
+            var stock = await _unitOfWork.InventoryStocks.GetByWarehouseMedicineBatchAsync(warehouseId, medicineId, batchNumber);
+            if (stock == null)
+            {
+                stock = new InventoryStock
+                {
+                    WarehouseId = warehouseId,
+                    MedicineId = medicineId,
+                    BatchNumber = batchNumber,
+                    ExpiryDate = expiryDate,
+                    Quantity = quantity
+                };
+                await _unitOfWork.InventoryStocks.AddAsync(stock);
+                return;
+            }
+
+            stock.Quantity += quantity;
+            stock.ExpiryDate = expiryDate;
+            await _unitOfWork.InventoryStocks.UpdateAsync(stock);
+        }
+
+        private async Task DecreaseInventoryStockAsync(int warehouseId, int medicineId, string batchNumber, int quantity)
+        {
+            var stock = await _unitOfWork.InventoryStocks.GetByWarehouseMedicineBatchAsync(warehouseId, medicineId, batchNumber)
+                ?? throw new InvalidOperationException($"Inventory stock for medicine {medicineId}, batch '{batchNumber}', warehouse {warehouseId} was not found.");
+
+            if (stock.Quantity < quantity)
+                throw new InvalidOperationException($"Inventory stock for medicine {medicineId}, batch '{batchNumber}', warehouse {warehouseId} is not enough to reverse the purchase.");
+
+            stock.Quantity -= quantity;
+            await _unitOfWork.InventoryStocks.UpdateAsync(stock);
         }
     }
 }

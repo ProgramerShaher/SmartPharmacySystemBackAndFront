@@ -47,6 +47,12 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 
     /// <summary>
+    /// Warehouse that receives the purchased stock.
+    /// </summary>
+    [Required]
+    public int WarehouseId { get; set; }
+
+    /// <summary>
     /// Additional notes about the invoice.
     /// </summary>
     public string? Notes { get; set; }
@@ -88,6 +94,8 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     /// Navigation property to the supplier.
     /// </summary>
     public Supplier Supplier { get; set; }
+
+    public Warehouse Warehouse { get; set; }
 
     [System.Text.Json.Serialization.JsonIgnore]
     public virtual User? Creator { get; set; }

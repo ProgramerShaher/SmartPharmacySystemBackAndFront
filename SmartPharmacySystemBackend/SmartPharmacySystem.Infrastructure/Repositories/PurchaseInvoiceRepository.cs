@@ -22,6 +22,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             return await _context.PurchaseInvoices
                 .AsNoTracking()
                 .Include(i => i.Supplier)
+                .Include(i => i.Warehouse)
                 .Include(i => i.PurchaseInvoiceDetails)
                     .ThenInclude(d => d.Medicine)
                 .Include(i => i.PurchaseInvoiceDetails)
@@ -40,6 +41,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             return await _context.PurchaseInvoices
                 .AsNoTracking()
                 .Include(i => i.Supplier)
+                .Include(i => i.Warehouse)
                 .Include(i => i.Creator)
                 .OrderByDescending(i => i.CreatedAt)
                 .Take(100) // Limit to prevent timeout
@@ -65,6 +67,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 entity.Approver = null;
                 entity.Canceller = null;
                 entity.Supplier = null;
+                entity.Warehouse = null;
 
                 if (entity.PurchaseInvoiceDetails != null)
                 {
@@ -129,6 +132,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             return await _context.PurchaseInvoices
                 .AsNoTracking()
                 .Include(i => i.Supplier)
+                .Include(i => i.Warehouse)
                 .Include(i => i.PurchaseInvoiceDetails)
                     .ThenInclude(d => d.Medicine)
                 .Include(i => i.PurchaseInvoiceDetails)

@@ -1,165 +1,96 @@
-<div class="invoice-page" dir="rtl">
-  <div *ngIf="loading" class="loading-state">
+<div class="details-container" dir="rtl">
+  <div *ngIf="loading" class="loading-state flex justify-content-center p-5">
     <p-progressSpinner></p-progressSpinner>
   </div>
 
-  <section *ngIf="!loading && invoice" class="invoice-shell">
-    <header class="invoice-toolbar">
-      <div class="title-group">
-        <p-button
-          icon="pi pi-arrow-right"
-          [rounded]="true"
-          [text]="true"
-          severity="secondary"
-          pTooltip="العودة للقائمة"
-          (onClick)="backToList()">
-        </p-button>
-
+  <ng-container *ngIf="!loading && invoice">
+    <div class="page-header">
+      <div class="title-wrap">
+        <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" (onClick)="backToList()"></p-button>
+        <div class="icon-circle bg-gradient-sales">
+          <i class="pi pi-dollar"></i>
+        </div>
         <div>
-          <span class="eyebrow">فاتورة مبيعات</span>
-          <h1>{{ invoice.saleInvoiceNumber }}</h1>
+          <h1>تفاصيل عملية البيع</h1>
+          <p>رقم الفاتورة: {{ invoice.saleInvoiceNumber || '#' + invoice.id }}</p>
         </div>
       </div>
-
-      <div class="toolbar-actions">
-        <p-button
-          icon="pi pi-print"
-          label="طباعة"
-          severity="info"
-          [outlined]="true"
-          size="small"
-          pTooltip="طباعة فاتورة العميل"
-          (onClick)="printInvoice()">
-        </p-button>
-
-        <p-button
-          *ngIf="invoice.status === DocumentStatus.Draft"
-          label="اعتماد"
-          icon="pi pi-check"
-          severity="success"
-          size="small"
-          (onClick)="approveInvoice()">
-        </p-button>
-
-        <p-button
-          *ngIf="invoice.status === DocumentStatus.Approved"
-          label="إلغاء"
-          icon="pi pi-times"
-          severity="danger"
-          [outlined]="true"
-          size="small"
-          (onClick)="cancelInvoice()">
-        </p-button>
+      
+      <div class="actions no-print">
+        <p-tag [severity]="getStatusSeverity(invoice.status.toString())" [value]="getStatusLabel(invoice.status)" styleClass="mr-2 px-3 py-2 text-sm shadow-1"></p-tag>
+        <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" size="small" (onClick)="printInvoice()"></p-button>
+        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="اعتماد" icon="pi pi-check" severity="success" size="small" (onClick)="approveInvoice()"></p-button>
+        <p-button *ngIf="invoice.status === DocumentStatus.Approved" label="إلغاء" icon="pi pi-times" severity="danger" [outlined]="true" size="small" (onClick)="cancelInvoice()"></p-button>
       </div>
-    </header>
+    </div>
 
-    <main class="invoice-card" [ngClass]="getStatusClass(invoice.status)">
-      <div class="accent-line"></div>
-
-      <div class="invoice-head">
-        <div class="brand-block">
-          <div class="brand-mark">
-            <i class="pi pi-shopping-bag"></i>
-          </div>
-          <div>
-            <p class="brand-label">الصيدلية الذكية</p>
-            <h2>تفاصيل عملية البيع</h2>
-          </div>
-        </div>
-
-        <p-tag
-          [value]="getStatusLabel(invoice.status)"
-          [severity]="getStatusSeverity(invoice.status.toString())"
-          [styleClass]="getStatusClass(invoice.status)">
-        </p-tag>
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <span class="kpi-label">العميل</span>
+        <strong>{{ invoice.customerName || 'نقدي' }}</strong>
+        <small>عميل الفاتورة</small>
       </div>
-
-      <div class="summary-grid">
-        <article class="summary-tile customer">
-          <span class="tile-icon"><i class="pi pi-user"></i></span>
-          <span class="tile-label">العميل</span>
-          <strong>{{ invoice.customerName || 'عميل نقدي' }}</strong>
-        </article>
-
-        <article class="summary-tile creator">
-          <span class="tile-icon"><i class="pi pi-user-edit"></i></span>
-          <span class="tile-label">منشئ الفاتورة</span>
-          <strong>{{ invoice.createdByName || ('مستخدم رقم ' + invoice.createdBy) }}</strong>
-        </article>
-
-        <article class="summary-tile">
-          <span class="tile-icon"><i class="pi pi-calendar-clock"></i></span>
-          <span class="tile-label">تاريخ العملية</span>
-          <strong>{{ invoice.invoiceDate | date:'dd/MM/yyyy - HH:mm' }}</strong>
-        </article>
-
-        <article class="summary-tile">
-          <span class="tile-icon"><i class="pi pi-wallet"></i></span>
-          <span class="tile-label">طريقة الدفع</span>
-          <strong>{{ getPaymentMethodLabel(invoice.paymentMethod) }}</strong>
-        </article>
+      <div class="kpi-card purple">
+        <span class="kpi-label">طريقة الدفع</span>
+        <strong>{{ getPaymentMethodLabel(invoice.paymentMethod) }}</strong>
+        <small>التحصيل</small>
       </div>
+      <div class="kpi-card green">
+        <span class="kpi-label">إجمالي الفاتورة</span>
+        <strong>{{ invoice.totalAmount | number:'1.2-2' }}</strong>
+        <small>ر.ي</small>
+      </div>
+      <div class="kpi-card orange">
+        <span class="kpi-label">تاريخ وتوقيت العملية</span>
+        <strong>{{ invoice.invoiceDate | date:'dd/MM/yyyy' }}</strong>
+        <small>{{ invoice.invoiceDate | date:'HH:mm' }} | منشئ: {{ invoice.createdByName || invoice.createdBy }}</small>
+      </div>
+    </div>
 
-      <section class="items-section">
-        <div class="section-title">
-          <i class="pi pi-list-check"></i>
-          <span>الأصناف</span>
-        </div>
+    <div class="table-panel">
+      <div class="panel-head">
+        <h3><i class="pi pi-list mr-2 text-primary"></i> الأصناف المباعة</h3>
+      </div>
+      <p-table [value]="invoice.items || []" styleClass="compact-table" responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>الصنف الدوائي</th>
+            <th class="text-center">رقم الدفعة</th>
+            <th class="text-center">الكمية</th>
+            <th class="text-right">سعر البيع</th>
+            <th class="text-right">الإجمالي</th>
+          </tr>
+        </ng-template>
 
-        <p-table [value]="invoice.items || []" styleClass="compact-invoice-table" responsiveLayout="scroll">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>الصنف</th>
-              <th>رقم الدفعة</th>
-              <th class="text-center">الكمية</th>
-              <th class="text-right">السعر</th>
-              <th class="text-right">الإجمالي</th>
-            </tr>
-          </ng-template>
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>
+              <strong class="text-blue-700">{{ item.medicineName }}</strong>
+            </td>
+            <td class="text-center">
+              <span class="batch-chip">{{ item.batchNumber || item.companyBatchNumber || '-' }}</span>
+            </td>
+            <td class="text-center">
+              <span class="qty-pill">{{ item.quantity }}</span>
+            </td>
+            <td class="text-right price-text">{{ item.salePrice | number:'1.2-2' }}</td>
+            <td class="text-right price-text text-green-700 font-bold">{{ (item.quantity * item.salePrice) | number:'1.2-2' }}</td>
+          </tr>
+        </ng-template>
 
-          <ng-template pTemplate="body" let-item>
-            <tr>
-              <td>
-                <div class="medicine-cell">
-                  <span>{{ item.medicineName }}</span>
-                </div>
-              </td>
-              <td>
-                <span class="batch-chip">{{ item.batchNumber || item.companyBatchNumber || '-' }}</span>
-              </td>
-              <td class="text-center">
-                <span class="quantity-pill">{{ item.quantity }}</span>
-              </td>
-              <td class="text-right muted-number">{{ item.salePrice | number:'1.2-2' }}</td>
-              <td class="text-right line-total">{{ (item.quantity * item.salePrice) | number:'1.2-2' }}</td>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="emptymessage">
-            <tr>
-              <td colspan="5" class="empty-table">لا توجد أصناف في هذه الفاتورة</td>
-            </tr>
-          </ng-template>
-        </p-table>
-      </section>
-
-      <footer class="invoice-total-bar">
-        <div class="total-copy">
-          <span>إجمالي الفاتورة</span>
-          <small>يشمل كل الأصناف المسجلة في العملية</small>
-        </div>
-        <div class="total-amount">
-          <strong>{{ invoice.totalAmount | number:'1.2-2' }}</strong>
-          <span>ر.ي</span>
-        </div>
-      </footer>
-    </main>
-  </section>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="text-center p-4 text-500">لا توجد أصناف في هذه الفاتورة</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </ng-container>
 
   <div *ngIf="!loading && !invoice" class="empty-state">
     <i class="pi pi-exclamation-triangle"></i>
     <h3>لم يتم العثور على الفاتورة</h3>
-    <p-button label="العودة للقائمة" icon="pi pi-arrow-right" (onClick)="backToList()"></p-button>
+    <p-button label="العودة للقائمة" icon="pi pi-arrow-right" [text]="true" (onClick)="backToList()"></p-button>
   </div>
 </div>
 

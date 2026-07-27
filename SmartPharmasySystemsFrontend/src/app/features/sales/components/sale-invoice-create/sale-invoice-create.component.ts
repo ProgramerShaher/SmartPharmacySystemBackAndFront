@@ -43,6 +43,8 @@ interface InvoiceItem {
     profit: number;
     expiryDate?: Date;
     availableQuantity: number;
+    saleUnitId?: number | null;
+    unitName?: string;
 }
 
 @Component({
@@ -85,9 +87,21 @@ export class SaleInvoiceCreateComponent implements OnInit {
     totalQuantity = computed(() => this.items().reduce((sum, item) => sum + item.quantity, 0));
 
     // 💡 MODAL LIVE TOTAL (Instant Calculation) - Using getter for non-signal properties
+    get modalLivePrice(): number {
+        if (this.selectedBatchForModal) {
+            if (this.selectedUnitForModal && this.selectedUnitForModal.salePrice) {
+                return this.selectedUnitForModal.salePrice;
+            }
+            const unitFactor = this.selectedUnitForModal ? this.selectedUnitForModal.factor : 1;
+            const basePrice = this.selectedBatchForModal.retailPrice || this.selectedBatchForModal.unitPurchasePrice || 0;
+            return basePrice * unitFactor;
+        }
+        return 0;
+    }
+
     get modalLiveTotal(): number {
         if (this.selectedBatchForModal && this.modalQuantity) {
-            return this.selectedBatchForModal.retailPrice * this.modalQuantity;
+            return this.modalLivePrice * this.modalQuantity;
         }
         return 0;
     }
@@ -113,6 +127,8 @@ export class SaleInvoiceCreateComponent implements OnInit {
     selectedMedicineForModal: Medicine | null = null;
     selectedBatchForModal: MedicineBatchResponseDto | null = null;
     modalQuantity: number = 1;
+    unitOptionsForModal: any[] = [];
+    selectedUnitForModal: any = null; // Holds the selected option object
 
     // 💳 PAYMENT METHODS
     paymentMethods = [
@@ -222,7 +238,9 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 total: data.salePrice,
                 profit: data.salePrice - data.movingAverageCost,
                 expiryDate: new Date(data.expiryDate),
-                availableQuantity: data.availableQuantity
+                availableQuantity: data.availableQuantity,
+                saleUnitId: null,
+                unitName: 'أساسية'
             };
 
             this.items.update(current => [...current, newItem]);
@@ -293,7 +311,9 @@ export class SaleInvoiceCreateComponent implements OnInit {
                     unitCost: 0, // Need fetch for profit calc if strict
                     total: d.quantity * d.salePrice,
                     profit: 0,
-                    availableQuantity: 9999 // Fallback
+                    availableQuantity: 9999, // Fallback
+                    saleUnitId: d.saleUnitId,
+                    unitName: d.saleUnitId ? 'وحدة' : 'أساسية'
                 }));
                 this.items.set(mappedItems);
                 this.saving = false;
@@ -356,7 +376,9 @@ export class SaleInvoiceCreateComponent implements OnInit {
             total: batch.retailPrice,
             profit: (batch.unitPurchasePrice > 0) ? (batch.retailPrice - batch.unitPurchasePrice) * 1 : 0, // Initial Profit
             expiryDate: new Date(batch.expiryDate),
-            availableQuantity: batch.remainingQuantity
+            availableQuantity: batch.remainingQuantity,
+            saleUnitId: null,
+            unitName: 'أساسية'
         };
 
         this.items.update(current => [...current, newItem]);
@@ -441,7 +463,8 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 medicineId: item.medicineId,
                 batchId: item.batchId,
                 quantity: item.quantity,
-                salePrice: item.salePrice
+                salePrice: item.salePrice,
+                saleUnitId: item.saleUnitId
             })),
             notes: approve ? 'تم الاعتماد من نقطة البيع' : 'مسودة من نقطة البيع'
         };
@@ -520,12 +543,32 @@ export class SaleInvoiceCreateComponent implements OnInit {
         this.selectedBatchForModal = null;
         this.modalQuantity = 1;
         this.availableBatches = [];
+        this.unitOptionsForModal = [];
+        this.selectedUnitForModal = null;
     }
 
     onMedicineSelectInModal(medicine: Medicine) {
         this.selectedMedicineForModal = medicine;
         this.selectedBatchForModal = null;
         this.modalQuantity = 1;
+        
+        const baseName = medicine.baseUnitName || 'حبة';
+        this.unitOptionsForModal = [
+            { label: `${baseName} (أساسية)`, value: null, factor: 1, salePrice: medicine.defaultSalePrice || 0, name: baseName }
+        ];
+
+        if (medicine.medicineUnits && medicine.medicineUnits.length > 0) {
+            medicine.medicineUnits.forEach(u => {
+                this.unitOptionsForModal.push({
+                    label: `${u.name} (x${u.conversionFactor})`,
+                    value: u.id,
+                    factor: u.conversionFactor,
+                    salePrice: u.defaultSalePrice || (medicine.defaultSalePrice * u.conversionFactor),
+                    name: u.name
+                });
+            });
+        }
+        this.selectedUnitForModal = this.unitOptionsForModal[0];
 
         // Load batches for selected medicine (FEFO order)
         this.medicineBatchService.getAvailableByMedicineId(medicine.id).subscribe({
@@ -556,9 +599,29 @@ export class SaleInvoiceCreateComponent implements OnInit {
             return;
         }
 
-        // Get price with fallback
-        const salePrice = this.selectedBatchForModal.retailPrice || this.selectedBatchForModal.unitPurchasePrice || 0;
-        const unitCost = this.selectedBatchForModal.unitPurchasePrice || 0;
+        // Selected Unit Info
+        const unitFactor = this.selectedUnitForModal ? this.selectedUnitForModal.factor : 1;
+        const saleUnitId = this.selectedUnitForModal ? this.selectedUnitForModal.value : null;
+        const unitName = this.selectedUnitForModal ? this.selectedUnitForModal.name : 'أساسية';
+
+        // Price calculations. We use the custom sale price of the unit if set, otherwise multiply the batch base retail price by factor
+        const baseSalePrice = this.selectedBatchForModal.retailPrice || this.selectedBatchForModal.unitPurchasePrice || 0;
+        let salePrice = baseSalePrice * unitFactor;
+        
+        if (this.selectedUnitForModal && this.selectedUnitForModal.salePrice) {
+             salePrice = this.selectedUnitForModal.salePrice;
+        }
+
+        const baseUnitCost = this.selectedBatchForModal.unitPurchasePrice || 0;
+        const unitCost = baseUnitCost * unitFactor;
+
+        // Note: quantity validation against available stock MUST be in base units. 
+        // We calculate if availableQuantity (which is base units) >= modalQuantity * unitFactor
+        const requestedBaseUnits = this.modalQuantity * unitFactor;
+        if (requestedBaseUnits > this.selectedBatchForModal.remainingQuantity) {
+             this.messageService.add({ severity: 'error', summary: 'رصيد غير كاف', detail: `الكمية المتوفرة ${this.selectedBatchForModal.remainingQuantity} وحدة أساسية فقط.` });
+             return;
+        }
 
         // Check if item already exists
         const existingItem = this.items().find(i => i.batchId === this.selectedBatchForModal!.id);
@@ -568,7 +631,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
         } else {
             const newItem: InvoiceItem = {
                 medicineId: this.selectedMedicineForModal.id,
-                medicineName: this.selectedMedicineForModal.name,
+                medicineName: `${this.selectedMedicineForModal.name} (${unitName})`,
                 batchId: this.selectedBatchForModal.id,
                 batchNumber: this.selectedBatchForModal.companyBatchNumber,
                 quantity: this.modalQuantity,
@@ -577,7 +640,9 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 total: this.modalQuantity * salePrice,
                 profit: (salePrice - unitCost) * this.modalQuantity,
                 expiryDate: new Date(this.selectedBatchForModal.expiryDate),
-                availableQuantity: this.selectedBatchForModal.remainingQuantity
+                availableQuantity: Math.floor(this.selectedBatchForModal.remainingQuantity / unitFactor),
+                saleUnitId: saleUnitId,
+                unitName: unitName
             };
 
             this.items.update(current => [...current, newItem]);

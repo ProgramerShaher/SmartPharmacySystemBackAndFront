@@ -8,4 +8,7 @@ public class UpdateInventoryStockDto
     public string BatchNumber { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public int Quantity { get; set; }
+    /// <summary>موقع التخزين داخل المخزن — اختياري — مثال: "R1-S3"</summary>
+    [System.ComponentModel.DataAnnotations.MaxLength(100)]
+    public string? StorageLocation { get; set; }
 }

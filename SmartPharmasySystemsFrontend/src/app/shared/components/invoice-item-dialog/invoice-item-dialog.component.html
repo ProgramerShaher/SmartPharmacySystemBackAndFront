@@ -20,6 +20,7 @@
         <div class="dialog-field span-2">
             <label>اسم الصنف / الدواء</label>
             <p-autoComplete [suggestions]="filteredMedicines" (completeMethod)="searchMedicines($event)" field="name"
+                [(ngModel)]="selectedMedicine" [ngModelOptions]="{standalone: true}"
                 (onSelect)="onMedicineSelect($event.value)" placeholder="ابحث عن الصنف في القاعدة..." appendTo="body"
                 [forceSelection]="true" [disabled]="isEdit"></p-autoComplete>
         </div>

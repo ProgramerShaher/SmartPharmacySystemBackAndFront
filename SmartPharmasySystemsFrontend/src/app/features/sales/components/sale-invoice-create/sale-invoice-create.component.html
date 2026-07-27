@@ -201,6 +201,17 @@
                         </p-autoComplete>
                     </div>
             
+                    <!-- اختيار الوحدة -->
+                    <div class="modal-field unit-field" *ngIf="selectedMedicineForModal && unitOptionsForModal.length > 0">
+                        <label class="field-label">
+                            <i class="pi pi-tags"></i>
+                            وحدة البيع
+                        </label>
+                        <p-dropdown [options]="unitOptionsForModal" [(ngModel)]="selectedUnitForModal" optionLabel="label"
+                            placeholder="اختر وحدة البيع" styleClass="w-full" appendTo="body">
+                        </p-dropdown>
+                    </div>
+
                     <!-- اختيار الدفعة FEFO -->
                     <div class="modal-field batch-field" *ngIf="selectedMedicineForModal && availableBatches.length > 0">
                         <label class="field-label">
@@ -245,15 +256,13 @@
             </div>
             <div class="total-row">
                 <span class="label">السعر</span>
-                <span class="value">{{ (selectedBatchForModal.retailPrice || selectedBatchForModal.unitPurchasePrice || 0) |
-                    number:'1.2-2' }} ر.ي</span>
+                <span class="value">{{ modalLivePrice | number:'1.2-2' }} ر.ي</span>
             </div>
             <div class="total-row grand">
                 <span class="label">الإجمالي الفوري</span>
-                <span class="value">{{ ((selectedBatchForModal.retailPrice || selectedBatchForModal.unitPurchasePrice || 0) *
-                    modalQuantity) | number:'1.2-2' }} ر.ي</span>
+                <span class="value">{{ modalLiveTotal | number:'1.2-2' }} ر.ي</span>
             </div>
-            </div>
+        </div>
 
     </div>
     <ng-template pTemplate="footer">

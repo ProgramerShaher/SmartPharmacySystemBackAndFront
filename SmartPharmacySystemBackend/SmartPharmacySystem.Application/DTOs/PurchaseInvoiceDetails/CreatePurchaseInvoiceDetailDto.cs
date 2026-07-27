@@ -15,11 +15,18 @@ public class CreatePurchaseInvoiceDetailDto
     public int MedicineId { get; set; }
 
     /// <summary>
-    /// الكمية
+    /// الكمية كما يدخلها المستخدم بالوحدة المختارة (مثلاً: 5 كراتين).
+    /// Quantity as entered by the user in the selected purchase unit (e.g. 5 cartons).
     /// </summary>
     [Required]
     [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; }
+    public int Quantity { get; set; }  // kept for backward-compat; equals QuantityInPurchaseUnit when sent
+
+    /// <summary>
+    /// معرف وحدة الشراء (مثلاً: كرتون). إذا كان null سيتم التعامل بالوحدة الأساسية (x1).
+    /// FK to MedicineUnit. If null, base unit (conversion factor = 1) is assumed.
+    /// </summary>
+    public int? PurchaseUnitId { get; set; }
 
     /// <summary>
     /// الكمية المجانية (Bonus)

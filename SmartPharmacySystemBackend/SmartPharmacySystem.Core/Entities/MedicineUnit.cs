@@ -54,7 +54,25 @@ public class MedicineUnit : BaseEntity
     [StringLength(100)]
     public string? Barcode { get; set; }
 
+    /// <summary>
+    /// Whether this unit is allowed to be used when selling to customers.
+    /// هل يُسمح بالبيع بهذه الوحدة؟ (مثلاً: يُباع بالشريط والحبة فقط، لا بالكرتون)
+    /// </summary>
+    public bool IsAllowedForSale { get; set; } = true;
+
+    /// <summary>
+    /// Whether this unit is allowed to be used when purchasing from suppliers.
+    /// هل يُسمح بالشراء بهذه الوحدة؟ (مثلاً: يُشترى بالكرتون فقط)
+    /// </summary>
+    public bool IsAllowedForPurchase { get; set; } = true;
+
+    /// <summary>
+    /// Display sort order — higher number = larger unit (Carton > Pack > Strip > Pill).
+    /// ترتيب العرض — الرقم الأعلى = الوحدة الأكبر
+    /// </summary>
+    public int SortOrder { get; set; } = 0;
+
     // ===================== Navigation Properties =====================
-    
+
     public Medicine Medicine { get; set; } = null!;
 }

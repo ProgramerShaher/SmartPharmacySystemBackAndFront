@@ -23,9 +23,22 @@ public class PurchaseInvoiceDetail : BaseEntity
     public int BatchId { get; set; }
 
     /// <summary>
-    /// Quantity purchased.
+    /// Quantity purchased (stored in Base Unit = smallest unit, e.g. pills).
+    /// الكمية المشتراة محوّلة إلى أصغر وحدة (حبة). محسوبة تلقائياً.
     /// </summary>
     public int Quantity { get; set; }
+
+    /// <summary>
+    /// Quantity as entered by the user in the selected purchase unit (e.g. 5 cartons).
+    /// الكمية كما أدخلها المستخدم بالوحدة المحددة (مثلاً: 5 كراتين).
+    /// </summary>
+    public int QuantityInPurchaseUnit { get; set; }
+
+    /// <summary>
+    /// The unit used when purchasing (FK to MedicineUnit). Null = base unit.
+    /// الوحدة المستخدمة في الشراء (مثلاً: كرتون). إذا كانت null تعني الوحدة الأساسية.
+    /// </summary>
+    public int? PurchaseUnitId { get; set; }
 
     /// <summary>
     /// Free quantity received (Bonus).
@@ -67,4 +80,10 @@ public class PurchaseInvoiceDetail : BaseEntity
     /// Navigation property to the medicine batch.
     /// </summary>
     public MedicineBatch Batch { get; set; }
+
+    /// <summary>
+    /// Navigation property to the purchase unit (MedicineUnit).
+    /// خاصية التنقل لوحدة الشراء المستخدمة.
+    /// </summary>
+    public MedicineUnit? PurchaseUnit { get; set; }
 }

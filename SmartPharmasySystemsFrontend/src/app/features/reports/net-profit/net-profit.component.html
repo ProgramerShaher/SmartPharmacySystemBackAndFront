@@ -1,69 +1,67 @@
-<div class="report-container animate-fade-in">
+<div class="report-container" dir="rtl">
   <!-- Header Section -->
-  <p-card styleClass="header-card">
-    <div class="header-content">
-      <div class="header-title">
-        <h2><i class="pi pi-chart-bar"></i> تقرير صافي الأرباح التحليلي</h2>
-        <span>تحليل شامل للإيرادات والمصروفات وصافي الربح التشغيلي للفترة المحددة</span>
-      </div>
-
-      <div class="filters">
-        <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
-        <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
-
-        <p-button icon="pi pi-sync" label="تحديث" styleClass="p-button-sm p-button-raised" (click)="applyDateFilter()"></p-button>
-        <p-button icon="pi pi-print" label="طباعة" styleClass="p-button-sm p-button-info" [outlined]="true" (click)="printReport()"></p-button>
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-chart-bar"></i></div>
+      <div>
+        <h1>تقرير صافي الأرباح التحليلي</h1>
+        <p>تحليل شامل للإيرادات والمصروفات وصافي الربح التشغيلي للفترة المحددة</p>
       </div>
     </div>
-  </p-card>
+
+    <div class="actions no-print">
+      <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
+      <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
+      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="applyDateFilter()" [loading]="loading()"></p-button>
+      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+    </div>
+  </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="loading()">
+  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
   <!-- Summary Cards -->
-  <div class="summary-cards" *ngIf="report() && !loading()">
-    <div class="summary-card sales">
-      <div class="summary-icon"><i class="pi pi-shopping-cart"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي المبيعات</span>
-        <span class="value">{{ formatCurrency(report()!.grossSales) }}</span>
-      </div>
+  <div class="kpi-grid" *ngIf="report() && !loading()">
+    <div class="kpi-card sales">
+      <span class="kpi-label">إجمالي المبيعات</span>
+      <strong>{{ formatCurrency(report()!.grossSales) }} ر.ي</strong>
+      <small>المبيعات الكلية قبل الخصومات</small>
     </div>
 
-    <div class="summary-card expenses">
-      <div class="summary-icon"><i class="pi pi-wallet"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي المصروفات</span>
-        <span class="value text-danger">{{ formatCurrency(report()!.totalExpenses) }}</span>
-      </div>
+    <div class="kpi-card receivable">
+      <span class="kpi-label">إجمالي المصروفات</span>
+      <strong>{{ formatCurrency(report()!.totalExpenses) }} ر.ي</strong>
+      <small>إجمالي المصروفات التشغيلية للفترة</small>
     </div>
 
-    <div class="summary-card profit">
-      <div class="summary-icon"><i class="pi pi-dollar"></i></div>
-      <div class="summary-content">
-        <span class="label">صافي الربح</span>
-        <span class="value" [ngClass]="isProfitable() ? 'text-success' : 'text-danger'">
-          {{ formatCurrency(report()!.netProfit) }}
-        </span>
-      </div>
+    <div class="kpi-card profit">
+      <span class="kpi-label">صافي الربح</span>
+      <strong [ngClass]="isProfitable() ? 'text-success' : 'text-danger'">
+        {{ formatCurrency(report()!.netProfit) }} ر.ي
+      </strong>
+      <small>الربح النهائي الخاضع للتقييم</small>
     </div>
 
-    <div class="summary-card margin">
-      <div class="summary-icon"><i class="pi pi-percentage"></i></div>
-      <div class="summary-content">
-        <span class="label">هامش الربح</span>
-        <span class="value">{{ profitPercentage() }}%</span>
-      </div>
+    <div class="kpi-card stock">
+      <span class="kpi-label">هامش الربح</span>
+      <strong>{{ profitPercentage() }}%</strong>
+      <small>نسبة صافي الأرباح للمبيعات</small>
     </div>
   </div>
 
   <!-- Analytics Row -->
-  <div class="analytics-row" *ngIf="report() && !loading()">
+  <div class="charts-grid" *ngIf="report() && !loading()">
     <!-- Income Statement Breakdown -->
-    <p-card styleClass="analytics-card">
-      <div class="section-title"><i class="pi pi-list"></i> تفاصيل قائمة الدخل</div>
+    <section class="panel analytics-panel">
+      <div class="panel-head">
+        <div>
+          <h3>تفاصيل قائمة الدخل</h3>
+          <p>توزيع الإيرادات وتكلفة المبيعات وصافي الأرباح</p>
+        </div>
+        <i class="pi pi-list"></i>
+      </div>
       <div class="profit-details">
         <div class="profit-item">
           <span class="label">إجمالي مبيعات البضاعة</span>
@@ -75,8 +73,8 @@
         </div>
         <p-divider></p-divider>
         <div class="profit-item">
-          <span class="label">صافي المبيعات</span>
-          <span class="amount" style="font-weight: 800;">{{ formatCurrency(report()!.netSales) }}</span>
+          <span class="label" style="font-weight: 700;">صافي المبيعات</span>
+          <span class="amount" style="font-weight: 800; color: #1e293b;">{{ formatCurrency(report()!.netSales) }}</span>
         </div>
         <div class="profit-item">
           <span class="label">تكلفة البضاعة المباعة (COGS) (-)</span>
@@ -89,21 +87,27 @@
         
         <div class="total-row" [ngClass]="isProfitable() ? 'text-success' : 'text-danger'">
           <span>صافي الربح النهائي</span>
-          <span>{{ formatCurrency(report()!.netProfit) }}</span>
+          <span>{{ formatCurrency(report()!.netProfit) }} ر.ي</span>
         </div>
       </div>
-    </p-card>
+    </section>
 
     <!-- Expenses Chart -->
-    <p-card styleClass="analytics-card">
-      <div class="section-title"><i class="pi pi-chart-pie"></i> توزيع المصروفات التشغيلية</div>
-      <div style="height: 300px;">
-        <p-chart type="doughnut" [data]="expenseChartData()" [options]="expenseChartOptions()" height="300px" *ngIf="expenseChartData()"></p-chart>
-        <div *ngIf="!expenseChartData()" class="text-center p-5 muted" style="padding-top: 100px;">
-           <i class="pi pi-info-circle" style="font-size: 2rem; display: block; margin-bottom: 1rem;"></i>
+    <section class="panel chart-panel">
+      <div class="panel-head">
+        <div>
+          <h3>توزيع المصروفات التشغيلية</h3>
+          <p>التوزيع النسبي للمصروفات حسب البند</p>
+        </div>
+        <i class="pi pi-chart-pie"></i>
+      </div>
+      <div style="height: 220px; display: flex; align-items: center; justify-content: center;">
+        <p-chart type="doughnut" [data]="expenseChartData()" [options]="expenseChartOptions()" height="200px" *ngIf="expenseChartData()"></p-chart>
+        <div *ngIf="!expenseChartData()" class="text-center muted" style="padding: 2rem;">
+           <i class="pi pi-info-circle" style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem; color: #cbd5e1;"></i>
            لا توجد بيانات مصروفات لهذه الفترة
         </div>
       </div>
-    </p-card>
+    </section>
   </div>
 </div>

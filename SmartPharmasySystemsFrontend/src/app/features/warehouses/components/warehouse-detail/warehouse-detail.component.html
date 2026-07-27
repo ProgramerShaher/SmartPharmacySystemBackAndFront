@@ -1,0 +1,201 @@
+<div class="wd-wrap" dir="rtl">
+
+    <!-- ===== Header ===== -->
+    <div class="wd-header">
+        <div class="wd-header-start">
+            <button pButton icon="pi pi-arrow-right" [rounded]="true" [text]="true"
+                pTooltip="رجوع" tooltipPosition="top" (click)="goBack()" class="wd-back-btn"></button>
+            <div class="wd-icon" *ngIf="warehouse()">
+                <i [class]="getTypeIcon(warehouse()!.type)"></i>
+            </div>
+            <div>
+                <h1 class="wd-title">{{ warehouse()?.name || 'تحميل...' }}</h1>
+                <p class="wd-subtitle">
+                    <span *ngIf="warehouse()">
+                        <i class="pi pi-building"></i> {{ warehouse()!.branchName }}
+                        &nbsp;•&nbsp;
+                        <i [class]="getTypeIcon(warehouse()!.type)"></i> {{ warehouse()!.typeName }}
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div class="wd-header-end">
+            <button pButton icon="pi pi-refresh" [rounded]="true" [text]="true"
+                pTooltip="تحديث" tooltipPosition="top" (click)="loadInventory()"></button>
+            <button pButton label="تحويل من هذا المخزن" icon="pi pi-arrow-left"
+                (click)="navigateToTransfer()" class="wd-btn-primary"></button>
+        </div>
+    </div>
+
+    <!-- ===== KPI Row ===== -->
+    <div class="wd-kpi-row">
+        <!-- إجمالي الدفعات -->
+        <div class="wd-kpi-card" data-color="teal">
+            <div class="wd-kpi-inner">
+                <div class="wd-kpi-left">
+                    <span class="wd-kpi-label">إجمالي الدفعات</span>
+                    <strong class="wd-kpi-value">{{ totalBatches() }}</strong>
+                </div>
+                <div class="wd-kpi-badge wd-kpi-badge-teal"><i class="pi pi-box"></i></div>
+            </div>
+            <small class="wd-kpi-extra">دفعة مسجلة في المخزن</small>
+        </div>
+        <!-- إجمالي الكميات -->
+        <div class="wd-kpi-card" data-color="blue">
+            <div class="wd-kpi-inner">
+                <div class="wd-kpi-left">
+                    <span class="wd-kpi-label">إجمالي الكميات</span>
+                    <strong class="wd-kpi-value">{{ totalQuantity() | number }}</strong>
+                </div>
+                <div class="wd-kpi-badge wd-kpi-badge-blue"><i class="pi pi-chart-bar"></i></div>
+            </div>
+            <small class="wd-kpi-extra">وحدة متوفرة</small>
+        </div>
+        <!-- قريبة الانتهاء -->
+        <div class="wd-kpi-card" data-color="amber">
+            <div class="wd-kpi-inner">
+                <div class="wd-kpi-left">
+                    <span class="wd-kpi-label">قريبة الانتهاء</span>
+                    <strong class="wd-kpi-value">{{ expiringSoon() }}</strong>
+                </div>
+                <div class="wd-kpi-badge wd-kpi-badge-amber"><i class="pi pi-clock"></i></div>
+            </div>
+            <small class="wd-kpi-extra">خلال 30 يوم</small>
+        </div>
+        <!-- منتهية -->
+        <div class="wd-kpi-card" data-color="red">
+            <div class="wd-kpi-inner">
+                <div class="wd-kpi-left">
+                    <span class="wd-kpi-label">منتهية الصلاحية</span>
+                    <strong class="wd-kpi-value">{{ expiredCount() }}</strong>
+                </div>
+                <div class="wd-kpi-badge wd-kpi-badge-red"><i class="pi pi-exclamation-triangle"></i></div>
+            </div>
+            <small class="wd-kpi-extra">تحتاج إتلاف أو إرجاع</small>
+        </div>
+    </div>
+
+    <!-- ===== Filter Panel ===== -->
+    <div class="wd-filter-panel">
+        <div class="wd-filter-grid">
+            <div class="wd-filter-field wd-filter-wide">
+                <label>بحث</label>
+                <span class="p-input-icon-right">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" placeholder="اسم الدواء أو رقم الدفعة..."
+                        [ngModel]="searchTerm()" (ngModelChange)="onSearch($event)" />
+                </span>
+            </div>
+            <div class="wd-filter-action">
+                <button pButton
+                    [icon]="showExpiringSoon() ? 'pi pi-clock' : 'pi pi-filter'"
+                    [label]="showExpiringSoon() ? 'قريبة الانتهاء فقط' : 'عرض قريبة الانتهاء'"
+                    [severity]="showExpiringSoon() ? 'warning' : 'secondary'"
+                    [outlined]="true"
+                    (click)="toggleExpiringSoon()"
+                    class="wd-filter-btn">
+                </button>
+            </div>
+            <div class="wd-filter-action">
+                <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true"
+                    severity="info" pTooltip="تحديث" tooltipPosition="top"
+                    (click)="loadInventory()"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Table ===== -->
+    <div class="wd-table-wrap">
+        <p-table [value]="filteredStocks()" [loading]="loading()"
+            [paginator]="true" [rows]="15" [rowsPerPageOptions]="[10,15,25,50]"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} من {totalRecords}"
+            styleClass="wd-table" responsiveLayout="scroll">
+
+            <ng-template pTemplate="caption">
+                <div class="wd-table-caption">
+                    <span><i class="pi pi-list"></i> مخزون الدفعات</span>
+                    <span class="wd-table-count">{{ filteredStocks().length }} دفعة</span>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>الدواء</th>
+                    <th>رقم الدفعة</th>
+                    <th>الكمية</th>
+                    <th>الصلاحية</th>
+                    <th>موقع التخزين</th>
+                    <th style="width:80px;">FEFO</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-stock>
+                <tr [class.wd-row-expired]="stock.daysUntilExpiry <= 0"
+                    [class.wd-row-warning]="stock.daysUntilExpiry > 0 && stock.daysUntilExpiry <= 30">
+
+                    <!-- الدواء -->
+                    <td class="wd-cell-medicine">
+                        <div class="wd-medicine-name">{{ stock.medicineName }}</div>
+                        <div class="wd-medicine-barcode" *ngIf="stock.medicineBarcode">
+                            <i class="pi pi-qrcode"></i> {{ stock.medicineBarcode }}
+                        </div>
+                    </td>
+
+                    <!-- رقم الدفعة -->
+                    <td>
+                        <span class="wd-batch-chip">{{ stock.batchNumber }}</span>
+                    </td>
+
+                    <!-- الكمية -->
+                    <td>
+                        <strong class="wd-qty">{{ stock.quantity | number }}</strong>
+                        <small> وحدة</small>
+                    </td>
+
+                    <!-- الصلاحية -->
+                    <td>
+                        <div class="wd-expiry-cell">
+                            <p-tag [severity]="getExpiryBadge(stock)"
+                                [value]="getExpiryLabel(stock)"
+                                [pTooltip]="stock.expiryDate | date:'yyyy/MM/dd'">
+                            </p-tag>
+                            <small class="wd-expiry-date">{{ stock.expiryDate | date:'yyyy/MM/dd' }}</small>
+                        </div>
+                    </td>
+
+                    <!-- موقع التخزين -->
+                    <td>
+                        <span *ngIf="stock.storageLocation; else noLocation" class="wd-location-chip">
+                            <i class="pi pi-map-marker"></i> {{ stock.storageLocation }}
+                        </span>
+                        <ng-template #noLocation>
+                            <span class="wd-no-location">—</span>
+                        </ng-template>
+                    </td>
+
+                    <!-- FEFO Indicator -->
+                    <td class="wd-fefo-col">
+                        <span *ngIf="fefoSet().has(stock.id)" class="wd-fefo-badge"
+                            pTooltip="هذه الدفعة الأقرب للانتهاء — يُوصى بالبيع منها أولاً" tooltipPosition="top">
+                            <i class="pi pi-star-fill"></i> FEFO
+                        </span>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="wd-empty">
+                        <i class="pi pi-box"></i>
+                        <span>لا توجد دفعات</span>
+                        <small>{{ showExpiringSoon() ? 'لا توجد دفعات قريبة الانتهاء' : 'المخزن فارغ حالياً' }}</small>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+
+</div>
+
+<p-toast position="top-center"></p-toast>

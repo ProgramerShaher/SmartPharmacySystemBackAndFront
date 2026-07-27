@@ -22,6 +22,13 @@ public class InventoryStock : BaseEntity
     [Required]
     public int Quantity { get; set; }
 
+    /// <summary>
+    /// موقع التخزين داخل المخزن (رف، ممر، منطقة)
+    /// مثال: "R1-S3" أو "رف 1 - ممر A"
+    /// </summary>
+    [MaxLength(100)]
+    public string? StorageLocation { get; set; }
+
     // Navigation properties
     [ForeignKey("WarehouseId")]
     public virtual Warehouse Warehouse { get; set; } = null!;

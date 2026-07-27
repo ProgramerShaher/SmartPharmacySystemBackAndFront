@@ -1,77 +1,73 @@
-<div class="report-container animate-fade-in">
+<div class="report-container" dir="rtl">
   <!-- Header Section -->
-  <p-card styleClass="header-card">
-    <div class="header-content">
-      <div class="header-right">
-        <h2><i class="pi pi-users"></i> تقرير ديون وتحصيلات العملاء</h2>
-      </div>
-      <div class="header-left">
-        <p-button icon="pi pi-sync" label="تحديث البيانات" styleClass="p-button-sm p-button-raised" (click)="loadReport()"></p-button>
-        <p-button icon="pi pi-print" label="طباعة التقرير" styleClass="p-button-sm p-button-info" [outlined]="true" (click)="printReport()"></p-button>
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-users"></i></div>
+      <div>
+        <h1>تقرير ديون وتحصيلات العملاء</h1>
+        <p>متابعة مديونيات العملاء والمدفوعات والمستحقات القائمة</p>
       </div>
     </div>
-  </p-card>
+
+    <div class="actions no-print">
+      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadReport()" [loading]="loading()"></p-button>
+      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+    </div>
+  </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="loading()">
+  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
   <!-- Summary Cards Section -->
-  <div class="summary-cards" *ngIf="report() && !loading()">
-    <div class="summary-card receivable">
-      <div class="summary-icon"><i class="pi pi-money-bill"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي المديونية المستحقة</span>
-        <span class="value text-danger">{{ formatCurrency(summary().totalReceivable) }}</span>
-      </div>
+  <div class="kpi-grid" *ngIf="report() && !loading()">
+    <div class="kpi-card receivable">
+      <span class="kpi-label">إجمالي المديونية المستحقة</span>
+      <strong>{{ formatCurrency(summary().totalReceivable) }} ر.ي</strong>
+      <small>الديون القائمة المطلوب تحصيلها</small>
     </div>
-    <div class="summary-card debtors">
-      <div class="summary-icon"><i class="pi pi-user-minus"></i></div>
-      <div class="summary-content">
-        <span class="label">عدد العملاء المدينين</span>
-        <span class="value">{{ summary().debtorCount }}</span>
-      </div>
+    <div class="kpi-card debtors">
+      <span class="kpi-label">عدد العملاء المدينين</span>
+      <strong>{{ summary().debtorCount }} عميل</strong>
+      <small>عملاء مسجل عليهم مستحقات</small>
     </div>
-    <div class="summary-card creditors">
-      <div class="summary-icon"><i class="pi pi-user-plus"></i></div>
-      <div class="summary-content">
-        <span class="label">عملاء لديهم أرصدة دائنة</span>
-        <span class="value text-success">{{ summary().creditorCount }}</span>
-      </div>
+    <div class="kpi-card creditors">
+      <span class="kpi-label">عملاء لديهم أرصدة دائنة</span>
+      <strong>{{ summary().creditorCount }} عميل</strong>
+      <small>عملاء لهم مبالغ سابقة مدفوعة مقدمًا</small>
     </div>
   </div>
 
   <!-- Detailed Table -->
-  <p-card styleClass="table-card" *ngIf="report() && !loading()">
-    <p-table [value]="report()!.customers" [rowHover]="true" styleClass="p-datatable-sm" [paginator]="true" [rows]="10">
+  <section class="table-panel" *ngIf="report() && !loading()">
+    <p-table [value]="report()!.customers" [rowHover]="true" styleClass="p-datatable-sm compact-table" [paginator]="true" [rows]="15">
       <ng-template pTemplate="header">
         <tr>
           <th>اسم العميل</th>
           <th>رقم الجوال</th>
-          <th class="text-center">المشتريات الكلية</th>
-          <th class="text-center">المدفوعات الكلية</th>
-          <th class="text-center">الرصيد الحالي</th>
-          <th class="text-center">الحالة القانونية</th>
+          <th class="text-center" style="width: 120px;">المشتريات الكلية</th>
+          <th class="text-center" style="width: 120px;">المدفوعات الكلية</th>
+          <th class="text-center" style="width: 120px;">الرصيد الحالي</th>
+          <th class="text-center" style="width: 110px;">الحالة القانونية</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
         <tr>
-          <td style="font-weight: 700; color: #1e293b;">{{ item.customerName }}</td>
-          <td style="font-size: 0.85rem; color: #64748b;">{{ item.phoneNumber || '-' }}</td>
+          <td><strong style="color: #1e293b;">{{ item.customerName }}</strong></td>
+          <td><span class="muted" style="font-family: monospace;">{{ item.phoneNumber || '-' }}</span></td>
           <td class="text-center" style="font-weight: 600;">{{ formatCurrency(item.totalPurchases) }}</td>
           <td class="text-center" style="font-weight: 600;">{{ formatCurrency(item.totalPayments) }}</td>
           <td class="text-center font-bold" [class.text-danger]="item.balance > 0" [class.text-success]="item.balance < 0">
             {{ formatCurrency(Math.abs(item.balance)) }}
           </td>
           <td class="text-center">
-            <p-tag [value]="item.balance > 0 ? 'مدين (عليه)' : 'دائن (له)'" 
-                   [severity]="item.balance > 0 ? 'danger' : 'success'"
-                   [rounded]="true">
-            </p-tag>
+            <span class="type-pill" [class.type-red]="item.balance > 0" [class.type-green]="item.balance < 0">
+              {{ item.balance > 0 ? 'مدين (عليه)' : 'دائن (له)' }}
+            </span>
           </td>
         </tr>
       </ng-template>
     </p-table>
-  </p-card>
+  </section>
 </div>

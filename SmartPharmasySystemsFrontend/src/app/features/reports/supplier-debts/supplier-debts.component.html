@@ -1,70 +1,68 @@
-<div class="report-container animate-fade-in">
+<div class="report-container" dir="rtl">
   <!-- Header Section -->
-  <p-card styleClass="header-card">
-    <div class="header-content">
-      <div class="header-right">
-        <h2><i class="pi pi-truck"></i> تقرير التزامات الموردين</h2>
-      </div>
-      <div class="header-left">
-        <p-button icon="pi pi-sync" label="تحديث البيانات" styleClass="p-button-sm p-button-raised" (click)="loadReport()"></p-button>
-        <p-button icon="pi pi-print" label="طباعة التقرير" styleClass="p-button-sm p-button-info" [outlined]="true" (click)="printReport()"></p-button>
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-truck"></i></div>
+      <div>
+        <h1>تقرير التزامات الموردين</h1>
+        <p>متابعة التزامات الموردين المالية والمدفوعات والمستحقات المتبقية</p>
       </div>
     </div>
-  </p-card>
+
+    <div class="actions no-print">
+      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadReport()" [loading]="loading()"></p-button>
+      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+    </div>
+  </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="loading()">
+  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
   <!-- Summary Cards Section -->
-  <div class="summary-cards" *ngIf="report() && !loading()">
-    <div class="summary-card payable">
-      <div class="summary-icon"><i class="pi pi-building"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي الديون المستحقة للموردين</span>
-        <span class="value text-danger">{{ formatCurrency(summary().totalPayable) }}</span>
-      </div>
+  <div class="kpi-grid" *ngIf="report() && !loading()">
+    <div class="kpi-card receivable" style="grid-column: span 2;">
+      <span class="kpi-label">إجمالي الديون المستحقة للموردين</span>
+      <strong>{{ formatCurrency(summary().totalPayable) }} ر.ي</strong>
+      <small>الديون القائمة المطلوب سدادها</small>
     </div>
-    <div class="summary-card creditors">
-      <div class="summary-icon"><i class="pi pi-verified"></i></div>
-      <div class="summary-content">
-        <span class="label">عدد الموردين الدائنين</span>
-        <span class="value">{{ summary().creditorCount }}</span>
-      </div>
+    <div class="kpi-card creditors" style="grid-column: span 2;">
+      <span class="kpi-label">عدد الموردين الدائنين</span>
+      <strong>{{ summary().creditorCount }} مورد</strong>
+      <small>موردين مسجل لهم التزامات مالية قائمة</small>
     </div>
   </div>
 
   <!-- Detailed Table -->
-  <p-card styleClass="table-card" *ngIf="report() && !loading()">
-    <p-table [value]="report()!.suppliers" [rowHover]="true" styleClass="p-datatable-sm" [paginator]="true" [rows]="10">
+  <section class="table-panel" *ngIf="report() && !loading()">
+    <p-table [value]="report()!.suppliers" [rowHover]="true" styleClass="p-datatable-sm compact-table" [paginator]="true" [rows]="15">
       <ng-template pTemplate="header">
         <tr>
           <th>اسم المورد</th>
           <th>رقم الجوال</th>
-          <th class="text-center">إجمالي المشتريات</th>
-          <th class="text-center">إجمالي المدفوعات</th>
-          <th class="text-center">الرصيد المتبقي</th>
-          <th class="text-center">الحالة</th>
+          <th class="text-center" style="width: 120px;">إجمالي المشتريات</th>
+          <th class="text-center" style="width: 120px;">إجمالي المدفوعات</th>
+          <th class="text-center" style="width: 120px;">الرصيد المتبقي</th>
+          <th class="text-center" style="width: 110px;">الحالة</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
         <tr>
-          <td style="font-weight: 700; color: #1e293b;">{{ item.supplierName }}</td>
-          <td style="font-size: 0.85rem; color: #64748b;">{{ item.phoneNumber || '-' }}</td>
+          <td><strong style="color: #1e293b;">{{ item.supplierName }}</strong></td>
+          <td><span class="muted" style="font-family: monospace;">{{ item.phoneNumber || '-' }}</span></td>
           <td class="text-center" style="font-weight: 600;">{{ formatCurrency(item.totalPurchases) }}</td>
           <td class="text-center" style="font-weight: 600;">{{ formatCurrency(item.totalPayments) }}</td>
           <td class="text-center font-bold" [class.text-danger]="item.balance > 0" [class.text-success]="item.balance < 0">
             {{ formatCurrency(Math.abs(item.balance)) }}
           </td>
           <td class="text-center">
-            <p-tag [value]="item.balance > 0 ? 'دائن (له)' : 'مدين (عليه)'" 
-                   [severity]="item.balance > 0 ? 'danger' : 'success'"
-                   [rounded]="true">
-            </p-tag>
+            <span class="type-pill" [class.type-red]="item.balance > 0" [class.type-green]="item.balance < 0">
+              {{ item.balance > 0 ? 'دائن (له)' : 'مدين (عليه)' }}
+            </span>
           </td>
         </tr>
       </ng-template>
     </p-table>
-  </p-card>
+  </section>
 </div>

@@ -1,116 +1,188 @@
-.trial-container {
-    background: #fdfdfd;
-    min-height: 100vh;
-    font-size: 11px;
+.report-container {
+  min-height: 100vh;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
+  color: #1e293b;
 }
 
-/* 📊 Header & Filters */
-.compact-header {
-    background: white;
-    padding: 6px 12px;
-    border-bottom: 2px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.page-header,
+.panel,
+.filters-panel,
+.table-panel,
+.kpi-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
 }
 
-.filters-bar {
-    background: #f8fafc;
-    padding: 4px 12px;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    align-items: center;
-    gap: 15px;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-/* 📋 Micro Grid */
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.icon-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+}
+
+.icon-circle i { font-size: 1rem; }
+
+h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.page-header p {
+  margin: 0.12rem 0 0;
+  color: #334155;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.actions { display: flex; gap: 0.35rem; align-items: center; }
+
+.filters-panel {
+  display: grid;
+  grid-template-columns: 2fr auto;
+  align-items: end;
+  gap: 0.4rem;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-field label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+.table-panel {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.type-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.55rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.type-red { background: #fee2e2; color: #b91c1c; }
+.type-green { background: #dcfce7; color: #15803d; }
+
+.text-danger { color: #ef4444 !important; }
+.text-success { color: #15803d !important; }
+.muted { display: block; color: #334155; font-size: 0.55rem; margin-top: 0.1rem; font-weight: 700; }
+.text-center { text-align: center; }
+.font-bold { font-weight: 700; }
+
 ::ng-deep .micro-grid {
-    .p-datatable-thead > tr > th {
-        background: #1e3c72 !important;
-        color: white !important;
-        padding: 4px 6px !important;
-        font-size: 10px !important;
-        font-weight: 800 !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        text-align: center !important;
-        text-transform: uppercase;
-    }
+  .p-datatable-thead > tr > th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    padding: 0.3rem 0.4rem !important;
+    font-size: 0.6rem !important;
+    font-weight: 800 !important;
+    border: 1px solid #e2e8f0 !important;
+    text-align: center !important;
+  }
 
-    .p-datatable-tbody > tr > td {
-        padding: 6px 8px !important; /* زيادة الحشو قليلاً للوضوح */
-        font-size: 11px !important;
-        border: 1px solid #f1f5f9 !important;
-        color: #334155;
-        text-align: center !important; /* توسيط كافة البيانات */
-        vertical-align: middle !important;
-    }
+  .p-datatable-tbody > tr > td {
+    padding: 0.25rem 0.4rem !important;
+    font-size: 0.65rem !important;
+    border: 1px solid #eef2f7 !important;
+    color: #1e293b;
+    text-align: center !important;
+    vertical-align: middle !important;
+  }
 
-    .account-name-cell {
-        text-align: right !important; /* اسم الحساب يفضل أن يبقى لليمين قليلاً لكن بوضوح أكبر */
-        font-weight: 800 !important;
-        color: #1e293b !important;
-        font-size: 12px !important;
-        padding-right: 15px !important;
-    }
+  .account-name-cell {
+    text-align: right !important;
+    padding-right: 0.5rem !important;
+  }
 
-    .p-datatable-footer {
-        background: #f8fafc !important;
-        padding: 8px 10px !important;
-        font-size: 11px !important;
-        font-weight: 800 !important;
-        border-top: 2px solid #1e3c72 !important;
-    }
+  /* Account Type Borders */
+  .type-asset { border-right: 4px solid var(--primary-color, #0f766e) !important; }
+  .type-liability { border-right: 4px solid #ef4444 !important; }
+  .type-equity { border-right: 4px solid #8b5cf6 !important; }
+  .type-revenue { border-right: 4px solid #3b82f6 !important; }
+  .type-expense { border-right: 4px solid #f59e0b !important; }
 
-    /* Account Type Colors */
-    .type-asset { border-right: 4px solid var(--primary-color) !important; }
-    .type-liability { border-right: 4px solid #ef4444 !important; }
-    .type-equity { border-right: 4px solid #8b5cf6 !important; }
-    .type-revenue { border-right: 4px solid #3b82f6 !important; }
-    .type-expense { border-right: 4px solid #f59e0b !important; }
-
-    .group-header {
-        background: #f1f5f9 !important;
-        font-weight: 800 !important;
-        color: #1e293b !important;
-    }
-
-    .text-debit { color: var(--primary-600); font-weight: 700; }
-    .text-credit { color: #dc2626; font-weight: 700; }
-    .text-total { color: #1e3c72; font-weight: 800; font-size: 12px; }
-}
-
-/* 📌 Components Overrides */
-::ng-deep {
-    .p-calendar {
-        height: 26px !important;
-        width: 220px !important;
-        .p-inputtext { padding: 2px 8px !important; font-size: 11px !important; }
-    }
-    
-    .p-button.p-button-sm {
-        height: 26px !important;
-        padding: 2px 8px !important;
-        font-size: 11px !important;
-    }
-
-    /* Print Optimization */
-    @media print {
-        .filters-bar, .compact-header button { display: none !important; }
-        .trial-container { background: white !important; padding: 0 !important; }
-        .p-datatable { width: 100% !important; }
-    }
+  .text-debit { color: #15803d; font-weight: 700; }
+  .text-credit { color: #b91c1c; font-weight: 700; }
+  .text-total { color: #0f766e; font-weight: 800; font-size: 0.7rem; }
 }
 
 .type-badge {
-    padding: 1px 4px;
-    border-radius: 3px;
-    font-size: 9px;
-    color: white;
-    font-weight: 800;
-    
-    &.Asset { background: var(--primary-color); }
-    &.Liability { background: #ef4444; }
-    &.Equity { background: #8b5cf6; }
-    &.Revenue { background: #3b82f6; }
-    &.Expense { background: #f59e0b; }
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 8px;
+  color: white;
+  font-weight: 800;
+  
+  &.Asset { background: var(--primary-color, #0f766e); }
+  &.Liability { background: #ef4444; }
+  &.Equity { background: #8b5cf6; }
+  &.Revenue { background: #3b82f6; }
+  &.Expense { background: #f59e0b; }
+}
+
+:host ::ng-deep {
+  .p-calendar .p-inputtext {
+    min-height: 1.8rem;
+    font-size: 0.65rem;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    width: 200px;
+  }
+
+  .p-button.p-button-sm,
+  .p-button.p-button-icon-only {
+    width: auto;
+    height: 1.8rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.65rem;
+  }
+}
+
+@media (max-width: 980px) {
+  .page-header,
+  .filters-panel {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .report-container { background: white; padding: 0; }
+  .page-header,
+  .table-panel { box-shadow: none; }
 }

@@ -1,125 +1,110 @@
-<div class="report-container animate-fade-in">
+<div class="report-container" dir="rtl">
   <!-- Header Section -->
-  <p-card styleClass="header-card">
-    <div class="header-content">
-      <div class="header-title">
-        <h2><i class="pi pi-id-card"></i> تقرير أداء الموظفين المميز</h2>
-        <span>متابعة ذكية للمبيعات والمردودات حسب الموظف والفترة الزمنية</span>
-      </div>
-
-      <div class="filters">
-        <p-dropdown
-          [options]="employeeOptions()"
-          [(ngModel)]="selectedEmployeeId"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="اختر الموظف"
-          [showClear]="true"
-          class="compact-dropdown">
-        </p-dropdown>
-
-        <p-dropdown
-          [options]="roleOptions()"
-          [(ngModel)]="selectedRoleId"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="الدور الوظيفي"
-          [showClear]="true"
-          class="compact-dropdown">
-        </p-dropdown>
-
-        <p-dropdown
-          [options]="operationTypes"
-          [(ngModel)]="selectedOperationType"
-          optionLabel="label"
-          optionValue="value"
-          class="compact-dropdown">
-        </p-dropdown>
-
-        <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
-        <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
-
-        <p-button icon="pi pi-sync" label="تحديث" styleClass="p-button-sm p-button-raised" (click)="applyFilter()"></p-button>
-        <p-button icon="pi pi-refresh" label="تصفير" styleClass="p-button-sm p-button-secondary p-button-text" (click)="resetFilters()"></p-button>
-        <p-button icon="pi pi-print" label="طباعة" styleClass="p-button-sm p-button-info" [outlined]="true" (click)="printReport()"></p-button>
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-id-card"></i></div>
+      <div>
+        <h1>تقرير أداء الموظفين المميز</h1>
+        <p>متابعة ذكية للمبيعات والمردودات حسب الموظف والفترة الزمنية</p>
       </div>
     </div>
-  </p-card>
+
+    <div class="actions no-print">
+      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="applyFilter()" [loading]="loading()"></p-button>
+      <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تصفير الفلاتر" tooltipPosition="bottom" (onClick)="resetFilters()"></p-button>
+      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <section class="filters-panel no-print">
+    <div class="filter-field">
+      <label>الموظف</label>
+      <p-dropdown [options]="employeeOptions()" [(ngModel)]="selectedEmployeeId" optionLabel="label" optionValue="value" placeholder="كل الموظفين" [showClear]="true"></p-dropdown>
+    </div>
+    <div class="filter-field">
+      <label>الدور الوظيفي</label>
+      <p-dropdown [options]="roleOptions()" [(ngModel)]="selectedRoleId" optionLabel="label" optionValue="value" placeholder="كل الأدوار" [showClear]="true"></p-dropdown>
+    </div>
+    <div class="filter-field">
+      <label>نوع العملية</label>
+      <p-dropdown [options]="operationTypes" [(ngModel)]="selectedOperationType" optionLabel="label" optionValue="value"></p-dropdown>
+    </div>
+    <div class="filter-field">
+      <label>من تاريخ</label>
+      <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
+    </div>
+    <div class="filter-field">
+      <label>إلى تاريخ</label>
+      <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
+    </div>
+  </section>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="loading()">
+  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
-  <p-card *ngIf="error() && !loading()" styleClass="error-card">
-    <i class="pi pi-exclamation-triangle"></i> {{ error() }}
-  </p-card>
+  <!-- Error Card -->
+  <div class="panel text-center" *ngIf="error() && !loading()" style="padding: 1.5rem; border-color: #ef4444; color: #ef4444;">
+    <i class="pi pi-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i> {{ error() }}
+  </div>
 
   <!-- Summary Cards Section -->
-  <div class="summary-cards" *ngIf="report() && !loading()">
-    <div class="summary-card sales">
-      <div class="summary-icon"><i class="pi pi-shopping-bag"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي المبيعات</span>
-        <span class="value">{{ formatCurrency(summary().totalSales) }}</span>
-      </div>
+  <div class="kpi-grid" *ngIf="report() && !loading()">
+    <div class="kpi-card stock">
+      <span class="kpi-label">إجمالي المبيعات</span>
+      <strong>{{ formatCurrency(summary().totalSales) }} ر.ي</strong>
+      <small>المبيعات الكلية الصادرة</small>
     </div>
 
-    <div class="summary-card returns">
-      <div class="summary-icon"><i class="pi pi-backward"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي المردودات</span>
-        <span class="value">{{ formatCurrency(summary().totalReturns) }}</span>
-      </div>
+    <div class="kpi-card expiry">
+      <span class="kpi-label">إجمالي المردودات</span>
+      <strong>{{ formatCurrency(summary().totalReturns) }} ر.ي</strong>
+      <small>المرتجع الكلي للفترة</small>
     </div>
 
-    <div class="summary-card net">
-      <div class="summary-icon"><i class="pi pi-chart-line"></i></div>
-      <div class="summary-content">
-        <span class="label">صافي المبيعات</span>
-        <span class="value text-success">{{ formatCurrency(summary().netSales) }}</span>
-      </div>
+    <div class="kpi-card profit">
+      <span class="kpi-label">صافي المبيعات</span>
+      <strong>{{ formatCurrency(summary().netSales) }} ر.ي</strong>
+      <small>صافي القيمة الفعلية للمبيعات</small>
     </div>
 
-    <div class="summary-card count">
-      <div class="summary-icon"><i class="pi pi-hashtag"></i></div>
-      <div class="summary-content">
-        <span class="label">العمليات (بيع/إرجاع)</span>
-        <span class="value">{{ summary().invoiceCount }} / {{ summary().returnCount }}</span>
-      </div>
+    <div class="kpi-card today">
+      <span class="kpi-label">العمليات (بيع/إرجاع)</span>
+      <strong>{{ summary().invoiceCount }} / {{ summary().returnCount }}</strong>
+      <small>عدد الفواتير المنفذة</small>
     </div>
   </div>
 
   <!-- Employees Table -->
-  <p-card styleClass="table-card" *ngIf="report() && !loading()">
-    <ng-template pTemplate="header">
-      <div class="p-card-title"><i class="pi pi-users"></i> ملخص أداء الكادر</div>
-    </ng-template>
-    <p-table [value]="report()!.employees" [rowHover]="true" styleClass="p-datatable-sm">
+  <section class="table-panel" *ngIf="report() && !loading()">
+    <div class="panel-head" style="padding: 0.4rem 0.5rem; margin-bottom: 0.25rem;">
+      <h3 style="font-size: 0.75rem; font-weight: 800; color: #0f172a;"><i class="pi pi-users" style="margin-left: 0.35rem; color: #0f766e;"></i>ملخص أداء الكادر</h3>
+    </div>
+    <p-table [value]="report()!.employees" [rowHover]="true" styleClass="p-datatable-sm compact-table">
       <ng-template pTemplate="header">
         <tr>
           <th>الموظف</th>
           <th>الدور</th>
-          <th class="text-center">فواتير البيع</th>
-          <th class="text-center">قيمة المبيعات</th>
-          <th class="text-center">فواتير المردود</th>
-          <th class="text-center">قيمة المردودات</th>
-          <th class="text-center">الصافي النهائي</th>
+          <th class="text-center" style="width: 80px;">فواتير البيع</th>
+          <th class="text-center" style="width: 100px;">قيمة المبيعات</th>
+          <th class="text-center" style="width: 90px;">فواتير المردود</th>
+          <th class="text-center" style="width: 100px;">قيمة المردودات</th>
+          <th class="text-center" style="width: 110px;">الصافي النهائي</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-employee>
         <tr>
           <td>
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-weight: 700; color: #1e293b;">{{ employee.employeeName }}</span>
-              <span class="muted">&#64;{{ employee.username }}</span>
-            </div>
+            <strong style="color: #1e293b;">{{ employee.employeeName }}</strong>
+            <small class="muted">&#64;{{ employee.username }}</small>
           </td>
-          <td><p-tag [value]="employee.roleName" severity="info" [rounded]="true"></p-tag></td>
-          <td class="text-center"><p-tag [value]="employee.salesInvoiceCount" severity="secondary" [rounded]="true"></p-tag></td>
-          <td class="text-center" style="font-weight: 600;">{{ formatCurrency(employee.totalSales) }}</td>
-          <td class="text-center"><p-tag [value]="employee.salesReturnCount" severity="warning" [rounded]="true"></p-tag></td>
-          <td class="text-center text-danger">{{ formatCurrency(employee.totalReturns) }}</td>
+          <td><span class="type-pill type-blue">{{ employee.roleName }}</span></td>
+          <td class="text-center"><span class="type-pill type-gray">{{ employee.salesInvoiceCount }}</span></td>
+          <td class="text-center" style="font-weight: 700; color: #1e293b;">{{ formatCurrency(employee.totalSales) }}</td>
+          <td class="text-center"><span class="type-pill type-amber">{{ employee.salesReturnCount }}</span></td>
+          <td class="text-center text-danger" style="font-weight: 700;">{{ formatCurrency(employee.totalReturns) }}</td>
           <td class="text-center text-success" style="font-weight: 800;">{{ formatCurrency(employee.netSales) }}</td>
         </tr>
       </ng-template>
@@ -127,40 +112,40 @@
         <tr><td colspan="7" class="text-center p-4">لا توجد بيانات متاحة حالياً</td></tr>
       </ng-template>
     </p-table>
-  </p-card>
+  </section>
 
   <!-- Sales Detail Table -->
-  <p-card styleClass="table-card" *ngIf="report() && !loading() && report()!.saleInvoices.length">
-    <ng-template pTemplate="header">
-      <div class="p-card-title"><i class="pi pi-receipt"></i> تفاصيل فواتير المبيعات</div>
-    </ng-template>
-    <p-table [value]="report()!.saleInvoices" [rowHover]="true" styleClass="p-datatable-sm" [paginator]="true" [rows]="5">
+  <section class="table-panel" *ngIf="report() && !loading() && report()!.saleInvoices.length" style="margin-top: 0.5rem;">
+    <div class="panel-head" style="padding: 0.4rem 0.5rem; margin-bottom: 0.25rem;">
+      <h3 style="font-size: 0.75rem; font-weight: 800; color: #0f172a;"><i class="pi pi-receipt" style="margin-left: 0.35rem; color: #0f766e;"></i>تفاصيل فواتير المبيعات</h3>
+    </div>
+    <p-table [value]="report()!.saleInvoices" [rowHover]="true" styleClass="p-datatable-sm compact-table" [paginator]="true" [rows]="10">
       <ng-template pTemplate="header">
         <tr>
-          <th>رقم الفاتورة</th>
-          <th>الوقت والتاريخ</th>
+          <th style="width: 100px;">رقم الفاتورة</th>
+          <th style="width: 110px;">الوقت والتاريخ</th>
           <th>الموظف</th>
           <th>العميل</th>
           <th>الأصناف</th>
-          <th class="text-center">الإجمالي</th>
+          <th class="text-center" style="width: 110px;">الإجمالي</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-invoice>
         <tr>
-          <td style="font-weight: 700; color: #6366f1;">{{ invoice.invoiceNumber }}</td>
-          <td style="font-size: 0.8rem;">{{ formatDateTime(invoice.invoiceDate) }}</td>
-          <td style="font-weight: 600;">{{ invoice.employeeName }}</td>
+          <td><strong style="color: #4f46e5; font-family: monospace;">{{ invoice.invoiceNumber }}</strong></td>
+          <td><span class="muted" style="font-size: 0.55rem;">{{ formatDateTime(invoice.invoiceDate) }}</span></td>
+          <td><strong style="color: #1e293b;">{{ invoice.employeeName }}</strong></td>
           <td>{{ invoice.customerName || '-' }}</td>
           <td>
-            <div class="items-list">
+            <div class="items-list" style="display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.55rem; color: #64748b;">
               <span *ngFor="let item of invoice.items">
                 • {{ item.medicineName }} ({{ item.quantity }})
               </span>
             </div>
           </td>
-          <td class="text-center" style="font-weight: 800;">{{ formatCurrency(invoice.totalAmount) }}</td>
+          <td class="text-center" style="font-weight: 800; color: #1d4ed8;">{{ formatCurrency(invoice.totalAmount) }}</td>
         </tr>
       </ng-template>
     </p-table>
-  </p-card>
+  </section>
 </div>

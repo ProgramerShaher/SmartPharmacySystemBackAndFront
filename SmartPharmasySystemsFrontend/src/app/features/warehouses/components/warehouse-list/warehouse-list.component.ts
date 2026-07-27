@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { WarehouseService } from '../../services/warehouse.service';
@@ -22,7 +22,7 @@ import { WarehouseFormComponent } from '../warehouse-form/warehouse-form.compone
     selector: 'app-warehouse-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule,
+        CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule,
         TagModule, TooltipModule, ConfirmDialogModule, DropdownModule, ToastModule,
         WarehouseFormComponent
     ],

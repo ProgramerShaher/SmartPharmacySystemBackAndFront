@@ -1,396 +1,225 @@
-/* ===================== كشف الحساب الموحد - Unified Statement Styles ===================== */
+.report-container {
+  min-height: 100vh;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
+  color: #1e293b;
+}
 
-.statement-container {
-  padding: 1rem;
+.page-header,
+.panel,
+.filters-panel,
+.table-panel,
+.kpi-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.page-header {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* ===================== Header Card ===================== */
-:host ::ng-deep .statement-header-card {
-  background: linear-gradient(135deg, #1e3a5f 0%, #2d5a87 100%);
-  border-radius: 12px;
-  border: none;
-}
-
-:host ::ng-deep .statement-header-card .p-card-body {
-  padding: 1.5rem;
-}
-
-.header-content {
-  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.header-right {
-  display: flex;
-  flex-direction: column;
   gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-.statement-title {
-  color: #fff;
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.icon-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+}
+
+.icon-circle i { font-size: 1rem; }
+
+h1 {
   margin: 0;
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 
-.statement-title i {
-  font-size: 1.75rem;
-}
-
-.entity-info {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  color: rgba(255, 255, 255, 0.9);
+.page-header p {
+  margin: 0.12rem 0 0;
+  color: #64748b;
+  font-size: 0.62rem;
 }
 
 .entity-name {
-  font-size: 1.25rem;
-  font-weight: 600;
+  color: #0f766e;
+  font-weight: 800;
 }
 
-.entity-phone {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.9rem;
-}
+.actions { display: flex; gap: 0.35rem; align-items: center; }
 
-.header-left {
-  display: flex;
-  gap: 0.75rem;
-}
-
-/* ===================== Filters Card ===================== */
-:host ::ng-deep .filters-card {
-  background: var(--surface-card);
-  border-radius: 10px;
-}
-
-.filters-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: flex-end;
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.filter-group label {
-  font-size: 0.875rem;
-  color: var(--text-color-secondary);
-  font-weight: 500;
-}
-
-.filter-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.search-group {
-  flex: 1;
-  min-width: 250px;
-}
-
-.search-group input {
-  width: 100%;
-}
-
-/* ===================== Summary Cards ===================== */
-.summary-cards {
+.kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
-.summary-card {
-  background: var(--surface-card);
-  border-radius: 10px;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.kpi-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
 }
 
-.summary-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.summary-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-}
-
-.summary-card.opening .summary-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-}
-
-.summary-card.debit .summary-icon {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: #fff;
-}
-
-.summary-card.credit .summary-icon {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: #fff;
-}
-
-.summary-card.balance .summary-icon {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-  color: #fff;
-}
-
-.summary-card.balance.positive .summary-icon {
-  background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
-}
-
-.summary-card.balance.negative .summary-icon {
-  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-}
-
-.summary-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.summary-label {
-  font-size: 0.8rem;
-  color: var(--text-color-secondary);
-}
-
-.summary-value {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-color);
-}
-
-/* ===================== Table Styles ===================== */
-:host ::ng-deep .table-card {
-  border-radius: 10px;
-}
-
-:host ::ng-deep .p-datatable {
-  font-size: 0.875rem;
-}
-
-:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
-  background: var(--surface-100);
-  color: var(--text-color);
-  font-weight: 600;
-  padding: 0.75rem 1rem;
-  border-bottom: 2px solid var(--surface-200);
-  position: sticky;
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
   top: 0;
-  z-index: 1;
+  width: 4px;
+  height: 100%;
 }
 
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
-  padding: 0.625rem 1rem;
-  border-bottom: 1px solid var(--surface-100);
+.kpi-card.stock::before { background: #6366f1; }
+.kpi-card.receivable::before { background: #ef4444; }
+.kpi-card.creditors::before { background: #10b981; }
+.kpi-card.balance::before { background: #3b82f6; }
+
+.kpi-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-bottom: 0.1rem;
 }
 
-/* Row Colors */
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr.row-debit {
-  background: rgba(239, 68, 68, 0.04);
+.kpi-card strong {
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.2;
 }
 
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr.row-credit {
-  background: rgba(34, 197, 94, 0.04);
+.kpi-card.stock strong { color: #4338ca; }
+.kpi-card.receivable strong { color: #dc2626; }
+.kpi-card.creditors strong { color: #15803d; }
+.kpi-card.balance strong { color: #2563eb; }
+
+.kpi-card small { color: #94a3b8; font-size: 0.55rem; margin-top: 0.2rem; display: block; }
+
+.filters-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto 1.5fr;
+  align-items: end;
+  gap: 0.4rem;
+  border-radius: 8px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
-:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover {
-  background: var(--surface-hover) !important;
+.filter-field label {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #475569;
 }
 
-/* Amount cells */
-.amount-cell {
-  font-weight: 600;
-  font-family: 'Roboto Mono', monospace;
+.table-panel {
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.amount-debit {
-  color: #ef4444;
-}
-
-.amount-credit {
-  color: #22c55e;
-}
-
-.balance-cell {
-  font-weight: 700;
-  font-family: 'Roboto Mono', monospace;
-}
-
-.reference-link {
-  color: var(--primary-color);
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.reference-link:hover {
-  text-decoration: underline;
-}
-
-.user-cell {
-  color: var(--text-color-secondary);
-  font-size: 0.8rem;
-}
-
-/* Text Colors */
-.text-success {
-  color: #22c55e !important;
-}
-
-.text-danger {
-  color: #ef4444 !important;
-}
-
-.text-center {
-  text-align: center;
-}
-
-/* ===================== Loading & Error States ===================== */
-.loading-container {
-  display: flex;
-  flex-direction: column;
+.type-pill {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 3rem;
-  gap: 1rem;
-  color: var(--text-color-secondary);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.55rem;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
-:host ::ng-deep .error-card {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+.type-red { background: #fee2e2; color: #b91c1c; }
+.type-green { background: #dcfce7; color: #15803d; }
+
+.text-danger { color: #ef4444; }
+.text-success { color: #15803d; }
+.muted { display: block; color: #94a3b8; font-size: 0.55rem; margin-top: 0.1rem; }
+.text-center { text-align: center; }
+
+:host ::ng-deep {
+  .compact-table .p-datatable-thead > tr > th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 0.3rem 0.4rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .compact-table .p-datatable-tbody > tr > td {
+    padding: 0.25rem 0.4rem;
+    border-color: #eef2f7;
+    vertical-align: middle;
+    font-size: 0.65rem;
+  }
+
+  .compact-table .p-datatable-tbody > tr:hover {
+    background: #f8fafc !important;
+  }
+
+  .compact-table .p-datatable-tbody > tr.row-debit {
+    background: rgba(239, 68, 68, 0.02);
+  }
+
+  .compact-table .p-datatable-tbody > tr.row-credit {
+    background: rgba(34, 197, 94, 0.02);
+  }
+
+  .p-paginator {
+    padding: 0.3rem;
+    background: #f8fafc;
+    border: 0;
+    font-size: 0.65rem;
+  }
+
+  .p-button.p-button-sm,
+  .p-button.p-button-icon-only {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .p-inputtext,
+  .p-calendar .p-inputtext {
+    min-height: 1.8rem;
+    font-size: 0.65rem;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+  }
 }
 
-.error-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  color: #ef4444;
+@media (max-width: 980px) {
+  .kpi-grid,
+  .filters-panel {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-header { align-items: flex-start; flex-direction: column; }
 }
 
-.error-content i {
-  font-size: 1.5rem;
-}
-
-/* Empty Message */
-.empty-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 2rem;
-  color: var(--text-color-secondary);
-}
-
-.empty-message i {
-  font-size: 2.5rem;
-  opacity: 0.5;
-}
-
-/* Table Summary */
-.table-summary {
-  display: flex;
-  justify-content: space-between;
-  padding: 0.5rem 0;
-  font-size: 0.85rem;
-  color: var(--text-color-secondary);
-}
-
-/* ===================== Print Styles ===================== */
 @media print {
-  .header-left,
-  .filter-actions,
-  .search-group,
-  :host ::ng-deep .p-paginator {
-    display: none !important;
-  }
-
-  .statement-container {
-    padding: 0;
-  }
-
-  :host ::ng-deep .statement-header-card {
-    background: #1e3a5f !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  :host ::ng-deep .p-datatable .p-datatable-tbody > tr.row-debit {
-    background: rgba(239, 68, 68, 0.1) !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  :host ::ng-deep .p-datatable .p-datatable-tbody > tr.row-credit {
-    background: rgba(34, 197, 94, 0.1) !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-}
-
-/* ===================== RTL Support ===================== */
-:host {
-  direction: rtl;
-}
-
-.p-input-icon-left > i {
-  right: 0.75rem;
-  left: auto;
-}
-
-.p-input-icon-left > input {
-  padding-right: 2.5rem;
-  padding-left: 0.75rem;
-}
-
-/* ===================== Responsive ===================== */
-@media (max-width: 768px) {
-  .header-content {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header-left {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .filters-row {
-    flex-direction: column;
-  }
-
-  .filter-group,
-  .search-group {
-    width: 100%;
-  }
-
-  .summary-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .no-print { display: none !important; }
+  .report-container { background: white; padding: 0; }
+  .page-header,
+  .panel,
+  .kpi-card { box-shadow: none; }
 }

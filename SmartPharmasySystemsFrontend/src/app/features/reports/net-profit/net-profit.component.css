@@ -1,154 +1,206 @@
 .report-container {
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    direction: rtl;
-    background: radial-gradient(circle at top right, #f8fafc, #f1f5f9);
-    min-height: 100vh;
+  min-height: 100vh;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
+  color: #1e293b;
 }
 
-/* Header Section - Same as Inventory Valuation */
-:host ::ng-deep .header-card {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 1000;
+.page-header,
+.panel,
+.filters-panel,
+.table-panel,
+.kpi-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
 }
 
-:host ::ng-deep .header-card .p-card-body { padding: 1.25rem 2rem; }
-
-.header-content { display: flex; justify-content: space-between; align-items: center; gap: 1.25rem; }
-
-.header-title h2 {
-    color: #ffffff;
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-.header-title h2 i { color: #38bdf8; font-size: 1.5rem; }
-
-.header-title span { color: #94a3b8; font-size: 0.85rem; margin-right: 2.25rem; display: block; }
-
-.filters {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
 }
 
-/* Inputs & Calendars Styling */
-:host ::ng-deep .p-calendar .p-inputtext,
-:host ::ng-deep .p-dropdown {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
-    border-radius: 8px;
-    font-size: 0.85rem;
+.icon-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
 }
 
-:host ::ng-deep .p-calendar .p-inputtext { padding: 0.4rem 0.75rem; width: 130px; }
+.icon-circle i { font-size: 1rem; }
 
-/* Summary Cards - Enhanced */
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
+h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 
-.summary-card {
-    background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: blur(12px);
-    border-radius: 20px;
-    padding: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+.page-header p {
+  margin: 0.12rem 0 0;
+  color: #64748b;
+  font-size: 0.62rem;
 }
 
-.summary-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+.actions { display: flex; gap: 0.35rem; align-items: center; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
-.summary-icon {
-    width: 54px;
-    height: 54px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
+.kpi-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  padding: 0.55rem 0.7rem;
 }
 
-.summary-card.sales .summary-icon { background: linear-gradient(135deg, #e0f2fe, #bae6fd); color: #0369a1; }
-.summary-card.expenses .summary-icon { background: linear-gradient(135deg, #fee2e2, #fecaca); color: #b91c1c; }
-.summary-card.profit .summary-icon { background: linear-gradient(135deg, #dcfce7, #bbf7d0); color: #15803d; }
-.summary-card.margin .summary-icon { background: linear-gradient(135deg, #fef3c7, #fde68a); color: #b45309; }
-
-.summary-content { display: flex; flex-direction: column; gap: 0.5rem; }
-.summary-content .label { font-size: 0.85rem; color: #64748b; font-weight: 600; }
-.summary-content .value { font-size: 1.6rem; font-weight: 800; color: #0f172a; line-height: 1; }
-
-/* Analytics Row */
-.analytics-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
 }
 
-:host ::ng-deep .analytics-card {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    padding: 1.5rem;
+.kpi-card.sales::before { background: #0f766e; }
+.kpi-card.receivable::before { background: #ef4444; }
+.kpi-card.profit::before { background: #10b981; }
+.kpi-card.stock::before { background: #3b82f6; }
+
+.kpi-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-bottom: 0.1rem;
 }
 
-.section-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+.kpi-card strong {
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+
+.kpi-card.sales strong { color: #0f766e; }
+.kpi-card.receivable strong { color: #dc2626; }
+.kpi-card.profit strong { color: #15803d; }
+.kpi-card.stock strong { color: #2563eb; }
+
+.kpi-card small { color: #94a3b8; font-size: 0.55rem; margin-top: 0.2rem; display: block; }
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.panel {
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.35rem;
+}
+
+.panel-head h3 {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #0f172a;
+}
+
+.panel-head i { color: #2563eb; font-size: 0.9rem; }
+
+.profit-details {
+  display: flex;
+  flex-direction: column;
 }
 
 .profit-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid #f1f5f9;
-    font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.25rem 0.4rem;
+  border-bottom: 1px dashed #e2e8f0;
+  font-size: 0.65rem;
 }
 
-.profit-item .label { color: #64748b; }
+.profit-item .label { color: #64748b; font-weight: 600; }
 .profit-item .amount { font-weight: 700; color: #1e293b; }
 
 .total-row {
-    margin-top: 1rem;
-    padding: 1.25rem;
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.3rem;
-    font-weight: 800;
+  margin-top: 0.4rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 800;
 }
 
-.text-success { color: var(--primary-color) !important; }
-.text-danger { color: #ef4444 !important; }
+.total-row.text-success { background: #dcfce7; color: #15803d !important; }
+.total-row.text-danger { background: #fee2e2; color: #b91c1c !important; }
 
-@media (max-width: 1024px) {
-    .header-content { flex-direction: column; align-items: flex-start; }
-    .summary-cards { grid-template-columns: repeat(2, 1fr); }
-    .analytics-row { grid-template-columns: 1fr; }
+.text-danger { color: #ef4444; }
+.text-success { color: #15803d; }
+.muted { display: block; color: #94a3b8; font-size: 0.55rem; margin-top: 0.1rem; }
+.text-center { text-align: center; }
+
+:host ::ng-deep {
+  .p-calendar .p-inputtext {
+    min-height: 1.8rem;
+    font-size: 0.65rem;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+    width: 90px;
+  }
+  .p-button.p-button-sm,
+  .p-button.p-button-icon-only {
+    width: 2rem;
+    height: 2rem;
+  }
+  .p-divider {
+    margin: 0.25rem 0;
+  }
+}
+
+@media (max-width: 980px) {
+  .kpi-grid,
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .page-header { align-items: flex-start; flex-direction: column; }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .report-container { background: white; padding: 0; }
+  .page-header,
+  .panel,
+  .kpi-card { box-shadow: none; }
 }

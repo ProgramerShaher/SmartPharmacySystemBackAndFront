@@ -231,10 +231,10 @@ namespace SmartPharmacySystem.Application.Services
         public async Task ApproveAsync(int id, int userId)
         {
             var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException($"فاتورة الشراء برقم {id} غير موجودة");
+                ?? throw new KeyNotFoundException($"\u0641\u0627\u062a\u0648\u0631\u0629 \u0627\u0644\u0634\u0631\u0627\u0621 \u0628\u0631\u0642\u0645 {id} \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f\u0629");
 
             if (invoice.Status != DocumentStatus.Draft)
-                throw new InvalidOperationException("الفاتورة يجب أن تكون مسودة للاعتماد.");
+                throw new InvalidOperationException("\u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629 \u064a\u062c\u0628 \u0623\u0646 \u062a\u0643\u0648\u0646 \u0645\u0633\u0648\u062f\u0629 \u0644\u0644\u0627\u0639\u062a\u0645\u0627\u062f.");
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -247,32 +247,48 @@ namespace SmartPharmacySystem.Application.Services
                 foreach (var detail in invoice.PurchaseInvoiceDetails)
                 {
                     var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId)
-                        ?? throw new KeyNotFoundException($"الدفعة {detail.BatchId} غير موجودة");
+                        ?? throw new KeyNotFoundException($"\u0627\u0644\u062f\u0641\u0639\u0629 {detail.BatchId} \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f\u0629");
 
-                    batch.Quantity += (detail.Quantity + detail.BonusQuantity);
-                    batch.RemainingQuantity += (detail.Quantity + detail.BonusQuantity);
+                    // ====================================================
+                    // UoM: Convert entered quantity to base unit (pills)
+                    // ====================================================
+                    int conversionFactor = 1;
+                    if (detail.PurchaseUnitId.HasValue)
+                    {
+                        var purchaseUnit = await _unitOfWork.MedicineUnits.GetByIdAsync(detail.PurchaseUnitId.Value);
+                        conversionFactor = purchaseUnit?.ConversionFactor ?? 1;
+                    }
+
+                    int rawQty = detail.Quantity;       // what user typed (e.g. 5 cartons)
+                    int rawBonus = detail.BonusQuantity;
+                    int baseUnits = (rawQty + rawBonus) * conversionFactor;
+
+                    detail.QuantityInPurchaseUnit = rawQty;   // save as entered
+                    detail.Quantity = baseUnits;               // store in base units
+
+                    batch.Quantity += baseUnits;
+                    batch.RemainingQuantity += baseUnits;
                     batch.Status = "Active";
 
-                    // Cost Calculation
-                    decimal trueUnitCost = detail.Total / (detail.Quantity + detail.BonusQuantity);
+                    // Cost per base unit (e.g. cost per pill)
+                    decimal trueUnitCost = baseUnits > 0 ? detail.Total / baseUnits : detail.PurchasePrice;
                     batch.UnitPurchasePrice = trueUnitCost;
-                    batch.RetailPrice = detail.SalePrice; // The "Golden Point": Save sale price at batch arrival
+                    batch.RetailPrice = detail.SalePrice;
                     batch.PurchaseInvoiceId = invoice.Id;
                     detail.TrueUnitCost = trueUnitCost;
 
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
-                    await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity + detail.BonusQuantity);
+                    await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, baseUnits);
 
                     // Update Medicine MAC & Default Pricing
                     var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
                     if (medicine != null)
                     {
                         int totalStock = await _unitOfWork.MedicineBatches.GetTotalQuantityAsync(medicine.Id);
-                        decimal oldVal = Math.Max(0, (totalStock - detail.Quantity - detail.BonusQuantity) * medicine.MovingAverageCost);
-                        decimal newVal = oldVal + (detail.Total);
+                        decimal oldVal = Math.Max(0, (totalStock - baseUnits) * medicine.MovingAverageCost);
+                        decimal newVal = oldVal + detail.Total;
                         medicine.MovingAverageCost = totalStock > 0 ? newVal / totalStock : trueUnitCost;
 
-                        // Professional touch: Update default sale price if changed
                         medicine.DefaultSalePrice = detail.SalePrice;
                         medicine.DefaultPurchasePrice = detail.PurchasePrice;
 
@@ -284,56 +300,53 @@ namespace SmartPharmacySystem.Application.Services
 
                 invoice.TotalAmount = validTotal;
 
-                // ==================== المحرك المحاسبي الاحترافي ====================
+                // ==================== Journal Entry ====================
                 var journalEntry = new JournalEntryDto
                 {
                     EntryDate = invoice.PurchaseDate,
                     VoucherNumber = invoice.PurchaseInvoiceNumber,
-                    Description = $"قيد مشتريات آلي - فاتورة رقم: {invoice.PurchaseInvoiceNumber} - المورد: {invoice.Supplier?.Name ?? "غير معروف"}",
+                    Description = $"\u0642\u064a\u062f \u0645\u0634\u062a\u0631\u064a\u0627\u062a \u0622\u0644\u064a - \u0641\u0627\u062a\u0648\u0631\u0629 \u0631\u0642\u0645: {invoice.PurchaseInvoiceNumber} - \u0627\u0644\u0645\u0648\u0631\u062f: {invoice.Supplier?.Name ?? "\u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641"}",
                     Type = VoucherType.PurchaseInvoice,
                     Lines = new List<JournalEntryLineDto>()
                 };
 
-                // 1. الطرف المدين (من حـ/ المخزون)
                 journalEntry.Lines.Add(new JournalEntryLineDto
                 {
-                    AccountId = 1301, // مخزون الصيدلية
+                    AccountId = 1301,
                     Debit = invoice.TotalAmount,
                     Credit = 0,
-                    Description = $"إضافة للمخزون - فاتورة شراء {invoice.PurchaseInvoiceNumber}"
+                    Description = $"\u0625\u0636\u0627\u0641\u0629 \u0644\u0644\u0645\u062e\u0632\u0648\u0646 - \u0641\u0627\u062a\u0648\u0631\u0629 \u0634\u0631\u0627\u0621 {invoice.PurchaseInvoiceNumber}"
                 });
 
-                // 2. الطرف الدائن (إلى حـ/)
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1101, // الصندوق الرئيسي
+                        AccountId = 1101,
                         Debit = 0,
                         Credit = invoice.TotalAmount,
-                        Description = $"صرف قيمة مشتريات نقدية - فاتورة {invoice.PurchaseInvoiceNumber}"
+                        Description = $"\u0635\u0631\u0641 \u0642\u064a\u0645\u0629 \u0645\u0634\u062a\u0631\u064a\u0627\u062a \u0646\u0642\u062f\u064a\u0629 - \u0641\u0627\u062a\u0648\u0631\u0629 {invoice.PurchaseInvoiceNumber}"
                     });
                     invoice.IsPaid = true;
                 }
                 else
                 {
                     var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId)
-                        ?? throw new KeyNotFoundException("المورد غير موجود");
-                    
+                        ?? throw new KeyNotFoundException("\u0627\u0644\u0645\u0648\u0631\u062f \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f");
+
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = supplier.AccountId ?? 2101, // حساب المورد أو ذمم الموردين
+                        AccountId = supplier.AccountId ?? 2101,
                         Debit = 0,
                         Credit = invoice.TotalAmount,
-                        Description = $"مشتريات آجلة - فاتورة {invoice.PurchaseInvoiceNumber}"
+                        Description = $"\u0645\u0634\u062a\u0631\u064a\u0627\u062a \u0622\u062c\u0644\u0629 - \u0641\u0627\u062a\u0648\u0631\u0629 {invoice.PurchaseInvoiceNumber}"
                     });
-                    
-                    supplier.Balance += invoice.TotalAmount; // Increase Debt (Keep old logic for now)
+
+                    supplier.Balance += invoice.TotalAmount;
                     await _unitOfWork.Suppliers.UpdateAsync(supplier);
                     invoice.IsPaid = false;
                 }
 
-                // حفظ وترحيل القيد
                 var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
                 await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
 

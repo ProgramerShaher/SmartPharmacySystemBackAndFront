@@ -147,6 +147,7 @@ namespace SmartPharmacySystem.Application.Services
 
             dto.Batches = batches.Select(b => new MedicineBatchDetailDto
             {
+                Id = b.Id,
                 BatchNumber = b.CompanyBatchNumber,
                 ExpiryDate = b.ExpiryDate,
                 RemainingQuantity = b.RemainingQuantity,

@@ -26,11 +26,17 @@ public class CreateSaleInvoiceDetailDto
     public int? BatchId { get; set; }
 
     /// <summary>
-    /// الكمية
+    /// الكمية كما أدخلها الكاشير بالوحدة المحددة (مثلاً: 2 شريط).
     /// </summary>
     [Required]
     [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; }
+    public int Quantity { get; set; } // acts as QuantityInSaleUnit when creating
+
+    /// <summary>
+    /// معرف وحدة البيع (مثلاً: شريط). إذا كان null سيتم التعامل بالوحدة الأساسية.
+    /// FK to MedicineUnit.
+    /// </summary>
+    public int? SaleUnitId { get; set; }
 
     /// <summary>
     /// سعر البيع للوحدة

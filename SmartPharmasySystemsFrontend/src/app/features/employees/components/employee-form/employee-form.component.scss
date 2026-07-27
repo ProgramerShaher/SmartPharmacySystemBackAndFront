@@ -1,139 +1,58 @@
-.form-grid {
-    row-gap: 1.25rem;
+.dialog-label {
+  font-weight: 800;
+  font-size: 11px;
+  color: #1e293b;
+  margin-bottom: 0.2rem;
+  display: block;
 }
 
-.form-label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #334155;
-    display: block;
-    margin-bottom: 0.4rem;
-}
-
-.text-danger {
-    color: #ef4444 !important;
-}
-
-.text-danger small {
-    display: block;
-    margin-top: 0.25rem;
-    font-size: 0.75rem;
-}
-
-.premium-input {
-    border-radius: 0.65rem !important;
-    padding: 0.65rem 0.85rem !important;
-    border: 2px solid #e2e8f0 !important;
-    transition: all 0.2s ease !important;
-    font-family: 'Cairo', sans-serif;
-    font-size: 0.9rem;
-
-    &:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-    }
-
-    &.ng-invalid {
-        border-color: #ef4444 !important;
-        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-    }
-}
+.text-danger { color: #ef4444; }
 
 ::ng-deep {
-    .premium-dropdown {
-        .p-dropdown {
-            border: 2px solid #e2e8f0 !important;
-            border-radius: 0.65rem !important;
-            font-family: 'Cairo', sans-serif;
-            font-size: 0.9rem;
-            padding: 0.35rem 0;
-            transition: all 0.2s ease;
-
-            &:focus {
-                border-color: #6366f1 !important;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-            }
-        }
-
-        &.ng-invalid .p-dropdown {
-            border-color: #ef4444 !important;
-        }
+  .employee-dialog {
+    .p-dialog-header,
+    .p-dialog-content,
+    .p-dialog-footer {
+      padding: 0.8rem !important;
     }
 
-    .employee-dialog {
-        .p-dialog-header {
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-            font-family: 'Cairo', sans-serif;
-
-            .p-dialog-title {
-                font-weight: 700;
-                font-size: 1.1rem;
-            }
-        }
-
-        .p-dialog-content {
-            padding: 1.5rem;
-        }
-
-        .p-dialog-footer {
-            padding: 1rem 1.5rem;
-            border-top: 1px solid #e2e8f0;
-        }
+    .p-dialog-title {
+      font-size: 0.95rem !important;
+      font-weight: 800 !important;
+      color: #0f172a !important;
     }
 
-    .p-calendar {
-        .p-inputtext {
-            border-radius: 0.65rem !important;
-            border: 2px solid #e2e8f0 !important;
-            font-family: 'Cairo', sans-serif;
-
-            &:focus {
-                border-color: #6366f1 !important;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-            }
-        }
-
-        &.ng-invalid .p-inputtext {
-            border-color: #ef4444 !important;
-        }
+    .p-inputtext,
+    .p-dropdown,
+    .p-inputnumber .p-inputtext,
+    .p-calendar .p-inputtext {
+      min-height: 1.8rem;
+      font-size: 0.65rem;
+      border-radius: 6px;
+      padding: 0.3rem 0.5rem;
+      width: 100%;
     }
 
-    .p-inputnumber {
-        .p-inputtext {
-            border-radius: 0.65rem !important;
-            border: 2px solid #e2e8f0 !important;
-            font-family: 'Cairo', sans-serif;
-
-            &:focus {
-                border-color: #6366f1 !important;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-            }
-        }
-
-        &.ng-invalid .p-inputtext {
-            border-color: #ef4444 !important;
-        }
+    .p-dropdown .p-dropdown-label {
+      padding: 0.3rem 0.5rem;
     }
 
+    .p-button.p-button-sm,
+    .p-button.p-button-icon-only {
+      width: auto;
+      height: 1.8rem;
+      padding: 0.3rem 0.5rem;
+      font-size: 0.65rem;
+    }
+    
     .p-inputswitch {
-        &.p-inputswitch-checked .p-inputswitch-slider {
-            background: #6366f1;
-        }
+      width: 24px !important;
+      height: 14px !important;
+      .p-inputswitch-slider::before {
+        width: 10px !important;
+        height: 10px !important;
+        margin-top: -5px !important;
+      }
     }
-
-    .p-button {
-        font-family: 'Cairo', sans-serif;
-        transition: all 0.2s ease;
-
-        &:hover:not(:disabled) {
-            transform: translateY(-2px);
-        }
-    }
-}
-
-@media (max-width: 768px) {
-    .form-grid {
-        row-gap: 1rem;
-    }
+  }
 }

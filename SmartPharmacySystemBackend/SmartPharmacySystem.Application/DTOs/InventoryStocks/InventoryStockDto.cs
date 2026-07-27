@@ -17,4 +17,6 @@ public class InventoryStockDto
     public string ExpiryStatus { get; set; } = string.Empty;
     public string ExpiryStatusColor { get; set; } = string.Empty;
     public int DaysUntilExpiry { get; set; }
+    /// <summary>موقع الدفعة داخل المخزن (رف/ممر) — مثال: R1-S3</summary>
+    public string? StorageLocation { get; set; }
 }

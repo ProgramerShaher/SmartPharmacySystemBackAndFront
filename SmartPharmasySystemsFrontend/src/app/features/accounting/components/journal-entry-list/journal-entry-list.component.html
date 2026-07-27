@@ -1,214 +1,203 @@
-<div class="royal-container p-4">
-    <!-- Header Section -->
-    <div class="glass-card mb-4 p-4 d-flex justify-content-between align-items-center">
-        <div class="header-info">
-            <h1 class="royal-title m-0">
-                <i class="pi pi-book me-2"></i>دفتر القيود اليومية (Journal Entries)
-            </h1>
-            <p class="text-muted m-0 mt-1">تسجيل وترحيل كافة العمليات المالية اليدوية والآلية</p>
-        </div>
-        <div class="header-actions">
-            <button pButton icon="pi pi-plus" label="إنشاء قيد جديد" 
-                    class="p-button-royal-gradient" (click)="showAddDialog()"></button>
-            <button pButton icon="pi pi-refresh" class="p-button-text p-button-secondary ms-2" 
-                    (click)="loadEntries()" [loading]="loading"></button>
-        </div>
+<div class="report-container" dir="rtl">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-book"></i></div>
+      <div>
+        <h1>دفتر القيود اليومية (Journal Entries)</h1>
+        <p>تسجيل وترحيل كافة العمليات المالية اليدوية والآلية</p>
+      </div>
     </div>
+    <div class="actions no-print">
+      <p-button icon="pi pi-plus" label="إنشاء قيد جديد" size="small" severity="primary" (onClick)="showAddDialog()"></p-button>
+      <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" (onClick)="loadEntries()" [loading]="loading"></p-button>
+    </div>
+  </div>
 
-    <!-- Entries Table -->
-    <div class="glass-card overflow-hidden">
-        <p-table [value]="entries" [loading]="loading" [paginator]="true" [rows]="10" 
-                 [totalRecords]="totalRecords" [lazy]="true" (onLazyLoad)="loadEntries($event.first! / 10 + 1)"
-                 styleClass="royal-table">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="width: 10%">رقم القيد</th>
-                    <th style="width: 15%">التاريخ</th>
-                    <th style="width: 35%">البيان / الوصف</th>
-                    <th style="width: 15%" class="text-end">إجمالي المبلغ</th>
-                    <th style="width: 15%" class="text-center">الحالة</th>
-                    <th style="width: 10%" class="text-center">إجراءات</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-entry>
-                <tr>
-                    <td><span class="entry-id">#{{entry.id}}</span></td>
-                    <td>{{entry.entryDate | date:'yyyy-MM-dd'}}</td>
-                    <td class="text-truncate" style="max-width: 300px;">{{entry.description}}</td>
-                    <td class="text-end fw-bold">{{formatCurrency(entry.totalDebit)}}</td>
-                    <td class="text-center">
-                        <p-tag [value]="entry.isPosted ? 'مُرحل' : 'مسودة'" 
-                               [styleClass]="entry.isPosted ? 'tag-posted' : 'tag-draft'"></p-tag>
-                    </td>
-                    <td class="text-center">
-                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-info"
-                                pTooltip="عرض التفاصيل" (click)="viewEntry(entry)"></button>
-                        <button pButton icon="pi pi-check-circle" class="p-button-rounded p-button-text p-button-success"
-                                pTooltip="ترحيل القيد" *ngIf="!entry.isPosted" (click)="postEntry(entry.id)"></button>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+  <!-- Entries Table -->
+  <section class="table-panel">
+    <p-table [value]="entries" [loading]="loading" [paginator]="true" [rows]="10" 
+             [totalRecords]="totalRecords" [lazy]="true" (onLazyLoad)="loadEntries($event.first! / 10 + 1)"
+             styleClass="p-datatable-sm compact-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 10%">رقم القيد</th>
+          <th style="width: 15%">التاريخ</th>
+          <th style="width: 40%">البيان / الوصف</th>
+          <th style="width: 15%" class="text-end">إجمالي المبلغ</th>
+          <th style="width: 10%" class="text-center">الحالة</th>
+          <th style="width: 10% no-print" class="text-center">إجراءات</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-entry>
+        <tr>
+          <td><strong style="color: #4f46e5; font-family: monospace;">#{{entry.id}}</strong></td>
+          <td style="font-family: monospace;">{{entry.entryDate | date:'yyyy-MM-dd'}}</td>
+          <td><strong style="color: #1e293b;">{{entry.description}}</strong></td>
+          <td class="text-end font-bold">{{formatCurrency(entry.totalDebit)}}</td>
+          <td class="text-center">
+            <span class="type-pill" [class.type-green]="entry.isPosted" [class.type-amber]="!entry.isPosted">
+              {{entry.isPosted ? 'مُرحل' : 'مسودة'}}
+            </span>
+          </td>
+          <td class="text-center no-print">
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                      pTooltip="عرض التفاصيل" (onClick)="viewEntry(entry)"></p-button>
+            <p-button icon="pi pi-check-circle" [rounded]="true" [text]="true" severity="success" size="small"
+                      pTooltip="ترحيل القيد" *ngIf="!entry.isPosted" (onClick)="postEntry(entry.id)"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
 </div>
 
 <!-- Add Journal Entry Dialog -->
 <p-dialog [(visible)]="displayAddDialog" header="تسجيل قيد محاسبي جديد" [modal]="true" 
-          [style]="{width: '900px'}" styleClass="royal-dialog">
-    <div class="p-fluid">
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <label class="mb-2">بيان القيد</label>
-                <input type="text" pInputText [(ngModel)]="newEntry.description" placeholder="مثلاً: سداد إيجار المحل لشهر مايو">
-            </div>
-            <div class="col-md-4">
-                <label class="mb-2">تاريخ القيد</label>
-                <p-calendar [(ngModel)]="newEntry.entryDate" dateFormat="yy-mm-dd" appendTo="body"></p-calendar>
-            </div>
-        </div>
-
-        <h5 class="section-title mb-3 border-bottom pb-2">تفاصيل القيد (Lines)</h5>
-        
-        <div class="journal-lines mb-3">
-            <div class="line-row row g-2 mb-2 align-items-center" *ngFor="let line of newEntry.lines; let i = index">
-                <div class="col-md-4">
-                    <p-dropdown [options]="accounts" [(ngModel)]="line.accountId" optionLabel="name" optionValue="id"
-                                placeholder="اختر الحساب" [filter]="true" filterBy="name,accountCode" appendTo="body">
-                        <ng-template let-acc pTemplate="item">
-                            <div class="d-flex justify-content-between">
-                                <span>{{acc.name}}</span>
-                                <small class="text-muted">{{acc.accountCode}}</small>
-                            </div>
-                        </ng-template>
-                    </p-dropdown>
-                </div>
-                <div class="col-md-2">
-                    <input type="number" pInputText [(ngModel)]="line.debit" placeholder="مدين" (focus)="onFocus($event)">
-                </div>
-                <div class="col-md-2">
-                    <input type="number" pInputText [(ngModel)]="line.credit" placeholder="دائن" (focus)="onFocus($event)">
-                </div>
-                <div class="col-md-3">
-                    <input type="text" pInputText [(ngModel)]="line.description" placeholder="شرح السطر">
-                </div>
-                <div class="col-md-1 text-center">
-                    <button pButton icon="pi pi-trash" class="p-button-danger p-button-text" 
-                            (click)="removeLine(i)" [disabled]="newEntry.lines.length <= 2"></button>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-start mb-4">
-            <button pButton icon="pi pi-plus" label="إضافة سطر" 
-                    class="p-button-text p-button-info p-button-sm" (click)="addLine()"></button>
-        </div>
-
-        <!-- Totals Footer -->
-        <div class="totals-footer glass-card p-3 d-flex justify-content-end align-items-center">
-            <div class="me-5">
-                <span class="text-muted me-2">إجمالي المدين:</span>
-                <span class="fw-bold text-primary">{{formatCurrency(getTotalDebit())}}</span>
-            </div>
-            <div class="me-5">
-                <span class="text-muted me-2">إجمالي الدائن:</span>
-                <span class="fw-bold text-primary">{{formatCurrency(getTotalCredit())}}</span>
-            </div>
-            <div class="balance-status p-2 rounded" 
-                 [ngClass]="Math.abs(getTotalDebit() - getTotalCredit()) < 0.01 ? 'bg-success-light text-success' : 'bg-danger-light text-danger'">
-                <i class="pi" [ngClass]="Math.abs(getTotalDebit() - getTotalCredit()) < 0.01 ? 'pi-check-circle' : 'pi-exclamation-triangle'"></i>
-                <span class="ms-1">{{Math.abs(getTotalDebit() - getTotalCredit()) < 0.01 ? 'متزن' : 'غير متزن'}}</span>
-            </div>
-        </div>
+          [style]="{width: '850px'}" styleClass="royal-dialog">
+  <div class="p-fluid">
+    <div class="row mb-3" style="display: flex; gap: 0.5rem;">
+      <div style="flex: 2;">
+        <label class="dialog-label">بيان القيد</label>
+        <input type="text" pInputText [(ngModel)]="newEntry.description" placeholder="سداد إيجار المحل لشهر مايو">
+      </div>
+      <div style="flex: 1;">
+        <label class="dialog-label">تاريخ القيد</label>
+        <p-calendar [(ngModel)]="newEntry.entryDate" dateFormat="yy-mm-dd" appendTo="body"></p-calendar>
+      </div>
     </div>
-    <ng-template pTemplate="footer">
-        <button pButton label="إلغاء" icon="pi pi-times" class="p-button-text" (click)="displayAddDialog=false"></button>
-        <button pButton label="حفظ القيد" icon="pi pi-save" class="p-button-royal-gradient" (click)="saveEntry()"></button>
-    </ng-template>
+
+    <h3 style="font-size: 0.75rem; font-weight: 800; color: #0f172a; margin: 0.5rem 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.25rem;">تفاصيل القيد (Lines)</h3>
+    
+    <div class="journal-lines mb-3" style="max-height: 250px; overflow-y: auto;">
+      <div class="line-row" *ngFor="let line of newEntry.lines; let i = index" style="display: flex; gap: 0.4rem; align-items: center; margin-bottom: 0.4rem;">
+        <div style="flex: 2;">
+          <p-dropdown [options]="accounts" [(ngModel)]="line.accountId" optionLabel="name" optionValue="id"
+                      placeholder="اختر الحساب" [filter]="true" filterBy="name,accountCode" appendTo="body">
+            <ng-template let-acc pTemplate="item">
+              <div style="display: flex; justify-content: space-between; font-size: 0.65rem; width: 100%;">
+                <strong>{{acc.name}}</strong>
+                <span class="muted" style="font-family: monospace;">{{acc.accountCode}}</span>
+              </div>
+            </ng-template>
+          </p-dropdown>
+        </div>
+        <div style="width: 90px;">
+          <input type="number" pInputText [(ngModel)]="line.debit" placeholder="مدين" (focus)="onFocus($event)">
+        </div>
+        <div style="width: 90px;">
+          <input type="number" pInputText [(ngModel)]="line.credit" placeholder="دائن" (focus)="onFocus($event)">
+        </div>
+        <div style="flex: 1.5;">
+          <input type="text" pInputText [(ngModel)]="line.description" placeholder="شرح السطر">
+        </div>
+        <div style="width: 40px;" class="text-center">
+          <p-button icon="pi pi-trash" [text]="true" severity="danger" 
+                  (onClick)="removeLine(i)" [disabled]="newEntry.lines.length <= 2"></p-button>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-start mb-3">
+      <p-button icon="pi pi-plus" label="إضافة سطر" [text]="true" severity="info" size="small" (onClick)="addLine()"></p-button>
+    </div>
+
+    <!-- Totals Footer -->
+    <div class="totals-footer" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 0.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;">
+      <div>
+        <span class="muted" style="display: inline;">إجمالي المدين:</span>
+        <strong style="color: #1e293b; font-size: 0.75rem; margin-right: 0.25rem;">{{formatCurrency(getTotalDebit())}}</strong>
+      </div>
+      <div>
+        <span class="muted" style="display: inline;">إجمالي الدائن:</span>
+        <strong style="color: #1e293b; font-size: 0.75rem; margin-right: 0.25rem;">{{formatCurrency(getTotalCredit())}}</strong>
+      </div>
+      <div class="balance-status" style="padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.6rem; font-weight: 800; display: flex; align-items: center; gap: 0.25rem;"
+           [ngClass]="Math.abs(getTotalDebit() - getTotalCredit()) < 0.01 ? 'bg-success-light text-success' : 'bg-danger-light text-danger'">
+        <i class="pi" [ngClass]="Math.abs(getTotalDebit() - getTotalCredit()) < 0.01 ? 'pi-check-circle' : 'pi-exclamation-triangle'"></i>
+        <span>{{Math.abs(getTotalDebit() - getTotalCredit()) < 0.01 ? 'متزن' : 'غير متزن'}}</span>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="إلغاء" icon="pi pi-times" [text]="true" (onClick)="displayAddDialog=false"></p-button>
+    <p-button label="حفظ القيد" icon="pi pi-save" size="small" (onClick)="saveEntry()"></p-button>
+  </ng-template>
 </p-dialog>
 
 <!-- View Journal Entry Details Dialog (Double Entry Format) -->
-<p-dialog [(visible)]="displayViewDialog" [modal]="true" [style]="{width: '850px'}" styleClass="royal-dialog">
-    <ng-template pTemplate="header">
-        <div class="d-flex align-items-center">
-            <div class="icon-circle me-3">
-                <i class="pi pi-book text-white"></i>
-            </div>
-            <div>
-                <h4 class="m-0 fw-bold">تفاصيل القيد المحاسبي المزدوج</h4>
-                <small class="text-muted">رقم المرجع: #{{selectedEntry?.id}} | {{selectedEntry?.entryDate | date:'yyyy-MM-dd'}}</small>
-            </div>
-        </div>
-    </ng-template>
-
-    <div class="p-fluid py-2" *ngIf="selectedEntry">
-        <!-- Summary Cards -->
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="description-card p-3">
-                    <label class="text-muted mb-1 d-block" style="font-size: 0.8rem;">بيان القيد العام</label>
-                    <div class="fw-bold text-dark" style="font-size: 1.1rem;">{{selectedEntry.description}}</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="status-card p-3 text-center">
-                    <label class="text-muted mb-1 d-block" style="font-size: 0.8rem;">حالة الترحيل</label>
-                    <p-tag [value]="selectedEntry.isPosted ? 'تم الترحيل للحسابات' : 'قيد مسودة (غير مؤكد)'" 
-                           [styleClass]="selectedEntry.isPosted ? 'tag-posted-large' : 'tag-draft-large'"></p-tag>
-                </div>
-            </div>
-        </div>
-
-        <!-- Double Entry Table -->
-        <div class="mt-2">
-            <p-table [value]="selectedEntry.lines" styleClass="p-datatable-sm double-entry-table">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th style="width: 20%" class="text-center"><i class="pi pi-arrow-down-right me-1"></i> مدين (Debit)</th>
-                        <th style="width: 20%" class="text-center"><i class="pi pi-arrow-up-right me-1"></i> دائن (Credit)</th>
-                        <th style="width: 35%"><i class="pi pi-building me-1"></i> الحساب والبيان</th>
-                        <th style="width: 25%"><i class="pi pi-info-circle me-1"></i> الشرح التفصيلي</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-line>
-                    <tr>
-                        <!-- Debit -->
-                        <td class="text-center fw-bold debit-cell">
-                            {{line.debit > 0 ? formatCurrency(line.debit) : '-'}}
-                        </td>
-                        <!-- Credit -->
-                        <td class="text-center fw-bold credit-cell">
-                            {{line.credit > 0 ? formatCurrency(line.credit) : '-'}}
-                        </td>
-                        <!-- Account String -->
-                        <td>
-                            <div class="d-flex align-items-center" [class.ms-4]="line.credit > 0">
-                                <span class="account-name-badge me-2" 
-                                      [ngClass]="line.debit > 0 ? 'debit-badge' : 'credit-badge'">
-                                    {{line.debit > 0 ? 'من حـ/' : 'إلى حـ/'}}
-                                </span>
-                                <div>
-                                    <span class="fw-bold text-dark">{{line.accountName}}</span>
-                                    <small class="text-muted d-block" style="font-family: monospace;">{{line.accountCode}}</small>
-                                </div>
-                            </div>
-                        </td>
-                        <!-- Line Description -->
-                        <td class="text-muted" style="font-size: 0.9rem;">{{line.description}}</td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="footer">
-                    <tr class="total-row">
-                        <td class="text-center fw-bold text-success">{{formatCurrency(selectedEntry.totalDebit)}}</td>
-                        <td class="text-center fw-bold text-danger">{{formatCurrency(selectedEntry.totalCredit)}}</td>
-                        <td colspan="2" class="text-start fw-bold text-primary px-4"><i class="pi pi-calculator me-2"></i> إجمالي القيد المزدوج</td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
+<p-dialog [(visible)]="displayViewDialog" [modal]="true" [style]="{width: '800px'}" styleClass="royal-dialog">
+  <ng-template pTemplate="header">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <div class="icon-circle">
+        <i class="pi pi-book text-white"></i>
+      </div>
+      <div>
+        <h4 style="margin: 0; font-size: 0.9rem; font-weight: 800; color: #0f172a;">تفاصيل القيد المحاسبي المزدوج</h4>
+        <small class="muted" style="margin-top: 0.1rem;">رقم المرجع: #{{selectedEntry?.id}} | {{selectedEntry?.entryDate | date:'yyyy-MM-dd'}}</small>
+      </div>
     </div>
-    <ng-template pTemplate="footer">
-        <button pButton label="إغلاق" icon="pi pi-times" class="p-button-text" (click)="displayViewDialog=false"></button>
-    </ng-template>
-</p-dialog>
+  </ng-template>
 
-<p-toast position="bottom-left"></p-toast>
+  <div class="p-fluid py-2" *ngIf="selectedEntry">
+    <!-- Summary -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+      <div style="flex: 2; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.4rem;">
+        <label class="muted" style="margin-bottom: 0.1rem;">بيان القيد العام</label>
+        <div style="font-weight: 800; color: #0f172a; font-size: 0.75rem;">{{selectedEntry.description}}</div>
+      </div>
+      <div style="flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.4rem; text-align: center;">
+        <label class="muted" style="margin-bottom: 0.2rem;">حالة الترحيل</label>
+        <span class="type-pill" [class.type-green]="selectedEntry.isPosted" [class.type-amber]="!selectedEntry.isPosted">
+          {{selectedEntry.isPosted ? 'تم الترحيل للحسابات' : 'مسودة (غير مؤكد)'}}
+        </span>
+      </div>
+    </div>
+
+    <!-- Double Entry Table -->
+    <section class="table-panel">
+      <p-table [value]="selectedEntry.lines" styleClass="p-datatable-sm compact-table">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 22%" class="text-center">مدين (Debit)</th>
+            <th style="width: 22%" class="text-center">دائن (Credit)</th>
+            <th style="width: 32%">الحساب والبيان</th>
+            <th style="width: 24%">الشرح التفصيلي</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-line>
+          <tr>
+            <td class="text-center font-bold debit-cell" style="color: #ef4444;">
+              {{line.debit > 0 ? formatCurrency(line.debit) : '-'}}
+            </td>
+            <td class="text-center font-bold credit-cell" style="color: #15803d;">
+              {{line.credit > 0 ? formatCurrency(line.credit) : '-'}}
+            </td>
+            <td>
+              <div style="display: flex; align-items: center;" [class.ms-3]="line.credit > 0">
+                <span class="type-pill" [class.type-red]="line.debit > 0" [class.type-green]="line.credit > 0" style="margin-left: 0.25rem;">
+                  {{line.debit > 0 ? 'من حـ/' : 'إلى حـ/'}}
+                </span>
+                <div>
+                  <strong style="color: #0f172a;">{{line.accountName}}</strong>
+                  <small class="muted" style="font-family: monospace; font-size: 0.55rem;">{{line.accountCode}}</small>
+                </div>
+              </div>
+            </td>
+            <td><span class="muted" style="font-size: 0.6rem;">{{line.description}}</span></td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+          <tr style="background: #f8fafc; font-weight: 800;">
+            <td class="text-center text-danger" style="font-size: 0.7rem;">{{formatCurrency(selectedEntry.totalDebit)}}</td>
+            <td class="text-center text-success" style="font-size: 0.7rem;">{{formatCurrency(selectedEntry.totalCredit)}}</td>
+            <td colspan="2" class="text-start px-2" style="font-size: 0.65rem; color: #1d4ed8;"><i class="pi pi-calculator" style="margin-left: 0.25rem;"></i>إجمالي القيد المزدوج</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="إغلاق" icon="pi pi-times" [text]="true" (onClick)="displayViewDialog=false"></p-button>
+  </ng-template>
+</p-dialog>

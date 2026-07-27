@@ -8,6 +8,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TooltipModule } from 'primeng/tooltip';
 import { MedicineService } from '../../services/medicine.service';
 import { MedicineDetailsDto } from '../../../../core/models/medicine.interface';
+import { BatchDetailsComponent } from '../batch-details/batch-details.component';
 
 @Component({
   selector: 'app-medicine-details-modal',
@@ -19,7 +20,8 @@ import { MedicineDetailsDto } from '../../../../core/models/medicine.interface';
     TableModule, 
     TagModule, 
     ProgressSpinnerModule, 
-    TooltipModule
+    TooltipModule,
+    BatchDetailsComponent
   ],
   templateUrl: './medicine-details-modal.component.html',
   styleUrl: './medicine-details-modal.component.scss'
@@ -32,6 +34,10 @@ export class MedicineDetailsModalComponent {
   loading = signal(false);
   errorOccurred = signal(false);
   errorMessage = signal('');
+
+  // Batch Details Dialog
+  displayBatchDetailsDialog = false;
+  selectedBatchId: number | null = null;
 
   constructor(private medicineService: MedicineService) {
     effect(() => {
@@ -63,6 +69,11 @@ export class MedicineDetailsModalComponent {
         this.errorMessage.set(err.error?.message || 'تعذر الاتصال بالخادم. يرجى التأكد من تشغيل الـ Backend.');
       }
     });
+  }
+
+  viewBatch(batchId: number) {
+    this.selectedBatchId = batchId;
+    this.displayBatchDetailsDialog = true;
   }
 
   getStockSeverity(): 'success' | 'warning' | 'danger' | 'info' {

@@ -146,6 +146,7 @@ export interface MedicineDetailsDto extends MedicineDto {
 }
 
 export interface MedicineBatchDetailDto {
+    id: number;
     batchNumber: string;
     expiryDate: string;
     remainingQuantity: number;

@@ -23,4 +23,8 @@ public class CreateInventoryStockDto
     [Required(ErrorMessage = "الكمية مطلوبة")]
     [Range(0, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون صفر أو أكثر")]
     public int Quantity { get; set; }
+
+    /// <summary>موقع التخزين داخل المخزن — اختياري — مثال: "R1-S3"</summary>
+    [MaxLength(100)]
+    public string? StorageLocation { get; set; }
 }

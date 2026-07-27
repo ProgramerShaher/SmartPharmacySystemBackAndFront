@@ -1,4 +1,12 @@
-<div class="movement-details" dir="rtl" *ngIf="movement">
+<div *ngIf="loading" class="flex justify-content-center p-5">
+    <p-progressSpinner></p-progressSpinner>
+</div>
+<div [ngClass]="isRouteMode ? 'standalone-page surface-card p-4 border-round shadow-2 max-w-30rem mx-auto mt-5' : ''">
+    <div *ngIf="isRouteMode" class="text-center mb-4 border-bottom-1 surface-border pb-3">
+        <h2 class="m-0 text-primary">تفاصيل حركة المخزون</h2>
+        <span class="text-500">رقم المرجع: {{ movement?.referenceNumber || 'بدون مرجع' }}</span>
+    </div>
+    <div class="movement-details" dir="rtl" *ngIf="movement && !loading">
     <div class="details-section">
         <h3 class="section-title">بيانات الدواء</h3>
         <div class="detail-grid">
@@ -59,4 +67,5 @@
     <div class="flex justify-content-center mt-4">
         <p-button label="إغلاق" icon="pi pi-times" severity="secondary" (onClick)="onClose()"></p-button>
     </div>
+</div>
 </div>

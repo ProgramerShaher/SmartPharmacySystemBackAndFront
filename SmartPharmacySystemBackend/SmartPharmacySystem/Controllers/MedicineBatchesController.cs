@@ -89,6 +89,19 @@ public class MedicineBatchesController : ControllerBase
     }
 
     /// <summary>
+    /// Updates the status of an existing medicine batch (e.g., Active/Quarantine).
+    /// تحديث حالة الدفعة (مثلاً نشط/موقوف).
+    /// </summary>
+    [HttpPut("{id:int}/status")]
+    [ProducesResponseType(typeof(ApiResponse<MedicineBatchResponseDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> UpdateStatus(int id, [FromQuery] string status)
+    {
+        var dto = new MedicineBatchUpdateDto { Status = status };
+        var result = await _service.UpdateBatchAsync(id, dto, GetCurrentUserId());
+        return Ok(ApiResponse<MedicineBatchResponseDto>.Succeeded(result, "Status updated successfully | تم تحديث الحالة بنجاح"));
+    }
+
+    /// <summary>
     /// Deletes a medicine batch (soft delete).
     /// حذف دفعة دواء (حذف ناعم).
     /// </summary>

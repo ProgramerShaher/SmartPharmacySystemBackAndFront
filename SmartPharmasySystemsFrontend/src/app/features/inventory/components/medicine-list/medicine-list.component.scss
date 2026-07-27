@@ -1,43 +1,201 @@
+/* medicine-list.component.scss - Premium Imperial Theme adapted for Medicines */
+
 @import "primeflex/primeflex.css";
 
 :host {
-    display: block;
+  display: block;
 }
 
-.surface-card {
-    background-color: var(--surface-card);
+.statement-container {
+  padding: 0.75rem;
+  background: transparent;
+  min-height: calc(100vh - 70px);
+  color: var(--text-color, #1e293b);
 }
 
-.bg-bluegray-900 {
-    background-color: #263238 !important;
+/* ═══════════ Imperial Search Bar ═══════════ */
+.imperial-search-bar {
+  .search-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg, #ffffff);
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    backdrop-filter: var(--glass-blur, blur(10px));
+  }
+
+  .flex-align {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .search-icon-badge {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 8px;
+    background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
+    color: var(--primary-color, #10b981);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .search-input-wrapper {
+    flex: 1;
+    max-width: 28rem;
+    min-width: 0;
+
+    .search-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--text-color-secondary);
+      margin-bottom: 0.2rem;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
-.bg-teal-50 {
-    background-color: #e0f2f1 !important;
+/* Premium Primary Button override */
+.imperial-btn-primary {
+  background: linear-gradient(135deg, var(--primary-600, #059669), var(--primary-400, #34d399)) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.25);
+  }
 }
 
-.text-teal-600 {
-    color: #00897b !important;
+/* ═══════════ Ledger Table Wrapper ═══════════ */
+.ledger-card-wrapper {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: var(--card-border, 1px solid rgba(0,0,0,0.08));
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: var(--glass-blur, blur(10px));
 }
 
-.text-teal-700 {
-    color: #00796b !important;
+::ng-deep .imperial-statement-table {
+  .p-datatable-thead > tr > th {
+    background: var(--table-header-bg, var(--surface-hover, #f4f6f9)) !important;
+    color: var(--text-color-secondary) !important;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
+    vertical-align: bottom;
+    line-height: 1.2;
+
+    .header-subtext {
+      font-size: 0.6rem;
+      font-weight: 500;
+      opacity: 0.75;
+      margin-top: 0.1rem;
+    }
+  }
+
+  .p-datatable-tbody > tr > td {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.04)) !important;
+    vertical-align: middle;
+    color: var(--text-color);
+  }
+
+  /* Table column colors */
+  .th-primary { color: var(--primary-color) !important; background: rgba(var(--primary-rgb, 16, 185, 129), 0.04) !important; }
 }
 
-/* Custom scrollbar for batches list */
-.overflow-y-auto::-webkit-scrollbar {
-    width: 6px;
+/* Chips and Units */
+.medicine-units-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.overflow-y-auto::-webkit-scrollbar-track {
-    background: #f1f1f1;
+.unit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface-hover, #f8fafc);
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, rgba(0,0,0,0.04));
+  font-size: 0.75rem;
+  
+  .unit-name {
+    font-weight: 800;
+    color: var(--text-color);
+    background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
+    color: var(--primary-color, #10b981);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+  }
+  
+  .unit-price {
+    font-family: monospace;
+    font-weight: 700;
+  }
+  
+  .unit-stock {
+    font-weight: 800;
+    color: #0ea5e9;
+  }
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-    background: #cfd8dc;
-    border-radius: 3px;
+/* Badges */
+.status-badge {
+  font-size: 0.64rem;
+  font-weight: 800;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+
+  &.active { background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.15); }
+  &.inactive { background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.15); }
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-    background: #b0bec5;
+.inventory-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  
+  &.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+  &.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+  &.gray { background: rgba(100, 116, 139, 0.1); color: #64748b; }
+  &.indigo { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+}
+
+.fadein {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }

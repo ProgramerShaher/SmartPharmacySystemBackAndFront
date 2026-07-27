@@ -16,6 +16,7 @@ export interface SaleInvoiceDetail {
     totalCost: number;
     profit: number;
     remainingQtyToReturn: number; // Critical for Returns
+    saleUnitId?: number | null;
     saleInvoice?: SaleInvoice;
     medicine?: Medicine;
     batch?: MedicineBatch;
@@ -26,5 +27,6 @@ export interface CreateSaleInvoiceDetailDto {
     batchId?: number; // Optional, 0/null means FEFO auto-pick
     quantity: number;
     salePrice: number; 
+    saleUnitId?: number | null;
     // UnitCost not sent from frontend, determined by backend
 }

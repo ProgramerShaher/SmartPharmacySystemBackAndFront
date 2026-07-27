@@ -174,9 +174,9 @@ export class MedicineListComponent implements OnInit {
     // --- Batch Actions (Inventory Setup) ---
 
     openAddBatch(medicine: Medicine) {
-        this.selectedMedicineIdForBatch = medicine.id;
-        this.selectedMedicineNameForBatch = medicine.name;
-        this.showBatchDialog.set(true);
+        this.router.navigate(['/purchases/create'], {
+            queryParams: { medicineId: medicine.id, medicineName: medicine.name }
+        });
     }
 
     onBatchSaved() {

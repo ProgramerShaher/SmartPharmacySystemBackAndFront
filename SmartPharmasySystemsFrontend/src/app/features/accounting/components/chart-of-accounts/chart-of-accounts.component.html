@@ -1,20 +1,23 @@
-<div class="chart-wrapper">
-  <div class="chart-header">
-    <div class="d-flex align-items-center gap-2">
-      <div class="header-icon"><i class="pi pi-sitemap"></i></div>
-      <h4 class="header-title">شجرة الحسابات</h4>
-      <span class="header-badge">هيكل الحسابات</span>
+<div class="report-container" dir="rtl">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-sitemap"></i></div>
+      <div>
+        <h1>شجرة الحسابات</h1>
+        <p>هيكل الحسابات الرئيسي والفرعي للنظام المالي</p>
+      </div>
     </div>
-    <div class="d-flex align-items-center gap-1">
-      <button pButton icon="pi pi-angle-double-down" label="توسيع" class="p-button-sm btn-ghost" (click)="expandAll()"></button>
-      <button pButton icon="pi pi-angle-double-up" label="طي" class="p-button-sm btn-ghost" (click)="collapseAll()"></button>
-      <div class="header-divider"></div>
-      <button pButton icon="pi pi-plus" label="حساب رئيسي" class="p-button-sm btn-primary-sm" (click)="showAddDialog()"></button>
-      <button pButton icon="pi pi-refresh" class="p-button-sm p-button-text btn-refresh" (click)="loadAccounts()" [loading]="loading"></button>
+
+    <div class="actions no-print">
+      <p-button icon="pi pi-angle-double-down" label="توسيع الكل" size="small" [outlined]="true" severity="secondary" (onClick)="expandAll()"></p-button>
+      <p-button icon="pi pi-angle-double-up" label="طي الكل" size="small" [outlined]="true" severity="secondary" (onClick)="collapseAll()"></p-button>
+      <p-button icon="pi pi-plus" label="حساب رئيسي" size="small" severity="primary" (onClick)="showAddDialog()"></p-button>
+      <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" (onClick)="loadAccounts()" [loading]="loading"></p-button>
     </div>
   </div>
 
-  <div class="tree-card">
+  <div class="table-panel">
     <p-tree [value]="accountsTree"
             [loading]="loading"
             selectionMode="single"
@@ -45,22 +48,20 @@
                     [ngClass]="node.data.currentBalance >= 0 ? 'positive' : 'negative'">
                 {{node.data.currentBalance | number:'1.2-2'}}
               </span>
-              <div class="node-actions">
+              <div class="node-actions no-print">
                 <p-inputSwitch [(ngModel)]="node.data.isActive"
                                (onChange)="toggleAccountStatus(node.data)"
                                pTooltip="تفعيل/تعطيل"
                                tooltipPosition="top"></p-inputSwitch>
-                <button pButton icon="pi pi-plus-circle"
-                        class="p-button-rounded p-button-text btn-add-sub"
+                <p-button icon="pi pi-plus-circle" [rounded]="true" [text]="true" severity="info" size="small"
                         pTooltip="إضافة حساب فرعي"
                         tooltipPosition="top"
                         (click)="showAddDialog(node.data)"
-                        *ngIf="node.data.isMainAccount"></button>
-                <button pButton icon="pi pi-trash"
-                        class="p-button-rounded p-button-text p-button-danger btn-delete"
+                        *ngIf="node.data.isMainAccount"></p-button>
+                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
                         pTooltip="حذف"
                         tooltipPosition="top"
-                        (click)="deleteAccount(node)"></button>
+                        (click)="deleteAccount(node)"></p-button>
               </div>
             </div>
           </div>
@@ -72,7 +73,7 @@
       <i class="pi pi-inbox"></i>
       <h4>لا توجد حسابات</h4>
       <p>ابدأ بإضافة حساب رئيسي جديد</p>
-      <button pButton label="إضافة حساب" icon="pi pi-plus" class="btn-primary-sm" (click)="showAddDialog()"></button>
+      <p-button label="إضافة حساب" icon="pi pi-plus" size="small" (onClick)="showAddDialog()"></p-button>
     </div>
   </div>
 </div>
@@ -114,8 +115,8 @@
     </div>
   </div>
   <ng-template pTemplate="footer">
-    <button pButton label="إلغاء" icon="pi pi-times" class="p-button-text" (click)="displayAddDialog=false"></button>
-    <button pButton label="حفظ" icon="pi pi-check" class="btn-primary-sm" (click)="saveAccount()"></button>
+    <p-button label="إلغاء" icon="pi pi-times" [text]="true" (onClick)="displayAddDialog=false"></p-button>
+    <p-button label="حفظ" icon="pi pi-check" size="small" (onClick)="saveAccount()"></p-button>
   </ng-template>
 </p-dialog>
 

@@ -1,99 +1,95 @@
-<div class="report-container animate-fade-in">
+<div class="report-container" dir="rtl">
   <!-- Header Section -->
-  <p-card styleClass="header-card">
-    <div class="header-content">
-      <div class="header-title">
-        <h2><i class="pi pi-box"></i> تقرير تقييم المخزون الذكي</h2>
-        <span>تحليل القيمة المالية للمخزون والأرباح المتوقعة وتواريخ الانتهاء</span>
-      </div>
-
-      <div class="filters">
-        <span class="p-input-icon-left">
-          <i class="pi pi-search"></i>
-          <input type="text" pInputText placeholder="بحث عن منتج..." [(ngModel)]="searchTerm" (input)="applyFilter()" />
-        </span>
-
-        <p-dropdown [options]="expiryOptions" [(ngModel)]="expiryFilter" (onChange)="applyFilter()" class="compact-dropdown"></p-dropdown>
-
-        <p-button icon="pi pi-sync" label="تحديث" styleClass="p-button-sm p-button-raised" (click)="loadValuation()"></p-button>
-        <p-button icon="pi pi-print" label="طباعة" styleClass="p-button-sm p-button-info" [outlined]="true" (click)="printReport()"></p-button>
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-box"></i></div>
+      <div>
+        <h1>تقرير تقييم المخزون الذكي</h1>
+        <p>تحليل القيمة المالية للمخزون والأرباح المتوقعة وتواريخ الانتهاء</p>
       </div>
     </div>
-  </p-card>
+
+    <div class="actions no-print">
+      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadValuation()" [loading]="loading()"></p-button>
+      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <section class="filters-panel no-print">
+    <div class="filter-field">
+      <label>بحث عن منتج</label>
+      <input type="text" pInputText placeholder="اسم المنتج..." [(ngModel)]="searchTerm" (input)="applyFilter()" />
+    </div>
+    <div class="filter-field">
+      <label>حالة الانتهاء</label>
+      <p-dropdown [options]="expiryOptions" [(ngModel)]="expiryFilter" (onChange)="applyFilter()"></p-dropdown>
+    </div>
+  </section>
+
+  <!-- Summary Cards -->
+  <div class="kpi-grid" *ngIf="valuation() && !loading()">
+    <div class="kpi-card stock">
+      <span class="kpi-label">إجمالي رأس المال (شراء)</span>
+      <strong>{{ formatCurrency(summary().totalCapital) }} ر.ي</strong>
+      <small>تكلفة شراء المخزون الحالي</small>
+    </div>
+
+    <div class="kpi-card items">
+      <span class="kpi-label">القيمة البيعية المتوقعة</span>
+      <strong style="color: #0284c7;">{{ formatCurrency(summary().totalRetailValue) }} ر.ي</strong>
+      <small>إجمالي قيمة البيع المفترضة</small>
+    </div>
+
+    <div class="kpi-card profit">
+      <span class="kpi-label">إجمالي الربح المتوقع</span>
+      <strong>{{ formatCurrency(summary().potentialProfit) }} ر.ي</strong>
+      <small>الربح المتوقع عند بيع كامل المخزون</small>
+    </div>
+
+    <div class="kpi-card today">
+      <span class="kpi-label">إجمالي الوحدات المتوفرة</span>
+      <strong>{{ summary().totalQuantity }} وحدة</strong>
+      <small>كميات الأدوية المتبقية</small>
+    </div>
+  </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="loading()">
+  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
-  <!-- Summary Cards -->
-  <div class="summary-cards" *ngIf="valuation() && !loading()">
-    <div class="summary-card capital">
-      <div class="summary-icon"><i class="pi pi-wallet"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي رأس المال (شراء)</span>
-        <span class="value">{{ formatCurrency(summary().totalCapital) }}</span>
-      </div>
-    </div>
-
-    <div class="summary-card retail">
-      <div class="summary-icon"><i class="pi pi-shopping-bag"></i></div>
-      <div class="summary-content">
-        <span class="label">القيمة البيعية المتوقعة</span>
-        <span class="value text-primary">{{ formatCurrency(summary().totalRetailValue) }}</span>
-      </div>
-    </div>
-
-    <div class="summary-card profit">
-      <div class="summary-icon"><i class="pi pi-chart-line"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي الربح المتوقع</span>
-        <span class="value text-success">{{ formatCurrency(summary().potentialProfit) }}</span>
-      </div>
-    </div>
-
-    <div class="summary-card qty">
-      <div class="summary-icon"><i class="pi pi-database"></i></div>
-      <div class="summary-content">
-        <span class="label">إجمالي الوحدات المتوفرة</span>
-        <span class="value">{{ summary().totalQuantity }} وحدة</span>
-      </div>
-    </div>
-  </div>
-
   <!-- Detailed Table -->
-  <p-card styleClass="table-card" *ngIf="valuation() && !loading()">
-    <p-table [value]="valuation()!.batches" [paginator]="true" [rows]="10" styleClass="p-datatable-sm" [rowHover]="true" [responsive]="true">
+  <section class="table-panel" *ngIf="valuation() && !loading()">
+    <p-table [value]="valuation()!.batches" [paginator]="true" [rows]="15" styleClass="p-datatable-sm compact-table" [rowHover]="true" [responsive]="true">
       <ng-template pTemplate="header">
         <tr>
           <th>المنتج</th>
-          <th class="text-center">الكمية</th>
-          <th class="text-center">سعر الشراء</th>
-          <th class="text-center">سعر البيع</th>
-          <th class="text-center">تاريخ الانتهاء</th>
-          <th class="text-center">إجمالي الشراء</th>
-          <th class="text-center">إجمالي البيع</th>
-          <th class="text-center">الحالة</th>
+          <th class="text-center" style="width: 80px;">الكمية</th>
+          <th class="text-center" style="width: 100px;">سعر الشراء</th>
+          <th class="text-center" style="width: 100px;">سعر البيع</th>
+          <th class="text-center" style="width: 110px;">تاريخ الانتهاء</th>
+          <th class="text-center" style="width: 110px;">إجمالي الشراء</th>
+          <th class="text-center" style="width: 110px;">إجمالي البيع</th>
+          <th class="text-center" style="width: 100px;">الحالة</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-batch>
         <tr>
           <td>
-            <div style="display: flex; flex-direction: column;">
-              <span class="font-bold" style="color: #1e293b;">{{ batch.medicineName }}</span>
-              <span style="font-size: 0.75rem; color: #64748b;">رقم الدفعة: {{ batch.companyBatchNumber }}</span>
-            </div>
+            <strong style="color: #1d4ed8; font-size: 0.65rem;">{{ batch.medicineName }}</strong>
+            <small class="muted">رقم الدفعة: {{ batch.companyBatchNumber }}</small>
           </td>
           <td class="text-center">
-            <p-tag [value]="batch.remainingQuantity" severity="info" [rounded]="true"></p-tag>
+            <span class="type-pill type-blue">{{ batch.remainingQuantity }}</span>
           </td>
           <td class="text-center">{{ formatCurrency(batch.unitPurchasePrice) }}</td>
           <td class="text-center">{{ formatCurrency(batch.retailPrice) }}</td>
-          <td class="text-center" style="font-size: 0.85rem;">{{ batch.expiryDate | date:'yyyy-MM-dd' }}</td>
-          <td class="text-center font-bold">{{ formatCurrency(batch.batchCapital) }}</td>
-          <td class="text-center font-bold text-primary">{{ formatCurrency(batch.batchRetailValue) }}</td>
+          <td class="text-center" style="font-family: monospace;">{{ batch.expiryDate | date:'yyyy-MM-dd' }}</td>
+          <td class="text-center" style="font-weight: 700; color: #1e293b;">{{ formatCurrency(batch.batchCapital) }}</td>
+          <td class="text-center" style="font-weight: 700; color: #0284c7;">{{ formatCurrency(batch.batchRetailValue) }}</td>
           <td class="text-center">
-            <p-tag [value]="getExpiryLabel(batch)" [severity]="getExpiryStatus(batch)" [rounded]="true"></p-tag>
+            <p-tag [value]="getExpiryLabel(batch)" [severity]="getExpiryStatus(batch)"></p-tag>
           </td>
         </tr>
       </ng-template>
@@ -101,5 +97,5 @@
         <tr><td colspan="8" class="text-center p-4">لا توجد بيانات تطابق البحث حالياً</td></tr>
       </ng-template>
     </p-table>
-  </p-card>
+  </section>
 </div>

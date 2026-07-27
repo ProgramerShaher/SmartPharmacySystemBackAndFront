@@ -150,6 +150,9 @@
                     <td class="wh-cell-date">{{ warehouse.createdAt | date:'yyyy/MM/dd' }}</td>
                     <td>
                         <div class="wh-cell-actions">
+                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
+                                pTooltip="عرض المخزون" tooltipPosition="top"
+                                [routerLink]="['/warehouses', warehouse.id]"></button>
                             <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
                                 pTooltip="تعديل" tooltipPosition="top" (click)="openEditDialog(warehouse)"></button>
                             <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-sm p-button-danger"

@@ -58,7 +58,8 @@ namespace SmartPharmacySystem.Application.Mapping
 
             // Medicine Mappings
             CreateMap<CreateMedicineDto, Medicine>();
-            CreateMap<UpdateMedicineDto, Medicine>();
+            CreateMap<UpdateMedicineDto, Medicine>()
+                .ForMember(dest => dest.MedicineUnits, opt => opt.Ignore());
             CreateMap<Medicine, MedicineDto>()
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : string.Empty))
                 .ReverseMap();
@@ -215,7 +216,8 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ForMember(dest => dest.PurchaseInvoiceNumber, opt => opt.MapFrom(src => src.PurchaseInvoice != null ? src.PurchaseInvoice.SupplierInvoiceNumber : string.Empty))
                 .ForMember(dest => dest.MedicineName, opt => opt.MapFrom(src => src.Medicine != null ? src.Medicine.Name : string.Empty))
                 .ForMember(dest => dest.CompanyBatchNumber, opt => opt.MapFrom(src => src.Batch != null ? src.Batch.CompanyBatchNumber : string.Empty))
-                .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.Quantity * src.PurchasePrice))
+                .ForMember(dest => dest.UnitName, opt => opt.MapFrom(src => src.PurchaseUnit != null ? src.PurchaseUnit.Name : (src.Medicine != null && !string.IsNullOrEmpty(src.Medicine.BaseUnitName) ? src.Medicine.BaseUnitName : "أساسية")))
+                .ForMember(dest => dest.Total, opt => opt.MapFrom(src => src.QuantityInPurchaseUnit > 0 ? src.QuantityInPurchaseUnit * src.PurchasePrice : src.Quantity * src.PurchasePrice))
                 .ForMember(dest => dest.SalePrice, opt => opt.MapFrom(src => src.SalePrice))
                 // Expiry Logic
                 .ForMember(dest => dest.ExpiryDate, opt => opt.MapFrom(src => src.Batch != null ? (DateTime?)src.Batch.ExpiryDate : null))

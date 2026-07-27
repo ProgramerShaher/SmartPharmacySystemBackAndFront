@@ -6,6 +6,8 @@ import { SaleInvoiceService } from '../../services/sales-invoice.service';
 import { SalesStatisticsService } from '../../services/sales-statistics.service';
 import { SaleInvoice, DocumentStatus } from '../../../../core/models';
 import { PrintService } from '../../../../core/services/print.service';
+import * as xlsx from 'xlsx';
+import * as FileSaver from 'file-saver';
 
 // PrimeNG
 import { TableModule } from 'primeng/table';
@@ -456,19 +458,127 @@ export class SalesInvoiceListComponent implements OnInit {
     }
 
     exportPDF() {
-        this.messageService.add({
-            severity: 'info',
-            summary: 'تصدير PDF',
-            detail: 'جاري تجهيز الملف...'
-        });
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى السماح بالنوافذ المنبثقة (Popups)' });
+            return;
+        }
+
+        const rows = this.invoices().map((inv, index) => `
+            <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td style="text-align: center;">${this.escapeHtml(inv.saleInvoiceNumber || '#' + inv.id)}</td>
+                <td style="text-align: center;">${new Date(inv.invoiceDate).toLocaleDateString('ar-EG')}</td>
+                <td>${this.escapeHtml(inv.customerName || 'نقدي')}</td>
+                <td style="text-align: left; direction: ltr;">${(inv.totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td style="text-align: left; direction: ltr;">${(inv.totalProfit || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td style="text-align: center;">${this.getStatusLabel(inv.status)}</td>
+            </tr>
+        `).join('');
+
+        const html = `
+            <html lang="ar" dir="rtl">
+            <head>
+                <title>تقرير فواتير المبيعات</title>
+                <style>
+                    body { font-family: 'Cairo', Arial, sans-serif; padding: 20px; }
+                    h1 { text-align: center; color: #111827; }
+                    .report-date { text-align: center; color: #6b7280; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    th, td { border: 1px solid #d1d5db; padding: 8px 12px; }
+                    th { background-color: #f3f4f6; color: #374151; font-weight: bold; }
+                    @media print {
+                        @page { size: A4; margin: 1cm; }
+                        button { display: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>تقرير فواتير المبيعات</h1>
+                <div class="report-date">تاريخ الإصدار: ${new Date().toLocaleString('ar-EG')}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>رقم الفاتورة</th>
+                            <th>التاريخ</th>
+                            <th>العميل</th>
+                            <th>الإجمالي (ر.ي)</th>
+                            <th>الربح (ر.ي)</th>
+                            <th>الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows || '<tr><td colspan="7" style="text-align:center;">لا توجد فواتير</td></tr>'}
+                    </tbody>
+                </table>
+                <script>
+                    window.onload = function() {
+                        setTimeout(() => {
+                            window.print();
+                            window.close();
+                        }, 500);
+                    };
+                </script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        
+        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تجهيز تقرير PDF للطباعة' });
     }
 
     exportExcel() {
-        this.messageService.add({
-            severity: 'info',
-            summary: 'تصدير Excel',
-            detail: 'جاري تجهيز الملف...'
-        });
+        if (!this.invoices() || this.invoices().length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'لا توجد بيانات للتصدير' });
+            return;
+        }
+
+        const exportData = this.invoices().map(inv => ({
+            'رقم الفاتورة': inv.saleInvoiceNumber || '#' + inv.id,
+            'التاريخ': new Date(inv.invoiceDate).toLocaleDateString('ar-EG'),
+            'العميل': inv.customerName || 'نقدي',
+            'الإجمالي (ر.ي)': inv.totalAmount || 0,
+            'الربح (ر.ي)': inv.totalProfit || 0,
+            'الحالة': this.getStatusLabel(inv.status)
+        }));
+
+        const worksheet = xlsx.utils.json_to_sheet(exportData);
+        
+        // Add RTL and column widths
+        worksheet['!cols'] = [
+            { wch: 15 }, // Invoice Number
+            { wch: 15 }, // Date
+            { wch: 25 }, // Customer
+            { wch: 15 }, // Total
+            { wch: 15 }, // Profit
+            { wch: 15 }  // Status
+        ];
+
+        const workbook = { 
+            Sheets: { 'Invoices': worksheet }, 
+            SheetNames: ['Invoices'],
+            Workbook: { Views: [{ RTL: true }] }
+        };
+        
+        const excelBuffer: any = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+        const data: Blob = new Blob([excelBuffer], { type: EXCEL_TYPE });
+        
+        FileSaver.saveAs(data, `Sales_Invoices_${new Date().getTime()}.xlsx`);
+        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تصدير الفواتير إلى Excel' });
+    }
+
+    private escapeHtml(value: string): string {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     handleError(err: any) {

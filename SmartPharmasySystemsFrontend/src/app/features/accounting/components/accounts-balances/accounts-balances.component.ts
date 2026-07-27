@@ -5,6 +5,11 @@ import { forkJoin } from 'rxjs';
 import { AccountingService } from '../../../../core/services/accounting.service';
 import { AccountDto, AccountType, TrialBalanceLineDto } from '../../../../core/models/accounting.interface';
 
+import { ButtonModule } from 'primeng/button';
+import { TableModule } from 'primeng/table';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { InputTextModule } from 'primeng/inputtext';
+
 export interface AccountBalanceRow {
     id: number;
     code: string;
@@ -21,7 +26,14 @@ export interface AccountBalanceRow {
 @Component({
     selector: 'app-accounts-balances',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [
+        CommonModule, 
+        FormsModule,
+        ButtonModule,
+        TableModule,
+        ProgressSpinnerModule,
+        InputTextModule
+    ],
     templateUrl: './accounts-balances.component.html',
     styleUrls: ['./accounts-balances.component.scss']
 })

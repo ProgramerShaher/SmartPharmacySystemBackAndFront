@@ -1,17 +1,226 @@
+/* batch-list.component.scss - Premium Imperial Theme for Batches */
+
+@import "primeflex/primeflex.css";
+
 :host {
-    display: block;
+  display: block;
 }
 
-.bg-red-50 {
-    background-color: #fef2f2 !important;
+.statement-container {
+  padding: 0.75rem;
+  background: transparent;
+  min-height: calc(100vh - 70px);
+  color: var(--text-color, #1e293b);
 }
 
-.bg-orange-50 {
-    background-color: #fffaf0 !important;
+/* ═══════════ Imperial Search Bar ═══════════ */
+.imperial-search-bar {
+  .search-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg, #ffffff);
+    padding: 0.6rem 1rem;
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    backdrop-filter: var(--glass-blur, blur(10px));
+  }
+
+  .flex-align {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .search-icon-badge {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 8px;
+    /* Uses the theme's primary color dynamically */
+    background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
+    color: var(--primary-color, #10b981);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .search-input-wrapper {
+    flex: 1;
+    max-width: 20rem;
+    min-width: 0;
+
+    .search-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-color-secondary, #64748b);
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .imperial-btn-primary {
+    background: var(--primary-color, #10b981);
+    border: none;
+    font-weight: 700;
+    transition: all 0.2s ease;
+    border-radius: 8px;
+
+    &:hover {
+      background: var(--primary-color-dark, #059669);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(var(--primary-rgb, 16, 185, 129), 0.3);
+    }
+  }
 }
 
-::ng-deep {
-    .p-datatable-sm .p-datatable-tbody > tr > td {
-        padding: 0.5rem 0.75rem !important;
+/* ═══════════ Ledger Table Wrapper ═══════════ */
+.ledger-card-wrapper {
+  background: var(--card-bg, #ffffff);
+  border-radius: 12px;
+  border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  backdrop-filter: var(--glass-blur, blur(10px));
+}
+
+/* ═══════════ PrimeNG Table Overrides ═══════════ */
+::ng-deep .imperial-statement-table {
+  .p-datatable-wrapper {
+    border-radius: 12px;
+  }
+
+  .p-datatable-thead > tr > th {
+    /* Uses the theme's primary color for the header background */
+    background: var(--primary-color, #10b981) !important;
+    color: var(--primary-color-text, #ffffff) !important;
+    padding: 0.6rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: none;
+    border-bottom: 3px solid rgba(0,0,0,0.1);
+    white-space: nowrap;
+    text-align: center !important;
+
+    &:first-child {
+      border-top-right-radius: 12px;
+    }
+    &:last-child {
+      border-top-left-radius: 12px;
+    }
+    
+    .p-column-title {
+        color: inherit;
+    }
+    .p-sortable-column-icon {
+        color: rgba(255, 255, 255, 0.8) !important;
+    }
+  }
+
+  .header-subtext {
+    font-size: 0.65rem;
+    font-weight: 400;
+    opacity: 0.9;
+    margin-top: 2px;
+    text-align: center;
+  }
+
+  .p-datatable-tbody > tr {
+    transition: all 0.2s ease;
+
+    > td {
+      padding: 0.5rem 0.4rem;
+      font-size: 0.8rem;
+      border: none;
+      border-bottom: 1px solid var(--surface-border, rgba(0, 0, 0, 0.04));
+      color: var(--text-color);
+      vertical-align: middle;
+      text-align: center !important;
+    }
+
+    &:nth-child(even) {
+      background-color: var(--surface-ground, rgba(248, 250, 252, 0.5));
+    }
+    
+    &:hover {
+      background-color: var(--surface-hover, rgba(241, 245, 249, 0.8));
+    }
+    
+    /* Expired or Expiring styling */
+    &.row-expired {
+        background-color: rgba(239, 68, 68, 0.05) !important;
+        > td { border-bottom-color: rgba(239, 68, 68, 0.1); }
+    }
+    &.row-expiring-soon {
+        background-color: rgba(245, 158, 11, 0.05) !important;
+        > td { border-bottom-color: rgba(245, 158, 11, 0.1); }
+    }
+  }
+}
+
+/* ═══════════ Cell Formatting ═══════════ */
+.col-num { width: 3rem; color: var(--text-color-secondary); font-weight: 700; font-size: 0.75rem !important; }
+
+.batch-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.15rem 0.6rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-family: monospace;
+    font-size: 0.75rem;
+    background: var(--surface-200);
+    color: var(--text-color);
+    
+    &.barcode {
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+        border: 1px solid rgba(99, 102, 241, 0.2);
     }
 }
+
+.qty-pill {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    
+    &.danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    &.success { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    &.neutral { background: var(--surface-100); color: var(--text-color-secondary); font-weight: 600; }
+}
+
+.status-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    
+    &.expired { background: #ef4444; color: white; }
+    &.warning { background: #f59e0b; color: white; }
+    &.good { background: #10b981; color: white; }
+    
+    &.sellable { background: rgba(16, 185, 129, 0.15); color: #047857; }
+    &.unsellable { background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.text-xs { font-size: 0.7rem; }

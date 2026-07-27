@@ -19,6 +19,7 @@ public interface IUnitOfWork
     IExpenseRepository Expenses { get; }
     IAlertRepository Alerts { get; }
     IMedicineBatchRepository MedicineBatches { get; }
+    IMedicineUnitRepository MedicineUnits { get; }
     IPurchaseInvoiceDetailRepository PurchaseInvoiceDetails { get; }
     IPurchaseReturnDetailRepository PurchaseReturnDetails { get; }
     ISaleInvoiceDetailRepository SaleInvoiceDetails { get; }

@@ -42,9 +42,24 @@ public class PurchaseInvoiceDetailDto
     public string CompanyBatchNumber { get; set; } = string.Empty;
 
     /// <summary>
-    /// الكمية
+    /// الكمية بالوحدة المشتراة
+    /// </summary>
+    public int QuantityInPurchaseUnit { get; set; }
+
+    /// <summary>
+    /// الكمية (محولة للوحدة الأساسية)
     /// </summary>
     public int Quantity { get; set; }
+
+    /// <summary>
+    /// معرف وحدة الشراء
+    /// </summary>
+    public int? PurchaseUnitId { get; set; }
+
+    /// <summary>
+    /// اسم الوحدة
+    /// </summary>
+    public string UnitName { get; set; } = string.Empty;
 
     /// <summary>
     /// الكمية المجانية (Bonus)

@@ -1,138 +1,100 @@
-<div class="statement-container">
+<div class="report-container" dir="rtl">
   <!-- Header Card -->
-  <p-card styleClass="statement-header-card">
-    <div class="header-content">
-      <div class="header-right">
-        <h2 class="statement-title">
-          <i class="pi pi-file-edit"></i>
-          كشف حساب {{ entityTypeDisplay() }}
-        </h2>
-        <div class="entity-info" *ngIf="statement()">
-          <span class="entity-name">{{ statement()?.entityName }}</span>
-          <span class="entity-phone" *ngIf="statement()?.phoneNumber">
-            <i class="pi pi-phone"></i>
-            {{ statement()?.phoneNumber }}
-          </span>
-        </div>
-      </div>
-      <div class="header-left">
-        <p-button icon="pi pi-download" label="تصدير CSV" severity="secondary" [outlined]="true" (click)="exportCsv()"
-          [disabled]="!statement()"></p-button>
-        <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" (click)="printStatement()"
-          [disabled]="!statement()"></p-button>
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-file-edit"></i></div>
+      <div>
+        <h1>كشف حساب {{ entityTypeDisplay() }}</h1>
+        <p *ngIf="statement()">
+          <strong class="entity-name">{{ statement()?.entityName }}</strong>
+          <span class="entity-phone" *ngIf="statement()?.phoneNumber"> | {{ statement()?.phoneNumber }}</span>
+        </p>
       </div>
     </div>
-  </p-card>
+    <div class="actions no-print">
+      <p-button icon="pi pi-download" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تصدير CSV" tooltipPosition="bottom" (onClick)="exportCsv()" [disabled]="!statement()"></p-button>
+      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printStatement()" [disabled]="!statement()"></p-button>
+    </div>
+  </div>
 
   <!-- Filters Card -->
-  <p-card styleClass="filters-card">
-    <div class="filters-row">
-      <!-- Date Range -->
-      <div class="filter-group">
-        <label>من تاريخ</label>
-        <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true"
-          placeholder="اختر التاريخ"></p-calendar>
-      </div>
-      <div class="filter-group">
-        <label>إلى تاريخ</label>
-        <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true"
-          placeholder="اختر التاريخ"></p-calendar>
-      </div>
-      <div class="filter-actions">
-        <p-button icon="pi pi-search" label="بحث" (click)="applyDateFilter()"></p-button>
-        <p-button icon="pi pi-times" label="مسح" severity="secondary" [outlined]="true"
-          (click)="clearDateFilter()"></p-button>
-      </div>
-
-      <!-- Instant Search -->
-      <div class="filter-group search-group">
-        <label>بحث فوري</label>
-        <span class="p-input-icon-left">
-          <i class="pi pi-search"></i>
-          <input type="text" pInputText placeholder="ابحث في المرجع أو الوصف..." [ngModel]="searchTerm()"
-            (ngModelChange)="searchTerm.set($event)" />
-        </span>
-      </div>
+  <section class="filters-panel no-print">
+    <div class="filter-field">
+      <label>من تاريخ</label>
+      <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
     </div>
-  </p-card>
+    <div class="filter-field">
+      <label>إلى تاريخ</label>
+      <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
+    </div>
+    <div class="filter-field" style="display: flex; gap: 0.25rem;">
+      <p-button icon="pi pi-search" label="بحث" size="small" (onClick)="applyDateFilter()"></p-button>
+      <p-button icon="pi pi-times" label="مسح" size="small" severity="secondary" [outlined]="true" (onClick)="clearDateFilter()"></p-button>
+    </div>
+    <div class="filter-field" style="grid-column: span 2;">
+      <label>بحث فوري</label>
+      <input type="text" pInputText placeholder="ابحث في المرجع أو الوصف..." [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" style="width: 100%;" />
+    </div>
+  </section>
 
   <!-- Summary Cards -->
-  <div class="summary-cards" *ngIf="statement()">
-    <div class="summary-card opening">
-      <div class="summary-icon">
-        <i class="pi pi-wallet"></i>
-      </div>
-      <div class="summary-content">
-        <span class="summary-label">الرصيد الافتتاحي</span>
-        <span class="summary-value">{{ summary().openingBalance | number:'1.2-2' }}</span>
-      </div>
+  <div class="kpi-grid" *ngIf="statement()">
+    <div class="kpi-card stock">
+      <span class="kpi-label">الرصيد الافتتاحي</span>
+      <strong>{{ summary().openingBalance | number:'1.2-2' }} ر.ي</strong>
+      <small>الرصيد قبل الفترة المحددة</small>
     </div>
 
-    <div class="summary-card debit">
-      <div class="summary-icon">
-        <i class="pi pi-arrow-up"></i>
-      </div>
-      <div class="summary-content">
-        <span class="summary-label">إجمالي المدين</span>
-        <span class="summary-value text-danger">{{ summary().totalDebit | number:'1.2-2' }}</span>
-      </div>
+    <div class="kpi-card receivable">
+      <span class="kpi-label">إجمالي المدين</span>
+      <strong>{{ summary().totalDebit | number:'1.2-2' }} ر.ي</strong>
+      <small>إجمالي المبالغ المستحقة</small>
     </div>
 
-    <div class="summary-card credit">
-      <div class="summary-icon">
-        <i class="pi pi-arrow-down"></i>
-      </div>
-      <div class="summary-content">
-        <span class="summary-label">إجمالي الدائن</span>
-        <span class="summary-value text-success">{{ summary().totalCredit | number:'1.2-2' }}</span>
-      </div>
+    <div class="kpi-card creditors">
+      <span class="kpi-label">إجمالي الدائن</span>
+      <strong>{{ summary().totalCredit | number:'1.2-2' }} ر.ي</strong>
+      <small>إجمالي المدفوعات والخصومات</small>
     </div>
 
-    <div class="summary-card balance" [class.positive]="summary().currentBalance > 0"
-      [class.negative]="summary().currentBalance < 0">
-      <div class="summary-icon">
-        <i class="pi pi-chart-line"></i>
-      </div>
-      <div class="summary-content">
-        <span class="summary-label">الرصيد الحالي</span>
-        <span class="summary-value">{{ summary().currentBalance | number:'1.2-2' }}</span>
-        <p-tag [value]="statement()?.accountStatus" [severity]="getBalanceSeverity(summary().currentBalance)"></p-tag>
-      </div>
+    <div class="kpi-card balance" [class.positive]="summary().currentBalance > 0" [class.negative]="summary().currentBalance < 0">
+      <span class="kpi-label">الرصيد الحالي</span>
+      <strong>{{ summary().currentBalance | number:'1.2-2' }} ر.ي</strong>
+      <p-tag [value]="statement()?.accountStatus" [severity]="getBalanceSeverity(summary().currentBalance)"></p-tag>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container" *ngIf="loading()">
+  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
     <p-progressSpinner strokeWidth="4"></p-progressSpinner>
-    <span>جاري تحميل كشف الحساب...</span>
+    <span class="muted" style="display: block; margin-top: 0.5rem;">جاري تحميل كشف الحساب...</span>
   </div>
 
   <!-- Error State -->
-  <p-card styleClass="error-card" *ngIf="error()">
-    <div class="error-content">
-      <i class="pi pi-exclamation-triangle"></i>
-      <span>{{ error() }}</span>
-      <p-button label="إعادة المحاولة" icon="pi pi-refresh" (click)="loadStatement()"></p-button>
+  <div class="panel text-center" *ngIf="error()" style="padding: 2rem; border-color: #ef4444;">
+    <div class="error-content" style="color: #ef4444; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
+      <i class="pi pi-exclamation-triangle" style="font-size: 1.5rem;"></i>
+      <strong>{{ error() }}</strong>
     </div>
-  </p-card>
+    <p-button label="إعادة المحاولة" icon="pi pi-refresh" (click)="loadStatement()"></p-button>
+  </div>
 
   <!-- Statement Table -->
-  <p-card styleClass="table-card" *ngIf="statement() && !loading()">
+  <section class="table-panel" *ngIf="statement() && !loading()">
     <p-table [value]="filteredLines()" [rows]="50" [paginator]="true" [rowsPerPageOptions]="[25, 50, 100]"
       [showCurrentPageReport]="true" currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} حركة"
-      styleClass="p-datatable-sm p-datatable-striped" [scrollable]="true" scrollHeight="500px"
-      [tableStyle]="{'min-width': '900px'}">
+      styleClass="p-datatable-sm compact-table" [scrollable]="true" scrollHeight="500px">
       <ng-template pTemplate="header">
-        <tr class="sticky-header">
-          <th style="width: 100px">التاريخ</th>
-          <th style="width: 120px">نوع الحركة</th>
-          <th style="width: 120px">رقم المرجع</th>
+        <tr>
+          <th style="width: 90px">التاريخ</th>
+          <th style="width: 100px">نوع الحركة</th>
+          <th style="width: 110px">رقم المرجع</th>
           <th>البيان</th>
-          <th class="text-center" style="width: 100px">مدين</th>
-          <th class="text-center" style="width: 100px">دائن</th>
-          <th class="text-center" style="width: 120px">الرصيد</th>
-          <th style="width: 120px">المستخدم</th>
-          <th style="width: 50px"></th>
+          <th class="text-center" style="width: 90px">مدين</th>
+          <th class="text-center" style="width: 90px">دائن</th>
+          <th class="text-center" style="width: 100px">الرصيد</th>
+          <th style="width: 100px">المستخدم</th>
+          <th style="width: 45px no-print"></th>
         </tr>
       </ng-template>
 
@@ -140,28 +102,30 @@
         <tr [class]="getRowClass(line)">
           <td>{{ line.transactionDate | date:'yyyy-MM-dd' }}</td>
           <td>
-            <p-tag [value]="line.referenceType" [severity]="line.debit > 0 ? 'danger' : 'success'"></p-tag>
+            <span class="type-pill" [class.type-red]="line.debit > 0" [class.type-green]="line.credit > 0">
+              {{ line.referenceType }}
+            </span>
           </td>
           <td>
-            <a class="reference-link" (click)="navigateToReference(line)" pTooltip="عرض التفاصيل">
+            <a class="reference-link" (click)="navigateToReference(line)" pTooltip="عرض التفاصيل" style="cursor: pointer; color: #1d4ed8; font-weight: 700;">
               {{ line.referenceNumber }}
             </a>
           </td>
           <td>{{ line.description }}</td>
           <td class="text-center amount-cell debit-cell">
-            <span class="amount-debit" *ngIf="line.debit > 0">{{ line.debit | number:'1.2-2' }}</span>
+            <span style="color: #ef4444;" *ngIf="line.debit > 0">{{ line.debit | number:'1.2-2' }}</span>
           </td>
           <td class="text-center amount-cell credit-cell">
-            <span class="amount-credit" *ngIf="line.credit > 0">{{ line.credit | number:'1.2-2' }}</span>
+            <span style="color: #15803d;" *ngIf="line.credit > 0">{{ line.credit | number:'1.2-2' }}</span>
           </td>
           <td class="text-center balance-cell">
-            <span [class.text-danger]="line.runningBalance > 0" [class.text-success]="line.runningBalance < 0">
+            <span [class.text-danger]="line.runningBalance > 0" [class.text-success]="line.runningBalance < 0" style="font-weight: 700;">
               {{ line.runningBalance | number:'1.2-2' }}
             </span>
           </td>
-          <td class="user-cell">{{ line.createdByUserName || '-' }}</td>
-          <td>
-            <p-button icon="pi pi-external-link" [rounded]="true" [text]="true" severity="info"
+          <td><span class="muted">{{ line.createdByUserName || '-' }}</span></td>
+          <td class="no-print">
+            <p-button icon="pi pi-external-link" [rounded]="true" [text]="true" severity="info" size="small"
               (click)="navigateToReference(line)" pTooltip="فتح المرجع" *ngIf="line.referenceId"></p-button>
           </td>
         </tr>
@@ -169,21 +133,21 @@
 
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="9" class="text-center">
-            <div class="empty-message">
-              <i class="pi pi-inbox"></i>
-              <span>لا توجد حركات في هذه الفترة</span>
+          <td colspan="9" class="text-center p-4">
+            <div class="empty-message muted">
+              <i class="pi pi-inbox" style="font-size: 2rem;"></i>
+              <span style="display: block; margin-top: 0.5rem;">لا توجد حركات في هذه الفترة</span>
             </div>
           </td>
         </tr>
       </ng-template>
 
       <ng-template pTemplate="summary">
-        <div class="table-summary">
+        <div class="table-summary no-print" style="display: flex; justify-content: space-between; font-size: 0.65rem; color: #64748b; padding: 0.3rem 0.5rem;">
           <span>إجمالي الحركات: {{ filteredLines().length }}</span>
           <span>آخر تحديث: {{ statement()?.generatedAt | date:'yyyy-MM-dd HH:mm' }}</span>
         </div>
       </ng-template>
     </p-table>
-  </p-card>
+  </section>
 </div>

@@ -42,4 +42,9 @@ public class MedicineBatchDetailDto
     /// لون الحالة (للعرض في الواجهة)
     /// </summary>
     public string StatusColor { get; set; } = string.Empty;
+
+    /// <summary>
+    /// معرف الدفعة (Primary Key)
+    /// </summary>
+    public int Id { get; set; }
 }

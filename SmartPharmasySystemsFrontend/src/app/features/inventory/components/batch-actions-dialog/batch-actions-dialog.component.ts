@@ -29,6 +29,7 @@ import { MedicineBatch, StockMovementType } from '../../../../core/models';
 export class BatchActionsDialogComponent implements OnInit {
     @Input() visible = false;
     @Input() batch: MedicineBatch | null = null;
+    @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onClose = new EventEmitter<void>();
     @Output() onSuccess = new EventEmitter<void>();
 
@@ -113,6 +114,8 @@ export class BatchActionsDialogComponent implements OnInit {
     }
 
     close() {
+        this.visible = false;
+        this.visibleChange.emit(false);
         this.onClose.emit();
     }
 }

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { DropdownModule } from 'primeng/dropdown';
@@ -20,6 +20,7 @@ import { Medicine, MedicineBatch } from '../../../core/models';
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule,
         DialogModule,
         AutoCompleteModule,
         DropdownModule,
@@ -110,41 +111,32 @@ export class InvoiceItemDialogComponent implements OnInit {
         if (item) {
             this.isEdit = true;
             this.itemForm.patchValue(item);
-            if (this.invoiceType === 'Sales' && item.medicineId) {
-                this.loadBatches(item.medicineId);
+            
+            // In edit mode, we must fetch the medicine to populate selectedMedicine and unitOptions
+            if (item.medicineId) {
+                this.inventoryService.getMedicineById(item.medicineId).subscribe({
+                    next: (medicine) => {
+                        this.selectedMedicine = medicine;
+                        this.baseUnitName = medicine.baseUnitName || 'حبة';
+                        this.buildUnitOptions(medicine);
+                    }
+                });
+                
+                if (this.invoiceType === 'Sales') {
+                    this.loadBatches(item.medicineId);
+                }
             }
         } else {
             this.isEdit = false;
             this.itemForm.reset({ quantity: 1, price: 0 });
             this.maxQuantity = 0;
             this.batches = [];
+            this.selectedMedicine = null;
         }
         this.visible = true;
     }
 
-    resetState() {
-        this.hasExpiredBatches = false;
-        this.noStockAvailable = false;
-        this.msgs = [];
-        this.batches = [];
-    }
-
-    onClose() {
-        this.visible = false;
-        this.isEdit = false;
-    }
-
-    searchMedicines(event: any) {
-        this.inventoryService.searchMedicines({ search: event.query }).subscribe(res => {
-            this.filteredMedicines = res.items;
-        });
-    }
-
-    onMedicineSelect(medicine: Medicine) {
-        this.selectedMedicine = medicine;
-        this.baseUnitName = medicine.baseUnitName || 'حبة';
-
-        // Build options list
+    private buildUnitOptions(medicine: Medicine) {
         this.unitOptions = [
             {
                 label: `${this.baseUnitName} (وحدة صغرى أساسية)`,
@@ -166,6 +158,51 @@ export class InvoiceItemDialogComponent implements OnInit {
                 });
             });
         }
+    }
+
+    resetState() {
+        this.hasExpiredBatches = false;
+        this.noStockAvailable = false;
+        this.msgs = [];
+        this.batches = [];
+    }
+
+    onClose() {
+        this.visible = false;
+        this.isEdit = false;
+        this.selectedMedicine = null;
+    }
+
+    prefillMedicineById(id: number) {
+        this.resetState();
+        this.isEdit = false;
+        this.itemForm.reset({ quantity: 1, price: 0 });
+        this.maxQuantity = 0;
+        this.batches = [];
+        this.visible = true;
+
+        this.inventoryService.getMedicineById(id).subscribe({
+            next: (medicine) => {
+                this.selectedMedicine = medicine;
+                this.onMedicineSelect(medicine);
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل بيانات الدواء' });
+            }
+        });
+    }
+
+    searchMedicines(event: any) {
+        this.inventoryService.searchMedicines({ search: event.query }).subscribe(res => {
+            this.filteredMedicines = res.items;
+        });
+    }
+
+    onMedicineSelect(medicine: Medicine) {
+        this.selectedMedicine = medicine;
+        this.baseUnitName = medicine.baseUnitName || 'حبة';
+
+        this.buildUnitOptions(medicine);
 
         const patchData: any = {
             medicineId: medicine.id,
@@ -339,18 +376,16 @@ export class InvoiceItemDialogComponent implements OnInit {
         if (option && selectedUnitVal !== 'base') {
             const unitName = option.label.split(' ')[0]; // E.g., "علبة"
             val.medicineName = `${val.medicineName} (${unitName})`;
+            val.unitId = option.value;
+        } else {
+            val.unitId = null;
         }
 
-        // Convert values to base units
-        val.quantity = (val.quantity || 0) * factor;
-        val.bonusQuantity = (val.bonusQuantity || 0) * factor;
-        val.price = (val.price || 0) / factor;
-        if (val.salePrice) {
-            val.salePrice = val.salePrice / factor;
-        }
+        // Calculate base units for validation only! Backend handles the actual conversion.
+        const baseUnitsQty = (val.quantity || 0) * factor;
 
-        if (this.invoiceType === 'Sales' && val.quantity > this.maxQuantity && !this.isEdit) {
-            this.messageService.add({ severity: 'error', summary: 'خطأ في الكمية', detail: `الكمية المتاحة هي ${this.maxQuantity} فقط` });
+        if (this.invoiceType === 'Sales' && baseUnitsQty > this.maxQuantity && !this.isEdit) {
+            this.messageService.add({ severity: 'error', summary: 'خطأ في الكمية', detail: `الكمية المتاحة هي ${this.maxQuantity} وحدة أساسية فقط` });
             return;
         }
 

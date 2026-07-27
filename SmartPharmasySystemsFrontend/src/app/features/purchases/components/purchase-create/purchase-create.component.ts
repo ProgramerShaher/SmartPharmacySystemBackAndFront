@@ -96,6 +96,16 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             this.isEditMode = true;
             this.currentInvoiceId = +id;
             this.loadInvoice(id);
+        } else {
+            // Check for pre-filled medicine from query params
+            const medicineId = this.route.snapshot.queryParams['medicineId'];
+            const medicineName = this.route.snapshot.queryParams['medicineName'];
+            if (medicineId) {
+                // Use a slight timeout to ensure view is fully initialized before opening dialog
+                setTimeout(() => {
+                    this.itemDialog.prefillMedicineById(+medicineId);
+                }, 100);
+            }
         }
     }
 
@@ -232,6 +242,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             companyBatchNumber: [detail.companyBatchNumber, Validators.required],
             expiryDate: [detail.expiryDate ? new Date(detail.expiryDate) : null],
             quantity: [detail.quantity, [Validators.required, Validators.min(1)]],
+            purchaseUnitId: [detail.purchaseUnitId || null],
             bonusQuantity: [detail.bonusQuantity || 0],
             purchasePrice: [detail.purchasePrice, Validators.required],
             salePrice: [detail.salePrice, Validators.required],
@@ -248,6 +259,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             companyBatchNumber: item.companyBatchNumber,
             expiryDate: item.expiryDate,
             quantity: item.quantity,
+            unitId: item.purchaseUnitId,
             bonusQuantity: item.bonusQuantity,
             price: item.purchasePrice,
             salePrice: item.salePrice
@@ -262,6 +274,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             companyBatchNumber: itemData.companyBatchNumber,
             expiryDate: itemData.expiryDate,
             quantity: itemData.quantity,
+            purchaseUnitId: itemData.unitId,
             bonusQuantity: itemData.bonusQuantity,
             purchasePrice: itemData.price,
             salePrice: itemData.salePrice,
@@ -316,6 +329,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             companyBatchNumber: d.companyBatchNumber,
             expiryDate: d.expiryDate,
             quantity: d.quantity,
+            purchaseUnitId: d.purchaseUnitId,
             bonusQuantity: d.bonusQuantity,
             purchasePrice: d.purchasePrice,
             salePrice: d.salePrice,
@@ -364,6 +378,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             companyBatchNumber: d.companyBatchNumber,
             expiryDate: d.expiryDate,
             quantity: d.quantity,
+            purchaseUnitId: d.purchaseUnitId,
             bonusQuantity: d.bonusQuantity,
             purchasePrice: d.purchasePrice,
             salePrice: d.salePrice

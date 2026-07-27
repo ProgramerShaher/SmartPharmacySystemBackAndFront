@@ -576,6 +576,22 @@ namespace SmartPharmacySystem.Application.Services
 
             foreach (var detail in originalDetails)
             {
+                // ====================================================
+                // UoM: Convert entered quantity to base units
+                // ====================================================
+                int conversionFactor = 1;
+                if (detail.SaleUnitId.HasValue)
+                {
+                    var saleUnit = await _unitOfWork.MedicineUnits.GetByIdAsync(detail.SaleUnitId.Value);
+                    conversionFactor = saleUnit?.ConversionFactor ?? 1;
+                }
+
+                int rawQty = detail.Quantity;
+                int baseUnits = rawQty * conversionFactor;
+                
+                detail.QuantityInSaleUnit = rawQty;
+                detail.Quantity = baseUnits;
+
                 int remainingToAllocate = detail.Quantity;
 
                 if (detail.BatchId > 0)
@@ -586,7 +602,7 @@ namespace SmartPharmacySystem.Application.Services
                     int canTake = Math.Min(remainingToAllocate, batch.RemainingQuantity);
                     if (canTake > 0)
                     {
-                        var splitDetail = CreateSplitDetail(detail, batch, canTake);
+                        var splitDetail = CreateSplitDetail(detail, batch, canTake, conversionFactor);
                         invoice.SaleInvoiceDetails.Add(splitDetail);
                         remainingToAllocate -= canTake;
                     }
@@ -604,7 +620,7 @@ namespace SmartPharmacySystem.Application.Services
                         int canTake = Math.Min(remainingToAllocate, batch.RemainingQuantity);
                         if (canTake > 0)
                         {
-                            var splitDetail = CreateSplitDetail(detail, batch, canTake);
+                            var splitDetail = CreateSplitDetail(detail, batch, canTake, conversionFactor);
                             invoice.SaleInvoiceDetails.Add(splitDetail);
                             remainingToAllocate -= canTake;
                         }
@@ -614,7 +630,7 @@ namespace SmartPharmacySystem.Application.Services
                 if (remainingToAllocate > 0)
                 {
                     var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
-                    throw new InvalidOperationException($"الكمية المطلوبة من الصنف ({medicine?.Name ?? detail.MedicineId.ToString()}) غير متوفرة في المخزن. العجز: {remainingToAllocate}");
+                    throw new InvalidOperationException($"الكمية المطلوبة من الصنف ({medicine?.Name ?? detail.MedicineId.ToString()}) غير متوفرة في المخزن بالكمية الكافية.");
                 }
             }
 
@@ -623,18 +639,20 @@ namespace SmartPharmacySystem.Application.Services
             invoice.TotalProfit = invoice.SaleInvoiceDetails.Sum(d => d.Profit);
         }
 
-        private SaleInvoiceDetail CreateSplitDetail(SaleInvoiceDetail template, MedicineBatch batch, int quantity)
+        private SaleInvoiceDetail CreateSplitDetail(SaleInvoiceDetail template, MedicineBatch batch, int quantity, int conversionFactor)
         {
             return new SaleInvoiceDetail
             {
                 MedicineId = template.MedicineId,
                 BatchId = batch.Id,
                 Quantity = quantity,
+                QuantityInSaleUnit = quantity / conversionFactor, // integer division, might be 0 for partials
+                SaleUnitId = template.SaleUnitId,
                 SalePrice = template.SalePrice,
                 UnitCost = batch.UnitPurchasePrice,
                 TotalCost = quantity * batch.UnitPurchasePrice,
-                TotalLineAmount = quantity * template.SalePrice,
-                Profit = (quantity * template.SalePrice) - (quantity * batch.UnitPurchasePrice)
+                TotalLineAmount = (quantity / (decimal)conversionFactor) * template.SalePrice, // calculate amount correctly if partial
+                Profit = ((quantity / (decimal)conversionFactor) * template.SalePrice) - (quantity * batch.UnitPurchasePrice)
             };
         }
 

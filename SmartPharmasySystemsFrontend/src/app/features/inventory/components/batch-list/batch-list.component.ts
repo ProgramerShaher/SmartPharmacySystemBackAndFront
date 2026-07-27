@@ -130,6 +130,24 @@ export class BatchListComponent implements OnInit {
         this.displayActionDialog = true;
     }
 
+    toggleSellable(batch: MedicineBatch) {
+        // Optimistic update
+        const originalStatus = batch.isSellable;
+        batch.isSellable = !batch.isSellable;
+        const newStatus = batch.isSellable ? 'Active' : 'Quarantine';
+        
+        this.inventoryService.updateBatchStatus(batch.id, newStatus).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تحديث حالة الدفعة بنجاح' });
+            },
+            error: (err) => {
+                // Revert on error
+                batch.isSellable = originalStatus;
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحديث حالة الدفعة' });
+            }
+        });
+    }
+
     onActionSuccess() {
         this.displayActionDialog = false;
         this.loadBatches();

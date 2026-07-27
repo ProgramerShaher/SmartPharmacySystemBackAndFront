@@ -61,6 +61,9 @@ export class InventoryService {
     updateBatch(id: number, batch: Partial<MedicineBatch>): Observable<MedicineBatch> {
         return this.http.put<ApiResponse<MedicineBatch>>(`${environment.apiUrl}/MedicineBatches/${id}`, batch).pipe(map(res => res.data));
     }
+    updateBatchStatus(id: number, status: string): Observable<MedicineBatch> {
+        return this.http.put<ApiResponse<MedicineBatch>>(`${environment.apiUrl}/MedicineBatches/${id}/status?status=${status}`, {}).pipe(map(res => res.data));
+    }
     deleteBatch(id: number): Observable<void> {
         return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/MedicineBatches/${id}`).pipe(map(res => res.data));
     }

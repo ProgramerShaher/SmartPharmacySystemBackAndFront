@@ -52,6 +52,9 @@ namespace SmartPharmacySystem.Infrastructure
         private IMedicineBatchRepository? _medicineBatches;
         public IMedicineBatchRepository MedicineBatches => _medicineBatches ??= new MedicineBatchRepository(_context);
 
+        private IMedicineUnitRepository? _medicineUnits;
+        public IMedicineUnitRepository MedicineUnits => _medicineUnits ??= new MedicineUnitRepository(_context);
+
         private IPurchaseInvoiceDetailRepository? _purchaseInvoiceDetails;
         public IPurchaseInvoiceDetailRepository PurchaseInvoiceDetails => _purchaseInvoiceDetails ??= new PurchaseInvoiceDetailRepository(_context);
 

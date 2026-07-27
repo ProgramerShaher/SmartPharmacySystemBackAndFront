@@ -27,3 +27,19 @@ export interface WarehouseQueryDto {
     type?: WarehouseType;
     search?: string;
 }
+
+export interface InventoryStockDto {
+    id: number;
+    warehouseId: number;
+    warehouseName: string;
+    medicineId: number;
+    medicineName: string;
+    medicineBarcode: string;
+    batchNumber: string;
+    expiryDate: string;
+    quantity: number;
+    expiryStatus: string;
+    expiryStatusColor: string;
+    daysUntilExpiry: number;
+    storageLocation?: string;
+}

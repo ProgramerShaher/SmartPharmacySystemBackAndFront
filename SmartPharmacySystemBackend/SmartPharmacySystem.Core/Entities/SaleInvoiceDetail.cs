@@ -23,9 +23,22 @@ public class SaleInvoiceDetail : BaseEntity
     public int BatchId { get; set; }
 
     /// <summary>
-    /// Quantity sold.
+    /// Quantity sold (stored in Base Unit = smallest unit, e.g. pills). Auto-calculated.
+    /// الكمية المباعة محوّلة إلى أصغر وحدة (حبة). محسوبة تلقائياً من وحدة البيع.
     /// </summary>
     public int Quantity { get; set; }
+
+    /// <summary>
+    /// Quantity as entered by the cashier in the selected sale unit (e.g. 2 strips).
+    /// الكمية كما أدخلها الكاشير بالوحدة المحددة (مثلاً: 2 شريط).
+    /// </summary>
+    public int QuantityInSaleUnit { get; set; }
+
+    /// <summary>
+    /// The unit used when selling (FK to MedicineUnit). Null = base unit.
+    /// الوحدة المستخدمة في البيع (مثلاً: شريط). إذا كانت null تعني الوحدة الأساسية.
+    /// </summary>
+    public int? SaleUnitId { get; set; }
 
     /// <summary>
     /// Sale price per unit.
@@ -72,4 +85,10 @@ public class SaleInvoiceDetail : BaseEntity
     /// Navigation property to the medicine batch.
     /// </summary>
     public MedicineBatch Batch { get; set; }
+
+    /// <summary>
+    /// Navigation property to the sale unit (MedicineUnit).
+    /// خاصية التنقل لوحدة البيع المستخدمة.
+    /// </summary>
+    public MedicineUnit? SaleUnit { get; set; }
 }

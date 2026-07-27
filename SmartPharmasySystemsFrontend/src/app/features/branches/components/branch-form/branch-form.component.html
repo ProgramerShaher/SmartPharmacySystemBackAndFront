@@ -1,37 +1,37 @@
 <p-dialog [(visible)]="visible" [header]="editMode ? 'تعديل الفرع' : 'إضافة فرع جديد'" [modal]="true"
-    [style]="{width:'550px'}" [dir]="'rtl'" [draggable]="false" [resizable]="false"
+    [style]="{width:'480px'}" [dir]="'rtl'" [draggable]="false" [resizable]="false"
     (onHide)="cancel()" styleClass="branch-dialog">
-    <div class="grid p-fluid" style="row-gap: 1.25rem;">
-        <div class="col-12 md:col-6">
-            <label class="form-label">كود الفرع <span class="text-danger">*</span></label>
-            <input pInputText type="text" class="premium-input w-full" [(ngModel)]="model.branchCode" placeholder="مثال: BR-001" />
+    <div class="p-fluid" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem;">
+            <div style="flex: 1;">
+                <label class="dialog-label">كود الفرع <span class="text-danger">*</span></label>
+                <input pInputText type="text" [(ngModel)]="model.branchCode" placeholder="مثال: BR-001" />
+            </div>
+            <div style="flex: 1;">
+                <label class="dialog-label">اسم الفرع <span class="text-danger">*</span></label>
+                <input pInputText type="text" [(ngModel)]="model.name" placeholder="اسم الفرع" />
+            </div>
         </div>
-        <div class="col-12 md:col-6">
-            <label class="form-label">اسم الفرع <span class="text-danger">*</span></label>
-            <input pInputText type="text" class="premium-input w-full" [(ngModel)]="model.name" placeholder="اسم الفرع" />
+        <div>
+            <label class="dialog-label">الموقع</label>
+            <input pInputText type="text" [(ngModel)]="model.location" placeholder="عنوان الفرع" />
         </div>
-        <div class="col-12">
-            <label class="form-label">الموقع</label>
-            <input pInputText type="text" class="premium-input w-full" [(ngModel)]="model.location" placeholder="عنوان الفرع" />
-        </div>
-        <div class="col-12 md:col-6">
-            <label class="form-label">نوع الفرع <span class="text-danger">*</span></label>
-            <p-dropdown [options]="branchTypeOptions" [(ngModel)]="model.branchType" optionLabel="label" optionValue="value"
-                placeholder="اختر النوع" styleClass="premium-dropdown w-full"></p-dropdown>
-        </div>
-        <div class="col-12 md:col-6">
-            <div class="flex align-items-center gap-3" style="margin-top: 1.8rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <div style="flex: 1;">
+                <label class="dialog-label">نوع الفرع <span class="text-danger">*</span></label>
+                <p-dropdown [options]="branchTypeOptions" [(ngModel)]="model.branchType" optionLabel="label" optionValue="value"
+                    placeholder="اختر النوع" appendTo="body"></p-dropdown>
+            </div>
+            <div style="flex: 1; display: flex; align-items: center; gap: 0.4rem; height: 1.8rem; margin-bottom: 0.25rem;">
                 <p-inputSwitch [(ngModel)]="model.isActive"></p-inputSwitch>
-                <label class="form-label m-0">نشط</label>
+                <label class="dialog-label" style="margin: 0;">نشط</label>
             </div>
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <div class="flex justify-content-end gap-2">
-            <p-button label="إلغاء" icon="pi pi-times" [rounded]="true" severity="secondary" (onClick)="cancel()"></p-button>
-            <p-button [label]="editMode ? 'حفظ' : 'إضافة'" icon="pi pi-check" [rounded]="true"
-                severity="primary" [loading]="saving()" (onClick)="save()"></p-button>
-        </div>
+        <p-button label="إلغاء" icon="pi pi-times" [text]="true" (onClick)="cancel()"></p-button>
+        <p-button [label]="editMode ? 'حفظ' : 'إضافة'" icon="pi pi-check" size="small"
+            severity="primary" [loading]="saving()" (onClick)="save()"></p-button>
     </ng-template>
 </p-dialog>
 <p-toast></p-toast>

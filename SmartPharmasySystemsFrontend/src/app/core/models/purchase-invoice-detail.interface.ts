@@ -14,7 +14,10 @@ export interface PurchaseInvoiceDetail {
     medicineName: string;
     batchId: number;
     companyBatchNumber: string;
+    quantityInPurchaseUnit?: number;
     quantity: number;
+    purchaseUnitId?: number | null;
+    unitName?: string;
     bonusQuantity: number;
     purchasePrice: number;
     salePrice: number;

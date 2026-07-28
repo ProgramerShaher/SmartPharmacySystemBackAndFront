@@ -38,10 +38,9 @@ export class CreateDamagedGoodsComponent implements OnInit {
     availableMedicines: { label: string; value: any; }[] = [];
     
     damageTypes = [
-        { label: 'منتهي الصلاحية', value: 1 },
-        { label: 'تالف/مكسور', value: 2 },
-        { label: 'سوء تخزين', value: 3 },
-        { label: 'أخرى', value: 4 }
+        { label: 'منتهي الصلاحية', value: 'Expired' },
+        { label: 'تالف/مكسور', value: 'PhysicalDamage' },
+        { label: 'عيب تصنيع', value: 'ManufacturingDefect' }
     ];
 
     saving = false;
@@ -61,7 +60,7 @@ export class CreateDamagedGoodsComponent implements OnInit {
             expiryDate: ['', Validators.required],
             quantity: [1, [Validators.required, Validators.min(1)]],
             availableQuantity: [0],
-            damageType: [1, Validators.required],
+            damageType: ['Expired', Validators.required],
             reason: ['']
         });
     }

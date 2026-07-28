@@ -111,6 +111,11 @@
                 placeholder="اختر شهر/سنة الانتهاء"></p-calendar>
         </div>
 
+        <div class="dialog-field" *ngIf="invoiceType === 'Purchase'">
+            <label>موقع التخزين (اختياري)</label>
+            <input pInputText formControlName="storageLocation" placeholder="مثال: R1-S3 أو رف 1 - ممر A" />
+        </div>
+
         <div class="dialog-field">
             <label>{{invoiceType === 'Sales' ? 'الكمية المطلوبة' : 'الكمية الموردة'}}</label>
             <p-inputNumber formControlName="quantity" [min]="1" [showButtons]="true" buttonLayout="horizontal"

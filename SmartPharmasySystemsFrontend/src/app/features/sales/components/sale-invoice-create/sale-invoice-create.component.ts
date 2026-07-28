@@ -165,6 +165,25 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 this.toggleCashCustomer();
             }
         });
+
+        // Handle Quick Sale
+        this.route.queryParams.subscribe(params => {
+            if (params['quickSaleMedicineId']) {
+                const medicineId = +params['quickSaleMedicineId'];
+                // Load medicine and open modal automatically
+                this.medicineService.getById(medicineId).subscribe({
+                    next: (medicine) => {
+                        if (medicine) {
+                            this.openAddItemDialog();
+                            this.onMedicineSelectInModal(medicine);
+                        }
+                    },
+                    error: (err) => {
+                        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'لم يتم العثور على الدواء المطلوب للبيع السريع' });
+                    }
+                });
+            }
+        });
     }
 
     // 🔍 BARCODE SCANNER ENGINE
@@ -335,12 +354,10 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
     onMedicineSelect(medicine: Medicine) {
         this.selectedMedicine = medicine;
-        this.medicineBatchService.getAvailableByMedicineId(medicine.id).subscribe({
+        this.medicineService.getFefoBatches(medicine.id).subscribe({
             next: (batches) => {
                 this.availableBatches = batches
-                    .filter(b => b.remainingQuantity > 0 && (b.isSellable ?? true))
-                    // Optional: Sort by expiry date (FEFO) - usually backend does this but safely ensure here
-                    .sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime());
+                    .filter(b => b.remainingQuantity > 0 && (b.isSellable ?? true));
 
                 if (this.availableBatches.length > 0) {
                     this.batchDialogVisible = true;
@@ -570,13 +587,12 @@ export class SaleInvoiceCreateComponent implements OnInit {
         }
         this.selectedUnitForModal = this.unitOptionsForModal[0];
 
-        // Load batches for selected medicine (FEFO order)
-        this.medicineBatchService.getAvailableByMedicineId(medicine.id).subscribe({
+        // Load batches for selected medicine (FEFO order from Backend)
+        this.medicineService.getFefoBatches(medicine.id).subscribe({
             next: (batches) => {
                 this.availableBatches = batches
                     // Double check filtering just in case, but backend should handle it
-                    .filter(b => b.remainingQuantity > 0 && (b.isSellable ?? true))
-                    .sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime());
+                    .filter(b => b.remainingQuantity > 0 && (b.isSellable ?? true));
 
                 // Auto-select first batch (FEFO)
                 if (this.availableBatches.length > 0) {

@@ -12,6 +12,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TableModule } from 'primeng/table';
 import { CardModule } from 'primeng/card';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
     selector: 'app-create-stock-transfer',
@@ -43,14 +44,18 @@ export class CreateStockTransferComponent implements OnInit {
     availableMedicines: { label: string; value: any; }[] = [];
 
     saving = false;
-    currentUserId = 1; // Simulated, usually from auth context
+
+    get currentUserId(): number {
+        return this.authService.currentUserValue?.userId ?? 1;
+    }
 
     constructor(
         private fb: FormBuilder,
         private transferService: StockTransferService,
         private warehouseService: WarehouseService,
         private messageService: MessageService,
-        private router: Router
+        private router: Router,
+        private authService: AuthService
     ) {
         this.transferForm = this.fb.group({
             sourceWarehouseId: [null, Validators.required],
@@ -91,11 +96,19 @@ export class CreateStockTransferComponent implements OnInit {
         this.warehouseService.getInventoryStocks(warehouseId).subscribe(res => {
             this.sourceInventory = res.filter(s => s.quantity > 0);
 
-            // Map to dropdown format, group by medicine name and batch number
-            this.availableMedicines = this.sourceInventory.map(item => ({
-                label: `${item.medicineName} (رقم التشغيلة: ${item.batchNumber} - متوفر: ${item.quantity})`,
-                value: item
-            }));
+            // Map to dropdown format — show storage location if available
+            this.availableMedicines = this.sourceInventory
+                .filter(item => item.quantity > 0)
+                .map(item => {
+                    const locationPart = item.storageLocation ? ` 📦 ${item.storageLocation}` : '';
+                    const expiryPart = item.expiryDate
+                        ? ` | ينتهي: ${new Date(item.expiryDate).toLocaleDateString('ar-EG', { year: 'numeric', month: '2-digit' })}`
+                        : '';
+                    return {
+                        label: `${item.medicineName} (تشغيلة: ${item.batchNumber} — متوفر: ${item.quantity}${locationPart}${expiryPart})`,
+                        value: item
+                    };
+                });
         });
     }
 
@@ -110,6 +123,7 @@ export class CreateStockTransferComponent implements OnInit {
             medicineName: [''],
             batchNumber: ['', Validators.required],
             expiryDate: [null],
+            storageLocation: [null],
             quantity: [1, [Validators.required, Validators.min(1)]],
             availableQuantity: [0]
         });
@@ -122,6 +136,7 @@ export class CreateStockTransferComponent implements OnInit {
                     medicineName: stockItem.medicineName,
                     batchNumber: stockItem.batchNumber,
                     expiryDate: stockItem.expiryDate,
+                    storageLocation: stockItem.storageLocation ?? null,
                     availableQuantity: stockItem.quantity,
                     quantity: 1
                 });
@@ -162,7 +177,7 @@ export class CreateStockTransferComponent implements OnInit {
             items: formValue.items.map((item: any) => ({
                 medicineId: item.medicineId,
                 batchNumber: item.batchNumber,
-                expiryDate: item.expiryDate || new Date(),
+                expiryDate: item.expiryDate,
                 quantityRequested: item.quantity
             }))
         };
@@ -183,3 +198,4 @@ export class CreateStockTransferComponent implements OnInit {
         this.router.navigate(['/warehouses/transfers']);
     }
 }
+

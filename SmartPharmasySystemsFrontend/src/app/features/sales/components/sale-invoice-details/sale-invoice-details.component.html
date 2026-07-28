@@ -3,45 +3,48 @@
     <div class="loading-overlay" *ngIf="loading">
         <p-progressSpinner></p-progressSpinner>
     </div>
-<!-- Master Action Bar (Floating Header) -->
-<div class="master-action-bar" *ngIf="invoice">
-    <div class="action-bar-left">
-        <p-button icon="pi pi-arrow-right" rounded text pTooltip="العودة للقائمة" (onClick)="backToList()"></p-button>
-        <h2 class="invoice-title">فاتورة بيع #{{ invoice.saleInvoiceNumber }}</h2>
+    <!-- Master Action Bar (Floating Header) -->
+    <div class="master-action-bar" *ngIf="invoice">
+        <div class="action-bar-left">
+            <p-button icon="pi pi-arrow-right" rounded text pTooltip="العودة للقائمة"
+                (onClick)="backToList()"></p-button>
+            <h2 class="invoice-title">فاتورة بيع #{{ invoice.saleInvoiceNumber }}</h2>
         </div>
         <div class="action-bar-right">
             <!-- Thermal Print -->
-            <p-button icon="pi pi-print" label="طباعة حرارية" severity="info" outlined pTooltip="طباعة حرارية"></p-button>
-        
+            <p-button icon="pi pi-print" label="طباعة حرارية" severity="info" outlined
+                pTooltip="طباعة حرارية"></p-button>
+
             <!-- PDF Export -->
-            <p-button icon="pi pi-file-pdf" label="تصدير PDF" severity="danger" outlined pTooltip="تصدير كملف PDF"></p-button>
-        
+            <p-button icon="pi pi-file-pdf" label="تصدير PDF" severity="danger" outlined
+                pTooltip="تصدير كملف PDF"></p-button>
+
             <!-- Quick Return (Only if Approved) -->
             <p-button *ngIf="invoice.status === DocumentStatus.Approved" icon="pi pi-replay" label="مرتجع سريع"
-                severity="warning" outlined [routerLink]="['/sales/returns/create']" [queryParams]="{invoiceId: invoice.id}"
-                pTooltip="إنشاء مرتجع سريع"></p-button>
-        
+                severity="warning" outlined [routerLink]="['/sales/returns/create']"
+                [queryParams]="{invoiceId: invoice.id}" pTooltip="إنشاء مرتجع سريع"></p-button>
+
             <!-- Approve (Only if Draft) -->
             <p-button *ngIf="invoice.status === DocumentStatus.Draft" icon="pi pi-check-circle" label="اعتماد"
                 severity="success" (onClick)="approveInvoice()"></p-button>
-        
+
             <!-- Cancel (Only if Approved) -->
             <p-button *ngIf="invoice.status === DocumentStatus.Approved" icon="pi pi-times-circle" label="إلغاء"
                 severity="danger" outlined (onClick)="cancelInvoice()"></p-button>
         </div>
     </div>
-<!-- The White Canvas (Paper) -->
-<div class="paper-canvas" *ngIf="invoice" [class.approved-glow]="invoice.status === DocumentStatus.Approved"
-    [class.cancelled-glow]="invoice.status === DocumentStatus.Cancelled">
+    <!-- The White Canvas (Paper) -->
+    <div class="paper-canvas" *ngIf="invoice" [class.approved-glow]="invoice.status === DocumentStatus.Approved"
+        [class.cancelled-glow]="invoice.status === DocumentStatus.Cancelled">
 
-    <!-- Status Stamp (Glassmorphism) -->
-    <div class="status-stamp" *ngIf="invoice.status === DocumentStatus.Approved">
-        <i class="pi pi-check-circle"></i>
-        <span>APPROVED</span>
-    </div>
-    <div class="status-stamp cancelled" *ngIf="invoice.status === DocumentStatus.Cancelled">
-        <i class="pi pi-ban"></i>
-        <span>CANCELLED</span>
+        <!-- Status Stamp (Glassmorphism) -->
+        <div class="status-stamp" *ngIf="invoice.status === DocumentStatus.Approved">
+            <i class="pi pi-check-circle"></i>
+            <span>APPROVED</span>
+        </div>
+        <div class="status-stamp cancelled" *ngIf="invoice.status === DocumentStatus.Cancelled">
+            <i class="pi pi-ban"></i>
+            <span>CANCELLED</span>
         </div>
 
         <!-- Premium Header Architecture -->
@@ -52,31 +55,31 @@
                 <p class="pharmacy-info">نظام إدارة صيدليات متكامل</p>
                 <p class="pharmacy-contact">📞 +967 777 123 456</p>
             </div>
-<!-- Power Center (Left) -->
-<div class="power-center">
-    <div class="invoice-badge">
-        <div class="badge-row">
-            <i class="pi pi-barcode"></i>
-            <span class="badge-label">رقم الفاتورة</span>
+            <!-- Power Center (Left) -->
+            <div class="power-center">
+                <div class="invoice-badge">
+                    <div class="badge-row">
+                        <i class="pi pi-barcode"></i>
+                        <span class="badge-label">رقم الفاتورة</span>
                     </div>
                     <div class="badge-value">{{ invoice.saleInvoiceNumber }}</div>
+                </div>
+                <div class="invoice-badge">
+                    <div class="badge-row">
+                        <i class="pi pi-calendar"></i>
+                        <span class="badge-label">تاريخ البيع</span>
                     </div>
-                    <div class="invoice-badge">
-                        <div class="badge-row">
-                            <i class="pi pi-calendar"></i>
-                            <span class="badge-label">تاريخ البيع</span>
-                        </div>
-                        <div class="badge-value">{{ invoice.invoiceDate | date:'dd/MM/yyyy - HH:mm' }}</div>
-                    </div>
-                    <div class="invoice-badge">
-                        <p-tag [value]="getStatusLabel(invoice.status)" [severity]="getStatusSeverity(invoice.status)"
-                            styleClass="status-tag"></p-tag>
+                    <div class="badge-value">{{ invoice.invoiceDate | date:'dd/MM/yyyy - HH:mm' }}</div>
+                </div>
+                <div class="invoice-badge">
+                    <p-tag [value]="getStatusLabel(invoice.status)" [severity]="getStatusSeverity(invoice.status)"
+                        styleClass="status-tag"></p-tag>
                 </div>
             </div>
         </div>
 
         <p-divider></p-divider>
-        
+
         <!-- Mini Info-Hub (Transparent Cards) -->
         <div class="info-hub">
             <div class="info-card">
@@ -102,7 +105,7 @@
                 <span class="card-label">التوقيت</span>
                 <span class="card-value">{{ invoice.createdAt | date:'short' }}</span>
             </div>
-            </div>
+        </div>
 
         <!-- Professional Ledger (The Table) -->
         <div class="professional-ledger">
@@ -120,35 +123,35 @@
                         <th class="text-center">الكمية</th>
                         <th class="text-right">السعر</th>
                         <th class="text-right">الإجمالي</th>
-                        </tr>
-                        </ng-template>
+                    </tr>
+                </ng-template>
                 <ng-template pTemplate="body" let-item let-i="rowIndex">
                     <tr class="ledger-row">
                         <td class="text-right row-number">{{ i + 1 }}</td>
                         <td class="text-right medicine-name">{{ item.medicineName }}</td>
                         <td class="text-center">
                             <span class="batch-badge">{{ item.companyBatchNumber }}</span>
-                            </td>
-                            <td class="text-center expiry-date">
-                                {{ item.expiryDate | date:'dd/MM/yyyy' }}
-                            </td>
-                            <td class="text-center quantity-cell">
-                                <span class="quantity-value">{{ item.quantity }}</span>
-                            </td>
-                            <td class="text-right price-cell">{{ item.salePrice | number:'1.0-2' }}</td>
-                            <td class="text-right total-cell">{{ (item.quantity * item.salePrice) | number:'1.0-2' }}</td>
-                            </tr>
-                            </ng-template>
-                            <ng-template pTemplate="emptymessage">
-                                <tr>
-                                    <td colspan="7" class="text-center empty-state">
-                                        <i class="pi pi-inbox"></i>
-                                        <p>لا توجد أصناف في هذه الفاتورة</p>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            </p-table>
-                            </div>
+                        </td>
+                        <td class="text-center expiry-date">
+                            {{ item.expiryDate | date:'dd/MM/yyyy' }}
+                        </td>
+                        <td class="text-center quantity-cell">
+                            <span class="quantity-value">{{ item.quantity }}</span>
+                        </td>
+                        <td class="text-right price-cell">{{ item.salePrice | number:'1.0-2' }}</td>
+                        <td class="text-right total-cell">{{ (item.quantity * item.salePrice) | number:'1.0-2' }}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="7" class="text-center empty-state">
+                            <i class="pi pi-inbox"></i>
+                            <p>لا توجد أصناف في هذه الفاتورة</p>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
 
         <!-- Financial Impact Zone -->
         <div class="financial-zone">
@@ -172,7 +175,7 @@
                     فقط {{ convertToArabicText(invoice.totalAmount) }} لا غير
                 </div>
             </div>
-            </div>
+        </div>
 
         <!-- Footer Notes -->
         <div class="invoice-footer" *ngIf="invoice.notes">
@@ -183,7 +186,7 @@
                 <p class="notes-text">{{ invoice.notes }}</p>
             </div>
         </div>
-        </div>
-        </div>
+    </div>
+</div>
 
 <p-confirmDialog [rtl]="true"></p-confirmDialog>

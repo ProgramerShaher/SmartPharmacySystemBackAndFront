@@ -183,6 +183,12 @@ export class MedicineListComponent implements OnInit {
         this.loadMedicines(this.lastLazyEvent);
     }
 
+    quickSale(medicine: Medicine) {
+        this.router.navigate(['/sales/create'], {
+            queryParams: { quickSaleMedicineId: medicine.id }
+        });
+    }
+
     // --- View Details ---
     viewDetails(medicine: any) {
         this.selectedMedicineId.set(medicine.id);

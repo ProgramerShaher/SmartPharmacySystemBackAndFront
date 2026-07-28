@@ -12,20 +12,20 @@ export interface StockTransferDto {
     sourceWarehouseName: string;
     destinationWarehouseId: number;
     destinationWarehouseName: string;
-    status: number; // enum TransferStatus
+    status: string | number;
     statusName: string;
     notes?: string;
     requestedByUserId: number;
-    requestedByUserName: string;
+    requestedByName: string;
     requestedAt: string;
     approvedByUserId?: number;
-    approvedByUserName?: string;
+    approvedByName?: string;
     approvedAt?: string;
     dispatchedByUserId?: number;
-    dispatchedByUserName?: string;
+    dispatchedByName?: string;
     dispatchedAt?: string;
     receivedByUserId?: number;
-    receivedByUserName?: string;
+    receivedByName?: string;
     receivedAt?: string;
     items: StockTransferItemDto[];
 }
@@ -35,8 +35,10 @@ export interface StockTransferItemDto {
     medicineId: number;
     medicineName: string;
     batchNumber: string;
-    quantity: number;
-    receivedQuantity?: number;
+    quantityRequested: number;
+    quantityDispatched: number;
+    quantityReceived?: number;
+    expiryDate?: string | Date;
     differenceQuantity?: number;
     rejectionReason?: string;
 }
@@ -51,7 +53,8 @@ export interface CreateStockTransferDto {
 export interface CreateStockTransferItemDto {
     medicineId: number;
     batchNumber: string;
-    quantity: number;
+    quantityRequested: number;
+    expiryDate?: string | Date;
 }
 
 export interface ReceiveStockTransferDto {
@@ -59,8 +62,8 @@ export interface ReceiveStockTransferDto {
 }
 
 export interface ReceiveStockTransferItemDto {
-    itemId: number;
-    receivedQuantity: number;
+    stockTransferItemId: number;
+    quantityReceived: number;
     rejectionReason?: string;
 }
 

@@ -1,100 +1,171 @@
-<p-dialog [(visible)]="visible" [modal]="true" [style]="{width: '600px'}" [draggable]="false" [resizable]="false"
-    (onHide)="closeDialog()" styleClass="batch-details-dialog" dir="rtl" [dismissableMask]="true">
+<p-dialog [(visible)]="visible" [modal]="true" [style]="{width: '85vw'}" [breakpoints]="{'960px': '95vw'}"
+    [draggable]="false" [resizable]="false" [showHeader]="false" styleClass="imperial-modal" (onHide)="closeDialog()" dir="rtl">
 
-    <ng-template pTemplate="header">
-        <div class="flex align-items-center gap-3 w-full">
-            <div class="flex flex-column gap-1">
-                <span class="text-xl font-bold text-800">{{ batch?.medicineName }}</span>
-                <span class="text-xs text-500 font-bold">تفاصيل الدفعة: <span class="text-primary-700">{{
-                        batch?.companyBatchNumber }}</span></span>
-            </div>
-            <p-tag *ngIf="batch?.status === 'Active'" severity="success" value="نشط"></p-tag>
-            <p-tag *ngIf="batch?.status === 'Expired'" severity="danger" value="منتهي"></p-tag>
-        </div>
-    </ng-template>
-
-    <div *ngIf="loading" class="flex justify-content-center p-5">
-        <p-progressSpinner strokeWidth="4" [style]="{width: '40px', height: '40px'}"></p-progressSpinner>
-    </div>
-
-    <div *ngIf="!loading && batch" class="flex flex-column gap-3 py-2">
-
-        <!-- Main Stats row (Compact) -->
-        <div class="grid grid-nogutter border-1 border-200 border-round-lg overflow-hidden surface-ground">
-            <div class="col-4 p-2 text-center border-right-1 border-200 bg-white">
-                <div class="text-500 text-xs font-bold mb-1">الكمية الكلية</div>
-                <div class="text-lg font-bold text-700">{{ batch.quantity }}</div>
-            </div>
-            <div class="col-4 p-2 text-center border-right-1 border-200 bg-white">
-                <div class="text-500 text-xs font-bold mb-1">المباعة</div>
-                <div class="text-lg font-bold text-700">{{ batch.soldQuantity }}</div>
-            </div>
-            <div class="col-4 p-2 text-center bg-white surface-100">
-                <div class="text-500 text-xs font-bold mb-1">المتبقي</div>
-                <div class="text-lg font-bold"
-                    [ngClass]="{'text-red-500': batch.remainingQuantity === 0, 'text-primary-600': batch.remainingQuantity > 0}">
-                    {{ batch.remainingQuantity }}</div>
-            </div>
+    <div class="statement-container fadein p-3">
+        
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex flex-column align-items-center justify-content-center p-5 gap-3">
+            <p-progressSpinner strokeWidth="4" animationDuration=".8s"></p-progressSpinner>
+            <span class="text-teal-600 font-bold text-lg">جاري استرجاع تفاصيل الدفعة...</span>
         </div>
 
-        <!-- Details Grid -->
-        <div class="grid grid-nogutter border-1 border-200 border-round-lg overflow-hidden text-sm surface-ground">
-            <!-- Row 1: Prices -->
-            <div class="col-6 p-2 border-bottom-1 border-right-1 border-200 bg-white flex justify-content-between">
-                <span class="text-500 font-bold"><i class="pi pi-tag text-xs ml-1"></i>سعر الشراء:</span>
-                <span class="font-bold text-700">{{ batch.unitPurchasePrice | currency: 'ريال يمني' :'symbol' }}</span>
-            </div>
-            <div class="col-6 p-2 border-bottom-1 border-200 bg-white flex justify-content-between">
-                <span class="text-500 font-bold"><i class="pi pi-money-bill text-xs ml-1"></i>سعر البيع:</span>
-                <span class="font-bold text-700">{{ batch.retailPrice | currency: 'ريال يمني' : 'symbol' }}</span>
-            </div>
-
-            <!-- Row 2: Location & Date -->
-            <div class="col-6 p-2 border-bottom-1 border-right-1 border-200 bg-white flex justify-content-between">
-                <span class="text-500 font-bold"><i class="pi pi-map-marker text-xs ml-1"></i>موقع التخزين:</span>
-                <span class="font-bold text-700">{{ batch.storageLocation || 'غير محدد' }}</span>
-            </div>
-            <div class="col-6 p-2 border-bottom-1 border-200 bg-white flex justify-content-between">
-                <span class="text-500 font-bold"><i class="pi pi-calendar-plus text-xs ml-1"></i>تاريخ الإدخال:</span>
-                <span class="font-bold text-700">{{ batch.entryDate | date:'dd/MM/yyyy' }}</span>
-            </div>
-
-            <!-- Row 3: Expiry details full width -->
-            <div class="col-12 p-2 bg-white flex justify-content-between align-items-center">
-                <span class="text-500 font-bold"><i class="pi pi-calendar-times text-xs ml-1"></i>تاريخ الانتهاء:</span>
+        <!-- Data Content -->
+        <div *ngIf="!loading && batch">
+            
+            <!-- ═══════════ Imperial Header Bar ═══════════ -->
+            <div class="imperial-header-bar p-3 mb-3">
+                <div class="flex align-items-center gap-3">
+                    <div class="header-icon-badge" style="width: 45px; height: 45px;">
+                        <i class="pi pi-box text-2xl"></i>
+                    </div>
+                    <div class="header-titles">
+                        <h2 class="main-title m-0 text-xl">{{batch.medicineName}}</h2>
+                        <span class="sub-title text-sm font-bold mt-1">دفعة: <span class="text-primary-600">{{batch.companyBatchNumber}}</span></span>
+                    </div>
+                </div>
                 <div class="flex align-items-center gap-2">
-                    <span class="font-bold">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</span>
-                    <span class="px-2 py-1 border-round text-xs font-bold shadow-1"
-                        [style.background-color]="batch.daysUntilExpiry! <= 0 ? '#ef4444' : (batch.daysUntilExpiry! <= 30 ? '#f59e0b' : '#10b981')"
-                        [style.color]="'white'">
-                        {{ getExpiryLabel(batch.daysUntilExpiry!) }}
+                    <span class="status-badge" [ngClass]="batch.status === 'Active' ? 'active' : (batch.status === 'Expired' ? 'inactive' : 'warning')">
+                        {{batch.status === 'Active' ? 'نشط' : (batch.status === 'Expired' ? 'منتهي' : batch.status)}}
                     </span>
+                    <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary p-button-sm" (click)="closeDialog()"></button>
                 </div>
             </div>
-        </div>
 
-        <!-- Dynamic Units Breakdown Panel -->
-        <div class="border-1 border-primary-200 border-round-lg overflow-hidden bg-primary-50">
-            <div class="bg-primary-100 p-2 border-bottom-1 border-primary-200">
-                <span class="text-primary-800 font-bold text-xs"><i class="pi pi-box ml-1"></i>تفصيل الكمية المتبقية
-                    (وحدات)</span>
-            </div>
-            <div class="p-3 text-center">
-                <div *ngIf="unitsBreakdownHtml" [innerHTML]="unitsBreakdownHtml"></div>
-                <div *ngIf="!unitsBreakdownHtml && !loading" class="text-400 text-xs font-bold">لا يوجد تفصيل للوحدات
+            <div class="grid grid-nogutter">
+                <!-- Right Side (in RTL): Details & Locations (40% width) -->
+                <div class="col-12 lg:col-5 pr-0 pl-3">
+                    
+                    <!-- ═══════════ Summary Stats Grid ═══════════ -->
+                    <div class="summary-stats-grid gap-2 mb-3">
+                        <div class="statement-stat-card card-teal p-2">
+                            <div class="stat-icon-wrapper" style="width: 35px; height: 35px;"><i class="pi pi-database text-lg"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-label text-xs">الكمية الكلية</span>
+                                <span class="stat-value font-mono text-lg">{{batch.quantity}}</span>
+                            </div>
+                        </div>
+
+                        <div class="statement-stat-card card-blue p-2">
+                            <div class="stat-icon-wrapper" style="width: 35px; height: 35px;"><i class="pi pi-shopping-cart text-lg"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-label text-xs">الكمية المباعة</span>
+                                <span class="stat-value font-mono text-lg">{{batch.soldQuantity}}</span>
+                            </div>
+                        </div>
+
+                        <div class="statement-stat-card card-orange p-2">
+                            <div class="stat-icon-wrapper" style="width: 35px; height: 35px;"><i class="pi pi-chart-pie text-lg"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-label text-xs">المتبقي</span>
+                                <span class="stat-value font-mono text-lg" [ngClass]="batch.remainingQuantity === 0 ? 'text-red-500' : 'text-primary-600'">{{batch.remainingQuantity}}</span>
+                            </div>
+                        </div>
+
+                        <div class="statement-stat-card card-red p-2">
+                            <div class="stat-icon-wrapper" style="width: 35px; height: 35px;"><i class="pi pi-calendar-times text-lg"></i></div>
+                            <div class="stat-content">
+                                <span class="stat-label text-xs">تاريخ الانتهاء</span>
+                                <div class="flex align-items-center gap-1">
+                                    <span class="stat-value font-mono text-xs">{{batch.expiryDate | date:'dd/MM/yyyy'}}</span>
+                                    <span class="text-xs px-1 border-round text-white shadow-1"
+                                        [style.background-color]="batch.daysUntilExpiry! <= 0 ? '#ef4444' : (batch.daysUntilExpiry! <= 30 ? '#f59e0b' : '#10b981')">
+                                        {{getExpiryLabel(batch.daysUntilExpiry!)}}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-header mt-0"><i class="pi pi-info-circle"></i> معلومات التسعير</div>
+                    <div class="ledger-card-wrapper p-3 flex flex-column gap-2 mb-3">
+                        <div class="flex justify-content-between align-items-center border-bottom-1 border-200 pb-1">
+                            <span class="text-500 font-bold text-sm"><i class="pi pi-tag text-xs ml-1"></i>سعر الشراء</span>
+                            <span class="font-bold text-700 text-sm">{{ batch.unitPurchasePrice | currency: 'ريال يمني' :'symbol' }}</span>
+                        </div>
+                        <div class="flex justify-content-between align-items-center border-bottom-1 border-200 pb-1">
+                            <span class="text-500 font-bold text-sm"><i class="pi pi-money-bill text-xs ml-1"></i>سعر البيع</span>
+                            <span class="font-bold text-700 text-sm">{{ batch.retailPrice | currency: 'ريال يمني' : 'symbol' }}</span>
+                        </div>
+                        <div class="flex justify-content-between align-items-center">
+                            <span class="text-500 font-bold text-sm"><i class="pi pi-calendar-plus text-xs ml-1"></i>تاريخ الإدخال</span>
+                            <span class="font-bold text-700 text-sm">{{ batch.entryDate | date:'dd/MM/yyyy' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="section-header"><i class="pi pi-map-marker"></i> أماكن التواجد الحالية</div>
+                    <div class="ledger-card-wrapper mb-0">
+                        <p-table [value]="batch.locations || []" styleClass="imperial-statement-table">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>المخزن</th>
+                                    <th>الفرع</th>
+                                    <th class="text-center">الكمية</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-loc>
+                                <tr>
+                                    <td class="font-bold">{{loc.warehouseName}}</td>
+                                    <td class="text-500">{{loc.branchName}}</td>
+                                    <td class="text-center font-bold text-primary">{{loc.quantity}}</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr><td colspan="3" class="text-center text-500 p-3 text-xs">مباعة بالكامل أو تالفة</td></tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
+                </div>
+
+                <!-- Left Side (in RTL): History & Units (60% width) -->
+                <div class="col-12 lg:col-7 pr-3 pl-0 flex flex-column gap-3 border-right-1 border-200">
+                    
+                    <div class="flex flex-column h-full">
+                        <div class="section-header mt-0 flex justify-content-between align-items-center w-full">
+                            <div><i class="pi pi-history"></i> سجل حركات الدفعة</div>
+                            <button pButton label="تسوية يدوية" icon="pi pi-sliders-h" class="p-button-warning p-button-sm border-round-lg" (click)="showActionDialog()"></button>
+                        </div>
+                        
+                        <div class="ledger-card-wrapper flex-grow-1 mb-3">
+                            <p-table [value]="stockCard" styleClass="imperial-statement-table" [paginator]="true" [rows]="8">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>نوع الحركة</th>
+                                        <th class="text-center">الكمية</th>
+                                        <th>المرجع</th>
+                                        <th>البيان</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-movement>
+                                    <tr>
+                                        <td class="text-xs">{{ movement.date | date:'dd/MM/yyyy HH:mm' }}</td>
+                                        <td><p-tag [severity]="getMovementSeverity(movement.movementType)" [value]="getMovementTypeLabel(movement.movementType)"></p-tag></td>
+                                        <td class="text-center font-bold" [ngClass]="movement.quantityChange > 0 ? 'text-green-500' : 'text-red-500'">
+                                            <span *ngIf="movement.quantityChange > 0">+</span>{{ movement.quantityChange }}
+                                        </td>
+                                        <td class="text-xs">{{ movement.referenceNumber }}</td>
+                                        <td class="text-xs text-500">{{ movement.notes }}</td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="emptymessage">
+                                    <tr><td colspan="5" class="text-center text-500 p-3 text-xs">لا توجد حركات مسجلة لهذه الدفعة</td></tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+                        <div class="section-header"><i class="pi pi-box"></i> تفصيل الكمية (وحدات)</div>
+                        <div class="ledger-card-wrapper p-3 text-center mb-0">
+                            <div *ngIf="unitsBreakdownHtml" [innerHTML]="unitsBreakdownHtml" class="text-sm font-bold text-primary-700"></div>
+                            <div *ngIf="!unitsBreakdownHtml" class="text-400 text-xs font-bold">لا يوجد تفصيل للوحدات</div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
-        </div>
 
-        <!-- Compact Movement Actions -->
-        <div class="flex justify-content-end mt-2">
-            <button pButton label="تسوية مخزنية يدوية" icon="pi pi-sliders-h"
-                class="p-button-warning p-button-sm border-round-md" (click)="showActionDialog()"></button>
         </div>
     </div>
 </p-dialog>
 
-<!-- Actions Dialog -->
-<app-batch-actions-dialog *ngIf="displayActionDialog" [visible]="displayActionDialog" [batch]="batch"
-    (onClose)="displayActionDialog = false" (onSuccess)="onActionSuccess()">
+<app-batch-actions-dialog *ngIf="displayActionDialog" [visible]="displayActionDialog" [batch]="batch" (onClose)="displayActionDialog = false" (onSuccess)="onActionSuccess()">
 </app-batch-actions-dialog>

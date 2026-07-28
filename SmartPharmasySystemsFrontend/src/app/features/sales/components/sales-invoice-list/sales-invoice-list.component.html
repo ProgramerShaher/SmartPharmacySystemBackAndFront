@@ -16,8 +16,8 @@
                 tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
             <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger" pTooltip="تصدير PDF"
                 tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
-            <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success" pTooltip="تصدير Excel"
-                tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
+            <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success"
+                pTooltip="تصدير Excel" tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
             <p-button label="فاتورة جديدة" icon="pi pi-plus" [rounded]="true" severity="primary"
                 (onClick)="navigateToCreate()"></p-button>
         </div>
@@ -87,7 +87,8 @@
             <p-calendar [(ngModel)]="endDate" [showIcon]="true" dateFormat="dd/mm/yy" placeholder="اختر التاريخ"
                 inputStyleClass="w-full" iconDisplay="input"></p-calendar>
         </div>
-        <p-button label="تطبيق" icon="pi pi-check" size="small" styleClass="w-full" (onClick)="loadInvoices()"></p-button>
+        <p-button label="تطبيق" icon="pi pi-check" size="small" styleClass="w-full"
+            (onClick)="loadInvoices()"></p-button>
     </section>
 
     <section class="table-panel">
@@ -111,7 +112,8 @@
             <ng-template pTemplate="body" let-invoice>
                 <tr>
                     <td class="text-center">
-                        <span class="ref-number text-blue-600">{{ invoice.saleInvoiceNumber || '#' + invoice.id }}</span>
+                        <span class="ref-number text-blue-600">{{ invoice.saleInvoiceNumber || '#' + invoice.id
+                            }}</span>
                     </td>
                     <td>
                         <span class="date-main">{{ invoice.invoiceDate | date:'dd/MM/yyyy' }}</span>
@@ -130,29 +132,36 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        <p-tag [value]="invoice.statusName || getStatusLabel(invoice.status)" 
-                            [severity]="getStatusSeverity(invoice.status)" 
+                        <p-tag [value]="invoice.statusName || getStatusLabel(invoice.status)"
+                            [severity]="getStatusSeverity(invoice.status)"
                             styleClass="text-xs font-bold shadow-1"></p-tag>
                     </td>
                     <td class="text-center no-print">
                         <div class="actions justify-content-center">
                             <!-- DRAFT STATUS: Edit, Delete, Approve -->
                             <ng-container *ngIf="invoice.status === 'Draft'">
-                                <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success" size="small" pTooltip="اعتماد" (onClick)="approveInvoice(invoice.id)"></p-button>
-                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary" size="small" pTooltip="تعديل" (onClick)="editInvoice(invoice.id)"></p-button>
-                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small" pTooltip="حذف" (onClick)="deleteDraft(invoice.id)"></p-button>
+                                <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
+                                    size="small" pTooltip="اعتماد" (onClick)="approveInvoice(invoice.id)"></p-button>
+                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
+                                    size="small" pTooltip="تعديل" (onClick)="editInvoice(invoice.id)"></p-button>
+                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                    size="small" pTooltip="حذف" (onClick)="deleteDraft(invoice.id)"></p-button>
                             </ng-container>
 
                             <!-- APPROVED STATUS: View, Print, Return -->
                             <ng-container *ngIf="invoice.status === 'Approved'">
-                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>
-                                <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="طباعة" (onClick)="printInvoice(invoice.id)"></p-button>
-                                <p-button icon="pi pi-replay" [rounded]="true" [text]="true" severity="warning" size="small" pTooltip="مرتجع" (onClick)="navigateToReturn(invoice.id)"></p-button>
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                                    pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>
+                                <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary"
+                                    size="small" pTooltip="طباعة" (onClick)="printInvoice(invoice.id)"></p-button>
+                                <p-button icon="pi pi-replay" [rounded]="true" [text]="true" severity="warning"
+                                    size="small" pTooltip="مرتجع" (onClick)="navigateToReturn(invoice.id)"></p-button>
                             </ng-container>
 
                             <!-- CANCELLED STATUS: View Only -->
                             <ng-container *ngIf="invoice.status === 'Cancelled'">
-                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                                    pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>
                             </ng-container>
                         </div>
                     </td>

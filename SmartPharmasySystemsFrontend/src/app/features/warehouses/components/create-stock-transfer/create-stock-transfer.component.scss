@@ -1,66 +1,204 @@
-.pos-container {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    min-height: calc(100vh - 80px);
+/* ============================================================
+   CREATE STOCK TRANSFER FORM — Premium Design
+   Colors: Teal (#0d9488) + Amber (#d97706)
+   ============================================================ */
+
+$teal: #0d9488;
+$teal-light: #f0fdfa;
+$teal-dark: #115e59;
+$amber: #d97706;
+$amber-light: #fffbeb;
+$amber-dark: #92400e;
+$blue: #3b82f6;
+$text: #1e293b;
+$text-secondary: #64748b;
+$border: #e2e8f0;
+$bg: #ffffff;
+$radius: 10px;
+
+.st-form-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.pos-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 2rem;
-    border-radius: 16px;
-    margin-bottom: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-
-    .header-left {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .header-title h1 {
-        color: #1e293b;
-        font-size: 1.75rem;
-    }
-
-    .status-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        display: inline-block;
-
-        &.warning {
-            background-color: #f59e0b;
-        }
-    }
+/* ===== Header ===== */
+.st-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid $border;
 }
 
-.glass-panel {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.03);
+.st-header-start {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.section-header {
+.st-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: $radius;
+  background: $amber-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $amber;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.st-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: $text;
+  line-height: 1.2;
+}
+
+.st-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $text-secondary;
+}
+
+.st-header-end {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===== Form Panel ===== */
+.st-form-panel {
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+  margin-bottom: 1rem;
+}
+
+.st-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  .st-section-left {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $text;
 
-    h3 {
-        color: #334155;
-        font-size: 1.15rem;
-        font-weight: 700;
-    }
+    i { color: $teal; }
+  }
 }
 
-.elevation-hover {
-    transition: box-shadow 0.3s ease;
-    &:hover {
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+.st-field {
+  margin-bottom: 1.25rem;
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: $text;
+    margin-bottom: 0.4rem;
+
+    &.text-primary { color: $teal; }
+  }
+
+  :host ::ng-deep {
+    .p-inputtext, .p-dropdown {
+      border-radius: 6px !important;
+      border: 1px solid $border !important;
+      background: #f8fafc !important;
+      
+      &:enabled:focus {
+        border-color: $teal !important;
+        box-shadow: 0 0 0 2px rgba($teal, 0.12) !important;
+        background: $bg !important;
+      }
     }
+
+    .p-dropdown {
+      .p-dropdown-label {
+        padding: 0.6rem 0.85rem !important;
+        font-size: 0.85rem !important;
+        color: $text !important;
+      }
+    }
+  }
+}
+
+/* ===== Table ===== */
+.st-table-wrap {
+  border: 1px solid $border;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+:host ::ng-deep .st-table {
+  font-size: 0.8rem;
+
+  .p-datatable-header {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .p-datatable-thead > tr > th {
+    background: $teal-light !important;
+    color: $teal-dark !important;
+    font-size: 0.75rem !important;
+    font-weight: 800 !important;
+    padding: 0.6rem 0.75rem !important;
+    border-bottom: 2px solid $teal !important;
+    text-align: right !important;
+    white-space: nowrap;
+  }
+
+  .p-datatable-tbody > tr {
+    background: $bg !important;
+    color: $text !important;
+    
+    > td {
+      padding: 0.5rem 0.75rem !important;
+      border-bottom: 1px solid $border !important;
+      vertical-align: middle;
+    }
+  }
+}
+
+.st-empty {
+  text-align: center;
+  padding: 3rem !important;
+  color: $text-secondary;
+
+  i { display: block; font-size: 2rem; color: $border; margin-bottom: 0.5rem; }
+  p { margin: 0; font-size: 0.9rem; font-weight: 600; }
+}
+
+:host ::ng-deep {
+  .st-btn-primary {
+    background: $teal !important; border: none !important; color: #fff !important;
+    border-radius: 6px !important; padding: 0.6rem 1.2rem !important;
+    font-size: 0.85rem !important; font-weight: 700 !important;
+    &:hover { background: $teal-dark !important; }
+  }
+  .st-btn-secondary {
+    background: transparent !important; border: 1px solid $border !important; color: $text-secondary !important;
+    border-radius: 6px !important; padding: 0.6rem 1rem !important;
+    font-size: 0.85rem !important; font-weight: 700 !important;
+    &:hover { background: #f1f5f9 !important; color: $text !important; }
+  }
 }

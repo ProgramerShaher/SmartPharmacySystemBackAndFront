@@ -1,20 +1,21 @@
-<div class="returns-create-container p-3 animate-fade-in" dir="rtl">
-    <!-- 👑 Imperial Header (Compact) -->
-    <header class="imperial-header mb-3">
-        <div class="flex align-items-center justify-content-between">
-            <div class="flex align-items-center gap-3">
-                <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" styleClass="back-btn" (onClick)="goBack()"></p-button>
-                <div class="header-title">
-                    <h1 class="text-xl font-bold m-0 text-gray-800">تسجيل مردود مبيعات</h1>
-                    <div class="flex align-items-center gap-2 mt-1">
-                        <span class="status-badge draft">مسودة</span>
-                        <span class="text-xs text-gray-400">نظام المرتجعات الذكي</span>
-                    </div>
+<div class="premium-wrap animate-fade-in" dir="rtl">
+    <!-- Premium Header (Compact) -->
+    <header class="premium-header mb-3">
+        <div class="premium-header-start">
+            <button pButton icon="pi pi-arrow-right" [rounded]="true" [text]="true" styleClass="premium-btn-icon" (click)="goBack()"></button>
+            <div class="premium-icon">
+                <i class="pi pi-replay"></i>
+            </div>
+            <div>
+                <h1 class="premium-title">تسجيل مردود مبيعات</h1>
+                <div class="flex align-items-center gap-2 mt-1">
+                    <span class="premium-chip premium-chip-gray">مسودة</span>
+                    <span class="premium-subtitle">نظام المرتجعات الذكي</span>
                 </div>
             </div>
-            <div class="header-actions">
-                <p-button label="إلغاء" icon="pi pi-times" [text]="true" severity="danger" (onClick)="goBack()"></p-button>
-            </div>
+        </div>
+        <div class="premium-header-end">
+            <button pButton label="إلغاء" icon="pi pi-times" [text]="true" severity="danger" (click)="goBack()"></button>
         </div>
     </header>
 
@@ -77,14 +78,15 @@
             <section class="premium-card p-0" *ngIf="selectedInvoice">
                 <div class="p-3 border-bottom-1 border-gray-100 flex justify-content-between align-items-center">
                     <div class="card-header">
-                        <i class="pi pi-list text-red-500"></i>
+                        <i class="pi pi-list text-teal-600"></i>
                         <span class="font-bold">أصناف الفاتورة المتاحة للإرجاع</span>
                     </div>
                 </div>
 
-                <p-table [value]="returnItems()" styleClass="p-datatable-sm p-datatable-striped" responsiveLayout="scroll">
+                <div class="premium-table-wrap">
+                <p-table [value]="returnItems()" styleClass="premium-table" responsiveLayout="scroll">
                     <ng-template pTemplate="header">
-                        <tr class="text-xs bg-gray-50">
+                        <tr>
                             <th>الصنف</th>
                             <th class="text-center">الأصلية</th>
                             <th class="text-center">المتاح</th>
@@ -93,13 +95,13 @@
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr class="text-sm">
-                            <td class="py-2">
-                                <div class="font-bold text-gray-800">{{ item.medicineName }}</div>
+                        <tr>
+                            <td class="premium-cell-main">
+                                <div>{{ item.medicineName }}</div>
                                 <div class="text-xs text-gray-500">{{ item.batchNumber }}</div>
                             </td>
-                            <td class="text-center text-gray-500">{{ item.originalQuantity }}</td>
-                            <td class="text-center font-bold text-blue-600">{{ item.remainingQtyToReturn }}</td>
+                            <td class="text-center premium-cell-secondary">{{ item.originalQuantity }}</td>
+                            <td class="text-center"><span class="premium-chip premium-chip-teal">{{ item.remainingQtyToReturn }}</span></td>
                             <td class="text-center">
                                 <p-inputNumber [(ngModel)]="item.returnQuantity" (ngModelChange)="calculateReturnAmount(item)" 
                                     [min]="0" [max]="item.remainingQtyToReturn" [showButtons]="true"
@@ -109,12 +111,13 @@
                                     incrementButtonClass="p-button-danger p-button-text p-1">
                                 </p-inputNumber>
                             </td>
-                            <td class="text-right font-bold text-red-600">
+                            <td class="text-right premium-cell-main text-red-600">
                                 {{ item.totalReturnAmount | number:'1.2-2' }}
                             </td>
                         </tr>
                     </ng-template>
                 </p-table>
+                </div>
             </section>
         </div>
 

@@ -1,23 +1,23 @@
-<div class="sale-invoice-create" dir="rtl">
+<div class="premium-wrap" dir="rtl">
     <!-- Floating Header -->
-    <header class="floating-header">
-        <div class="header-content">
-            <div class="header-left">
-                <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" (onClick)="goBack()"
-                    pTooltip="العودة"></p-button>
-                <div class="header-info">
-                    <h1>تسجيل فاتورة بيع</h1>
-                    <span class="header-subtitle">نظام POS الذكي</span>
-                </div>
+    <header class="premium-header">
+        <div class="premium-header-start">
+            <button pButton icon="pi pi-arrow-right" [rounded]="true" [text]="true" (click)="goBack()"
+                pTooltip="العودة" styleClass="premium-btn-icon"></button>
+            <div class="premium-icon">
+                <i class="pi pi-shopping-cart"></i>
             </div>
-            <div class="header-actions">
-                <p-button label="محاكاة باركود" icon="pi pi-barcode" styleClass="simulator-btn" [outlined]="true" (onClick)="toggleSimulator()"
-                    severity="info"></p-button>
-                <p-button label="حفظ كمسودة" icon="pi pi-save" styleClass="draft-btn" [outlined]="true" (onClick)="saveDraft()"
-                    [loading]="saving"></p-button>
-                <p-button label="اعتماد وترحيل المخزن" icon="pi pi-check-circle" styleClass="approve-btn"
-                    (onClick)="approveInvoice()" [loading]="saving"></p-button>
+            <div class="header-info">
+                <h1 class="premium-title">تسجيل فاتورة بيع</h1>
+                <span class="premium-subtitle">نظام POS الذكي</span>
             </div>
+        </div>
+        <div class="premium-header-end">
+            <button pButton label="محاكاة باركود" icon="pi pi-barcode" styleClass="premium-btn-secondary" (click)="toggleSimulator()"></button>
+            <button pButton label="حفظ كمسودة" icon="pi pi-save" styleClass="premium-btn-secondary text-amber-600" (click)="saveDraft()"
+                [loading]="saving"></button>
+            <button pButton label="اعتماد وترحيل المخزن" icon="pi pi-check-circle" styleClass="premium-btn-primary"
+                (click)="approveInvoice()" [loading]="saving"></button>
         </div>
     </header>
     <!-- Main Grid: Right (Form + Table) | Left (Purple Sidebar) -->
@@ -82,14 +82,15 @@
             <div class="table-card">
                 <div class="card-header">
                     <div class="header-left">
-                        <i class="pi pi-shopping-cart"></i>
-                        <h3>أصناف الفاتورة</h3>
+                        <i class="pi pi-shopping-cart text-teal-600"></i>
+                        <h3 class="text-teal-900 font-bold m-0 text-sm">أصناف الفاتورة</h3>
                     </div>
-                    <p-button label="+ إضافة صنف" icon="pi pi-plus" styleClass="add-item-btn"
-                        (onClick)="openAddItemDialog()"></p-button>
+                    <button pButton label="+ إضافة صنف" icon="pi pi-plus" styleClass="premium-btn-primary"
+                        (click)="openAddItemDialog()"></button>
                 </div>
             
-                <p-table [value]="items()" styleClass="items-table" responsiveLayout="scroll">
+                <div class="premium-table-wrap m-2">
+                    <p-table [value]="items()" styleClass="premium-table" responsiveLayout="scroll">
                     <ng-template pTemplate="header">
                         <tr>
                             <th>الصنف</th>
@@ -103,34 +104,35 @@
                             </ng-template>
                             <ng-template pTemplate="body" let-item let-i="rowIndex">
                         <tr class="clickable-row" (click)="editItemInModal(item, i)" pTooltip="اضغط للتعديل" tooltipPosition="right">
-                            <td class="item-name">{{ item.medicineName }}</td>
+                            <td class="premium-cell-main">{{ item.medicineName }}</td>
                             <td class="text-center">
-                                <span class="batch-badge">{{ item.batchNumber }}</span>
+                                <span class="premium-chip premium-chip-amber">{{ item.batchNumber }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" (click)="$event.stopPropagation()">
                                 <p-inputNumber [(ngModel)]="item.quantity" (ngModelChange)="updateItemQuantity(item, $event)" [min]="1"
-                                    [max]="item.availableQuantity" [showButtons]="true" buttonLayout="horizontal" inputStyleClass="qty-input"
+                                    [max]="item.availableQuantity" [showButtons]="true" buttonLayout="horizontal" inputStyleClass="text-center font-bold w-4rem"
                                     styleClass="compact-qty"></p-inputNumber>
                             </td>
-                            <td class="text-right price-cell">{{ item.salePrice | number:'1.0-2' }}</td>
-                            <td class="text-right total-cell">{{ item.total | number:'1.0-2' }}</td>
+                            <td class="text-right premium-cell-secondary">{{ item.salePrice | number:'1.0-2' }}</td>
+                            <td class="text-right premium-cell-main text-teal-600">{{ item.total | number:'1.0-2' }}</td>
                             <td class="text-right">
-                                <span class="profit-badge">{{ item.profit | number:'1.0-2' }}</span>
+                                <span class="premium-chip premium-chip-teal">{{ item.profit | number:'1.0-2' }}</span>
                             </td>
-                            <td class="text-center">
-                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="removeItem(i)"></p-button>
+                            <td class="text-center" (click)="$event.stopPropagation()">
+                                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm" (click)="removeItem(i)"></button>
                             </td>
                             </tr>
                             </ng-template>
                     <ng-template pTemplate="emptymessage">
                         <tr>
-                            <td colspan="7" class="empty-state">
+                            <td colspan="7" class="premium-empty">
                                 <i class="pi pi-inbox"></i>
-                                <p>لم يتم إضافة أصناف بعد</p>
+                                <span>لم يتم إضافة أصناف بعد</span>
                             </td>
                             </tr>
                             </ng-template>
                             </p-table>
+                </div>
             </div>
             </div>
             
@@ -161,12 +163,12 @@
             
                 <!-- Action Buttons -->
                 <div class="sidebar-actions">
-                    <p-button label="اعتماد وترحيل المخزن" icon="pi pi-verified" styleClass="w-full approve-action-btn"
-                        [disabled]="items().length === 0" [loading]="saving" (onClick)="approveInvoice()"></p-button>
-                    <p-button label="حفظ كمسودة" icon="pi pi-save" styleClass="w-full draft-action-btn" (onClick)="saveDraft()"
-                        [loading]="saving"></p-button>
-                    <p-button label="تفريغ القائمة" icon="pi pi-trash" styleClass="w-full clear-btn" [text]="true" severity="danger"
-                        (onClick)="clearList()"></p-button>
+                    <button pButton label="اعتماد وترحيل المخزن" icon="pi pi-verified" styleClass="w-full premium-btn-primary text-lg"
+                        [disabled]="items().length === 0" [loading]="saving" (click)="approveInvoice()"></button>
+                    <button pButton label="حفظ كمسودة" icon="pi pi-save" styleClass="w-full premium-btn-secondary text-amber-600 text-lg" (click)="saveDraft()"
+                        [loading]="saving"></button>
+                    <button pButton label="تفريغ القائمة" icon="pi pi-trash" styleClass="w-full premium-btn-secondary text-red-600 text-lg" [text]="true"
+                        (click)="clearList()"></button>
                 </div>
             </aside>
             </div>
@@ -267,9 +269,9 @@
     </div>
     <ng-template pTemplate="footer">
         <div class="modal-footer">
-            <p-button label="إلغاء" icon="pi pi-times" [outlined]="true" (onClick)="closeAddItemDialog()"></p-button>
-            <p-button label="إضافة للفاتورة" icon="pi pi-check" styleClass="add-to-invoice-btn"
-                (onClick)="addItemFromModal()" [disabled]="!selectedBatchForModal || !modalQuantity"></p-button>
+            <button pButton label="إلغاء" icon="pi pi-times" styleClass="premium-btn-secondary" (click)="closeAddItemDialog()"></button>
+            <button pButton label="إضافة للفاتورة" icon="pi pi-check" styleClass="premium-btn-primary"
+                (click)="addItemFromModal()" [disabled]="!selectedBatchForModal || !modalQuantity"></button>
         </div>
     </ng-template>
 </p-dialog>

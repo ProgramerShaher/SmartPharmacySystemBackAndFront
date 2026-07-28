@@ -75,7 +75,8 @@ export class InvoiceItemDialogComponent implements OnInit {
             price: [0, [Validators.required, Validators.min(0)]],
             salePrice: [0],
             unitCost: [0],
-            selectedUnit: ['base', Validators.required]
+            selectedUnit: ['base', Validators.required],
+            storageLocation: ['']
         });
 
         this.itemForm.valueChanges.subscribe(val => {
@@ -158,6 +159,26 @@ export class InvoiceItemDialogComponent implements OnInit {
                 });
             });
         }
+    }
+
+    saveItem() {
+        const itemData = this.itemForm.getRawValue();
+        const payload = {
+            medicineId: itemData.medicineId,
+            medicineName: itemData.medicineName,
+            batchId: itemData.batchId,
+            companyBatchNumber: itemData.companyBatchNumber,
+            expiryDate: itemData.expiryDate,
+            quantity: itemData.quantity,
+            purchaseUnitId: itemData.unitId,
+            bonusQuantity: itemData.bonusQuantity,
+            purchasePrice: itemData.price,
+            salePrice: itemData.salePrice,
+            total: itemData.quantity * itemData.price,
+            storageLocation: itemData.storageLocation
+        };
+        this.onSave.emit(payload);
+        this.onClose();
     }
 
     resetState() {
@@ -389,6 +410,7 @@ export class InvoiceItemDialogComponent implements OnInit {
             return;
         }
 
+        // Emit the payload
         this.onSave.emit(val);
         this.visible = false;
     }

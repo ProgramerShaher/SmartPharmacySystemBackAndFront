@@ -3,8 +3,8 @@
     <!-- ===== Header ===== -->
     <div class="wd-header">
         <div class="wd-header-start">
-            <button pButton icon="pi pi-arrow-right" [rounded]="true" [text]="true"
-                pTooltip="رجوع" tooltipPosition="top" (click)="goBack()" class="wd-back-btn"></button>
+            <button pButton icon="pi pi-arrow-right" [rounded]="true" [text]="true" pTooltip="رجوع"
+                tooltipPosition="top" (click)="goBack()" class="wd-back-btn"></button>
             <div class="wd-icon" *ngIf="warehouse()">
                 <i [class]="getTypeIcon(warehouse()!.type)"></i>
             </div>
@@ -20,10 +20,10 @@
             </div>
         </div>
         <div class="wd-header-end">
-            <button pButton icon="pi pi-refresh" [rounded]="true" [text]="true"
-                pTooltip="تحديث" tooltipPosition="top" (click)="loadInventory()"></button>
-            <button pButton label="تحويل من هذا المخزن" icon="pi pi-arrow-left"
-                (click)="navigateToTransfer()" class="wd-btn-primary"></button>
+            <button pButton icon="pi pi-refresh" [rounded]="true" [text]="true" pTooltip="تحديث" tooltipPosition="top"
+                (click)="loadInventory()"></button>
+            <button pButton label="تحويل من هذا المخزن" icon="pi pi-arrow-left" (click)="navigateToTransfer()"
+                class="wd-btn-primary"></button>
         </div>
     </div>
 
@@ -82,35 +82,30 @@
                 <label>بحث</label>
                 <span class="p-input-icon-right">
                     <i class="pi pi-search"></i>
-                    <input pInputText type="text" placeholder="اسم الدواء أو رقم الدفعة..."
-                        [ngModel]="searchTerm()" (ngModelChange)="onSearch($event)" />
+                    <input pInputText type="text" placeholder="اسم الدواء أو رقم الدفعة..." [ngModel]="searchTerm()"
+                        (ngModelChange)="onSearch($event)" />
                 </span>
             </div>
             <div class="wd-filter-action">
-                <button pButton
-                    [icon]="showExpiringSoon() ? 'pi pi-clock' : 'pi pi-filter'"
+                <button pButton [icon]="showExpiringSoon() ? 'pi pi-clock' : 'pi pi-filter'"
                     [label]="showExpiringSoon() ? 'قريبة الانتهاء فقط' : 'عرض قريبة الانتهاء'"
-                    [severity]="showExpiringSoon() ? 'warning' : 'secondary'"
-                    [outlined]="true"
-                    (click)="toggleExpiringSoon()"
-                    class="wd-filter-btn">
+                    [severity]="showExpiringSoon() ? 'warning' : 'secondary'" [outlined]="true"
+                    (click)="toggleExpiringSoon()" class="wd-filter-btn">
                 </button>
             </div>
             <div class="wd-filter-action">
-                <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true"
-                    severity="info" pTooltip="تحديث" tooltipPosition="top"
-                    (click)="loadInventory()"></button>
+                <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="info" pTooltip="تحديث"
+                    tooltipPosition="top" (click)="loadInventory()"></button>
             </div>
         </div>
     </div>
 
     <!-- ===== Table ===== -->
     <div class="wd-table-wrap">
-        <p-table [value]="filteredStocks()" [loading]="loading()"
-            [paginator]="true" [rows]="15" [rowsPerPageOptions]="[10,15,25,50]"
-            [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first}–{last} من {totalRecords}"
-            styleClass="wd-table" responsiveLayout="scroll">
+        <p-table [value]="filteredStocks()" [loading]="loading()" [paginator]="true" [rows]="15"
+            [rowsPerPageOptions]="[10,15,25,50]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} من {totalRecords}" styleClass="wd-table"
+            responsiveLayout="scroll">
 
             <ng-template pTemplate="caption">
                 <div class="wd-table-caption">
@@ -156,9 +151,8 @@
                     <!-- الصلاحية -->
                     <td>
                         <div class="wd-expiry-cell">
-                            <p-tag [severity]="getExpiryBadge(stock)"
-                                [value]="getExpiryLabel(stock)"
-                                [pTooltip]="stock.expiryDate | date:'yyyy/MM/dd'">
+                            <p-tag [severity]="getExpiryBadge(stock)" [value]="getExpiryLabel(stock)"
+                                [pTooltip]="(stock.expiryDate | date:'yyyy/MM/dd') || ''">
                             </p-tag>
                             <small class="wd-expiry-date">{{ stock.expiryDate | date:'yyyy/MM/dd' }}</small>
                         </div>

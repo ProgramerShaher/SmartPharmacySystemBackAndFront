@@ -132,9 +132,9 @@ export class WarehouseDetailComponent implements OnInit {
     goBack() { this.router.navigate(['/warehouses']); }
 
     // ── Helpers ────────────────────────────────────────────
-    getExpiryBadge(stock: InventoryStockDto): 'danger' | 'warn' | 'success' {
+    getExpiryBadge(stock: InventoryStockDto): 'danger' | 'warning' | 'success' {
         if (stock.daysUntilExpiry <= 0)  return 'danger';
-        if (stock.daysUntilExpiry <= 30) return 'warn';
+        if (stock.daysUntilExpiry <= 30) return 'warning';
         return 'success';
     }
 

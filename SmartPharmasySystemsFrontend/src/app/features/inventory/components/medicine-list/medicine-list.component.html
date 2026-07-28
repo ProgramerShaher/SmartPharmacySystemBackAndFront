@@ -156,6 +156,10 @@
                                 class="p-button-text p-button-sm p-button-success p-0 w-2rem h-2rem"
                                 (click)="openAddBatch(medicine); $event.stopPropagation()"
                                 pTooltip="توريد سريع"></button>
+                            <button *ngIf="(medicine.totalStock ?? medicine.totalQuantity ?? 0) > 0"
+                                pButton icon="pi pi-shopping-cart"
+                                class="p-button-text p-button-sm p-button-warning p-0 w-2rem h-2rem"
+                                (click)="quickSale(medicine); $event.stopPropagation()" pTooltip="بيع سريع"></button>
                             <button pButton icon="pi pi-pencil"
                                 class="p-button-text p-button-sm p-button-info p-0 w-2rem h-2rem"
                                 (click)="editMedicine(medicine); $event.stopPropagation()" pTooltip="تعديل"></button>

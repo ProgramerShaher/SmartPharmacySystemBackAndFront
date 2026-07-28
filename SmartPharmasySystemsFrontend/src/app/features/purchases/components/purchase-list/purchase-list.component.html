@@ -141,7 +141,7 @@
                             <ng-container *ngIf="isApproved(invoice)">
                                 <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small" pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>
                                 <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="طباعة" (onClick)="printInvoice(invoice.id)"></p-button>
-                                <p-button icon="pi pi-replay" [rounded]="true" [text]="true" severity="warning" size="small" pTooltip="مرتجع"></p-button>
+                                <p-button icon="pi pi-replay" [rounded]="true" [text]="true" severity="warning" size="small" pTooltip="مرتجع" (onClick)="navigateToReturn(invoice.id)"></p-button>
                             </ng-container>
 
                             <!-- CANCELLED STATUS: View Only -->

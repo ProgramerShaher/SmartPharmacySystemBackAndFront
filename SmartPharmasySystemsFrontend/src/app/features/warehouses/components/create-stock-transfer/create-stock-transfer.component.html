@@ -1,107 +1,104 @@
-<div class="pos-container animate-fade-in" dir="rtl">
-    <!-- Header with Glassmorphism -->
-    <header class="pos-header glass-panel transfer-accent">
-        <div class="header-left">
-            <button pButton icon="pi pi-arrow-right" class="p-button-rounded p-button-text back-btn" (click)="backToList()"></button>
-            <div class="header-title">
-                <h1 class="m-0 font-bold">إنشاء طلب تحويل مخزني</h1>
-                <div class="header-subtitle flex align-items-center gap-2">
-                    <span class="status-dot warning"></span>
-                    <span class="opacity-70">طلب تحويل أصول بين المستودعات</span>
+<div class="st-form-wrap animate-fade-in" dir="rtl">
+    <!-- ===== Header ===== -->
+    <div class="st-header">
+        <div class="st-header-start">
+            <button pButton icon="pi pi-arrow-right" class="st-btn-secondary" (click)="backToList()"></button>
+            <div class="st-icon">
+                <i class="pi pi-arrow-right-arrow-left"></i>
+            </div>
+            <div>
+                <h1 class="st-title">إنشاء طلب تحويل مخزني</h1>
+                <p class="st-subtitle">طلب تحويل أصول بين المستودعات</p>
+            </div>
+        </div>
+        <div class="st-header-end">
+            <button pButton label="إرسال الطلب" icon="pi pi-check" class="st-btn-primary" [loading]="saving"
+                [disabled]="items.length === 0" (click)="saveTransfer()"></button>
+        </div>
+    </div>
+
+    <form [formGroup]="transferForm">
+        <!-- ===== Warehouses Selection Panel ===== -->
+        <div class="st-form-panel mt-3">
+            <div class="st-section-title">
+                <div class="st-section-left">
+                    <i class="pi pi-home"></i>
+                    <span>تحديد مستودعات التحويل</span>
+                </div>
+            </div>
+            <div class="grid p-fluid">
+                <div class="col-12 md:col-6 st-field">
+                    <label class="text-primary">مخزن المصدر (المرسل)</label>
+                    <p-dropdown [options]="sourceWarehouses" formControlName="sourceWarehouseId" optionLabel="name" optionValue="id"
+                        placeholder="اختر مخزن المصدر..." [filter]="true" filterBy="name" appendTo="body"></p-dropdown>
+                </div>
+                <div class="col-12 md:col-6 st-field">
+                    <label class="text-primary">مخزن الوجهة (المستلم)</label>
+                    <p-dropdown [options]="destinationWarehouses" formControlName="destinationWarehouseId" optionLabel="name" optionValue="id"
+                        placeholder="اختر مخزن الوجهة..." [filter]="true" filterBy="name"
+                        [disabled]="!transferForm.get('sourceWarehouseId')?.value" appendTo="body"></p-dropdown>
+                </div>
+                <div class="col-12 st-field mt-2">
+                    <label>ملاحظات أو مبررات طلب التحويل</label>
+                    <input pInputText formControlName="notes" placeholder="ملاحظات توضيحية لمدير المخازن..." />
                 </div>
             </div>
         </div>
-        <div class="header-right flex gap-2">
-            <button pButton label="إرسال الطلب" icon="pi pi-check-circle" class="p-button-success" [loading]="saving"
-                [disabled]="items.length === 0" (click)="saveTransfer()"></button>
+
+        <!-- ===== Items Table Panel ===== -->
+        <div class="st-form-panel p-0 overflow-hidden" *ngIf="transferForm.get('sourceWarehouseId')?.value">
+            <div class="p-4 border-bottom-1 border-gray-200">
+                <div class="st-section-title mb-0">
+                    <div class="st-section-left">
+                        <i class="pi pi-list"></i>
+                        <span>الأدوية والكميات المطلوبة</span>
+                    </div>
+                    <button pButton label="إضافة دواء للتحويل" icon="pi pi-plus" class="p-button-outlined p-button-sm" 
+                        (click)="addItem()"></button>
+                </div>
+            </div>
+
+            <div class="st-table-wrap m-4 mt-0 border-none" formArrayName="items">
+                <p-table [value]="items.controls" responsiveLayout="scroll" styleClass="st-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 50%">دواء / تشغيلة متوفرة</th>
+                            <th class="text-center" style="width: 15%">الرصيد المتاح</th>
+                            <th class="text-center" style="width: 20%">كمية التحويل</th>
+                            <th class="text-center" style="width: 15%">إجراء</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-itemGroup let-i="rowIndex">
+                        <tr [formGroupName]="i">
+                            <td>
+                                <p-dropdown [options]="availableMedicines" formControlName="selectedStockItem" 
+                                    placeholder="ابحث واختر الصنف من مخزن المصدر..." [filter]="true" filterBy="label"
+                                    styleClass="w-full" appendTo="body"></p-dropdown>
+                            </td>
+                            <td class="text-center font-bold text-lg opacity-80 text-primary">
+                                {{ itemGroup.get('availableQuantity')?.value || 0 }}
+                            </td>
+                            <td class="text-center">
+                                <p-inputNumber formControlName="quantity" [min]="1" 
+                                    [max]="itemGroup.get('availableQuantity')?.value || 1" 
+                                    class="w-full text-center"></p-inputNumber>
+                            </td>
+                            <td class="text-center">
+                                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
+                                    (click)="removeItem(i)"></button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="4" class="st-empty">
+                                <i class="pi pi-inbox"></i>
+                                <p>قم بإضافة أصناف من زر الإضافة أعلاه لبدء التحويل</p>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
         </div>
-    </header>
-
-    <div class="pos-content-grid mt-4">
-        <!-- Main Form Area -->
-        <main class="pos-main">
-            <form [formGroup]="transferForm">
-                <!-- Warehouses Selection Card -->
-                <section class="glass-panel p-4 mb-3 elevation-hover">
-                    <div class="section-header mb-3">
-                        <i class="pi pi-home text-primary mr-2"></i>
-                        <h3 class="m-0">تحديد مستودعات التحويل</h3>
-                    </div>
-                    <div class="grid p-fluid">
-                        <div class="col-12 md:col-6 field">
-                            <label class="font-bold text-sm block mb-1 text-primary">مخزن المصدر (المرسل)</label>
-                            <p-dropdown [options]="sourceWarehouses" formControlName="sourceWarehouseId" optionLabel="name" optionValue="id"
-                                placeholder="اختر مخزن المصدر..." [filter]="true" filterBy="name"
-                                styleClass="h-2.5rem" appendTo="body"></p-dropdown>
-                        </div>
-                        <div class="col-12 md:col-6 field">
-                            <label class="font-bold text-sm block mb-1 text-primary">مخزن الوجهة (المستلم)</label>
-                            <p-dropdown [options]="destinationWarehouses" formControlName="destinationWarehouseId" optionLabel="name" optionValue="id"
-                                placeholder="اختر مخزن الوجهة..." [filter]="true" filterBy="name"
-                                [disabled]="!transferForm.get('sourceWarehouseId')?.value"
-                                styleClass="h-2.5rem" appendTo="body"></p-dropdown>
-                        </div>
-                        <div class="col-12 field mt-2">
-                            <label class="font-bold text-sm block mb-1">ملاحظات أو مبررات طلب التحويل</label>
-                            <input pInputText formControlName="notes" placeholder="ملاحظات توضيحية لمدير المخازن..." class="h-2.5rem" />
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Items Table Card -->
-                <section class="glass-panel p-0 overflow-hidden elevation-hover" *ngIf="transferForm.get('sourceWarehouseId')?.value">
-                    <div class="p-3 flex justify-content-between align-items-center border-bottom-1 border-color">
-                        <div class="section-header">
-                            <i class="pi pi-list text-primary mr-2"></i>
-                            <h3 class="m-0">الأدوية والكميات المطلوبة</h3>
-                        </div>
-                        <button pButton label="إضافة دواء للتحويل" icon="pi pi-plus" class="p-button-outlined p-button-sm" 
-                            (click)="addItem()"></button>
-                    </div>
-
-                    <div formArrayName="items">
-                        <p-table [value]="items.controls" responsiveLayout="scroll" styleClass="p-datatable-sm">
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th style="width: 50%">دواء / تشغيلة متوفرة</th>
-                                    <th class="text-center" style="width: 15%">الرصيد المتاح</th>
-                                    <th class="text-center" style="width: 20%">كمية التحويل</th>
-                                    <th class="text-center" style="width: 15%"></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-itemGroup let-i="rowIndex">
-                                <tr [formGroupName]="i">
-                                    <td>
-                                        <p-dropdown [options]="availableMedicines" formControlName="selectedStockItem" 
-                                            placeholder="ابحث واختر الصنف من مخزن المصدر..." [filter]="true" filterBy="label"
-                                            styleClass="w-full" appendTo="body"></p-dropdown>
-                                    </td>
-                                    <td class="text-center font-bold text-lg opacity-80">
-                                        {{ itemGroup.get('availableQuantity')?.value || 0 }}
-                                    </td>
-                                    <td class="text-center">
-                                        <p-inputNumber formControlName="quantity" [min]="1" 
-                                            [max]="itemGroup.get('availableQuantity')?.value || 1" 
-                                            styleClass="w-full text-center"></p-inputNumber>
-                                    </td>
-                                    <td class="text-center">
-                                        <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
-                                            (click)="removeItem(i)"></button>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="emptymessage">
-                                <tr>
-                                    <td colspan="4" class="text-center p-6 opacity-40">
-                                        <i class="pi pi-inbox text-5xl mb-2"></i>
-                                        <p class="m-0">قم بإضافة أصناف من زر الإضافة أعلاه لبدء التحويل</p>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                        </p-table>
-                    </div>
-                </section>
-            </form>
-        </main>
-    </div>
+    </form>
 </div>

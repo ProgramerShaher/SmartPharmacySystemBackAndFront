@@ -85,6 +85,7 @@
                                 <th>الصنف</th>
                                 <th class="text-center">التشغيلة</th>
                                 <th class="text-center">الكمية</th>
+                                <th class="text-center">موقع التخزين</th>
                                 <th class="text-right">سعر الشراء</th>
                                 <th class="text-right">الإجمالي</th>
                                 <th class="text-center" *ngIf="!isReadOnly"></th>
@@ -103,6 +104,8 @@
                                             مجاني</span>
                                     </div>
                                 </td>
+                                <td class="text-center text-sm opacity-80">{{ item.storageLocation || '—' }}</td>
+
                                 <td class="text-right text-sm opacity-80">{{ item.purchasePrice | number : '1.0-0' }}</td>
                                 <td class="text-right font-bold text-indigo-600">{{ item.total | number : '1.0-2' }}</td>
                                 <td class="text-center" *ngIf="!isReadOnly">
@@ -113,7 +116,7 @@
                                 </ng-template>
                         <ng-template pTemplate="emptymessage">
                             <tr>
-                                <td colspan="6" class="text-center p-6 opacity-40">
+                                <td colspan="7" class="text-center p-6 opacity-40">
                                     <i class="pi pi-inbox text-6xl mb-3"></i>
                                     <p class="m-0 text-xl">يرجى تسجيل أصناف الفاتورة</p>
                                 </td>

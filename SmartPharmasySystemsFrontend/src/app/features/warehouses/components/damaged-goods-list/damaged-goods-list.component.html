@@ -1,71 +1,88 @@
-<div class="pos-container animate-fade-in" dir="rtl">
-    <!-- Header Panel -->
-    <header class="pos-header glass-panel damaged-accent">
-        <div class="header-left">
-            <div class="header-title">
-                <h1 class="m-0 font-bold">إهلاك السلع والأدوية التالفة</h1>
-                <div class="header-subtitle flex align-items-center gap-2">
-                    <span class="status-dot danger"></span>
-                    <span class="opacity-70">إدارة الهوالك والتوالف والتسويات المالية</span>
-                </div>
+<div class="dg-wrap animate-fade-in" dir="rtl">
+    <!-- ===== Header ===== -->
+    <div class="dg-header">
+        <div class="dg-header-start">
+            <div class="dg-icon">
+                <i class="pi pi-exclamation-triangle"></i>
+            </div>
+            <div>
+                <h1 class="dg-title">إهلاك السلع والأدوية التالفة</h1>
+                <p class="dg-subtitle">إدارة الهوالك والتوالف والتسويات المالية</p>
             </div>
         </div>
-        <div class="header-right">
-            <button pButton label="تسجيل بضاعة تالفة جديدة" icon="pi pi-plus" class="p-button-danger" (click)="navigateToCreate()"></button>
+        <div class="dg-header-end">
+            <button pButton label="تسجيل بضاعة تالفة جديدة" icon="pi pi-plus" class="dg-btn-primary" (click)="navigateToCreate()"></button>
         </div>
-    </header>
+    </div>
 
-    <!-- Stats Cards Grid -->
-    <div class="grid mt-4">
-        <div class="col-12 md:col-4">
-            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
-                <i class="pi pi-exclamation-triangle text-4xl text-warning mb-2"></i>
-                <div class="text-sm opacity-70">إذن إتلاف معلق</div>
-                <div class="text-2xl font-bold mt-1 text-warning-dark">
-                    {{ pendingCount }}
+    <!-- ===== KPI Row ===== -->
+    <div class="dg-kpi-row mt-2">
+        <div class="dg-kpi-card" data-color="teal">
+            <div class="dg-kpi-inner">
+                <div class="dg-kpi-left">
+                    <span class="dg-kpi-label">إجمالي الأصناف المهلكة</span>
+                    <strong class="dg-kpi-value">{{ records.length }}</strong>
+                </div>
+                <div class="dg-kpi-badge">
+                    <i class="pi pi-box"></i>
                 </div>
             </div>
         </div>
-        <div class="col-12 md:col-4">
-            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
-                <i class="pi pi-chart-line text-4xl text-danger mb-2"></i>
-                <div class="text-sm opacity-70">إجمالي الخسائر المالية</div>
-                <div class="text-2xl font-bold mt-1 text-danger-dark">
-                    {{ calculateTotalLoss() | number:'1.0-0' }} <small>ر.ي</small>
+        <div class="dg-kpi-card" data-color="red">
+            <div class="dg-kpi-inner">
+                <div class="dg-kpi-left">
+                    <span class="dg-kpi-label">إجمالي الخسائر المالية</span>
+                    <strong class="dg-kpi-value">{{ calculateTotalLoss() | number:'1.0-0' }} ر.ي</strong>
+                </div>
+                <div class="dg-kpi-badge">
+                    <i class="pi pi-chart-line"></i>
                 </div>
             </div>
         </div>
-        <div class="col-12 md:col-4">
-            <div class="card glass-panel stat-card text-center p-3 elevation-hover">
-                <i class="pi pi-box text-4xl text-primary mb-2"></i>
-                <div class="text-sm opacity-70">إجمالي الأصناف المهلكة</div>
-                <div class="text-2xl font-bold mt-1 text-primary-dark">
-                    {{ records.length }}
+        <div class="dg-kpi-card" data-color="amber">
+            <div class="dg-kpi-inner">
+                <div class="dg-kpi-left">
+                    <span class="dg-kpi-label">إذن إتلاف معلق</span>
+                    <strong class="dg-kpi-value">{{ pendingCount }}</strong>
+                </div>
+                <div class="dg-kpi-badge">
+                    <i class="pi pi-exclamation-triangle"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Filters Section -->
-    <div class="glass-panel p-3 mt-3 flex flex-wrap gap-3 align-items-center justify-content-between elevation-hover">
-        <div class="flex flex-wrap gap-3 align-items-center">
-            <div class="filter-field">
-                <label class="block text-xs font-bold mb-1 opacity-70">المستودع</label>
+    <!-- ===== Filter Panel ===== -->
+    <div class="dg-filter-panel mt-2">
+        <div class="dg-filter-grid">
+            <div class="dg-filter-field">
+                <label>المستودع</label>
                 <p-dropdown [options]="warehouses" [(ngModel)]="selectedWarehouseId" optionLabel="name" optionValue="id" 
-                    [showClear]="true" placeholder="اختر المستودع..." (onChange)="loadRecords()"></p-dropdown>
+                    [showClear]="true" placeholder="اختر المستودع..." (onChange)="loadRecords()" appendTo="body"></p-dropdown>
             </div>
-            <div class="filter-field">
-                <label class="block text-xs font-bold mb-1 opacity-70">الحالة</label>
+            <div class="dg-filter-field">
+                <label>الحالة</label>
                 <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" 
-                    (onChange)="loadRecords()"></p-dropdown>
+                    (onChange)="loadRecords()" appendTo="body"></p-dropdown>
+            </div>
+            <div class="dg-filter-action">
+                <button pButton icon="pi pi-refresh" label="تحديث البيانات" class="p-button-outlined" (click)="loadRecords()"></button>
             </div>
         </div>
-        <button pButton label="تحديث البيانات" icon="pi pi-refresh" outlined (click)="loadRecords()"></button>
     </div>
 
-    <!-- Data Table -->
-    <div class="glass-panel p-0 overflow-hidden mt-3 elevation-hover">
-        <p-table [value]="records" [loading]="loading" responsiveLayout="scroll" styleClass="p-datatable-sm">
+    <!-- ===== Table ===== -->
+    <div class="dg-table-wrap mt-2">
+        <p-table [value]="records" [loading]="loading" responsiveLayout="scroll" styleClass="dg-table"
+            [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5,10,20]">
+            
+            <ng-template pTemplate="caption">
+                <div class="dg-table-caption">
+                    <span><i class="pi pi-list"></i> قائمة السلع التالفة والمهلكة</span>
+                    <span class="dg-table-count">{{ records.length }} سجل</span>
+                </div>
+            </ng-template>
+
             <ng-template pTemplate="header">
                 <tr>
                     <th>رمز المستند</th>
@@ -73,7 +90,7 @@
                     <th>اسم الدواء</th>
                     <th class="text-center">رقم التشغيلة</th>
                     <th class="text-center">الكمية</th>
-                    <th class="text-right">قيمة التالف</th>
+                    <th class="text-center">قيمة التالف</th>
                     <th class="text-center">سبب التلف</th>
                     <th class="text-center">الحالة</th>
                     <th class="text-center">الإجراءات</th>
@@ -81,34 +98,35 @@
             </ng-template>
             <ng-template pTemplate="body" let-record>
                 <tr>
-                    <td class="font-bold text-primary">{{ record.damageCode }}</td>
-                    <td>{{ record.sourceWarehouseName }}</td>
+                    <td class="dg-cell-code">{{ record.damageCode }}</td>
+                    <td class="font-bold">{{ record.warehouseName || record.sourceWarehouseName }}</td>
                     <td class="font-bold">{{ record.medicineName }}</td>
                     <td class="text-center">
                         <span class="batch-tag indigo">{{ record.batchNumber }}</span>
                     </td>
-                    <td class="text-center font-bold text-lg">{{ record.quantity }}</td>
-                    <td class="text-right font-bold text-red-600">{{ record.damageValue | number:'1.0-2' }} ر.ي</td>
+                    <td class="text-center font-bold">{{ record.quantity }}</td>
+                    <td class="text-center font-bold text-red-600">{{ record.damageValue | number:'1.0-0' }} ر.ي</td>
                     <td class="text-center">{{ getDamageTypeLabel(record.damageType) }}</td>
                     <td class="text-center">
                         <p-tag [severity]="getStatusSeverity(record.status)" [value]="getStatusLabel(record.status)" [rounded]="true"></p-tag>
                     </td>
                     <td class="text-center flex justify-content-center gap-1">
-                        <button *ngIf="record.status === 1" pButton icon="pi pi-verified" 
+                        <button *ngIf="record.status === 'PendingApproval' || record.status === 1" pButton icon="pi pi-check" 
                             class="p-button-rounded p-button-success p-button-text" 
-                            pTooltip="اعتماد الإهلاك وترحيل القيد" (click)="approveRecord(record)"></button>
+                            pTooltip="اعتماد وترحيل محاسبي" tooltipPosition="top" (click)="approveRecord(record)"></button>
                         
-                        <button *ngIf="record.status === 1" pButton icon="pi pi-trash" 
+                        <button *ngIf="record.status === 'PendingApproval' || record.status === 1" pButton icon="pi pi-trash" 
                             class="p-button-rounded p-button-danger p-button-text" 
-                            pTooltip="حذف الطلب" (click)="deleteRecord(record)"></button>
+                            pTooltip="حذف الطلب" tooltipPosition="top" (click)="deleteRecord(record)"></button>
                     </td>
                 </tr>
             </ng-template>
-            <ng-template pTemplate="emptymessage">
+            <ng-template pTemplate="emptydata">
                 <tr>
-                    <td colspan="9" class="text-center p-5 opacity-50">
-                        <i class="pi pi-inbox text-5xl mb-2"></i>
-                        <p class="m-0">لا توجد سجلات توالف مطابقة للبحث</p>
+                    <td colspan="9" class="dg-empty">
+                        <i class="pi pi-inbox"></i>
+                        <span>لا توجد سجلات بضاعة تالفة</span>
+                        <small>لم يتم العثور على أي بيانات مطابقة للبحث</small>
                     </td>
                 </tr>
             </ng-template>

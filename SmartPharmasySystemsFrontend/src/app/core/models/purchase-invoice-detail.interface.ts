@@ -14,6 +14,7 @@ export interface PurchaseInvoiceDetail {
     medicineName: string;
     batchId: number;
     companyBatchNumber: string;
+    storageLocation?: string | null;
     quantityInPurchaseUnit?: number;
     quantity: number;
     purchaseUnitId?: number | null;
@@ -50,6 +51,7 @@ export interface CreatePurchaseInvoiceDetailDto {
     expiryDate: string; // ISO date string
     batchBarcode?: string | null;
     companyBatchNumber?: string | null;
+    storageLocation?: string | null;
 }
 
 /**
@@ -65,4 +67,5 @@ export interface UpdatePurchaseInvoiceDetailDto {
     expiryDate: string;
     batchBarcode?: string | null;
     companyBatchNumber?: string | null;
+    storageLocation?: string | null;
 }

@@ -11,6 +11,7 @@ import {
     MedicineQueryDto,
     MedicineDetailsDto
 } from '../../../core/models/medicine.interface';
+import { MedicineBatchResponseDto } from '../../../core/models/medicine-batch.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -56,6 +57,15 @@ export class MedicineService {
     getDetails(id: number): Observable<MedicineDetailsDto> {
         return this.http.get<ApiResponse<MedicineDetailsDto>>(`${this.apiUrl}/${id}/details`).pipe(
             map(response => response.data!)
+        );
+    }
+
+    /**
+     * Get available batches for FEFO (First Expire First Out)
+     */
+    getFefoBatches(id: number): Observable<MedicineBatchResponseDto[]> {
+        return this.http.get<ApiResponse<MedicineBatchResponseDto[]>>(`${this.apiUrl}/${id}/fefo-batches`).pipe(
+            map(response => response.data || [])
         );
     }
 

@@ -40,21 +40,20 @@ export class DamagedGoodsListComponent implements OnInit {
 
     // Filters
     selectedWarehouseId?: number;
-    selectedStatus?: number;
+    selectedStatus?: string | number;
 
     statusOptions = [
         { label: 'الكل', value: undefined },
-        { label: 'معلق (Pending)', value: 1 },
-        { label: 'معتمد (Approved)', value: 2 },
-        { label: 'مرفوض (Rejected)', value: 3 }
+        { label: 'معلق (Pending)', value: 'PendingApproval' },
+        { label: 'معتمد (Approved)', value: 'Approved' },
+        { label: 'مرفوض (Rejected)', value: 'Rejected' }
     ];
 
     damageTypes = [
         { label: 'الكل', value: undefined },
-        { label: 'منتهي الصلاحية', value: 1 },
-        { label: 'تالف/مكسور', value: 2 },
-        { label: 'سوء تخزين', value: 3 },
-        { label: 'أخرى', value: 4 }
+        { label: 'منتهي الصلاحية', value: 'Expired' },
+        { label: 'تالف/مكسور', value: 'PhysicalDamage' },
+        { label: 'عيب تصنيع', value: 'ManufacturingDefect' }
     ];
 
     currentUserId = 1; // Simulated, usually from auth context
@@ -93,30 +92,41 @@ export class DamagedGoodsListComponent implements OnInit {
         });
     }
 
-    getStatusSeverity(status: number): 'warning' | 'success' | 'danger' | 'secondary' {
-        switch (status) {
-            case 1: return 'warning'; // Pending
-            case 2: return 'success'; // Approved (Posted)
-            case 3: return 'danger';  // Rejected
+    getStatusSeverity(status: string | number): 'warning' | 'success' | 'danger' | 'secondary' {
+        const s = status?.toString();
+        switch (s) {
+            case '1':
+            case 'PendingApproval': return 'warning';
+            case '2':
+            case 'Approved': return 'success';
+            case '3':
+            case 'Rejected': return 'danger';
             default: return 'secondary';
         }
     }
 
-    getStatusLabel(status: number): string {
-        switch (status) {
-            case 1: return 'معلق للاعتماد';
-            case 2: return 'تم الترحيل والإهلاك';
-            case 3: return 'مرفوض';
+    getStatusLabel(status: string | number): string {
+        const s = status?.toString();
+        switch (s) {
+            case '1':
+            case 'PendingApproval': return 'معلق للاعتماد';
+            case '2':
+            case 'Approved': return 'تم الترحيل والإهلاك';
+            case '3':
+            case 'Rejected': return 'مرفوض';
             default: return 'غير معروف';
         }
     }
 
-    getDamageTypeLabel(type: number): string {
-        switch (type) {
-            case 1: return 'منتهي الصلاحية';
-            case 2: return 'تالف/مكسور';
-            case 3: return 'سوء تخزين';
-            case 4: return 'أخرى';
+    getDamageTypeLabel(type: string | number): string {
+        const t = type?.toString();
+        switch (t) {
+            case '1':
+            case 'Expired': return 'منتهي الصلاحية';
+            case '2':
+            case 'PhysicalDamage': return 'تالف/مكسور';
+            case '3':
+            case 'ManufacturingDefect': return 'عيب تصنيع';
             default: return 'غير محدد';
         }
     }
@@ -166,12 +176,12 @@ export class DamagedGoodsListComponent implements OnInit {
     }
 
     get pendingCount(): number {
-        return this.records.filter(r => r.status === 1).length;
+        return this.records.filter(r => r.status?.toString() === 'PendingApproval' || r.status?.toString() === '1').length;
     }
 
     calculateTotalLoss(): number {
         return this.records
-            .filter(r => r.status === 2)
+            .filter(r => r.status?.toString() === 'Approved' || r.status?.toString() === '2')
             .reduce((sum, r) => sum + r.damageValue, 0);
     }
 

@@ -16,6 +16,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
     selector: 'app-stock-transfer-list',
@@ -43,6 +44,7 @@ export class StockTransferListComponent implements OnInit {
     transfers: StockTransferDto[] = [];
     warehouses: WarehouseDto[] = [];
     loading = false;
+    processingAction = false;
 
     // Filters
     sourceWarehouseId?: number;
@@ -51,11 +53,11 @@ export class StockTransferListComponent implements OnInit {
 
     statusOptions = [
         { label: 'الكل', value: undefined },
-        { label: 'مطلوب (Requested)', value: 1 },
-        { label: 'معتمد (Approved)', value: 2 },
-        { label: 'مشحون (Dispatched)', value: 3 },
-        { label: 'مستلم (Received)', value: 4 },
-        { label: 'ملغي (Cancelled)', value: 5 }
+        { label: 'مطلوب (Requested)', value: 'Requested' },
+        { label: 'معتمد (Approved)', value: 'Approved' },
+        { label: 'مشحون (Dispatched)', value: 'Dispatched' },
+        { label: 'مستلم (Received)', value: 'Received' },
+        { label: 'ملغي (Cancelled)', value: 'Cancelled' }
     ];
 
     // Detail Dialog
@@ -64,13 +66,15 @@ export class StockTransferListComponent implements OnInit {
 
     // Receipt Dialog
     displayReceiveDialog = false;
-    receiveItems: { itemId: number; medicineName: string; batchNumber: string; quantity: number; receivedQuantity: number; rejectionReason?: string; }[] = [];
+    receiveItems: { itemId: number; medicineName: string; batchNumber: string; quantityRequested: number; quantityReceived: number; rejectionReason?: string; }[] = [];
 
-    // Current logged in user (simulated, usually from AuthService)
-    currentUserId = 1;
+    // Current logged in user — resolved from AuthService
+    get currentUserId(): number {
+        return this.authService.currentUserValue?.userId ?? 1;
+    }
 
-    countTransfersByStatus(status: number): number {
-        return this.transfers.filter(t => t.status === status).length;
+    countTransfersByStatus(status: string | number): number {
+        return this.transfers.filter(t => t.status?.toString() === status.toString()).length;
     }
 
     constructor(
@@ -78,7 +82,8 @@ export class StockTransferListComponent implements OnInit {
         private warehouseService: WarehouseService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private router: Router
+        private router: Router,
+        private authService: AuthService
     ) { }
 
     ngOnInit() {
@@ -108,26 +113,56 @@ export class StockTransferListComponent implements OnInit {
         });
     }
 
-    getStatusSeverity(status: number): 'warning' | 'info' | 'success' | 'danger' | 'secondary' {
-        switch (status) {
-            case 1: return 'warning'; // Requested
-            case 2: return 'info';    // Approved
-            case 3: return 'warning'; // Dispatched (In transit)
-            case 4: return 'success'; // Received
-            case 5: return 'danger';  // Cancelled
+    getStatusSeverity(status: string | number): 'warning' | 'info' | 'success' | 'danger' | 'secondary' {
+        const s = status?.toString();
+        switch (s) {
+            case '1':
+            case 'Requested': return 'warning';
+            case '2':
+            case 'Approved': return 'info';
+            case '3':
+            case 'Dispatched': return 'warning';
+            case '5':
+            case 'Received': return 'success';
+            case '6':
+            case 'Cancelled': return 'danger';
             default: return 'secondary';
         }
     }
 
-    getStatusLabel(status: number): string {
-        switch (status) {
-            case 1: return 'طلب معلق';
-            case 2: return 'تم الاعتماد';
-            case 3: return 'قيد الشحن';
-            case 4: return 'مستلمة بالكامل';
-            case 5: return 'ملغاة';
+    getStatusLabel(status: string | number): string {
+        const s = status?.toString();
+        switch (s) {
+            case '1':
+            case 'Requested': return 'طلب معلق';
+            case '2':
+            case 'Approved': return 'تم الاعتماد';
+            case '3':
+            case 'Dispatched': return 'قيد الشحن';
+            case '5':
+            case 'Received': return 'مستلمة بالكامل';
+            case '6':
+            case 'Cancelled': return 'ملغاة';
             default: return 'غير معروف';
         }
+    }
+
+    isExpiringSoon(date?: string | Date): boolean {
+        if (!date) return false;
+        const expiryDate = new Date(date);
+        const today = new Date();
+        const diffTime = Math.abs(expiryDate.getTime() - today.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 0; // Already expired or expires today
+    }
+
+    isNearExpiry(date?: string | Date): boolean {
+        if (!date) return false;
+        const expiryDate = new Date(date);
+        const today = new Date();
+        const diffTime = Math.abs(expiryDate.getTime() - today.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays > 0 && diffDays <= 90; // Expires within 90 days
     }
 
     viewDetails(transfer: StockTransferDto) {
@@ -145,13 +180,17 @@ export class StockTransferListComponent implements OnInit {
             acceptLabel: 'نعم، اعتمد',
             rejectLabel: 'إلغاء',
             accept: () => {
+                if (this.processingAction) return;
+                this.processingAction = true;
                 this.transferService.approve(transfer.id, this.currentUserId).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم اعتماد طلب التحويل' });
                         this.loadTransfers();
+                        this.processingAction = false;
                     },
                     error: (err) => {
                         this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل اعتماد الطلب' });
+                        this.processingAction = false;
                     }
                 });
             }
@@ -166,13 +205,17 @@ export class StockTransferListComponent implements OnInit {
             acceptLabel: 'نعم، اشحن',
             rejectLabel: 'إلغاء',
             accept: () => {
+                if (this.processingAction) return;
+                this.processingAction = true;
                 this.transferService.dispatch(transfer.id, this.currentUserId).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم شحن الكميات بنجاح' });
                         this.loadTransfers();
+                        this.processingAction = false;
                     },
                     error: (err) => {
                         this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل شحن الكميات' });
+                        this.processingAction = false;
                     }
                 });
             }
@@ -185,21 +228,21 @@ export class StockTransferListComponent implements OnInit {
             itemId: item.id,
             medicineName: item.medicineName,
             batchNumber: item.batchNumber,
-            quantity: item.quantity,
-            receivedQuantity: item.quantity, // default to fully received
+            quantityRequested: item.quantityRequested,
+            quantityReceived: item.quantityRequested, // default to fully received
             rejectionReason: ''
         }));
         this.displayReceiveDialog = true;
     }
 
     confirmReceive() {
-        if (!this.selectedTransfer) return;
+        if (!this.selectedTransfer || this.processingAction) return;
 
+        this.processingAction = true;
         const payload = {
             items: this.receiveItems.map(item => ({
-                itemId: item.itemId,
-                receivedQuantity: item.receivedQuantity,
-                rejectionReason: item.rejectionReason || undefined
+                stockTransferItemId: item.itemId,
+                quantityReceived: item.quantityReceived
             }))
         };
 
@@ -208,9 +251,11 @@ export class StockTransferListComponent implements OnInit {
                 this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تأكيد استلام الشحنة وإضافتها للمخزن المستلم' });
                 this.displayReceiveDialog = false;
                 this.loadTransfers();
+                this.processingAction = false;
             },
             error: (err) => {
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل استلام الشحنة' });
+                this.processingAction = false;
             }
         });
     }

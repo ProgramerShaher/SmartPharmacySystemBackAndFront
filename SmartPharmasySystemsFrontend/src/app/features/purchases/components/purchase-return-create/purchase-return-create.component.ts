@@ -75,6 +75,7 @@ export class PurchaseReturnCreateComponent implements OnInit {
         private purchaseInvoiceService: PurchaseInvoiceService,
         private inventoryService: InventoryService,
         private router: Router,
+        private route: ActivatedRoute,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
     ) {
@@ -85,7 +86,25 @@ export class PurchaseReturnCreateComponent implements OnInit {
         });
     }
 
-    ngOnInit() { }
+    ngOnInit() {
+        this.route.queryParams.subscribe(params => {
+            const invoiceId = params['invoiceId'];
+            if (invoiceId) {
+                this.loadInvoiceById(Number(invoiceId));
+            }
+        });
+    }
+
+    loadInvoiceById(id: number) {
+        this.purchaseInvoiceService.getById(id).subscribe({
+            next: (fullInvoice) => {
+                this.selectedInvoice = fullInvoice;
+                this.returnForm.patchValue({ invoice: fullInvoice });
+                this.initializeDetails(fullInvoice.items || []);
+            },
+            error: (err) => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل تفاصيل الفاتورة' })
+        });
+    }
 
     goBack() {
         this.router.navigate(['/purchases/returns']);

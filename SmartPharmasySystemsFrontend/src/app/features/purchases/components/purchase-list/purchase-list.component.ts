@@ -228,6 +228,10 @@ export class PurchaseInvoiceListComponent implements OnInit {
         this.router.navigate(['/purchases/edit', id]);
     }
 
+    navigateToReturn(id: number) {
+        this.router.navigate(['/purchases/returns/create'], { queryParams: { invoiceId: id } });
+    }
+
     approveInvoice(id: number) {
         this.confirmationService.confirm({
             message: 'هل أنت متأكد من اعتماد التوريد؟ سيتم إضافة الأصناف للمخزون.',

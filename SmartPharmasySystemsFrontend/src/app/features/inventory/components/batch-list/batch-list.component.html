@@ -101,9 +101,16 @@
                     <td>
                         <div class="flex-column">
                             <span class="font-bold text-900">{{ batch.medicineName }}</span>
-                            <span class="text-xs text-500 mt-1">
-                                <i class="pi pi-map-marker text-xs mr-1"></i> {{ batch.storageLocation || 'غير محدد' }}
-                            </span>
+                            <div class="flex flex-column gap-1 mt-1">
+                                <span *ngIf="!batch.locations?.length" class="text-xs text-500">
+                                    <i class="pi pi-map-marker text-xs mr-1"></i> غير محدد (مباع/تالف بالكامل)
+                                </span>
+                                <span *ngFor="let loc of batch.locations" class="text-xs text-600 bg-gray-100 px-2 py-1 border-round w-max">
+                                    <i class="pi pi-box text-xs mr-1 text-primary"></i> 
+                                    {{ loc.warehouseName }} 
+                                    <span class="font-bold text-primary mr-1">({{ loc.quantity }})</span>
+                                </span>
+                            </div>
                         </div>
                     </td>
 

@@ -61,6 +61,7 @@
             <th class="text-center">رقم الدفعة</th>
             <th class="text-center">الصلاحية</th>
             <th class="text-center">الكمية الموردة</th>
+            <th class="text-center">موقع التخزين</th>
             <th class="text-right">سعر التوريد</th>
             <th class="text-right">الإجمالي</th>
           </tr>
@@ -85,6 +86,9 @@
             <td class="text-center">
               <span class="qty-pill">{{ item.quantityInPurchaseUnit > 0 ? item.quantityInPurchaseUnit : item.quantity }}</span>
               <div class="text-xs text-500 mt-1">{{ item.unitName }}</div>
+            </td>
+            <td class="text-center">
+              <span class="text-sm text-500">{{ item.storageLocation || '—' }}</span>
             </td>
             <td class="text-right price-text">{{ item.purchasePrice | number:'1.0-2' }}</td>
             <td class="text-right price-text text-teal-700 font-bold">{{ item.total | number:'1.0-2' }}</td>

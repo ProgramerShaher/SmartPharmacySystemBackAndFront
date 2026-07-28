@@ -9,23 +9,27 @@ export interface DamagedGoodsRecordDto {
     id: number;
     damageCode: string;
     sourceWarehouseId: number;
-    sourceWarehouseName: string;
+    warehouseName: string;
+    branchName: string;
     medicineId: number;
     medicineName: string;
     batchNumber: string;
     expiryDate: string;
     quantity: number;
     damageValue: number;
-    damageType: number; // enum DamageType
+    damageType: string | number; // enum DamageType
     damageTypeName: string;
-    status: number; // enum RecordStatus
+    disposalMethod: string | number;
+    disposalMethodName: string;
+    status: string | number; // enum RecordStatus
     statusName: string;
+    statusColor: string;
     reason?: string;
     recordedByUserId: number;
-    recordedByUserName: string;
+    recordedByName: string;
     recordedAt: string;
     approvedByUserId?: number;
-    approvedByUserName?: string;
+    approvedByName?: string;
     approvedAt?: string;
 }
 
@@ -48,8 +52,8 @@ export class DamagedGoodsService {
     getAll(paramsObj?: {
         warehouseId?: number;
         medicineId?: number;
-        damageType?: number;
-        status?: number;
+        damageType?: string | number;
+        status?: string | number;
         from?: string;
         to?: string;
     }): Observable<DamagedGoodsRecordDto[]> {

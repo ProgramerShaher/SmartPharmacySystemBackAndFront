@@ -4,6 +4,14 @@ import { SaleInvoiceDetail } from './sale-invoice-detail.interface';
 import { InventoryMovement } from './inventory-movement.interface';
 import { Alert } from './alert.interface';
 
+export interface BatchLocationDto {
+    warehouseId: number;
+    warehouseName: string;
+    branchId: number;
+    branchName: string;
+    quantity: number;
+}
+
 /**
  * Medicine Batch interface - matches backend MedicineBatch entity 100%
  */
@@ -40,6 +48,7 @@ export interface MedicineBatch {
     saleInvoiceDetails?: SaleInvoiceDetail[];
     inventoryMovements?: InventoryMovement[];
     alerts?: Alert[];
+    locations?: BatchLocationDto[];
 }
 
 /**
@@ -64,6 +73,7 @@ export interface MedicineBatchResponseDto {
     isExpiringSoon: boolean;
     isSellable: boolean;
     daysUntilExpiry: number;
+    locations?: BatchLocationDto[];
 }
 
 /**

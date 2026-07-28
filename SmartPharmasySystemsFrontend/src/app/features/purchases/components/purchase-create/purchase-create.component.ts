@@ -246,7 +246,8 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             bonusQuantity: [detail.bonusQuantity || 0],
             purchasePrice: [detail.purchasePrice, Validators.required],
             salePrice: [detail.salePrice, Validators.required],
-            total: [detail.total || (detail.quantity * detail.purchasePrice)]
+            total: [detail.total || (detail.quantity * detail.purchasePrice)],
+            storageLocation: [detail.storageLocation || null]
         });
         this.details.push(group);
     }
@@ -278,7 +279,8 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             bonusQuantity: itemData.bonusQuantity,
             purchasePrice: itemData.price,
             salePrice: itemData.salePrice,
-            total: itemData.quantity * itemData.price
+            total: itemData.quantity * itemData.price,
+            storageLocation: itemData.storageLocation || null
         };
 
         if (this.editingIndex !== null) {
@@ -333,6 +335,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             bonusQuantity: d.bonusQuantity,
             purchasePrice: d.purchasePrice,
             salePrice: d.salePrice,
+            storageLocation: d.storageLocation || null,
             batchBarcode: d.batchBarcode // Optional but good to have if used
         }));
 
@@ -381,7 +384,8 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             purchaseUnitId: d.purchaseUnitId,
             bonusQuantity: d.bonusQuantity,
             purchasePrice: d.purchasePrice,
-            salePrice: d.salePrice
+            salePrice: d.salePrice,
+            storageLocation: d.storageLocation || null
         }));
 
         const payload = {

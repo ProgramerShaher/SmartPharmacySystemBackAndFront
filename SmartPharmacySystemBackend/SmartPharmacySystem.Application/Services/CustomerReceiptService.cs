@@ -64,10 +64,14 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
                 };
 
+                // Fetch required account IDs by code dynamically
+                var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync("11101") ?? throw new InvalidOperationException("حساب الصندوق غير موجود");
+                var receivablesAccount = await _unitOfWork.Accounts.GetByCodeAsync("112") ?? throw new InvalidOperationException("حساب الذمم المدينة غير موجود");
+
                 // 1. الطرف المدين (من حـ/ الصندوق)
                 journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
                 {
-                    AccountId = 1101, // الصندوق الرئيسي
+                    AccountId = cashAccount.Id, // الصندوق الرئيسي
                     Debit = dto.Amount,
                     Credit = 0,
                     Description = $"تحصيل مبلغ بموجب سند قبض رقم {receipt.Id}"
@@ -76,7 +80,7 @@ namespace SmartPharmacySystem.Application.Services
                 // 2. الطرف الدائن (إلى حـ/ العميل)
                 journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
                 {
-                    AccountId = customer.AccountId ?? 1201, // حساب العميل الخاص أو ذمم العملاء
+                    AccountId = customer.AccountId ?? receivablesAccount.Id, // حساب العميل الخاص أو ذمم العملاء
                     Debit = 0,
                     Credit = dto.Amount,
                     Description = $"سداد دفعة من الحساب - سند رقم {receipt.Id}"

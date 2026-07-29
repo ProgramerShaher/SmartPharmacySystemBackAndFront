@@ -136,10 +136,10 @@
                             {{ item.expiryDate | date:'dd/MM/yyyy' }}
                         </td>
                         <td class="text-center quantity-cell">
-                            <span class="quantity-value">{{ item.quantity }}</span>
+                            <span class="quantity-value">{{ item.quantityInSaleUnit || item.quantity }} {{ item.saleUnitName || 'أساسية' }}</span>
                         </td>
                         <td class="text-right price-cell">{{ item.salePrice | number:'1.0-2' }}</td>
-                        <td class="text-right total-cell">{{ (item.quantity * item.salePrice) | number:'1.0-2' }}</td>
+                        <td class="text-right total-cell">{{ (item.totalLineAmount || (item.quantity * item.salePrice)) | number:'1.0-2' }}</td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="emptymessage">

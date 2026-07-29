@@ -1,5 +1,7 @@
 using SmartPharmacySystem.Core.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System;
 
 namespace SmartPharmacySystem.Core.Entities;
 
@@ -9,7 +11,6 @@ namespace SmartPharmacySystem.Core.Entities;
 /// </summary>
 public class PurchaseInvoice : BaseMultiBranchEntity
 {
-
     /// <summary>
     /// Unique number for the purchase invoice (Format: PI-YYYY-######).
     /// </summary>
@@ -93,9 +94,9 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     /// <summary>
     /// Navigation property to the supplier.
     /// </summary>
-    public Supplier Supplier { get; set; }
+    public virtual Supplier Supplier { get; set; } = null!;
 
-    public Warehouse Warehouse { get; set; }
+    public virtual Warehouse Warehouse { get; set; } = null!;
 
     [System.Text.Json.Serialization.JsonIgnore]
     public virtual User? Creator { get; set; }
@@ -109,5 +110,5 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     /// <summary>
     /// Collection of purchase invoice details.
     /// </summary>
-    public ICollection<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; }
+    public virtual ICollection<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; } = new List<PurchaseInvoiceDetail>();
 }

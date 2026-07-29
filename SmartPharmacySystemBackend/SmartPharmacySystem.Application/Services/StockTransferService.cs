@@ -77,20 +77,10 @@ public class StockTransferService : IStockTransferService
         var transfer = _mapper.Map<StockTransfer>(dto);
         transfer.Status = TransferStatus.Requested;
         transfer.RequestedByUserId = requestedByUserId;
+        transfer.TransferCode = $"TRF-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}";
 
         await _unitOfWork.StockTransfers.AddAsync(transfer);
         await _unitOfWork.SaveChangesAsync();
-
-        if (dto.Items != null && dto.Items.Any())
-        {
-            foreach (var itemDto in dto.Items)
-            {
-                var item = _mapper.Map<StockTransferItem>(itemDto);
-                item.StockTransferId = transfer.Id;
-                await _unitOfWork.StockTransferItems.AddAsync(item);
-            }
-            await _unitOfWork.SaveChangesAsync();
-        }
 
         return MapToDto(transfer);
     }
@@ -106,6 +96,23 @@ public class StockTransferService : IStockTransferService
         transfer.Status = TransferStatus.Approved;
         transfer.ApprovedByUserId = approvedByUserId;
         transfer.ApprovedAt = DateTime.UtcNow;
+
+        // Clear navigation properties to prevent EF Core tracking conflicts
+        transfer.SourceWarehouse = null;
+        transfer.DestinationWarehouse = null;
+        transfer.RequestedByUser = null;
+        transfer.ApprovedByUser = null;
+        transfer.DispatchedByUser = null;
+        transfer.ReceivedByUser = null;
+
+        if (transfer.Items != null)
+        {
+            foreach (var item in transfer.Items)
+            {
+                item.Medicine = null;
+                item.StockTransfer = null;
+            }
+        }
 
         await _unitOfWork.StockTransfers.UpdateAsync(transfer);
         await _unitOfWork.SaveChangesAsync();
@@ -126,19 +133,26 @@ public class StockTransferService : IStockTransferService
         await _unitOfWork.BeginTransactionAsync();
         try
         {
+            var sourceStocks = new Dictionary<string, InventoryStock>();
+
             // ===== خصم الكميات من مخزن المرسِل =====
             foreach (var item in transfer.Items)
             {
-                // جلب سجل المخزون المطابق للتشغيلة في المخزن المرسِل
-                var stock = await _unitOfWork.InventoryStocks
-                    .GetByWarehouseMedicineBatchAsync(
-                        transfer.SourceWarehouseId,
-                        item.MedicineId,
-                        item.BatchNumber);
+                var key = $"{item.MedicineId}_{item.BatchNumber}";
+                if (!sourceStocks.TryGetValue(key, out var stock))
+                {
+                    stock = await _unitOfWork.InventoryStocks
+                        .GetByWarehouseMedicineBatchAsync(
+                            transfer.SourceWarehouseId,
+                            item.MedicineId,
+                            item.BatchNumber);
 
-                if (stock == null)
-                    throw new InvalidOperationException(
-                        $"الدواء '{item.Medicine?.Name ?? item.MedicineId.ToString()}' — التشغيلة '{item.BatchNumber}' غير موجود في المخزن المرسِل");
+                    if (stock == null)
+                        throw new InvalidOperationException(
+                            $"الدواء '{item.Medicine?.Name ?? item.MedicineId.ToString()}' — التشغيلة '{item.BatchNumber}' غير موجود في المخزن المرسِل");
+
+                    sourceStocks[key] = stock;
+                }
 
                 if (stock.Quantity < item.QuantityRequested)
                     throw new InvalidOperationException(
@@ -146,10 +160,13 @@ public class StockTransferService : IStockTransferService
 
                 // خصم الكمية
                 stock.Quantity -= item.QuantityRequested;
-                await _unitOfWork.InventoryStocks.UpdateAsync(stock);
-
+                
                 // تحديث QuantityDispatched في بند السند
                 item.QuantityDispatched = item.QuantityRequested;
+                
+                // Clear navigation properties before UpdateAsync
+                item.Medicine = null;
+                item.StockTransfer = null;
                 await _unitOfWork.StockTransferItems.UpdateAsync(item);
 
                 // تسجيل حركة مخزنية (صادر — تحويل)
@@ -170,10 +187,36 @@ public class StockTransferService : IStockTransferService
                     item.MedicineId, item.BatchNumber, item.QuantityRequested, transfer.SourceWarehouseId);
             }
 
+            // Update all modified source stocks once
+            foreach (var stock in sourceStocks.Values)
+            {
+                stock.Medicine = null;
+                stock.Warehouse = null;
+                await _unitOfWork.InventoryStocks.UpdateAsync(stock);
+            }
+
             // تحديث حالة السند
             transfer.Status = TransferStatus.Dispatched;
             transfer.DispatchedByUserId = dispatchedByUserId;
             transfer.DispatchedAt = DateTime.UtcNow;
+
+            // Clear navigation properties to prevent EF Core tracking conflicts
+            transfer.SourceWarehouse = null;
+            transfer.DestinationWarehouse = null;
+            transfer.RequestedByUser = null;
+            transfer.ApprovedByUser = null;
+            transfer.DispatchedByUser = null;
+            transfer.ReceivedByUser = null;
+
+            if (transfer.Items != null)
+            {
+                foreach (var item in transfer.Items)
+                {
+                    item.Medicine = null;
+                    item.StockTransfer = null;
+                }
+            }
+
             await _unitOfWork.StockTransfers.UpdateAsync(transfer);
 
             await _unitOfWork.SaveChangesAsync();
@@ -205,39 +248,46 @@ public class StockTransferService : IStockTransferService
         try
         {
             bool hasVariance = false;
+            var destinationStocks = new Dictionary<string, InventoryStock>();
 
             foreach (var itemDto in dto.Items)
             {
-                // جلب بند السند المطابق
-                var item = await _unitOfWork.StockTransferItems.GetByIdAsync(itemDto.StockTransferItemId);
+                // جلب بند السند المطابق من السند المحمل مسبقاً لمنع تعارض EF Core
+                var item = transfer.Items?.FirstOrDefault(i => i.Id == itemDto.StockTransferItemId);
                 if (item == null) continue;
 
                 var quantityReceived = itemDto.QuantityReceived;
 
                 // تسجيل الكمية المستلمة في السند
                 item.QuantityReceived = quantityReceived;
-                await _unitOfWork.StockTransferItems.UpdateAsync(item);
 
                 // ===== إضافة الكميات لمخزن الوجهة =====
                 if (quantityReceived > 0)
                 {
-                    // البحث عن سجل المخزون في مخزن الوجهة لنفس الدواء والتشغيلة
-                    var destStock = await _unitOfWork.InventoryStocks
-                        .GetByWarehouseMedicineBatchAsync(
-                            transfer.DestinationWarehouseId,
-                            item.MedicineId,
-                            item.BatchNumber);
-
-                    if (destStock != null)
+                    var key = $"{item.MedicineId}_{item.BatchNumber}";
+                    if (!destinationStocks.TryGetValue(key, out var destinationStock))
                     {
-                        // التشغيلة موجودة في المخزن — زيادة الكمية
-                        destStock.Quantity += quantityReceived;
-                        await _unitOfWork.InventoryStocks.UpdateAsync(destStock);
+                        destinationStock = await _unitOfWork.InventoryStocks
+                            .GetByWarehouseMedicineBatchAsync(
+                                transfer.DestinationWarehouseId,
+                                item.MedicineId,
+                                item.BatchNumber);
+
+                        if (destinationStock != null)
+                        {
+                            destinationStocks[key] = destinationStock;
+                        }
+                    }
+
+                    if (destinationStock != null)
+                    {
+                        // التشغيلة موجودة مسبقاً في مخزن المستلِم — نزيد الكمية
+                        destinationStock.Quantity += quantityReceived;
                     }
                     else
                     {
                         // التشغيلة غير موجودة في الوجهة — إنشاء سجل جديد
-                        var newStock = new InventoryStock
+                        destinationStock = new InventoryStock
                         {
                             WarehouseId = transfer.DestinationWarehouseId,
                             MedicineId  = item.MedicineId,
@@ -245,7 +295,8 @@ public class StockTransferService : IStockTransferService
                             ExpiryDate  = item.ExpiryDate,
                             Quantity    = quantityReceived
                         };
-                        await _unitOfWork.InventoryStocks.AddAsync(newStock);
+                        destinationStocks[key] = destinationStock;
+                        await _unitOfWork.InventoryStocks.AddAsync(destinationStock);
                     }
 
                     // تسجيل حركة مخزنية (وارد — تحويل)
@@ -274,10 +325,39 @@ public class StockTransferService : IStockTransferService
                 }
             }
 
+            // Update all modified destination stocks once
+            foreach (var stock in destinationStocks.Values)
+            {
+                if (stock.Id > 0) // only update if it already existed in the DB
+                {
+                    stock.Medicine = null;
+                    stock.Warehouse = null;
+                    await _unitOfWork.InventoryStocks.UpdateAsync(stock);
+                }
+            }
+
             // تحديث حالة السند
             transfer.Status = TransferStatus.Received;
             transfer.ReceivedByUserId = receivedByUserId;
             transfer.ReceivedAt = DateTime.UtcNow;
+
+            // Clear navigation properties to prevent EF Core tracking conflicts
+            transfer.SourceWarehouse = null;
+            transfer.DestinationWarehouse = null;
+            transfer.RequestedByUser = null;
+            transfer.ApprovedByUser = null;
+            transfer.DispatchedByUser = null;
+            transfer.ReceivedByUser = null;
+
+            if (transfer.Items != null)
+            {
+                foreach (var item in transfer.Items)
+                {
+                    item.Medicine = null;
+                    item.StockTransfer = null;
+                }
+            }
+
             await _unitOfWork.StockTransfers.UpdateAsync(transfer);
 
             await _unitOfWork.SaveChangesAsync();

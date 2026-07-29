@@ -246,9 +246,9 @@
         <!-- الكمية -->
         <div class="modal-field qty-field-wrap" *ngIf="selectedBatchForModal">
             <label class="field-label">الكمية المطلوبة</label>
-            <p-inputNumber [(ngModel)]="modalQuantity" [min]="1" [max]="selectedBatchForModal.remainingQuantity"
+            <p-inputNumber [(ngModel)]="modalQuantity" [min]="1" [max]="maxAllowedQuantity"
                 [showButtons]="true" styleClass="w-full qty-field"></p-inputNumber>
-            <small class="hint">الحد الأقصى: {{ selectedBatchForModal.remainingQuantity }}</small>
+            <small class="hint">الحد الأقصى: {{ maxAllowedQuantity }}</small>
         </div>
         <!-- صندوق الإجمالي الديناميكي - أخضر ليموني -->
         <div class="instant-total-box" *ngIf="selectedBatchForModal && modalQuantity">

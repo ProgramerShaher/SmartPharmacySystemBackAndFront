@@ -71,6 +71,7 @@ public class DamagedGoodsService : IDamagedGoodsService
     public async Task<DamagedGoodsRecordDto> CreateAsync(CreateDamagedGoodsRecordDto dto)
     {
         var record = _mapper.Map<DamagedGoodsRecord>(dto);
+        record.DamageCode = $"DMG-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString()[..6].ToUpper()}";
         record.Status = RecordStatus.PendingApproval;
         record.RecordedByUserId = _currentUserService.UserId ?? 0;
         record.DamageValue = await CalculateDamageValueAsync(dto.MedicineId, dto.BatchNumber, dto.Quantity);
@@ -138,6 +139,10 @@ public class DamagedGoodsService : IDamagedGoodsService
                     "لا يمكن اعتماد الإذن.");
 
             sourceStock.Quantity -= record.Quantity;
+            
+            // Clear navigation properties to prevent EF Core tracking conflicts
+            sourceStock.Medicine = null;
+            sourceStock.Warehouse = null;
             await _unitOfWork.InventoryStocks.UpdateAsync(sourceStock);
 
             // حركة مخزنية — صادر (خسارة توالف من المخزن الأصلي)
@@ -168,6 +173,10 @@ public class DamagedGoodsService : IDamagedGoodsService
             {
                 // التشغيلة موجودة مسبقاً في مخزن التالف — نزيد الكمية
                 damagedStock.Quantity += record.Quantity;
+                
+                // Clear navigation properties
+                damagedStock.Medicine = null;
+                damagedStock.Warehouse = null;
                 await _unitOfWork.InventoryStocks.UpdateAsync(damagedStock);
             }
             else
@@ -205,6 +214,13 @@ public class DamagedGoodsService : IDamagedGoodsService
             record.Status = RecordStatus.Approved;
             record.ApprovedByUserId = approvedByUserId;
             record.ApprovedAt = DateTime.UtcNow;
+
+            // Clear navigation properties
+            record.Medicine = null;
+            record.SourceWarehouse = null;
+            record.RecordedByUser = null;
+            record.ApprovedByUser = null;
+
             await _unitOfWork.DamagedGoods.UpdateAsync(record);
 
             if (record.DamageValue > 0)

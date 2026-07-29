@@ -18,4 +18,5 @@ public interface IInventoryStockRepository
     Task DeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
     Task<IEnumerable<InventoryStock>> SearchAsync(string? search = null, int? warehouseId = null, int? medicineId = null);
+    Task<IEnumerable<InventoryStock>> GetStocksForBatchesAsync(IEnumerable<int> medicineIds, IEnumerable<string> batchNumbers);
 }

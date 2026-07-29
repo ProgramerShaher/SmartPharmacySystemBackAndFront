@@ -42,6 +42,11 @@ public class PurchaseInvoiceDetailDto
     public string CompanyBatchNumber { get; set; } = string.Empty;
 
     /// <summary>
+    /// موقع التخزين في المخزن
+    /// </summary>
+    public string? StorageLocation { get; set; }
+
+    /// <summary>
     /// الكمية بالوحدة المشتراة
     /// </summary>
     public int QuantityInPurchaseUnit { get; set; }

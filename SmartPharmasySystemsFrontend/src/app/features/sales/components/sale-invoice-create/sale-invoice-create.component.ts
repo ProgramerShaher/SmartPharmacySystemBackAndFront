@@ -106,6 +106,12 @@ export class SaleInvoiceCreateComponent implements OnInit {
         return 0;
     }
 
+    get maxAllowedQuantity(): number {
+        if (!this.selectedBatchForModal) return 0;
+        const unitFactor = this.selectedUnitForModal ? this.selectedUnitForModal.factor : 1;
+        return Math.floor(this.selectedBatchForModal.remainingQuantity / unitFactor);
+    }
+
     // 🛫 OPERATIONAL STATE
     invoiceDate = new Date();
     selectedCustomer: any = null;

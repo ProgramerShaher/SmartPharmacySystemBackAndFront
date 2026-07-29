@@ -37,6 +37,8 @@ public class InventoryStockService : IInventoryStockService
         return _mapper.Map<IEnumerable<InventoryStockDto>>(stocks);
     }
 
+    // Removed ApplyPendingTransfersAsync since deduction should only happen at dispatch
+
     public async Task<IEnumerable<InventoryStockDto>> GetExpiringSoonAsync(int daysThreshold)
     {
         var stocks = await _unitOfWork.InventoryStocks.GetExpiringSoonAsync(daysThreshold);

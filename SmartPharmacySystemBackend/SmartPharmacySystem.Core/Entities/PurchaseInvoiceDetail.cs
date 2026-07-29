@@ -65,6 +65,12 @@ public class PurchaseInvoiceDetail : BaseEntity
     /// </summary>
     public decimal TrueUnitCost { get; set; }
 
+    /// <summary>
+    /// Storage location for this item in the warehouse (e.g. Shelf 1, Rack A)
+    /// موقع التخزين الخاص بهذا الصنف في المخزن (مثل رف 1، ممر أ).
+    /// </summary>
+    public string? StorageLocation { get; set; }
+
 
     /// <summary>
     /// Navigation property to the purchase invoice.

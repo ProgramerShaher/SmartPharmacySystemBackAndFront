@@ -61,6 +61,7 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
     {
         return await _context.SaleInvoices
             .AsNoTracking()
+            .Where(s => !s.IsDeleted)
             .Include(s => s.Creator)
             .Include(s => s.Approver)
             .Include(s => s.Canceller)
@@ -146,7 +147,6 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
 
     public async Task DeleteAsync(int id)
     {
-        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
         var entity = await _context.SaleInvoices.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (entity != null)
         {
@@ -156,7 +156,6 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
 
     public async Task SoftDeleteAsync(int id)
     {
-        // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
         var entity = await _context.SaleInvoices.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
         if (entity != null)
         {

@@ -113,10 +113,10 @@ namespace SmartPharmacySystem.Application.Services
                         ?? throw new KeyNotFoundException($"التشغيلة {detail.BatchId} غير موجودة");
 
                     // Security/Isolation: ensure the batch belongs to the same branch as the original invoice (when traceable).
-                    if (invoice.BranchId.HasValue && batch.PurchaseInvoiceId.HasValue)
+                    if (batch.PurchaseInvoiceId.HasValue)
                     {
                         var purchaseInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(batch.PurchaseInvoiceId.Value);
-                        if (purchaseInvoice == null || purchaseInvoice.BranchId != invoice.BranchId.Value)
+                        if (purchaseInvoice == null || purchaseInvoice.BranchId != invoice.BranchId)
                             throw new InvalidOperationException("فشل اعتماد المرتجع: التشغيلة لا تتبع نفس فرع الفاتورة الأصلية.");
                     }
 
@@ -251,10 +251,10 @@ namespace SmartPharmacySystem.Application.Services
                         if (batch != null)
                         {
                             // Security/Isolation: ensure the batch belongs to the same branch as the original invoice (when traceable).
-                            if (invoice?.BranchId != null && batch.PurchaseInvoiceId.HasValue)
+                            if (invoice != null && batch.PurchaseInvoiceId.HasValue)
                             {
                                 var purchaseInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(batch.PurchaseInvoiceId.Value);
-                                if (purchaseInvoice == null || purchaseInvoice.BranchId != invoice.BranchId.Value)
+                                if (purchaseInvoice == null || purchaseInvoice.BranchId != invoice.BranchId)
                                     throw new InvalidOperationException("فشل إلغاء المرتجع: التشغيلة لا تتبع نفس فرع الفاتورة الأصلية.");
                             }
 

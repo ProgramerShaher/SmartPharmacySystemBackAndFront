@@ -156,4 +156,16 @@ public class InventoryStockRepository : IInventoryStockRepository
             .OrderBy(s => s.ExpiryDate)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<InventoryStock>> GetStocksForBatchesAsync(IEnumerable<int> medicineIds, IEnumerable<string> batchNumbers)
+    {
+        var medIds = medicineIds.ToList();
+        var batches = batchNumbers.ToList();
+        
+        return await _context.InventoryStocks
+            .AsNoTracking()
+            .Include(s => s.Warehouse).ThenInclude(w => w.Branch)
+            .Where(s => !s.IsDeleted && s.Quantity > 0 && medIds.Contains(s.MedicineId) && batches.Contains(s.BatchNumber))
+            .ToListAsync();
+    }
 }

@@ -62,4 +62,9 @@ public class CreatePurchaseInvoiceDetailDto
     /// رقم تشغيلة الشركة المصنعة
     /// </summary>
     public string? CompanyBatchNumber { get; set; }
+
+    /// <summary>
+    /// موقع التخزين (اختياري)
+    /// </summary>
+    public string? StorageLocation { get; set; }
 }

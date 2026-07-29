@@ -9,7 +9,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// يمثل دفعة (لوط) من الدواء في نظام الصيدلية.
 /// كل دفعة تتتبع تفاصيل الشراء، معلومات انتهاء الصلاحية، وحالة المخزون.
 /// </summary>
-public class MedicineBatch : BaseEntity
+public class MedicineBatch : BaseMultiBranchEntity
 {
 
     /// <summary>

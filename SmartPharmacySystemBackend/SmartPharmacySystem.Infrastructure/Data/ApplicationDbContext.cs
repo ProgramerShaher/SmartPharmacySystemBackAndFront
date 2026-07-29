@@ -303,6 +303,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .WithMany(u => u.CreatedBatches)
                   .HasForeignKey(mb => mb.CreatedBy)
                   .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // PurchaseInvoice - Supplier
@@ -1277,6 +1284,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Status).HasConversion<int>();
 
             entity.Property(e => e.BranchId).IsRequired();
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()

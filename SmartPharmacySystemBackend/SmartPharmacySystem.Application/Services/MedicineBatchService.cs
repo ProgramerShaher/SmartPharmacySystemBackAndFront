@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.MedicineBatch;
 using SmartPharmacySystem.Application.DTOs.StockMovement;
@@ -418,7 +418,9 @@ public class MedicineBatchService(
         logger.LogInformation("Getting all batches with filter: {Filter}", searchFilter ?? "none");
 
         var batches = await batchRepository.GetAllAsync(searchFilter);
-        return batches.Select(b => MapToResponseDto(b, b.Medicine));
+        var dtos = batches.Select(b => MapToResponseDto(b, b.Medicine)).ToList();
+        await EnrichWithLocationsAsync(dtos);
+        return dtos;
     }
 
     /// <inheritdoc/>
@@ -875,5 +877,36 @@ public class MedicineBatchService(
             CreatedByUserName = batch.CreatedByUser?.FullName,
             IsDeleted = batch.IsDeleted
         };
+    }
+
+    /// <summary>
+    /// يثري بيانات الدفعات بمواقع تواجدها في المخازن من خلال InventoryStock
+    /// </summary>
+    private async Task EnrichWithLocationsAsync(List<MedicineBatchResponseDto> dtos)
+    {
+        if (!dtos.Any()) return;
+
+        var batchNumbers = dtos.Select(d => d.CompanyBatchNumber).Distinct().ToList();
+        var medicineIds = dtos.Select(d => d.MedicineId).Distinct().ToList();
+
+        // Get stocks for these batches
+        var stocks = await unitOfWork.InventoryStocks.GetStocksForBatchesAsync(medicineIds, batchNumbers);
+
+        foreach (var dto in dtos)
+        {
+            var batchStocks = stocks.Where(s => 
+                s.MedicineId == dto.MedicineId && 
+                s.BatchNumber == dto.CompanyBatchNumber && 
+                s.Quantity > 0).ToList();
+
+            dto.Locations = batchStocks.Select(s => new BatchLocationDto
+            {
+                WarehouseId = s.WarehouseId,
+                WarehouseName = s.Warehouse?.Name ?? "غير معروف",
+                BranchId = s.Warehouse?.BranchId ?? 0,
+                BranchName = s.Warehouse?.Branch?.Name ?? "غير معروف",
+                Quantity = s.Quantity
+            }).ToList();
+        }
     }
 }

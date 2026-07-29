@@ -13,6 +13,8 @@ public class SaleInvoiceDetailDto
     public int BatchId { get; set; }
     public string CompanyBatchNumber { get; set; } = string.Empty;
     public int Quantity { get; set; }
+    public int QuantityInSaleUnit { get; set; }
+    public string SaleUnitName { get; set; } = string.Empty;
     public decimal SalePrice { get; set; }
     public decimal UnitCost { get; set; }
     public decimal TotalLineAmount { get; set; }

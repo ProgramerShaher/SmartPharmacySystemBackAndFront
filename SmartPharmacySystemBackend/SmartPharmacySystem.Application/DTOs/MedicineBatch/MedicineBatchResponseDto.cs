@@ -163,4 +163,9 @@ public class MedicineBatchResponseDto
     /// </summary>
     /// <example>false</example>
     public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// قائمة بالمخازن التي تتواجد فيها هذه الدفعة وكمية الدفعة في كل مخزن.
+    /// </summary>
+    public List<BatchLocationDto> Locations { get; set; } = new();
 }

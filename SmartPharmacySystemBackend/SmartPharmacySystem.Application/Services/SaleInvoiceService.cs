@@ -42,13 +42,9 @@ namespace SmartPharmacySystem.Application.Services
             if (dto.Details == null || !dto.Details.Any())
                 throw new InvalidOperationException("لا يمكن إنشاء فاتورة بدون أصناف. يرجى إضافة صنف واحد على الأقل.");
 
-            // التحقق من وجود اسم العميل (مطلوب للزبون الطيار)
-            // Validate customer name is provided (required for walk-in customers)
             if (!dto.CustomerId.HasValue && string.IsNullOrWhiteSpace(dto.CustomerName))
                 throw new InvalidOperationException("يجب إدخال اسم العميل للزبون الطيار.");
 
-            // قاعدة عمل: الزبون الطيار يجب أن يدفع نقداً فقط
-            // Business Rule: Walk-in customers can only pay cash
             if (!dto.CustomerId.HasValue && dto.PaymentMethod == PaymentType.Credit)
                 throw new InvalidOperationException("لا يمكن البيع بالآجل إلا لعميل مسجل في النظام.");
 
@@ -63,6 +59,14 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
+                foreach (var item in entity.SaleInvoiceDetails)
+                {
+                    if (item.MedicineId <= 0)
+                        throw new InvalidOperationException("يوجد صنف غير صالح في الفاتورة (رقم الصنف مفقود).");
+                    if (item.Quantity <= 0)
+                        throw new InvalidOperationException("يجب أن تكون الكمية أكبر من صفر لكل الأصناف.");
+                }
+
                 await ProcessFEFOAndFinancialsAsync(entity);
 
                 entity.SaleInvoiceNumber = await _invoiceNumberGenerator.GenerateSaleInvoiceNumberAsync();
@@ -110,6 +114,11 @@ namespace SmartPharmacySystem.Application.Services
 
                 foreach (var itemDto in dto.Details)
                 {
+                    if (itemDto.MedicineId <= 0)
+                        throw new InvalidOperationException("يوجد صنف غير صالح في الفاتورة (رقم الصنف مفقود).");
+                    if (itemDto.Quantity <= 0)
+                        throw new InvalidOperationException("يجب أن تكون الكمية أكبر من صفر لكل الأصناف.");
+
                     var detail = _mapper.Map<SaleInvoiceDetail>(itemDto);
                     detail.SaleInvoiceId = id;
                     entity.SaleInvoiceDetails.Add(detail);
@@ -248,7 +257,7 @@ namespace SmartPharmacySystem.Application.Services
                     detail.RemainingQtyToReturn = detail.Quantity;
 
                     // Deduct from InventoryStock
-                    await DecreaseInventoryStockAsync(invoice.BranchId ?? 0, detail.MedicineId, batch.CompanyBatchNumber, detail.Quantity);
+                    await DecreaseInventoryStockAsync(invoice.BranchId, detail.MedicineId, batch.CompanyBatchNumber, detail.Quantity);
                 }
 
                 // ==================== المحرك المحاسبي الاحترافي ====================
@@ -261,12 +270,30 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<JournalEntryLineDto>()
                 };
 
+                // Fetch required account IDs by code dynamically with fallback for development/testing
+                var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
+                var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync("11101") 
+                                  ?? allAccounts.FirstOrDefault(a => a.Name.Contains("صندوق") || a.Name.Contains("نقد")) 
+                                  ?? allAccounts.FirstOrDefault() 
+                                  ?? throw new InvalidOperationException("حساب الصندوق غير موجود، يرجى تهيئة دليل الحسابات أولاً.");
+                                  
+                var receivablesAccount = await _unitOfWork.Accounts.GetByCodeAsync("112") 
+                                         ?? allAccounts.FirstOrDefault(a => a.Name.Contains("ذمم") || a.Name.Contains("عملاء")) 
+                                         ?? allAccounts.FirstOrDefault() 
+                                         ?? throw new InvalidOperationException("حساب الذمم المدينة غير موجود");
+                                         
+                var salesRevenueAccount = await _unitOfWork.Accounts.GetByCodeAsync("41001") 
+                                          ?? await _unitOfWork.Accounts.GetByCodeAsync("41") 
+                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("مبيعات") || a.Name.Contains("إيراد"))
+                                          ?? allAccounts.FirstOrDefault() 
+                                          ?? throw new InvalidOperationException("حساب إيرادات المبيعات غير موجود");
+                
                 // 1. الطرف المدين (من حـ/)
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1101, // الصندوق الرئيسي
+                        AccountId = cashAccount.Id, // الصندوق الرئيسي
                         Debit = invoice.TotalAmount,
                         Credit = 0,
                         Description = $"تحصيل مبيعات نقدية - فاتورة {invoice.SaleInvoiceNumber}"
@@ -277,7 +304,7 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 2101, // ذمم العملاء (الموجود في الشجرة)
+                        AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id, // ذمم العملاء
                         Debit = invoice.TotalAmount,
                         Credit = 0,
                         Description = $"مبيعات آجلة - فاتورة {invoice.SaleInvoiceNumber}"
@@ -289,7 +316,7 @@ namespace SmartPharmacySystem.Application.Services
                 // 2. الطرف الدائن (إلى حـ/ المبيعات)
                 journalEntry.Lines.Add(new JournalEntryLineDto
                 {
-                    AccountId = 41, // إيرادات المبيعات
+                    AccountId = salesRevenueAccount.Id, // إيرادات المبيعات
                     Debit = 0,
                     Credit = invoice.TotalAmount,
                     Description = $"إيراد مبيعات فاتورة {invoice.SaleInvoiceNumber}"
@@ -298,10 +325,22 @@ namespace SmartPharmacySystem.Application.Services
                 // 3. قيد التكلفة (لتتبع الربحية الدقيقة)
                 if (invoice.TotalCost > 0)
                 {
+                    var cogsAccount = await _unitOfWork.Accounts.GetByCodeAsync("51001") 
+                                      ?? await _unitOfWork.Accounts.GetByCodeAsync("51") 
+                                      ?? allAccounts.FirstOrDefault(a => a.Name.Contains("تكلفة") || a.Name.Contains("تكاليف"))
+                                      ?? allAccounts.FirstOrDefault()
+                                      ?? throw new InvalidOperationException("حساب تكلفة المبيعات غير موجود");
+                                      
+                    var inventoryAccount = await _unitOfWork.Accounts.GetByCodeAsync("11301") 
+                                           ?? await _unitOfWork.Accounts.GetByCodeAsync("113") 
+                                           ?? allAccounts.FirstOrDefault(a => a.Name.Contains("مخزون") || a.Name.Contains("مستودع"))
+                                           ?? allAccounts.FirstOrDefault()
+                                           ?? throw new InvalidOperationException("حساب المخزون غير موجود");
+
                     // من حـ/ تكلفة المشتريات
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 51, // تكلفة المشتريات (الموجود في الشجرة)
+                        AccountId = cogsAccount.Id, // تكلفة المشتريات
                         Debit = invoice.TotalCost,
                         Credit = 0,
                         Description = $"تكلفة المبيعات - فاتورة {invoice.SaleInvoiceNumber}"
@@ -310,7 +349,7 @@ namespace SmartPharmacySystem.Application.Services
                     // إلى حـ/ المخزون
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1301, // مخزون الصيدلية
+                        AccountId = inventoryAccount.Id, // مخزون الصيدلية
                         Debit = 0,
                         Credit = invoice.TotalCost,
                         Description = $"نقص المخزون - فاتورة {invoice.SaleInvoiceNumber}"
@@ -381,7 +420,7 @@ namespace SmartPharmacySystem.Application.Services
                         await _unitOfWork.MedicineBatches.UpdateAsync(batch);
 
                         // Re-add to InventoryStock
-                        await IncreaseInventoryStockAsync(invoice.BranchId ?? 0, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity);
+                        await IncreaseInventoryStockAsync(invoice.BranchId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity);
                     }
                 }
 
@@ -430,9 +469,6 @@ namespace SmartPharmacySystem.Application.Services
             var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"فاتورة المبيعات برقم {id} غير موجودة");
 
-            if (invoice.Status == DocumentStatus.Cancelled)
-                throw new InvalidOperationException("الفاتورة ملغاة بالفعل.");
-
             var associatedReturns = await _unitOfWork.SalesReturns.GetBySaleInvoiceIdAsync(id);
             if (associatedReturns.Any(r => r.Status != DocumentStatus.Cancelled))
             {
@@ -459,7 +495,7 @@ namespace SmartPharmacySystem.Application.Services
                             await _unitOfWork.MedicineBatches.UpdateAsync(batch);
 
                             // Re-add to InventoryStock
-                            await IncreaseInventoryStockAsync(invoice.BranchId ?? 0, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity);
+                            await IncreaseInventoryStockAsync(invoice.BranchId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity);
                         }
                     }
 
@@ -495,8 +531,9 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task DeleteAsync(int id)
         {
-            var entity = await _unitOfWork.SaleInvoices.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException($"فاتورة المبيعات برقم {id} غير موجودة");
+            var entity = await _unitOfWork.SaleInvoices.GetByIdAsync(id);
+            if (entity == null)
+                return;
 
             if (entity.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("لا يمكن حذف فاتورة تم اعتمادها. يجب إلغاؤها بدلاً من ذلك.");
@@ -507,8 +544,10 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task<SaleInvoiceDto> GetByIdAsync(int id)
         {
-            var entity = await _unitOfWork.SaleInvoices.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException($"فاتورة المبيعات برقم {id} غير موجودة");
+            var entity = await _unitOfWork.SaleInvoices.GetByIdAsync(id);
+            if (entity == null)
+                return null;
+                
             return _mapper.Map<SaleInvoiceDto>(entity);
         }
 

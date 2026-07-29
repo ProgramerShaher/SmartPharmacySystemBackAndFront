@@ -45,10 +45,15 @@ namespace SmartPharmacySystem.Application.Services
                 var customer = _mapper.Map<Customer>(dto);
                 
                 // 1. إنشاء حساب للعميل في شجرة الحسابات
-                var parentAccount = await _unitOfWork.Accounts.GetByCodeAsync("1201");
-                var lastAccount = (await _unitOfWork.Accounts.GetChildrenAsync(1201)).OrderByDescending(a => a.Code).FirstOrDefault();
+                var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
+                var parentAccount = await _unitOfWork.Accounts.GetByCodeAsync("112")
+                                    ?? allAccounts.FirstOrDefault(a => a.Name.Contains("ذمم") || a.Name.Contains("عملاء"))
+                                    ?? allAccounts.FirstOrDefault()
+                                    ?? throw new InvalidOperationException("حساب العملاء الرئيسي غير موجود في الشجرة (كود 112)");
+
+                var lastAccount = (await _unitOfWork.Accounts.GetChildrenAsync(parentAccount.Id)).OrderByDescending(a => a.Code).FirstOrDefault();
                 
-                string nextCode = "1201001";
+                string nextCode = "1120001";
                 if (lastAccount != null && long.TryParse(lastAccount.Code, out long lastCode))
                 {
                     nextCode = (lastCode + 1).ToString();
@@ -59,7 +64,7 @@ namespace SmartPharmacySystem.Application.Services
                     Code = nextCode,
                     Name = $"عميل: {customer.Name}",
                     Type = Core.Enums.AccountType.Asset,
-                    ParentId = parentAccount?.Id ?? 1201, // fallback to seeded ID
+                    ParentId = parentAccount.Id,
                     IsMainAccount = false,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow

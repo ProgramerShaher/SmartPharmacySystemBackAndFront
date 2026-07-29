@@ -229,6 +229,7 @@ namespace SmartPharmacySystem.Application.Mapping
                     (src.Batch.ExpiryDate - DateTime.Now).Days <= 90 ? "قريب الانتهاء" :
                     "صالح"
                 ))
+                .ForMember(dest => dest.StorageLocation, opt => opt.MapFrom(src => src.StorageLocation))
                 .ReverseMap();
 
             // SaleInvoice Mappings
@@ -307,6 +308,8 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ForMember(dest => dest.TotalLineAmount, opt => opt.MapFrom(src => src.TotalLineAmount))
                 .ForMember(dest => dest.TotalCost, opt => opt.MapFrom(src => src.TotalCost))
                 .ForMember(dest => dest.Profit, opt => opt.MapFrom(src => src.Profit))
+                .ForMember(dest => dest.QuantityInSaleUnit, opt => opt.MapFrom(src => src.QuantityInSaleUnit > 0 ? src.QuantityInSaleUnit : src.Quantity))
+                .ForMember(dest => dest.SaleUnitName, opt => opt.MapFrom(src => src.SaleUnit != null ? src.SaleUnit.Name : "أساسية"))
                 // Parent Invoice Totals (Dynamic)
                 .ForMember(dest => dest.InvoiceTotalAmount, opt => opt.MapFrom(src => src.SaleInvoice != null ? src.SaleInvoice.TotalAmount : 0))
                 .ForMember(dest => dest.InvoiceTotalCost, opt => opt.MapFrom(src => src.SaleInvoice != null ? src.SaleInvoice.TotalCost : 0))

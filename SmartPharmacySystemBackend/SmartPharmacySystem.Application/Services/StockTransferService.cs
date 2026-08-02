@@ -269,7 +269,7 @@ public class StockTransferService : IStockTransferService
                     {
                         destinationStock = await _unitOfWork.InventoryStocks
                             .GetByWarehouseMedicineBatchAsync(
-                                transfer.DestinationWarehouseId,
+                              (int)transfer.DestinationWarehouseId,
                                 item.MedicineId,
                                 item.BatchNumber);
 
@@ -289,7 +289,7 @@ public class StockTransferService : IStockTransferService
                         // التشغيلة غير موجودة في الوجهة — إنشاء سجل جديد
                         destinationStock = new InventoryStock
                         {
-                            WarehouseId = transfer.DestinationWarehouseId,
+                            WarehouseId = (int)transfer.DestinationWarehouseId,
                             MedicineId  = item.MedicineId,
                             BatchNumber = item.BatchNumber,
                             ExpiryDate  = item.ExpiryDate,

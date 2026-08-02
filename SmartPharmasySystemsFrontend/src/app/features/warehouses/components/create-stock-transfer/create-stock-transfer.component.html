@@ -23,27 +23,45 @@
             <div class="st-section-title">
                 <div class="st-section-left">
                     <i class="pi pi-home"></i>
-                    <span>تحديد مستودعات التحويل</span>
+                    <span>تحديد تفاصيل النقل والمستودعات</span>
                 </div>
             </div>
+
+            <div class="grid p-fluid mb-4">
+                <div class="col-12 flex justify-content-center">
+                    <p-selectButton [options]="transferTypeOptions" formControlName="transferType" optionLabel="label"
+                        optionValue="value" styleClass="premium-select-button"></p-selectButton>
+                </div>
+            </div>
+
             <div class="grid p-fluid">
-                <div class="col-12 md:col-6 st-field">
-                    <label class="text-primary">مخزن المصدر (المرسل)</label>
-                    <p-dropdown [options]="sourceWarehouses" formControlName="sourceWarehouseId" optionLabel="name" optionValue="id"
-                        placeholder="اختر مخزن المصدر..." [filter]="true" filterBy="name" appendTo="body"></p-dropdown>
+                <div class="col-12 md:col-4 st-field">
+                    <label class="text-primary">مخزن المصدر (فرعك الحالي)</label>
+                    <p-dropdown [options]="sourceWarehouses" formControlName="sourceWarehouseId" optionLabel="name"
+                        optionValue="id" placeholder="اختر مخزن المصدر..." [filter]="true" filterBy="name"
+                        appendTo="body"></p-dropdown>
                 </div>
-                <div class="col-12 md:col-6 st-field">
+
+                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'external'">
+                    <label class="text-primary">الفرع الوجهة (المستلم)</label>
+                    <p-dropdown [options]="branches" formControlName="destinationBranchId" optionLabel="name"
+                        optionValue="id" placeholder="اختر الفرع المستلم..." [filter]="true" filterBy="name"
+                        appendTo="body"></p-dropdown>
+                </div>
+
+                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'internal'">
                     <label class="text-primary">مخزن الوجهة (المستلم)</label>
-                    <p-dropdown [options]="destinationWarehouses" formControlName="destinationWarehouseId" optionLabel="name" optionValue="id"
-                        placeholder="اختر مخزن الوجهة..." [filter]="true" filterBy="name"
-                        [disabled]="!transferForm.get('sourceWarehouseId')?.value" appendTo="body"></p-dropdown>
+                    <p-dropdown [options]="destinationWarehouses" formControlName="destinationWarehouseId"
+                        optionLabel="name" optionValue="id" placeholder="اختر مخزن الوجهة..." [filter]="true"
+                        filterBy="name" [disabled]="destinationWarehouses.length === 0" appendTo="body"></p-dropdown>
                 </div>
+
                 <div class="col-12 st-field mt-2">
                     <label>ملاحظات أو مبررات طلب التحويل</label>
                     <input pInputText formControlName="notes" placeholder="ملاحظات توضيحية لمدير المخازن..." />
                 </div>
             </div>
-        </div>
+        </div> <!-- Close st-form-panel mt-3 -->
 
         <!-- ===== Items Table Panel ===== -->
         <div class="st-form-panel p-0 overflow-hidden" *ngIf="transferForm.get('sourceWarehouseId')?.value">
@@ -53,7 +71,7 @@
                         <i class="pi pi-list"></i>
                         <span>الأدوية والكميات المطلوبة</span>
                     </div>
-                    <button pButton label="إضافة دواء للتحويل" icon="pi pi-plus" class="p-button-outlined p-button-sm" 
+                    <button pButton label="إضافة دواء للتحويل" icon="pi pi-plus" class="p-button-outlined p-button-sm"
                         (click)="addItem()"></button>
                 </div>
             </div>
@@ -71,7 +89,7 @@
                     <ng-template pTemplate="body" let-itemGroup let-i="rowIndex">
                         <tr [formGroupName]="i">
                             <td>
-                                <p-dropdown [options]="availableMedicines" formControlName="selectedStockItem" 
+                                <p-dropdown [options]="availableMedicines" formControlName="selectedStockItem"
                                     placeholder="ابحث واختر الصنف من مخزن المصدر..." [filter]="true" filterBy="label"
                                     styleClass="w-full" appendTo="body"></p-dropdown>
                             </td>
@@ -79,12 +97,13 @@
                                 {{ itemGroup.get('availableQuantity')?.value || 0 }}
                             </td>
                             <td class="text-center">
-                                <p-inputNumber formControlName="quantity" [min]="1" 
-                                    [max]="itemGroup.get('availableQuantity')?.value || 1" 
+                                <p-inputNumber formControlName="quantity" [min]="1"
+                                    [max]="itemGroup.get('availableQuantity')?.value || 1"
                                     class="w-full text-center"></p-inputNumber>
                             </td>
                             <td class="text-center">
-                                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text"
+                                <button pButton icon="pi pi-trash"
+                                    class="p-button-rounded p-button-danger p-button-text"
                                     (click)="removeItem(i)"></button>
                             </td>
                         </tr>

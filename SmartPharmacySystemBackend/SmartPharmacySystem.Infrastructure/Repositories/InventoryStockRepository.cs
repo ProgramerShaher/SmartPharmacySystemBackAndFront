@@ -50,14 +50,20 @@ public class InventoryStockRepository : IInventoryStockRepository
 
     public async Task<InventoryStock?> GetByWarehouseMedicineBatchAsync(int warehouseId, int medicineId, string batchNumber)
     {
+        var normalizedBatchNumber = batchNumber.Trim();
+
         return await _context.InventoryStocks
             .AsNoTracking()
-            .Include(s => s.Warehouse)
-            .Include(s => s.Medicine)
-            .FirstOrDefaultAsync(s => s.WarehouseId == warehouseId
+            // Removed .Include(s => s.Warehouse) and .Include(s => s.Medicine) 
+            // because this method is primarily used to fetch stock for updates,
+            // and including navigation properties with AsNoTracking causes tracking conflicts when calling .Update() later.
+            .Where(s => s.WarehouseId == warehouseId
                 && s.MedicineId == medicineId
-                && s.BatchNumber == batchNumber
-                && !s.IsDeleted);
+                && s.BatchNumber.Trim() == normalizedBatchNumber
+                && !s.IsDeleted
+                && s.Quantity > 0)
+            .OrderByDescending(s => s.Quantity)
+            .FirstOrDefaultAsync();
     }
 
     public async Task<IEnumerable<InventoryStock>> GetExpiringSoonAsync(int daysThreshold)

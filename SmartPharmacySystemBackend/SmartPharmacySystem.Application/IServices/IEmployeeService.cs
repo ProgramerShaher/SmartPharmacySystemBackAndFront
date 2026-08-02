@@ -16,4 +16,5 @@ public interface IEmployeeService
     Task<bool> CodeExistsAsync(string employeeCode, int? excludeId = null);
     Task<bool> NationalIdExistsAsync(string nationalId, int? excludeId = null);
     Task<int> GetEmployeeCountAsync(int branchId);
+    Task<BranchEmployeesDashboardDto> GetBranchDashboardAsync(int branchId);
 }

@@ -1,0 +1,226 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+            <div>
+                <h1 class="m-0 text-3xl font-semibold">تحويلات الفروع الخارجية</h1>
+                <p class="text-500 mt-1 mb-0">متابعة البضائع الصادرة والواردة وطلبات السحب بين الفروع</p>
+            </div>
+            <div class="mt-3 md:mt-0">
+                <button pButton icon="pi pi-plus" label="إنشاء تحويل أو طلب"
+                    class="p-button-primary p-button-rounded shadow-2"
+                    routerLink="/warehouses/transfers/external/create"></button>
+            </div>
+        </div>
+
+        <p-card styleClass="shadow-2 border-round-xl p-0">
+            <p-tabView>
+                <p-tabPanel header="صادرة من فرعنا" leftIcon="pi pi-upload">
+                    <p-table [value]="outgoingTransfers" [paginator]="true" [rows]="10" [loading]="loading"
+                        [rowHover]="true" styleClass="p-datatable-sm p-datatable-gridlines mt-3"
+                        [globalFilterFields]="['transferCode','destinationBranchName','requestedByName']"
+                        responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr class="bg-gray-50">
+                                <th pSortableColumn="transferCode">رقم الطلب <p-sortIcon field="transferCode"></p-sortIcon></th>
+                                <th>المصدر</th>
+                                <th>الفرع الطالب/الوجهة</th>
+                                <th class="text-center">النوع</th>
+                                <th pSortableColumn="requestedAt" class="text-center">تاريخ الطلب <p-sortIcon field="requestedAt"></p-sortIcon></th>
+                                <th class="text-center">الحالة</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </ng-template>
+
+                        <ng-template pTemplate="body" let-transfer>
+                            <tr>
+                                <td class="font-semibold text-primary">{{ transfer.transferCode }}</td>
+                                <td class="font-bold">{{ transfer.sourceWarehouseName }}</td>
+                                <td>
+                                    <div class="font-bold text-orange-600">{{ transfer.destinationBranchName || 'فرع آخر' }}</div>
+                                    <small class="text-500" *ngIf="transfer.requestedByName">بواسطة: {{ transfer.requestedByName }}</small>
+                                </td>
+                                <td class="text-center">
+                                    <p-tag [value]="getTransferDirectionLabel(transfer)" severity="info" [rounded]="true"></p-tag>
+                                </td>
+                                <td class="text-center text-500 text-sm">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                                <td class="text-center">
+                                    <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex justify-content-center gap-2">
+                                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-secondary p-button-text"
+                                            pTooltip="التفاصيل" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
+                                        <button *ngIf="isStatus(transfer.status, 'Requested')" pButton icon="pi pi-check"
+                                            class="p-button-rounded p-button-success p-button-text"
+                                            pTooltip="اعتماد الطلب" tooltipPosition="top" (click)="approveTransfer(transfer)"></button>
+                                        <button *ngIf="isStatus(transfer.status, 'Approved')" pButton icon="pi pi-truck"
+                                            class="p-button-rounded p-button-warning p-button-text"
+                                            pTooltip="شحن البضاعة" tooltipPosition="top" (click)="dispatchTransfer(transfer)"></button>
+                                        <button *ngIf="isStatus(transfer.status, 'Requested')" pButton icon="pi pi-trash"
+                                            class="p-button-rounded p-button-danger p-button-text"
+                                            pTooltip="إلغاء الطلب" tooltipPosition="top" (click)="deleteTransfer(transfer)"></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="empty">
+                            <tr>
+                                <td colspan="7" class="text-center p-5">
+                                    <i class="pi pi-folder-open text-4xl text-300 mb-3 block"></i>
+                                    <span class="text-500">لا توجد تحويلات أو طلبات صادرة من فرعك</span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-tabPanel>
+
+                <p-tabPanel header="واردة لفرعنا" leftIcon="pi pi-download">
+                    <p-table [value]="incomingTransfers" [paginator]="true" [rows]="10" [loading]="loading"
+                        [rowHover]="true" styleClass="p-datatable-sm p-datatable-gridlines mt-3"
+                        [globalFilterFields]="['transferCode','sourceBranchName','sourceWarehouseName']"
+                        responsiveLayout="scroll">
+                        <ng-template pTemplate="header">
+                            <tr class="bg-gray-50">
+                                <th pSortableColumn="transferCode">رقم الطلب <p-sortIcon field="transferCode"></p-sortIcon></th>
+                                <th>من فرع</th>
+                                <th>مستودع الاستلام</th>
+                                <th pSortableColumn="requestedAt" class="text-center">تاريخ الطلب <p-sortIcon field="requestedAt"></p-sortIcon></th>
+                                <th class="text-center">الحالة</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </ng-template>
+
+                        <ng-template pTemplate="body" let-transfer>
+                            <tr>
+                                <td class="font-semibold text-primary">{{ transfer.transferCode }}</td>
+                                <td class="font-bold text-blue-600">{{ transfer.sourceBranchName || 'فرع آخر' }}</td>
+                                <td class="font-bold">{{ transfer.destinationWarehouseName || 'بانتظار الاستلام' }}</td>
+                                <td class="text-center text-500 text-sm">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                                <td class="text-center">
+                                    <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
+                                </td>
+                                <td class="text-center">
+                                    <div class="flex justify-content-center gap-2">
+                                        <button pButton icon="pi pi-eye" class="p-button-rounded p-button-secondary p-button-text"
+                                            pTooltip="التفاصيل" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
+                                        <button *ngIf="isStatus(transfer.status, 'Dispatched')" pButton icon="pi pi-download"
+                                            class="p-button-rounded p-button-primary p-button-text"
+                                            pTooltip="تأكيد الاستلام والإيداع" tooltipPosition="top" (click)="openReceiveDialog(transfer)"></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="empty">
+                            <tr>
+                                <td colspan="6" class="text-center p-5">
+                                    <i class="pi pi-inbox text-4xl text-300 mb-3 block"></i>
+                                    <span class="text-500">لا توجد تحويلات واردة لفرعك</span>
+                                </td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-tabPanel>
+            </p-tabView>
+        </p-card>
+    </div>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+<p-dialog [(visible)]="displayReceiveDialog" [style]="{width: 'min(720px, 95vw)'}" header="إجراء استلام الشحنة" [modal]="true">
+    <ng-template pTemplate="content">
+        <div class="mb-4">
+            <p class="text-500">اختر مستودع الإيداع وسجل الكميات المستلمة فعليًا لكل صنف.</p>
+            <div class="field mt-3">
+                <label for="receiveWarehouse" class="font-semibold block mb-2">مستودع الإيداع</label>
+                <p-dropdown id="receiveWarehouse" [options]="warehouses" [(ngModel)]="selectedReceiveWarehouseId"
+                    optionLabel="name" optionValue="id" placeholder="اختر مستودعًا لاستلام البضاعة"
+                    styleClass="w-full"></p-dropdown>
+            </div>
+
+            <p-table [value]="receiveItems" styleClass="p-datatable-sm p-datatable-gridlines mt-4" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>الصنف</th>
+                        <th>رقم التشغيلة</th>
+                        <th class="text-center">المشحون</th>
+                        <th class="text-center">المستلم فعليًا</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr>
+                        <td class="font-semibold">{{ item.medicineName }}</td>
+                        <td>{{ item.batchNumber }}</td>
+                        <td class="text-center">{{ item.quantityDispatched }}</td>
+                        <td class="text-center">
+                            <p-inputNumber [(ngModel)]="item.quantityReceived" [min]="0" [showButtons]="true"
+                                mode="decimal" styleClass="w-full"></p-inputNumber>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <button pButton label="إلغاء" icon="pi pi-times" class="p-button-text" (click)="displayReceiveDialog=false"></button>
+        <button pButton label="تأكيد الاستلام النهائي" icon="pi pi-check" class="p-button-primary"
+            (click)="confirmReceive()" [loading]="processingAction"></button>
+    </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="displayDetailDialog" [style]="{width: 'min(900px, 95vw)'}" header="تفاصيل التحويل الخارجي" [modal]="true" [draggable]="false">
+    <ng-template pTemplate="content">
+        <div class="mb-4" *ngIf="selectedTransfer">
+            <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between gap-3 mb-4 border-bottom-1 surface-border pb-3">
+                <div>
+                    <div class="text-2xl font-bold text-primary">{{ selectedTransfer.transferCode }}</div>
+                    <small class="text-500">{{ getTransferDirectionLabel(selectedTransfer) }}</small>
+                </div>
+                <p-tag [severity]="getStatusSeverity(selectedTransfer.status)" [value]="getStatusLabel(selectedTransfer.status)"></p-tag>
+            </div>
+
+            <div class="grid mb-4 bg-gray-50 p-3 border-round">
+                <div class="col-12 md:col-6 mb-2">
+                    <span class="font-bold text-500 text-sm block mb-1">المستودع المصدر</span>
+                    <span class="font-bold text-lg">{{ selectedTransfer.sourceWarehouseName }}</span>
+                    <small class="text-500 block">{{ selectedTransfer.sourceBranchName }}</small>
+                </div>
+                <div class="col-12 md:col-6 mb-2">
+                    <span class="font-bold text-500 text-sm block mb-1">الفرع المستقبل</span>
+                    <span class="font-bold text-lg text-orange-600">{{ selectedTransfer.destinationBranchName }}</span>
+                    <div class="mt-1 text-500 text-sm" *ngIf="selectedTransfer.destinationWarehouseName">
+                        تم الإيداع في مستودع: {{ selectedTransfer.destinationWarehouseName }}
+                    </div>
+                </div>
+            </div>
+
+            <p-table [value]="selectedTransfer.items" styleClass="p-datatable-sm p-datatable-gridlines" [rowHover]="true" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>الصنف</th>
+                        <th>رقم التشغيلة</th>
+                        <th class="text-center">المطلوب</th>
+                        <th class="text-center">المشحون</th>
+                        <th class="text-center">المستلم</th>
+                        <th class="text-center">الفارق</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr>
+                        <td class="font-semibold">{{ item.medicineName }}</td>
+                        <td>{{ item.batchNumber }}</td>
+                        <td class="text-center">{{ item.quantityRequested }}</td>
+                        <td class="text-center">{{ item.quantityDispatched }}</td>
+                        <td class="text-center">{{ item.quantityReceived ?? '-' }}</td>
+                        <td class="text-center">
+                            <span class="font-bold px-2 py-1 border-round" [ngClass]="getVarianceClass(item)">
+                                {{ item.quantityReceived === null || item.quantityReceived === undefined ? '-' : getVariance(item) }}
+                            </span>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </ng-template>
+</p-dialog>

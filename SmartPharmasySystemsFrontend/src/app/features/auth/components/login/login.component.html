@@ -58,4 +58,25 @@
             <a routerLink="/auth/register">إنشاء حساب جديد</a>
         </div>
     </section>
+
+    <!-- Branch Selection Dialog for Admin -->
+    <p-dialog header="اختيار فرع الدخول" [(visible)]="showBranchDialog" [modal]="true" [style]="{width: '400px'}"
+        [closable]="false" [draggable]="false">
+        <div class="flex flex-column gap-3 py-3">
+            <p class="text-color-secondary">يرجى تحديد الفرع الذي ترغب في تسجيل الدخول إليه (كصلاحية مدير):</p>
+
+            <div class="field">
+                <p-dropdown [options]="activeBranches" [(ngModel)]="selectedBranchId" optionLabel="name" optionValue="id"
+                    styleClass="w-full" placeholder="اختر الفرع..." [loading]="!activeBranches.length"
+                    appendTo="body"></p-dropdown>
+            </div>
+        </div>
+        
+        <ng-template pTemplate="footer">
+            <div class="flex justify-content-between w-full">
+                <p-button label="إلغاء وتراجع" icon="pi pi-times" (click)="cancelBranchSelection()" styleClass="p-button-text p-button-danger"></p-button>
+                <p-button label="دخول للفرع" icon="pi pi-check" (click)="confirmBranchLogin()" [disabled]="!selectedBranchId" [loading]="loadingBranch"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
 </div>

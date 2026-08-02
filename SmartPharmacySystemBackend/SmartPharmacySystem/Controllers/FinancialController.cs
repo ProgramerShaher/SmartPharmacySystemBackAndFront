@@ -7,7 +7,7 @@ using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class FinancialController : ControllerBase

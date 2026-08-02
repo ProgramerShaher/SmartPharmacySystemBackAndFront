@@ -10,8 +10,13 @@ namespace SmartPharmacySystem.Controllers;
 public class EmployeesController : ControllerBase
 {
     private readonly IEmployeeService _employeeService;
-    public EmployeesController(IEmployeeService employeeService) => _employeeService = employeeService;
-
+    private readonly ICurrentUserService _currentUserService;
+    
+    public EmployeesController(IEmployeeService employeeService, ICurrentUserService currentUserService)
+    {
+        _employeeService = employeeService;
+        _currentUserService = currentUserService;
+    }
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -52,6 +57,15 @@ public class EmployeesController : ControllerBase
     {
         var count = await _employeeService.GetEmployeeCountAsync(branchId);
         return Ok(ApiResponse<int>.Succeeded(count, "تم جلب عدد الموظفين"));
+    }
+
+    [HttpGet("dashboard/{branchId?}")]
+    public async Task<IActionResult> GetBranchDashboard(int? branchId)
+    {
+        // If not provided, use the CurrentBranchId from the token
+        var finalBranchId = branchId ?? _currentUserService.GetCurrentBranchId() ?? 1;
+        var dashboard = await _employeeService.GetBranchDashboardAsync(finalBranchId);
+        return Ok(ApiResponse<BranchEmployeesDashboardDto>.Succeeded(dashboard, "تم جلب بيانات لوحة تحكم الفرع"));
     }
 
     [HttpGet("code-exists")]

@@ -18,6 +18,7 @@ public class StockTransferRepository : IStockTransferRepository
             .AsNoTracking()
             .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
             .Include(t => t.DestinationWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationBranch)
             .Include(t => t.Items).ThenInclude(i => i.Medicine)
             .Include(t => t.RequestedByUser)
             .Include(t => t.ApprovedByUser)
@@ -32,11 +33,12 @@ public class StockTransferRepository : IStockTransferRepository
             .AsNoTracking()
             .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
             .Include(t => t.DestinationWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationBranch)
             .Include(t => t.Items).ThenInclude(i => i.Medicine)
             .FirstOrDefaultAsync(t => t.TransferCode == transferCode && !t.IsDeleted);
     }
 
-    public async Task<IEnumerable<StockTransfer>> GetAllAsync(int? sourceWarehouseId = null, int? destinationWarehouseId = null, TransferStatus? status = null, DateTime? dateFrom = null, DateTime? dateTo = null)
+    public async Task<IEnumerable<StockTransfer>> GetAllAsync(int? sourceWarehouseId = null, int? destinationWarehouseId = null, TransferStatus? status = null, DateTime? dateFrom = null, DateTime? dateTo = null, TransferType? transferType = null)
     {
         var query = _context.StockTransfers.AsNoTracking().Where(t => !t.IsDeleted).AsQueryable();
 
@@ -55,9 +57,13 @@ public class StockTransferRepository : IStockTransferRepository
         if (dateTo.HasValue)
             query = query.Where(t => t.CreatedAt <= dateTo.Value);
 
+        if (transferType.HasValue)
+            query = query.Where(t => t.TransferType == transferType.Value);
+
         return await query
-            .Include(t => t.SourceWarehouse)
-            .Include(t => t.DestinationWarehouse)
+            .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationBranch)
             .Include(t => t.Items)
             .Include(t => t.RequestedByUser)
             .OrderByDescending(t => t.Id)
@@ -68,8 +74,9 @@ public class StockTransferRepository : IStockTransferRepository
     {
         return await _context.StockTransfers
             .AsNoTracking()
-            .Include(t => t.SourceWarehouse)
-            .Include(t => t.DestinationWarehouse)
+            .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationBranch)
             .Include(t => t.Items)
             .Where(t => t.Status == status && !t.IsDeleted)
             .OrderByDescending(t => t.CreatedAt)
@@ -82,6 +89,7 @@ public class StockTransferRepository : IStockTransferRepository
             .AsNoTracking()
             .Include(t => t.SourceWarehouse)
             .Include(t => t.DestinationWarehouse)
+            .Include(t => t.DestinationBranch)
             .Where(t => (t.Status == TransferStatus.AutoRequested || t.Status == TransferStatus.Requested) && !t.IsDeleted)
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
@@ -91,7 +99,7 @@ public class StockTransferRepository : IStockTransferRepository
     {
         return await _context.StockTransfers
             .AsNoTracking()
-            .Include(t => t.SourceWarehouse)
+            .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
             .Include(t => t.Items)
             .Where(t => t.Status == TransferStatus.Approved && !t.IsDeleted)
             .OrderBy(t => t.CreatedAt)
@@ -102,7 +110,7 @@ public class StockTransferRepository : IStockTransferRepository
     {
         return await _context.StockTransfers
             .AsNoTracking()
-            .Include(t => t.SourceWarehouse)
+            .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
             .Include(t => t.Items)
             .Where(t => t.Status == TransferStatus.Dispatched && t.DestinationWarehouseId == destinationWarehouseId && !t.IsDeleted)
             .OrderBy(t => t.DispatchedAt)

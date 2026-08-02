@@ -5,13 +5,11 @@ using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Entities;
 
-public class CustomerLedger : BaseEntity
+public class CustomerLedger : BaseMultiBranchEntity
 {
     [Required]
     public int CustomerId { get; set; }
 
-    [Required]
-    public int BranchId { get; set; }
 
     [Required]
     public DateTime TransactionDate { get; set; }
@@ -32,5 +30,4 @@ public class CustomerLedger : BaseEntity
 
     // Navigation properties
     public virtual Customer Customer { get; set; } = null!;
-    public virtual Branch Branch { get; set; } = null!;
 }

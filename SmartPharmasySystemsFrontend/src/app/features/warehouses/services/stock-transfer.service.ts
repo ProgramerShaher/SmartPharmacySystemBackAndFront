@@ -10,8 +10,12 @@ export interface StockTransferDto {
     transferCode: string;
     sourceWarehouseId: number;
     sourceWarehouseName: string;
-    destinationWarehouseId: number;
-    destinationWarehouseName: string;
+    sourceBranchId?: number;
+    sourceBranchName?: string;
+    destinationWarehouseId?: number;
+    destinationWarehouseName?: string;
+    destinationBranchId?: number;
+    destinationBranchName?: string;
     status: string | number;
     statusName: string;
     notes?: string;
@@ -45,7 +49,8 @@ export interface StockTransferItemDto {
 
 export interface CreateStockTransferDto {
     sourceWarehouseId: number;
-    destinationWarehouseId: number;
+    destinationWarehouseId?: number;
+    destinationBranchId?: number;
     notes?: string;
     items: CreateStockTransferItemDto[];
 }
@@ -59,6 +64,8 @@ export interface CreateStockTransferItemDto {
 
 export interface ReceiveStockTransferDto {
     items: ReceiveStockTransferItemDto[];
+    notes?: string;
+    destinationWarehouseId: number;
 }
 
 export interface ReceiveStockTransferItemDto {
@@ -79,6 +86,7 @@ export class StockTransferService {
         status?: number;
         from?: string;
         to?: string;
+        transferType?: number;
     }): Observable<StockTransferDto[]> {
         let params = new HttpParams();
         if (paramsObj?.sourceWarehouseId) params = params.set('sourceWarehouseId', paramsObj.sourceWarehouseId.toString());
@@ -86,6 +94,7 @@ export class StockTransferService {
         if (paramsObj?.status !== undefined) params = params.set('status', paramsObj.status.toString());
         if (paramsObj?.from) params = params.set('from', paramsObj.from);
         if (paramsObj?.to) params = params.set('to', paramsObj.to);
+        if (paramsObj?.transferType !== undefined) params = params.set('transferType', paramsObj.transferType.toString());
 
         return this.http.get<ApiResponse<StockTransferDto[]>>(this.apiUrl, { params })
             .pipe(map(r => r.data || []));

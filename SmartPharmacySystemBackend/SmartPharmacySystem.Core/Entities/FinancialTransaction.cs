@@ -6,7 +6,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// Represents a financial transaction (Income or Expense) affecting the pharmacy balance.
 /// </summary>
-public class FinancialTransaction : BaseEntity
+public class FinancialTransaction : BaseMultiBranchEntity
 {
 
     /// <summary>

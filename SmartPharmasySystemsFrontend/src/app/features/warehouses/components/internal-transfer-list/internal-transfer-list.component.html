@@ -1,0 +1,185 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+            <div>
+                <h1 class="m-0 text-3xl font-semibold">التحويلات الداخلية</h1>
+                <p class="text-500 mt-1 mb-0">إدارة التحويلات المخزنية بين مستودعات فرعك الحالي</p>
+            </div>
+            <div class="mt-3 md:mt-0">
+                <button pButton icon="pi pi-plus" label="إنشاء تحويل داخلي" class="p-button-primary p-button-rounded shadow-2"
+                    routerLink="/warehouses/transfers/internal/create"></button>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid mb-4">
+            <div class="col-12 md:col-3">
+                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-yellow-500 bg-white">
+                    <div class="flex justify-content-between align-items-center">
+                        <div>
+                            <span class="block text-500 font-medium mb-2">طلبات معلقة</span>
+                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Requested') }}</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-yellow-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-clock text-yellow-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+            <div class="col-12 md:col-3">
+                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-blue-500 bg-white">
+                    <div class="flex justify-content-between align-items-center">
+                        <div>
+                            <span class="block text-500 font-medium mb-2">طلبات معتمدة</span>
+                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Approved') }}</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-check text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+            <div class="col-12 md:col-3">
+                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-orange-500 bg-white">
+                    <div class="flex justify-content-between align-items-center">
+                        <div>
+                            <span class="block text-500 font-medium mb-2">قيد الشحن (نقل)</span>
+                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Dispatched') }}</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-truck text-orange-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+            <div class="col-12 md:col-3">
+                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-green-500 bg-white">
+                    <div class="flex justify-content-between align-items-center">
+                        <div>
+                            <span class="block text-500 font-medium mb-2">مستلمة بالكامل</span>
+                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Received') }}</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width:2.5rem;height:2.5rem">
+                            <i class="pi pi-check-circle text-green-500 text-xl"></i>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+
+        <p-card styleClass="shadow-2 border-round-xl">
+            <p-table [value]="transfers" [paginator]="true" [rows]="10" [loading]="loading"
+                [rowHover]="true" styleClass="p-datatable-sm p-datatable-gridlines"
+                responsiveLayout="scroll"
+                [globalFilterFields]="['transferCode','sourceWarehouseName','destinationWarehouseName']">
+                
+                <ng-template pTemplate="header">
+                    <tr class="bg-gray-50">
+                        <th pSortableColumn="transferCode">رقم الطلب <p-sortIcon field="transferCode"></p-sortIcon></th>
+                        <th>من مستودع</th>
+                        <th>إلى مستودع</th>
+                        <th pSortableColumn="requestedAt" class="text-center">تاريخ الطلب <p-sortIcon field="requestedAt"></p-sortIcon></th>
+                        <th class="text-center">الحالة</th>
+                        <th class="text-center">المسؤول</th>
+                        <th class="text-center">الإجراءات</th>
+                    </tr>
+                </ng-template>
+                
+                <ng-template pTemplate="body" let-transfer>
+                    <tr>
+                        <td class="font-semibold text-primary">{{ transfer.transferCode }}</td>
+                        <td class="font-bold">{{ transfer.sourceWarehouseName }}</td>
+                        <td class="font-bold">{{ transfer.destinationWarehouseName }}</td>
+                        <td class="text-center text-500 text-sm">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                        <td class="text-center">
+                            <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
+                        </td>
+                        <td class="text-center">{{ transfer.requestedByName }}</td>
+                        <td class="text-center flex justify-content-center gap-2">
+                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-secondary p-button-text" 
+                                pTooltip="تفاصيل المستند" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
+                            
+                            <button *ngIf="transfer.status === 'Requested'" pButton icon="pi pi-check" 
+                                class="p-button-rounded p-button-success p-button-text" 
+                                pTooltip="اعتماد الطلب" tooltipPosition="top" (click)="approveTransfer(transfer)"></button>
+                            
+                            <button *ngIf="transfer.status === 'Approved'" pButton icon="pi pi-truck" 
+                                class="p-button-rounded p-button-warning p-button-text" 
+                                pTooltip="بدء عملية النقل" tooltipPosition="top" (click)="dispatchTransfer(transfer)"></button>
+                                
+                            <button *ngIf="transfer.status === 'Dispatched'" pButton icon="pi pi-download" 
+                                class="p-button-rounded p-button-primary p-button-text" 
+                                pTooltip="تأكيد الاستلام" tooltipPosition="top" (click)="receiveTransfer(transfer)"></button>
+                                
+                            <button *ngIf="transfer.status === 'Requested'" pButton icon="pi pi-trash" 
+                                class="p-button-rounded p-button-danger p-button-text" 
+                                pTooltip="إلغاء الطلب" tooltipPosition="top" (click)="deleteTransfer(transfer)"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+                
+                <ng-template pTemplate="empty">
+                    <tr>
+                        <td colspan="7" class="text-center p-5">
+                            <i class="pi pi-inbox text-5xl text-300 mb-3 block"></i>
+                            <span class="text-500 font-medium">لا توجد طلبات تحويل داخلي</span>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+</div>
+
+<p-toast></p-toast>
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+<!-- Detail Dialog -->
+<p-dialog [(visible)]="displayDetailDialog" [style]="{width: '70vw'}" header="تفاصيل التحويل الداخلي" [modal]="true" [draggable]="false">
+    <ng-template pTemplate="content">
+        <div class="mb-4" *ngIf="selectedTransfer">
+            <div class="flex align-items-center justify-content-between mb-4 border-bottom-1 surface-border pb-3">
+                <div class="text-2xl font-bold text-primary">{{ selectedTransfer.transferCode }}</div>
+                <p-tag [severity]="getStatusSeverity(selectedTransfer.status)" [value]="getStatusLabel(selectedTransfer.status)"></p-tag>
+            </div>
+            
+            <div class="grid mb-4 bg-gray-50 p-3 border-round">
+                <div class="col-12 md:col-6 mb-2">
+                    <span class="font-bold text-500 text-sm block mb-1">المستودع المصدر</span>
+                    <span class="font-bold text-lg">{{ selectedTransfer.sourceWarehouseName }}</span>
+                </div>
+                <div class="col-12 md:col-6 mb-2">
+                    <span class="font-bold text-500 text-sm block mb-1">المستودع الوجهة</span>
+                    <span class="font-bold text-lg">{{ selectedTransfer.destinationWarehouseName }}</span>
+                </div>
+            </div>
+
+            <p-table [value]="selectedTransfer.items" styleClass="p-datatable-sm" [rowHover]="true">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>الصنف</th>
+                        <th>رقم التشغيلة</th>
+                        <th class="text-center">الكمية المطلوبة</th>
+                        <th class="text-center">الكمية المشحونة</th>
+                        <th class="text-center">الكمية المستلمة</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item>
+                    <tr>
+                        <td class="font-semibold">{{ item.medicineName }}</td>
+                        <td>{{ item.batchNumber }}</td>
+                        <td class="text-center">
+                            <span class="bg-blue-50 text-blue-700 font-bold px-2 py-1 border-round">{{ item.quantityRequested }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="bg-yellow-50 text-yellow-700 font-bold px-2 py-1 border-round">{{ item.quantityDispatched || '-' }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="bg-green-50 text-green-700 font-bold px-2 py-1 border-round">{{ item.quantityReceived || '-' }}</span>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </ng-template>
+</p-dialog>

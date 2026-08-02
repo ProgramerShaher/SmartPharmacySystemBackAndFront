@@ -102,4 +102,38 @@ public class EmployeeService : IEmployeeService
     {
         return await _unitOfWork.Employees.GetEmployeeCountAsync(branchId);
     }
+
+    public async Task<BranchEmployeesDashboardDto> GetBranchDashboardAsync(int branchId)
+    {
+        var branch = await _unitOfWork.Branches.GetByIdAsync(branchId) 
+                     ?? throw new KeyNotFoundException("الفرع غير موجود");
+                     
+        var employees = await _unitOfWork.Employees.GetByBranchIdAsync(branchId);
+        
+        var dashboard = new BranchEmployeesDashboardDto
+        {
+            BranchId = branchId,
+            BranchName = branch.Name,
+            TotalEmployees = employees.Count(),
+            TotalBranchSalaries = employees.Sum(e => e.BasicSalary),
+            Departments = new List<DepartmentEmployeesDto>()
+        };
+
+        var groupedByDept = employees.GroupBy(e => new { e.DepartmentId, e.Department?.Name });
+        
+        foreach (var group in groupedByDept)
+        {
+            var deptDto = new DepartmentEmployeesDto
+            {
+                DepartmentId = group.Key.DepartmentId,
+                DepartmentName = group.Key.Name ?? $"قسم رقم {group.Key.DepartmentId}",
+                EmployeeCount = group.Count(),
+                TotalBasicSalary = group.Sum(e => e.BasicSalary),
+                Employees = _mapper.Map<List<EmployeeDto>>(group.ToList())
+            };
+            dashboard.Departments.Add(deptDto);
+        }
+
+        return dashboard;
+    }
 }

@@ -17,4 +17,10 @@ public class LoginRequestDto
     /// Password
     /// </summary>
     public string Password { get; set; } = string.Empty;
+
+    /// <summary>
+    /// معرف الفرع (اختياري) لتسجيل الدخول كفرع معين
+    /// Optional Branch ID to login as a specific branch
+    /// </summary>
+    public int? BranchId { get; set; }
 }

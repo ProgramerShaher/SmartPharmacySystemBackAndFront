@@ -12,4 +12,7 @@ public class ReceiveStockTransferDto
 
     [MaxLength(500)]
     public string? Notes { get; set; }
+
+    [Required(ErrorMessage = "يرجى تحديد المخزن الذي سيتم استلام البضاعة فيه")]
+    public int? DestinationWarehouseId { get; set; }
 }

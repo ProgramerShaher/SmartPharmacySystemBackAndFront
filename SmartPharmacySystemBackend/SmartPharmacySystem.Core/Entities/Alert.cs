@@ -21,6 +21,9 @@ public class Alert(
 
     public bool IsRead { get; set; } = false;
 
+    public int? BranchId { get; set; }
+    public virtual Branch? Branch { get; set; }
+
     // Navigation property
     public MedicineBatch Batch { get; set; } = null!;
 

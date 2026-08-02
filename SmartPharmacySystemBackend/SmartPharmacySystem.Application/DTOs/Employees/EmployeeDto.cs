@@ -1,8 +1,7 @@
+using System;
+
 namespace SmartPharmacySystem.Application.DTOs.Employees;
 
-/// <summary>
-/// كائن نقل البيانات لعرض معلومات موظف.
-/// </summary>
 public class EmployeeDto
 {
     public int Id { get; set; }
@@ -18,7 +17,7 @@ public class EmployeeDto
     public DateTime? TerminationDate { get; set; }
     public decimal BasicSalary { get; set; }
     public bool IsActive { get; set; }
+    public string Shift { get; set; } = "صباحي"; // Temporary shift field based on user feedback request
     public decimal TotalLoans { get; set; }
     public decimal RemainingLoans { get; set; }
-    public DateTime CreatedAt { get; set; }
 }

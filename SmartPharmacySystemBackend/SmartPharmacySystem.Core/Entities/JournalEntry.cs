@@ -8,7 +8,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// يمثل رأس القيد المحاسبي (سند قبض، صرف، أو قيد يدوي)
 /// </summary>
-public class JournalEntry : BaseEntity
+public class JournalEntry : BaseMultiBranchEntity
 {
     /// <summary>
     /// رقم السند الفريد (توليد آلي)

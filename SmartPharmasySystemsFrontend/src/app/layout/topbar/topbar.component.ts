@@ -78,7 +78,7 @@ export class TopbarComponent {
         if (user) {
             this.userName = user.fullName || user.username;
             this.userRole = user.roleName || 'مستخدم';
-            this.branchName = user.username === 'admin' ? 'الفرع الرئيسي' : 'الفرع 2';
+            this.branchName = user.branchName || (user.username === 'admin' ? 'الفرع الرئيسي' : 'الفرع ' + (user.branchId || 'الرئيسي'));
             this.userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=0d9488&color=fff&bold=true&rounded=true`;
         }
 
@@ -87,7 +87,7 @@ export class TopbarComponent {
             if (u) {
                 this.userName = u.fullName || u.username;
                 this.userRole = u.roleName || 'مستخدم';
-                this.branchName = u.username === 'admin' ? 'الفرع الرئيسي' : 'الفرع 2';
+                this.branchName = u.branchName || (u.username === 'admin' ? 'الفرع الرئيسي' : 'الفرع ' + (u.branchId || 'الرئيسي'));
                 this.userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=0d9488&color=fff&bold=true&rounded=true`;
             }
         });

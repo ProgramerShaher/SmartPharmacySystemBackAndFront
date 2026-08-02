@@ -1,4 +1,4 @@
-﻿using SmartPharmacySystem.Core.Enums; namespace SmartPharmacySystem.Application.DTOs.Alerts; 
+using SmartPharmacySystem.Core.Enums; namespace SmartPharmacySystem.Application.DTOs.Alerts; 
 public class AlertDto {
     public int Id { get; set; }
     public int BatchId { get; set; }
@@ -8,6 +8,8 @@ public class AlertDto {
     public AlertSeverity Severity { get; set; }
     public string Message { get; set; } = string.Empty;
     public DateTime? ExpiryDateSnapshot { get; set; }
+    public int? BranchId { get; set; }
+    public string BranchName { get; set; } = string.Empty;
     public bool IsRead { get; set; }
     public DateTime CreatedAt { get; set; }
 }

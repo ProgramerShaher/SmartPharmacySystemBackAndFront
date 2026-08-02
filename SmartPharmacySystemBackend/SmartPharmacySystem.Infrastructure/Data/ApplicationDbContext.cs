@@ -118,15 +118,20 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 Name = "الخزينة الرئيسية",
                 Balance = 0,
                 IsActive = true,
+                BranchId = 1,
                 CreatedAt = new DateTime(2025, 1, 1),
                 UpdatedAt = new DateTime(2025, 1, 1)
             });
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
-        modelBuilder.Entity<FinancialTransaction>(entity =>
-        {
-            entity.Property(e => e.Amount).HasPrecision(18, 2);
-        });
+
 
         modelBuilder.Entity<SalesReturn>(entity =>
         {
@@ -199,6 +204,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(ft => ft.Account)
                   .WithMany()
                   .HasForeignKey(ft => ft.AccountId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
                   .OnDelete(DeleteBehavior.Restrict);
 
             // Composite index for efficient queries by reference
@@ -514,6 +526,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .WithMany(mb => mb.Alerts)
             .HasForeignKey(a => a.BatchId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Alert>()
+            .HasOne(a => a.Branch)
+            .WithMany()
+            .HasForeignKey(a => a.BranchId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Smart Filter: Main Branch (1) sees all, others see their own or global (null)
+        modelBuilder.Entity<Alert>()
+            .HasQueryFilter(a => !CurrentBranchId.HasValue || CurrentBranchId.Value == 1 || a.BranchId == null || a.BranchId == CurrentBranchId.Value);
 
         // Alert - Enum Configuration (store as integers)
         modelBuilder.Entity<Alert>()
@@ -1236,6 +1258,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(e => e.CustomerId)
                   .OnDelete(DeleteBehavior.Restrict);
 
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
             entity.HasOne(e => e.Branch)
                   .WithMany()
                   .HasForeignKey(e => e.BranchId)
@@ -1325,6 +1349,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .WithMany()
                   .HasForeignKey(e => e.BranchId)
                   .OnDelete(DeleteBehavior.Restrict);
+                  
+            // Smart Filter: Main Branch (1) sees all, others see their own or global (null)
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || CurrentBranchId.Value == 1 || e.BranchId == null || e.BranchId == CurrentBranchId.Value);
 
             entity.HasIndex(e => new { e.UserId, e.IsRead });
             entity.HasIndex(e => e.CreatedAt);
@@ -1467,6 +1494,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.VoucherNumber).IsUnique();
             entity.HasIndex(e => e.EntryDate);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         // JournalEntryLine Configuration
@@ -1483,6 +1517,13 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasOne(e => e.Account)
                   .WithMany(e => e.JournalEntryLines)
                   .HasForeignKey(e => e.AccountId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
                   .OnDelete(DeleteBehavior.Restrict);
         });
 

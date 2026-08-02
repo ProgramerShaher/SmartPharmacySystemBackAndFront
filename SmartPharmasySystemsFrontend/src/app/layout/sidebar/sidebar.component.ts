@@ -183,7 +183,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
             match: '/warehouses',
             children: [
                 { label: 'جميع المخازن', route: '/warehouses', icon: 'pi pi-warehouse', exact: true },
-                { label: 'التحويلات المخزنية', route: '/warehouses/transfers', icon: 'pi pi-sync' },
+                { label: 'التحويلات الداخلية', route: '/warehouses/transfers/internal', icon: 'pi pi-sync' },
+                { label: 'تحويلات الفروع', route: '/warehouses/transfers/external', icon: 'pi pi-globe' },
                 { label: 'الأدوية التالفة', route: '/warehouses/damaged', icon: 'pi pi-exclamation-triangle' }
             ]
         },
@@ -195,8 +196,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
             match: '/employees',
             extraMatches: ['/branches', '/departments'],
             children: [
+                { label: 'لوحة تحكم الفرع', route: '/branches/dashboard', icon: 'pi pi-chart-pie' },
                 { label: 'جميع الموظفين', route: '/employees', icon: 'pi pi-users', exact: true },
-                { label: 'الفروع', route: '/branches', icon: 'pi pi-sitemap', exact: true },
+                { label: 'إدارة الفروع', route: '/branches', icon: 'pi pi-sitemap', exact: true },
                 { label: 'الأقسام', route: '/departments', icon: 'pi pi-th-large', exact: true }
             ]
         },

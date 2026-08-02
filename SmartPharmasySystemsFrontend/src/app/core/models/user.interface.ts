@@ -33,6 +33,7 @@ export interface UserCreateDto {
     fullName: string;
     email?: string;
     roleId: number;
+    branchId?: number;
     phoneNumber?: string;
     notes?: string;
 }
@@ -42,6 +43,7 @@ export interface UserUpdateDto {
     fullName?: string;
     email?: string;
     roleId?: number;
+    branchId?: number;
     phoneNumber?: string;
     password?: string;
     confirmPassword?: string;

@@ -13,21 +13,30 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { RippleModule } from 'primeng/ripple';
+import { DialogModule } from 'primeng/dialog';
+import { DropdownModule } from 'primeng/dropdown';
+import { FormsModule } from '@angular/forms';
+import { BranchDto } from '../../../../core/models';
+import { BranchService } from '../../../branches/services/branch.service';
 import { environment } from '../../../../../environments/environment';
 
+
 @Component({
-    selector: 'app-login',
-    standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-      ButtonModule,
-      InputTextModule,
-      PasswordModule,
-      CheckboxModule,
-      ToastModule,
-        RippleModule,
-        RouterModule
+  selector: 'app-login',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    InputTextModule,
+    PasswordModule,
+    CheckboxModule,
+    ToastModule,
+    RippleModule,
+    RouterModule,
+    DialogModule,
+    DropdownModule,
+    FormsModule
   ],
   template: `
     <div class="login-wrapper" dir="rtl">
@@ -105,6 +114,30 @@ import { environment } from '../../../../../environments/environment';
           <a routerLink="/auth/register">إنشاء حساب جديد</a>
         </div>
       </section>
+
+      <!-- Branch Selection Dialog for Admins -->
+      <p-dialog header="تحديد فرع الدخول" [(visible)]="showBranchDialog" [modal]="true" [closable]="false" [style]="{width: '400px'}">
+        <div class="p-4" dir="rtl">
+            <p class="mb-4">مرحباً بك كمدير للنظام! يرجى اختيار الفرع الذي تود الدخول إليه:</p>
+            <div class="field mb-4">
+                <label for="branchSelect" class="block mb-2 font-bold">الفرع</label>
+                <p-dropdown 
+                    [options]="activeBranches" 
+                    [(ngModel)]="selectedBranchId" 
+                    optionLabel="name" 
+                    optionValue="id" 
+                    placeholder="اختر الفرع" 
+                    [style]="{'width':'100%'}"
+                    [showClear]="true"
+                    appendTo="body">
+                </p-dropdown>
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="إلغاء" icon="pi pi-times" (click)="cancelBranchSelection()" styleClass="p-button-text p-button-secondary"></p-button>
+            <p-button label="دخول للفرع" icon="pi pi-check" (click)="confirmBranchLogin()" [disabled]="!selectedBranchId" [loading]="loadingBranch"></p-button>
+        </ng-template>
+      </p-dialog>
     </div>
   `,
   styleUrls: ['./login.component.scss'],
@@ -113,17 +146,23 @@ import { environment } from '../../../../../environments/environment';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   loading = false;
+  loadingBranch = false;
+  showBranchDialog = false;
+  activeBranches: BranchDto[] = [];
+  selectedBranchId: number | null = null;
+  pendingCredentials: LoginRequest | null = null;
   pharmacyName = 'الصيدلية الذكية';
   pharmacyLogoUrl: string | null = null;
   readonly serverUrl = environment.apiUrl.replace('/api', '');
 
-    constructor(
-        private fb: FormBuilder,
-      private authService: AuthService,
-      private router: Router,
-      private messageService: MessageService,
-      private settingsService: SettingsService
-    ) { }
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+    private messageService: MessageService,
+    private settingsService: SettingsService,
+    private branchService: BranchService
+  ) { }
 
   ngOnInit() {
     // Redirect if already logged in
@@ -132,14 +171,14 @@ export class LoginComponent implements OnInit {
       return;
     }
 
-        this.loginForm = this.fb.group({
-            username: ['', Validators.required],
-          password: ['', Validators.required],
-          rememberMe: [false]
-        });
+    this.loginForm = this.fb.group({
+      username: ['', Validators.required],
+      password: ['', Validators.required],
+      rememberMe: [false]
+    });
 
     this.loadPharmacySettings();
-    }
+  }
 
   private loadPharmacySettings(): void {
     this.settingsService.getSettings().subscribe({
@@ -169,6 +208,15 @@ export class LoginComponent implements OnInit {
     this.authService.login(credentials).subscribe({
       next: (response) => {
         this.loading = false;
+
+        // If Admin and didn't select a branch yet, show branch dialog
+        if ((response.roleName === 'Admin' || response.roleName === 'Administrator') && !credentials.branchId) {
+          this.pendingCredentials = credentials;
+          this.loadActiveBranches();
+          this.showBranchDialog = true;
+          return; // Don't navigate yet
+        }
+
         this.messageService.add({
           severity: 'success',
           summary: 'نجاح',
@@ -188,6 +236,51 @@ export class LoginComponent implements OnInit {
         });
       }
     });
+  }
+
+  loadActiveBranches() {
+    this.branchService.getActive().subscribe({
+      next: (branches) => {
+        this.activeBranches = branches;
+        // If only one branch, auto-select it
+        if (branches.length === 1) {
+          this.selectedBranchId = branches[0].id;
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load branches', err);
+        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل قائمة الفروع' });
+      }
+    });
+  }
+
+  confirmBranchLogin() {
+    if (!this.selectedBranchId || !this.pendingCredentials) return;
+
+    this.loadingBranch = true;
+    const finalCredentials: LoginRequest = {
+      ...this.pendingCredentials,
+      branchId: this.selectedBranchId
+    };
+
+    this.authService.login(finalCredentials).subscribe({
+      next: (response) => {
+        this.loadingBranch = false;
+        this.showBranchDialog = false;
+        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: `تم الدخول للفرع بنجاح` });
+        this.router.navigate(['/dashboard']);
+      },
+      error: (error) => {
+        this.loadingBranch = false;
+        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تسجيل الدخول للفرع المحدد' });
+      }
+    });
+  }
+
+  cancelBranchSelection() {
+    this.showBranchDialog = false;
+    this.pendingCredentials = null;
+    this.authService.logout(); // Clear the initial admin token
   }
 
   quickLogin(role: 'admin' | 'pharmacist') {

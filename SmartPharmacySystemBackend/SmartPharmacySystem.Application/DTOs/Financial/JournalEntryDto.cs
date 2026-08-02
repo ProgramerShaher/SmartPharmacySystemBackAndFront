@@ -16,6 +16,8 @@ public class JournalEntryDto
     public decimal TotalDebit { get; set; }
     public decimal TotalCredit { get; set; }
     public bool IsPosted { get; set; }
+    public int BranchId { get; set; }
+    public string BranchName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public List<JournalEntryLineDto> Lines { get; set; } = new();
 }

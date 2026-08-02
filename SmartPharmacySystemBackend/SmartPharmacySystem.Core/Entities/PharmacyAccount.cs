@@ -5,7 +5,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// Represents the internal pharmacy account balance.
 /// </summary>
-public class PharmacyAccount : BaseEntity
+public class PharmacyAccount : BaseMultiBranchEntity
 {
 
     /// <summary>

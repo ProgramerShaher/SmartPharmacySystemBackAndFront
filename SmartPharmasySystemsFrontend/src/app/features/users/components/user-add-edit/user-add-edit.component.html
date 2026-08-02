@@ -32,13 +32,27 @@
 
                 <!-- Role -->
                 <div class="field">
-                    <label for="role">الصلاحية</label>
-                    <p-dropdown [options]="roles" formControlName="role" styleClass="w-full" placeholder="اختر الصلاحية"
+                    <label for="roleId">الصلاحية</label>
+                    <p-dropdown [options]="roles" formControlName="roleId" styleClass="w-full" placeholder="اختر الصلاحية"
                         [showClear]="false">
                         <ng-template let-option pTemplate="item">
                             <div class="flex align-items-center gap-2">
                                 <i [class]="option.icon"></i>
                                 <span>{{option.label}}</span>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+
+                <!-- Branch -->
+                <div class="field">
+                    <label for="branchId">فرع التعيين</label>
+                    <p-dropdown [options]="branches" formControlName="branchId" optionLabel="name" optionValue="id" styleClass="w-full"
+                        placeholder="اختر الفرع (لتعيين الموظف)" [showClear]="true" [loading]="isLoadingBranches">
+                        <ng-template let-option pTemplate="item">
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-building"></i>
+                                <span>{{option.name}}</span>
                             </div>
                         </ng-template>
                     </p-dropdown>

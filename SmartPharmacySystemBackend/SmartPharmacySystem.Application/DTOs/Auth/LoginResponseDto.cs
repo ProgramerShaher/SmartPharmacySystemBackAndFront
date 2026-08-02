@@ -41,4 +41,16 @@ public class LoginResponseDto
     /// Email
     /// </summary>
     public string? Email { get; set; }
+
+    /// <summary>
+    /// معرف الفرع الحالي
+    /// Current Branch ID
+    /// </summary>
+    public int? BranchId { get; set; }
+
+    /// <summary>
+    /// اسم الفرع الحالي
+    /// Current Branch Name
+    /// </summary>
+    public string? BranchName { get; set; }
 }

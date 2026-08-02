@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { UsersService } from '../../services/users.service';
-import { User, UserCreateDto, UserUpdateDto } from '../../../../core/models';
+import { BranchService } from '../../../branches/services/branch.service';
+import { User, UserCreateDto, UserUpdateDto, BranchDto } from '../../../../core/models';
 
 // PrimeNG Imports
 import { InputTextModule } from 'primeng/inputtext';
@@ -44,21 +45,27 @@ export class UserFormComponent implements OnInit {
     currentDate = new Date();
     passwordStrength = 0;
 
+    branches: BranchDto[] = [];
+    isLoadingBranches = false;
+
+    // Backend expects RoleId (1 = Admin, 2 = Pharmacist)
     roles = [
-        { label: 'مدير النظام', value: 'Admin', icon: 'pi pi-shield' },
-        { label: 'مدير صيدلية', value: 'Manager', icon: 'pi pi-briefcase' },
-        { label: 'صيدلي (بائع)', value: 'User', icon: 'pi pi-user' }
+        { label: 'مدير النظام (Admin)', value: 1, icon: 'pi pi-shield' },
+        { label: 'صيدلي (Pharmacist)', value: 2, icon: 'pi pi-user' }
     ];
 
     constructor(
         private fb: FormBuilder,
         private usersService: UsersService,
+        private branchService: BranchService,
         private messageService: MessageService
     ) {
         this.initForm();
     }
 
     ngOnInit(): void {
+        this.loadBranches();
+
         if (this.user) {
             this.userForm.patchValue({
                 ...this.user,
@@ -74,6 +81,19 @@ export class UserFormComponent implements OnInit {
         });
     }
 
+    private loadBranches() {
+        this.isLoadingBranches = true;
+        this.branchService.getActive().subscribe({
+            next: (data) => {
+                this.branches = data;
+                this.isLoadingBranches = false;
+            },
+            error: () => {
+                this.isLoadingBranches = false;
+            }
+        });
+    }
+
     private initForm(): void {
         this.userForm = this.fb.group({
             username: ['', [Validators.required, Validators.minLength(3)]],
@@ -81,7 +101,8 @@ export class UserFormComponent implements OnInit {
             email: ['', [Validators.email]],
             password: ['', [Validators.required, Validators.minLength(8)]],
             confirmPassword: [''],
-            role: ['User', [Validators.required]],
+            roleId: [2, [Validators.required]], // Default to Pharmacist
+            branchId: [null, [Validators.required]], // Required for employee setup
             phoneNumber: ['', [Validators.pattern(/^[0-9]+$/)]],
             isActive: [true]
         }, { validators: this.passwordMatchValidator });
@@ -102,7 +123,8 @@ export class UserFormComponent implements OnInit {
     get email() { return this.userForm.get('email')!; }
     get password() { return this.userForm.get('password')!; }
     get confirmPassword() { return this.userForm.get('confirmPassword')!; }
-    get role() { return this.userForm.get('role')!; }
+    get roleId() { return this.userForm.get('roleId')!; }
+    get branchId() { return this.userForm.get('branchId')!; }
     get phoneNumber() { return this.userForm.get('phoneNumber')!; }
     get isActive() { return this.userForm.get('isActive')!; }
 

@@ -70,4 +70,9 @@ export class EmployeeService {
                 return Array.isArray(data) ? data : [];
             }));
     }
+
+    getBranchDashboard(): Observable<any> {
+        return this.http.get<ApiResponse<any>>(`${this.apiUrl}/dashboard`)
+            .pipe(map(response => response.data));
+    }
 }

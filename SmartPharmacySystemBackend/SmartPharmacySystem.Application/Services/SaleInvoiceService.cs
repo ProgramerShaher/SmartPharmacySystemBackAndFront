@@ -189,31 +189,23 @@ namespace SmartPharmacySystem.Application.Services
                 if (!currentBranchId.HasValue)
                     throw new InvalidOperationException("لا يمكن اعتماد الفاتورة بدون تحديد الفرع الحالي للمستخدم.");
 
-                // ✅ Optimized: Fetch all batches at once instead of one by one
-                var batchIds = invoice.SaleInvoiceDetails.Select(d => d.BatchId).Distinct().ToList();
-                var batches = await _unitOfWork.MedicineBatches.GetByIdsAsync(batchIds);
-                var batchDict = batches.ToDictionary(b => b.Id);
+                // ✅ Fix: Use the already-tracked Batch instances loaded via invoice.SaleInvoiceDetails.ThenInclude(d => d.Batch)
+                // This avoids a double-load of batches (via GetByIdsAsync with Include(b => b.Medicine))
+                // which caused EF Core identity map conflicts: "Medicine cannot be tracked because another instance is already being tracked"
+                var batchDict = invoice.SaleInvoiceDetails
+                    .Where(d => d.Batch != null)
+                    .GroupBy(d => d.BatchId)
+                    .ToDictionary(g => g.Key, g => g.First().Batch!);
 
-                // Security/Isolation: MedicineBatch is not branch-filtered, so validate branch ownership via linked PurchaseInvoice (when present).
-                var purchaseInvoiceIds = batches
-                    .Where(b => b.PurchaseInvoiceId.HasValue)
-                    .Select(b => b.PurchaseInvoiceId!.Value)
-                    .Distinct()
-                    .ToList();
+                var trackedBatches = batchDict.Values.ToList();
 
-                if (purchaseInvoiceIds.Count > 0)
+                // Validate branch ownership directly on the MedicineBatch
+                // (Using PurchaseInvoice.BranchId is wrong because of Stock Transfers between branches)
+                foreach (var batch in trackedBatches)
                 {
-                    var purchaseInvoiceTasks = purchaseInvoiceIds.ToDictionary(
-                        purchaseInvoiceId => purchaseInvoiceId,
-                        purchaseInvoiceId => _unitOfWork.PurchaseInvoices.GetByIdAsync(purchaseInvoiceId));
-
-                    await Task.WhenAll(purchaseInvoiceTasks.Values);
-
-                    foreach (var batch in batches.Where(b => b.PurchaseInvoiceId.HasValue))
+                    if (batch.BranchId != batch.BranchId)
                     {
-                        var purchaseInvoice = await purchaseInvoiceTasks[batch.PurchaseInvoiceId!.Value];
-                        if (purchaseInvoice == null || purchaseInvoice.BranchId != currentBranchId.Value)
-                            throw new InvalidOperationException($"التشغيلة {batch.CompanyBatchNumber} غير تابعة لفرعك الحالي ولا يمكن استخدامها في البيع.");
+                        throw new InvalidOperationException($"التشغيلة {batch.CompanyBatchNumber} غير تابعة لفرعك الحالي ولا يمكن استخدامها في البيع.");
                     }
                 }
 
@@ -412,7 +404,9 @@ namespace SmartPharmacySystem.Application.Services
             {
                 foreach (var detail in invoice.SaleInvoiceDetails)
                 {
-                    var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
+                    // ✅ Fix: Use already-tracked Batch instance from invoice details (loaded via ThenInclude)
+                    // Avoids re-loading the batch which can cause EF Core Medicine tracking conflicts
+                    var batch = detail.Batch;
                     if (batch != null)
                     {
                         batch.RemainingQuantity += detail.Quantity;
@@ -487,7 +481,9 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     foreach (var detail in invoice.SaleInvoiceDetails)
                     {
-                        var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
+                        // ✅ Fix: Use already-tracked Batch instance from invoice details (loaded via ThenInclude)
+                        // Avoids re-loading the batch which can cause EF Core Medicine tracking conflicts
+                        var batch = detail.Batch;
                         if (batch != null)
                         {
                             batch.RemainingQuantity += detail.Quantity;
@@ -635,7 +631,8 @@ namespace SmartPharmacySystem.Application.Services
 
                 if (detail.BatchId > 0)
                 {
-                    var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId)
+                    var medicineBatches = await _unitOfWork.MedicineBatches.GetBatchesByMedicineIdAsync(detail.MedicineId);
+                    var batch = medicineBatches.FirstOrDefault(b => b.Id == detail.BatchId)
                         ?? throw new KeyNotFoundException($"التشغيلة {detail.BatchId} غير موجودة");
 
                     int canTake = Math.Min(remainingToAllocate, batch.RemainingQuantity);

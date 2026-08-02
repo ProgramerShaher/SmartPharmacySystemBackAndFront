@@ -57,7 +57,7 @@
             <div class="st-kpi-inner">
                 <div class="st-kpi-left">
                     <span class="st-kpi-label">إجمالي التحويلات</span>
-                    <strong class="st-kpi-value">{{ transfers.length }}</strong>
+                    <strong class="st-kpi-value">{{ filteredTransfers.length }}</strong>
                 </div>
                 <div class="st-kpi-badge">
                     <i class="pi pi-refresh"></i>
@@ -67,8 +67,17 @@
         </div>
     </div>
 
-    <!-- ===== Filter Row ===== -->
+    <!-- ===== View Mode & Filter Row ===== -->
     <div class="st-filter-panel mt-2">
+        <div class="grid p-fluid align-items-center mb-3 border-bottom-1 border-gray-200 pb-3">
+            <div class="col-12 md:col-6 text-right font-bold text-primary">
+                نوع العرض:
+            </div>
+            <div class="col-12 md:col-6 text-left">
+                <p-selectButton [options]="viewModeOptions" [(ngModel)]="viewMode" optionLabel="label" optionValue="value"
+                    styleClass="premium-select-button"></p-selectButton>
+            </div>
+        </div>
         <div class="st-filter-grid">
             <div class="st-filter-field">
                 <label>المخزن المرسل</label>
@@ -95,14 +104,14 @@
 
     <!-- ===== Table ===== -->
     <div class="st-table-wrap mt-2">
-        <p-table [value]="transfers" [loading]="loading" responsiveLayout="scroll" styleClass="st-table"
+        <p-table [value]="filteredTransfers" [loading]="loading" responsiveLayout="scroll" styleClass="st-table"
             [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5,10,15,25]"
             [showCurrentPageReport]="true" currentPageReportTemplate="{first}–{last} من {totalRecords}">
             
             <ng-template pTemplate="caption">
                 <div class="st-table-caption">
-                    <span><i class="pi pi-list"></i> قائمة طلبات التحويل</span>
-                    <span class="st-table-count">{{ transfers.length }} طلب</span>
+                    <span><i class="pi pi-list"></i> قائمة طلبات التحويل ({{ viewMode === 'outgoing' ? 'الصادرة' : viewMode === 'incoming' ? 'الواردة' : 'الكل' }})</span>
+                    <span class="st-table-count">{{ filteredTransfers.length }} طلب</span>
                 </div>
             </ng-template>
 
@@ -121,7 +130,7 @@
                 <tr>
                     <td class="st-cell-code">{{ transfer.transferCode }}</td>
                     <td class="font-bold">{{ transfer.sourceWarehouseName }}</td>
-                    <td class="font-bold">{{ transfer.destinationWarehouseName }}</td>
+                    <td class="font-bold">{{ transfer.destinationWarehouseName || transfer.destinationBranchName }}</td>
                     <td class="text-center st-cell-date">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
                     <td class="text-center">
                         <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
@@ -131,21 +140,23 @@
                         <button pButton icon="pi pi-eye" class="p-button-rounded p-button-info p-button-text" 
                             pTooltip="تفاصيل المستند" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
                         
-                        <button *ngIf="transfer.status === 'Requested'" pButton icon="pi pi-check" 
+                        <!-- Source Branch Actions -->
+                        <button *ngIf="transfer.status === 'Requested' && isSourceBranch(transfer)" pButton icon="pi pi-check" 
                             class="p-button-rounded p-button-success p-button-text" 
                             pTooltip="اعتماد الطلب" tooltipPosition="top" (click)="approveTransfer(transfer)"></button>
                         
-                        <button *ngIf="transfer.status === 'Approved'" pButton icon="pi pi-truck" 
+                        <button *ngIf="transfer.status === 'Approved' && isSourceBranch(transfer)" pButton icon="pi pi-truck" 
                             class="p-button-rounded p-button-warning p-button-text" 
                             pTooltip="شحن البضاعة" tooltipPosition="top" (click)="dispatchTransfer(transfer)"></button>
                         
-                        <button *ngIf="transfer.status === 'Dispatched'" pButton icon="pi pi-download" 
-                            class="p-button-rounded p-button-primary p-button-text" 
-                            pTooltip="تأكيد الاستلام" tooltipPosition="top" (click)="openReceiveDialog(transfer)"></button>
-                        
-                        <button *ngIf="transfer.status === 'Requested'" pButton icon="pi pi-trash" 
+                        <button *ngIf="transfer.status === 'Requested' && isSourceBranch(transfer)" pButton icon="pi pi-trash" 
                             class="p-button-rounded p-button-danger p-button-text" 
                             pTooltip="حذف الطلب" tooltipPosition="top" (click)="deleteTransfer(transfer)"></button>
+
+                        <!-- Destination Branch Actions -->
+                        <button *ngIf="transfer.status === 'Dispatched' && isDestinationBranch(transfer)" pButton icon="pi pi-download" 
+                            class="p-button-rounded p-button-primary p-button-text" 
+                            pTooltip="تأكيد الاستلام" tooltipPosition="top" (click)="openReceiveDialog(transfer)"></button>
                     </td>
                 </tr>
             </ng-template>
@@ -181,7 +192,7 @@
             </div>
             <div class="col-12 md:col-6 mb-2">
                 <span class="font-bold opacity-60 text-xs block mb-1">المستودع الوجهة</span>
-                <span class="font-bold">{{ selectedTransfer.destinationWarehouseName }}</span>
+                <span class="font-bold">{{ selectedTransfer.destinationWarehouseName || selectedTransfer.destinationBranchName }}</span>
             </div>
         </div>
 
@@ -225,6 +236,15 @@
     [style]="{width: '80vw'}" [draggable]="false" [resizable]="false" styleClass="pos-dialog">
     <div class="p-fluid">
         <p class="mb-4 text-sm opacity-80">يرجى فحص الشحنة ومطابقة الكميات الفعلية الواصلة وتدوين أي عجز أو تالف في حقل الملاحظات.</p>
+
+        <div class="grid p-fluid mb-4" *ngIf="!selectedTransfer?.destinationWarehouseId">
+            <div class="col-12 md:col-6">
+                <label class="text-primary font-bold">يرجى تحديد المخزن الذي سيتم إيداع الشحنة فيه</label>
+                <p-dropdown [options]="currentBranchWarehouses" [(ngModel)]="receiveDestinationWarehouseId"
+                    optionLabel="name" optionValue="id" placeholder="اختر المخزن..." [filter]="true"
+                    filterBy="name" appendTo="body" class="w-full"></p-dropdown>
+            </div>
+        </div>
         
         <p-table [value]="receiveItems" responsiveLayout="scroll" styleClass="st-table">
             <ng-template pTemplate="header">

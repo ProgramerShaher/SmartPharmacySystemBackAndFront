@@ -5,7 +5,7 @@ namespace SmartPharmacySystem.Core.Entities;
 /// <summary>
 /// يمثل تفاصيل القيد المحاسبي (كل سطر يمثل حركة على حساب معين)
 /// </summary>
-public class JournalEntryLine : BaseEntity
+public class JournalEntryLine : BaseMultiBranchEntity
 {
     /// <summary>
     /// معرف رأس القيد التابع له

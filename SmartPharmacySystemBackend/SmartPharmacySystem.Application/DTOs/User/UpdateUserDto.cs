@@ -51,4 +51,9 @@ public class UpdateUserDto
     /// ملاحظات إضافية
     /// </summary>
     public string Notes { get; set; } = string.Empty;
+
+    /// <summary>
+    /// الفرع الذي سيعمل فيه المستخدم (لتعيين الموظف للفرع)
+    /// </summary>
+    public int? BranchId { get; set; }
 }

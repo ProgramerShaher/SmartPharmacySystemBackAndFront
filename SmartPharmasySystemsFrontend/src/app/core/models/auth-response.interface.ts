@@ -4,6 +4,7 @@
 export interface LoginRequest {
     username: string;
     password: string;
+    branchId?: number;
 }
 
 /**
@@ -16,6 +17,8 @@ export interface LoginResponse {
     fullName: string;
     roleName: string;
     email?: string;
+    branchId?: number;
+    branchName?: string;
 }
 
 /**
@@ -47,6 +50,8 @@ export interface CurrentUserResponse {
     status?: number;
     createdAt?: string;
     isDeleted?: boolean;
+    branchId?: number;
+    branchName?: string;
 }
 
 // Legacy - keep for backward compatibility

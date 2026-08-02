@@ -28,15 +28,56 @@ namespace SmartPharmacySystem.Application.Services
                 throw new ArgumentException("كلمات المرور غير متطابقة");
             }
 
-            var user = _mapper.Map<User>(dto);
-            // Assuming User logic (hashing pw etc) handled in mapping or here. For now standard CRUD.
-            user.CreatedAt = DateTime.UtcNow;
-            user.IsDeleted = false;
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var user = _mapper.Map<User>(dto);
+                user.CreatedAt = DateTime.UtcNow;
+                user.IsDeleted = false;
 
-            await _unitOfWork.Users.AddAsync(user);
-            await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.Users.AddAsync(user);
+                await _unitOfWork.SaveChangesAsync(); // Save to get the generated UserId
 
-            return _mapper.Map<UserDto>(user);
+                if (dto.BranchId.HasValue && dto.BranchId.Value > 0)
+                {
+                    // Create Employee Record automatically
+                    var randomCode = "EMP-" + new Random().Next(1000, 9999);
+                    var employee = new Employee
+                    {
+                        EmployeeCode = randomCode,
+                        FullName = dto.FullName,
+                        NationalId = "000000000", // Default
+                        BranchId = dto.BranchId.Value,
+                        DepartmentId = 1, // Default department
+                        JobTitle = "موظف صيدلية",
+                        HireDate = DateTime.UtcNow,
+                        BasicSalary = 0,
+                        IsActive = true
+                    };
+                    await _unitOfWork.Employees.AddAsync(employee);
+
+                    // Create Branch Assignment
+                    var assignment = new EmployeeBranchAssignment
+                    {
+                        UserId = user.Id,
+                        BranchId = dto.BranchId.Value,
+                        CreatedAt = DateTime.UtcNow,
+                        IsActive = true
+                    };
+                    await _unitOfWork.EmployeeBranchAssignments.AddAsync(assignment);
+                    
+                    await _unitOfWork.SaveChangesAsync();
+                }
+
+                await _unitOfWork.CommitAsync();
+                return _mapper.Map<UserDto>(user);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                _logger.LogError(ex, "Error creating user with employee setup.");
+                throw;
+            }
         }
 
         public async Task UpdateUserAsync(int id, UpdateUserDto dto)

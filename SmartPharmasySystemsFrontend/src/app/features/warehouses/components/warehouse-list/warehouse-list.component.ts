@@ -6,6 +6,7 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { WarehouseService } from '../../services/warehouse.service';
 import { BranchService } from '../../../branches/services/branch.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { WarehouseDto, WarehouseType, BranchDto } from '../../../../core/models';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -62,6 +63,7 @@ export class WarehouseListComponent implements OnInit {
     constructor(
         private warehouseService: WarehouseService,
         private branchService: BranchService,
+        private authService: AuthService,
         private route: ActivatedRoute,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
@@ -71,6 +73,13 @@ export class WarehouseListComponent implements OnInit {
 
     ngOnInit() {
         this.loadBranches();
+        
+        // تعيين فرع المستخدم كفلتر افتراضي
+        const currentUser = this.authService.currentUserValue;
+        if (currentUser && currentUser.branchId) {
+            this.branchFilter.set(currentUser.branchId);
+        }
+
         this.route.queryParams.subscribe(params => {
             if (params['branchId']) {
                 this.branchFilter.set(+params['branchId']);
@@ -119,7 +128,15 @@ export class WarehouseListComponent implements OnInit {
 
     resetFilters() {
         this.searchTerm.set('');
-        this.branchFilter.set(undefined);
+        
+        // إعادة التعيين للفرع الحالي بدلاً من مسحه بالكامل
+        const currentUser = this.authService.currentUserValue;
+        if (currentUser && currentUser.branchId) {
+            this.branchFilter.set(currentUser.branchId);
+        } else {
+            this.branchFilter.set(undefined);
+        }
+        
         this.typeFilter.set(undefined);
         this.loadWarehouses();
     }

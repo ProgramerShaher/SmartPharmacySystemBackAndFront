@@ -17,9 +17,28 @@ public class FinancialRepository : IFinancialRepository
 
     public async Task<PharmacyAccount> GetMainAccountAsync()
     {
-        // Account with ID 1 is the main pharmacy account seeded in DbContext
-        return await _context.PharmacyAccounts.FirstOrDefaultAsync(a => a.Id == 1 && a.IsActive)
-               ?? throw new InvalidOperationException("Pharmacy account not found.");
+        // Global Query Filter will ensure we only get accounts for the current branch
+        var account = await _context.PharmacyAccounts.OrderBy(a => a.Id).FirstOrDefaultAsync(a => a.IsActive);
+        
+        if (account == null)
+        {
+            // Auto-create a default account for this branch to prevent crashes
+            int branchId = _context.CurrentBranchId ?? 1;
+            account = new PharmacyAccount
+            {
+                Name = "الخزينة الرئيسية - فرع " + branchId,
+                Balance = 0,
+                IsActive = true,
+                BranchId = branchId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            
+            await _context.PharmacyAccounts.AddAsync(account);
+            await _context.SaveChangesAsync();
+        }
+        
+        return account;
     }
 
     public async Task<PharmacyAccount?> GetAccountByIdAsync(int id)

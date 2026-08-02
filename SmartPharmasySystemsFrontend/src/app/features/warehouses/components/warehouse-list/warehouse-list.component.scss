@@ -609,15 +609,42 @@ $radius: 10px;
 
   .wh-filter-grid {
     flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .wh-filter-field {
+    width: 100%;
+    
+    ::ng-deep {
+      .p-dropdown {
+        width: 100% !important;
+        display: flex !important;
+      }
+      .p-inputtext {
+        width: 100% !important;
+      }
+      .p-input-icon-right {
+        width: 100% !important;
+        display: block !important;
+      }
+    }
+  }
+
+  .wh-filter-action {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .wh-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 0.75rem;
   }
 
   .wh-header-end {
     width: 100%;
-    justify-content: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
   }
 }

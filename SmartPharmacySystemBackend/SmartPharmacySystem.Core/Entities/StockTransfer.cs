@@ -15,8 +15,9 @@ public class StockTransfer : BaseMultiBranchEntity
     [Required]
     public int SourceWarehouseId { get; set; }
 
-    [Required]
-    public int DestinationWarehouseId { get; set; }
+    public int? DestinationWarehouseId { get; set; }
+
+    public int? DestinationBranchId { get; set; }
 
     [Required]
     public TransferStatus Status { get; set; } = TransferStatus.Requested;
@@ -44,7 +45,10 @@ public class StockTransfer : BaseMultiBranchEntity
     public virtual Warehouse SourceWarehouse { get; set; } = null!;
 
     [ForeignKey("DestinationWarehouseId")]
-    public virtual Warehouse DestinationWarehouse { get; set; } = null!;
+    public virtual Warehouse? DestinationWarehouse { get; set; }
+
+    [ForeignKey("DestinationBranchId")]
+    public virtual Branch? DestinationBranch { get; set; }
 
     [ForeignKey("RequestedByUserId")]
     public virtual User RequestedByUser { get; set; } = null!;

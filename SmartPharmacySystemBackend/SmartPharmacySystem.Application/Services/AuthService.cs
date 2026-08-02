@@ -80,18 +80,28 @@ public class AuthService : IAuthService
         }
 
         // إنشاء JWT Token
-        var token = await GenerateJwtTokenAsync(user, role.Name);
+        var tokenDetails = await GenerateJwtTokenAsync(user, role.Name, request.BranchId);
 
-        _logger.LogInformation("Login successful for user: {Username}", request.Username);
+        _logger.LogInformation("Login successful for user: {Username} at Branch: {BranchId}", request.Username, tokenDetails.Item2);
+
+        // الحصول على اسم الفرع إذا كان موجوداً
+        string? branchName = null;
+        if (tokenDetails.Item2.HasValue)
+        {
+            var branch = await _unitOfWork.Branches.GetByIdAsync(tokenDetails.Item2.Value);
+            branchName = branch?.Name;
+        }
 
         return new LoginResponseDto
         {
-            Token = token,
+            Token = tokenDetails.Item1,
             UserId = user.Id,
             Username = user.Username,
             FullName = user.FullName,
             RoleName = role.Name,
-            Email = user.Email
+            Email = user.Email,
+            BranchId = tokenDetails.Item2,
+            BranchName = branchName
         };
     }
 
@@ -160,7 +170,7 @@ public class AuthService : IAuthService
     /// إنشاء JWT Token
     /// Generate JWT token
     /// </summary>
-    private async Task<string> GenerateJwtTokenAsync(Core.Entities.User user, string roleName)
+    private async Task<(string, int?)> GenerateJwtTokenAsync(Core.Entities.User user, string roleName, int? requestedBranchId = null)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
@@ -178,10 +188,21 @@ public class AuthService : IAuthService
             new Claim("RoleId", user.RoleId.ToString())
         };
 
-        // الحصول على تعيين الفرع الفعلي للمستخدم من قاعدة البيانات
-        var assignment = await _unitOfWork.EmployeeBranchAssignments.GetActiveAssignmentByUserIdAsync(user.Id);
-        var branchId = assignment != null ? assignment.BranchId.ToString() : "";
-        claims.Add(new Claim("BranchId", branchId));
+        // الحصول على تعيين الفرع
+        int? finalBranchId = null;
+
+        if (requestedBranchId.HasValue && roleName == "Admin")
+        {
+            // السماح للمدير بانتحال شخصية أي فرع لاختبار النظام
+            finalBranchId = requestedBranchId.Value;
+        }
+        else
+        {
+            var assignment = await _unitOfWork.EmployeeBranchAssignments.GetActiveAssignmentByUserIdAsync(user.Id);
+            finalBranchId = assignment?.BranchId;
+        }
+
+        claims.Add(new Claim("BranchId", finalBranchId?.ToString() ?? ""));
 
         var expirationMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "480"); // Default 8 hours
         var token = new JwtSecurityToken(
@@ -192,6 +213,6 @@ public class AuthService : IAuthService
             signingCredentials: credentials
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        return (new JwtSecurityTokenHandler().WriteToken(token), finalBranchId);
     }
 }

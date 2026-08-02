@@ -1,0 +1,39 @@
+:host {
+    display: block;
+}
+
+::ng-deep {
+    .p-tabview {
+        .p-tabview-nav {
+            background: #ffffff;
+            border-bottom: 1px solid #dee2e6;
+            
+            li {
+                .p-tabview-nav-link {
+                    background: transparent;
+                    border: none;
+                    border-bottom: 3px solid transparent;
+                    color: #6c757d;
+                    font-weight: 600;
+                    padding: 1.25rem 2rem;
+                    transition: all 0.2s;
+                    
+                    &:focus {
+                        box-shadow: none;
+                    }
+                }
+                
+                &.p-highlight .p-tabview-nav-link {
+                    background: transparent;
+                    border-bottom-color: var(--primary-color);
+                    color: var(--primary-color);
+                }
+            }
+        }
+        
+        .p-tabview-panels {
+            padding: 1.5rem;
+            background: #ffffff;
+        }
+    }
+}

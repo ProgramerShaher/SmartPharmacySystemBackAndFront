@@ -11,8 +11,9 @@ public class CreateStockTransferDto
     [Required(ErrorMessage = "المخزن المصدر مطلوب")]
     public int SourceWarehouseId { get; set; }
 
-    [Required(ErrorMessage = "المخزن الوجهة مطلوب")]
-    public int DestinationWarehouseId { get; set; }
+    public int? DestinationWarehouseId { get; set; }
+
+    public int? DestinationBranchId { get; set; }
 
     public TransferType TransferType { get; set; } = TransferType.Manual;
 

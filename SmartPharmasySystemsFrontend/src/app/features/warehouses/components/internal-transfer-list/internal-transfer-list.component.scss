@@ -1,0 +1,23 @@
+:host {
+    display: block;
+}
+
+::ng-deep {
+    .p-datatable {
+        .p-datatable-header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .p-datatable-thead > tr > th {
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 600;
+            padding: 1rem;
+        }
+        
+        .p-datatable-tbody > tr > td {
+            padding: 1rem;
+        }
+    }
+}

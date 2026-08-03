@@ -73,7 +73,8 @@ public class StockCountRepository : IStockCountRepository
 
     public async Task UpdateHeaderAsync(StockCountHeader header)
     {
-        _context.StockCountHeaders.Update(header);
+        // استخدام Entry().State بدلاً من Update() لتجنب تعارض الـ Tracking مع Navigation Properties
+        _context.Entry(header).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         await Task.CompletedTask;
     }
 
@@ -125,7 +126,7 @@ public class StockCountRepository : IStockCountRepository
 
     public async Task UpdateItemAsync(StockCountItem item)
     {
-        _context.StockCountItems.Update(item);
+        _context.Entry(item).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         await Task.CompletedTask;
     }
 

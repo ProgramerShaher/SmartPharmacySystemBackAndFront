@@ -8,7 +8,8 @@ public interface IStockTransferService
 {
     Task<StockTransferDto> GetByIdAsync(int id);
     Task<StockTransferDto> GetByCodeAsync(string transferCode);
-    Task<IEnumerable<StockTransferDto>> GetAllAsync(int? sourceWarehouseId = null, int? destinationWarehouseId = null, TransferStatus? status = null, DateTime? dateFrom = null, DateTime? dateTo = null);
+    Task<IEnumerable<StockTransferDto>> GetAllAsync(int? sourceWarehouseId = null, int? destinationWarehouseId = null, TransferStatus? status = null, DateTime? dateFrom = null, DateTime? dateTo = null, TransferType? transferType = null);
+    Task<IEnumerable<StockTransferDto>> GetByBranchAsync(int branchId, TransferType? transferType = null);
     Task<IEnumerable<StockTransferDto>> GetByStatusAsync(TransferStatus status);
     Task<IEnumerable<StockTransferDto>> GetPendingForApprovalAsync();
     Task<IEnumerable<StockTransferDto>> GetPendingForDispatchAsync();

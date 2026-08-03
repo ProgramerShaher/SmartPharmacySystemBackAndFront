@@ -11,9 +11,11 @@ public class StockTransferDto
     public string TransferCode { get; set; } = string.Empty;
     public int SourceWarehouseId { get; set; }
     public string SourceWarehouseName { get; set; } = string.Empty;
+    public int? SourceBranchId { get; set; }
     public string SourceBranchName { get; set; } = string.Empty;
-    public int DestinationWarehouseId { get; set; }
+    public int? DestinationWarehouseId { get; set; }
     public string DestinationWarehouseName { get; set; } = string.Empty;
+    public int? DestinationBranchId { get; set; }
     public string DestinationBranchName { get; set; } = string.Empty;
     public TransferStatus Status { get; set; }
     public string StatusName { get; set; } = string.Empty;

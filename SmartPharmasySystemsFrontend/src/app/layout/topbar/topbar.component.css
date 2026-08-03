@@ -369,14 +369,14 @@
 }
 
 .overlay-container {
-    width: 380px;
+    width: 320px;
     max-width: 90vw;
     display: flex;
     flex-direction: column;
 }
 
 .overlay-container .overlay-header {
-    padding: 1.25rem;
+    padding: 0.75rem 1rem;
     background: var(--surface-hover);
     display: flex;
     align-items: center;
@@ -392,7 +392,7 @@
 
 .overlay-container .overlay-header .title-group h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 800;
     color: var(--text-color);
 }
@@ -400,9 +400,9 @@
 .overlay-container .overlay-header .title-group .count-pill {
     background: var(--primary-50);
     color: var(--primary-color);
-    padding: 2px 8px;
-    border-radius: 8px;
-    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.65rem;
     font-weight: 700;
 }
 
@@ -411,7 +411,7 @@
     border: none;
     color: var(--primary-color);
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     cursor: pointer;
 }
 
@@ -445,11 +445,11 @@
 }
 
 .notification-card {
-    margin-bottom: 0.25rem;
-    padding: 0.85rem;
-    border-radius: 14px;
+    margin-bottom: 0.2rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 12px;
     display: flex;
-    gap: 0.85rem;
+    gap: 0.75rem;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
@@ -480,13 +480,13 @@
 }
 
 .notification-card .card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
     flex-shrink: 0;
 }
 
@@ -524,7 +524,7 @@
 
 .notification-card .card-body .card-header .medicine-name {
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--text-color);
     white-space: nowrap;
     overflow: hidden;
@@ -532,13 +532,13 @@
 }
 
 .notification-card .card-body .card-header .time-stamp {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     color: var(--text-color-secondary);
 }
 
 .notification-card .card-body .card-msg {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--text-color-secondary);
     line-height: 1.4;
     display: -webkit-box;
@@ -567,10 +567,9 @@
 
 /* View More Card */
 .view-more-card {
-    padding: 0.85rem 1rem;
-    margin: 0.5rem;
-    margin-top: 0.75rem;
-    border-radius: 14px;
+    padding: 0.5rem 0.75rem;
+    margin: 0.25rem 0.5rem;
+    border-radius: 10px;
     background: linear-gradient(135deg, var(--primary-50), rgba(var(--primary-rgb), 0.08));
     border: 1px dashed var(--primary-color);
     display: flex;
@@ -581,7 +580,7 @@
     transition: all 0.3s ease;
     color: var(--primary-color);
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
 }
 
 .view-more-card:hover {
@@ -602,20 +601,20 @@
 
 
 .overlay-container .overlay-footer {
-    padding: 0.75rem;
+    padding: 0.5rem 0.75rem;
     background: var(--surface-hover);
     border-top: 1px solid var(--border-color);
 }
 
 .overlay-container .overlay-footer .footer-btn {
     width: 100%;
-    padding: 0.65rem;
+    padding: 0.5rem;
     background: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     cursor: pointer;
     display: flex;
     align-items: center;

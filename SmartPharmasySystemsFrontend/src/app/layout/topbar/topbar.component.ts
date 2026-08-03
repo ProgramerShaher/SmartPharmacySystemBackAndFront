@@ -11,6 +11,7 @@ import { ConfirmationService } from 'primeng/api';
 import { ThemeService, Theme } from '../../core/services/theme.service';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
+import { SystemNotificationService } from '../../core/services/notifications/system-notification.service';
 import { ThemeSettingsComponent } from '../theme-settings/theme-settings.component';
 
 @Component({
@@ -68,6 +69,7 @@ export class TopbarComponent {
         public themeService: ThemeService,
         private authService: AuthService,
         public alertService: AlertService,
+        public systemNotificationService: SystemNotificationService,
         @Inject(PLATFORM_ID) private platformId: Object,
         @Inject(DOCUMENT) private document: Document
     ) { }
@@ -80,6 +82,9 @@ export class TopbarComponent {
             this.userRole = user.roleName || 'مستخدم';
             this.branchName = user.branchName || (user.username === 'admin' ? 'الفرع الرئيسي' : 'الفرع ' + (user.branchId || 'الرئيسي'));
             this.userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=0d9488&color=fff&bold=true&rounded=true`;
+            
+            // Start polling for system notifications
+            this.systemNotificationService.startPolling(user.userId, user.branchId);
         }
 
         // Optional: Listen to user changes
@@ -166,6 +171,42 @@ export class TopbarComponent {
                 console.error('❌ Failed to mark alert as read:', err);
             }
         });
+    }
+
+    // System Notification Methods
+    markSystemNotificationAsRead(notificationId: number, referenceType?: string, event?: Event) {
+        if (event) {
+            event.stopPropagation();
+        }
+
+        const user = this.authService.currentUserValue;
+        if (user) {
+            this.systemNotificationService.markAsRead(notificationId, user.userId).subscribe({
+                next: () => {
+                    console.log('✅ System notification marked as read');
+                    if (referenceType === 'StockTransfer') {
+                        this.router.navigate(['/warehouses/transfers']);
+                    }
+                },
+                error: (err) => console.error('❌ Failed to mark system notification as read', err)
+            });
+        }
+    }
+    
+    markAllSystemNotificationsAsRead() {
+        const user = this.authService.currentUserValue;
+        if (user) {
+            this.systemNotificationService.markAllAsRead(user.userId, user.branchId).subscribe();
+        }
+    }
+
+    getSystemNotificationIcon(type: number): string {
+        switch (type) {
+            case 3: return 'pi-arrow-right-arrow-left'; // TransferRequest
+            case 1: return 'pi-box'; // LowStock
+            case 2: return 'pi-calendar-times'; // Expiry
+            default: return 'pi-bell';
+        }
     }
 
     getAlertIcon(alertType: any): string {

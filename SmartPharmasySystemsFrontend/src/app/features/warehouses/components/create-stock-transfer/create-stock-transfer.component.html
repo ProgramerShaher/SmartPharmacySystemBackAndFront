@@ -35,22 +35,33 @@
             </div>
 
             <div class="grid p-fluid">
-                <div class="col-12 md:col-4 st-field">
-                    <label class="text-primary">مخزن المصدر (فرعك الحالي)</label>
+                <!-- Source Branch for Pull -->
+                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'external_pull'">
+                    <label class="text-primary">الفرع المصدر (فرع آخر)</label>
+                    <p-dropdown [options]="branches" formControlName="sourceBranchId" optionLabel="name"
+                        optionValue="id" placeholder="اختر الفرع المصدر..." [filter]="true" filterBy="name"
+                        appendTo="body"></p-dropdown>
+                </div>
+
+                <!-- Source Warehouse -->
+                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'internal' || transferForm.get('transferType')?.value === 'external_push' || transferForm.get('sourceBranchId')?.value">
+                    <label class="text-primary">{{ transferForm.get('transferType')?.value === 'external_pull' ? 'مخزن المصدر (في الفرع الآخر)' : 'مخزن المصدر (فرعك الحالي)' }}</label>
                     <p-dropdown [options]="sourceWarehouses" formControlName="sourceWarehouseId" optionLabel="name"
                         optionValue="id" placeholder="اختر مخزن المصدر..." [filter]="true" filterBy="name"
                         appendTo="body"></p-dropdown>
                 </div>
 
-                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'external'">
+                <!-- Destination Branch for Push -->
+                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'external_push'">
                     <label class="text-primary">الفرع الوجهة (المستلم)</label>
                     <p-dropdown [options]="branches" formControlName="destinationBranchId" optionLabel="name"
                         optionValue="id" placeholder="اختر الفرع المستلم..." [filter]="true" filterBy="name"
                         appendTo="body"></p-dropdown>
                 </div>
 
-                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'internal'">
-                    <label class="text-primary">مخزن الوجهة (المستلم)</label>
+                <!-- Destination Warehouse for Internal & Pull -->
+                <div class="col-12 md:col-4 st-field" *ngIf="transferForm.get('transferType')?.value === 'internal' || transferForm.get('transferType')?.value === 'external_pull'">
+                    <label class="text-primary">{{ transferForm.get('transferType')?.value === 'external_pull' ? 'مخزن الوجهة (فرعك الحالي)' : 'مخزن الوجهة (المستلم)' }}</label>
                     <p-dropdown [options]="destinationWarehouses" formControlName="destinationWarehouseId"
                         optionLabel="name" optionValue="id" placeholder="اختر مخزن الوجهة..." [filter]="true"
                         filterBy="name" [disabled]="destinationWarehouses.length === 0" appendTo="body"></p-dropdown>

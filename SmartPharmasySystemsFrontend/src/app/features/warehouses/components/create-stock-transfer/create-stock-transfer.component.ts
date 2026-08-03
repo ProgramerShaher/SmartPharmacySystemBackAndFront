@@ -48,7 +48,8 @@ export class CreateStockTransferComponent implements OnInit {
 
     transferTypeOptions = [
         { label: 'تحويل داخلي (في نفس الفرع)', value: 'internal' },
-        { label: 'شحن لفرع آخر (نقل خارجي)', value: 'external' }
+        { label: 'إرسال بضاعة لفرع آخر (صادر)', value: 'external_push' },
+        { label: 'طلب بضاعة من فرع آخر (وارد)', value: 'external_pull' }
     ];
 
     branches: any[] = [];
@@ -75,6 +76,7 @@ export class CreateStockTransferComponent implements OnInit {
     ) {
         this.transferForm = this.fb.group({
             transferType: ['internal', Validators.required],
+            sourceBranchId: [null],
             destinationBranchId: [null],
             sourceWarehouseId: [null, Validators.required],
             destinationWarehouseId: [null, Validators.required],
@@ -92,32 +94,49 @@ export class CreateStockTransferComponent implements OnInit {
         this.transferForm.get('transferType')?.valueChanges.subscribe(type => {
             console.log("Transfer type changed to:", type);
             this.transferForm.get('destinationBranchId')?.setValue(null);
+            this.transferForm.get('sourceBranchId')?.setValue(null);
+            this.transferForm.get('sourceWarehouseId')?.setValue(null);
             this.transferForm.get('destinationWarehouseId')?.setValue(null);
-            this.updateDestinationWarehouses();
+            this.updateWarehousesLists();
 
-            if (type === 'external') {
+            if (type === 'external_push') {
                 this.transferForm.get('destinationBranchId')?.setValidators([Validators.required]);
+                this.transferForm.get('sourceBranchId')?.clearValidators();
+                this.transferForm.get('sourceWarehouseId')?.setValidators([Validators.required]);
                 this.transferForm.get('destinationWarehouseId')?.clearValidators();
-            } else {
+            } else if (type === 'external_pull') {
                 this.transferForm.get('destinationBranchId')?.clearValidators();
+                this.transferForm.get('sourceBranchId')?.setValidators([Validators.required]);
+                this.transferForm.get('sourceWarehouseId')?.setValidators([Validators.required]);
+                this.transferForm.get('destinationWarehouseId')?.setValidators([Validators.required]);
+            } else { // internal
+                this.transferForm.get('destinationBranchId')?.clearValidators();
+                this.transferForm.get('sourceBranchId')?.clearValidators();
+                this.transferForm.get('sourceWarehouseId')?.setValidators([Validators.required]);
                 this.transferForm.get('destinationWarehouseId')?.setValidators([Validators.required]);
             }
             this.transferForm.get('destinationBranchId')?.updateValueAndValidity();
+            this.transferForm.get('sourceBranchId')?.updateValueAndValidity();
+            this.transferForm.get('sourceWarehouseId')?.updateValueAndValidity();
             this.transferForm.get('destinationWarehouseId')?.updateValueAndValidity();
         });
 
         // Listen for destination branch changes (for external transfers)
         this.transferForm.get('destinationBranchId')?.valueChanges.subscribe(branchId => {
-            console.log("Destination branch changed to:", branchId);
             this.transferForm.get('destinationWarehouseId')?.setValue(null);
-            this.updateDestinationWarehouses();
+        });
+
+        // Listen for source branch changes (for pull)
+        this.transferForm.get('sourceBranchId')?.valueChanges.subscribe(branchId => {
+            this.transferForm.get('sourceWarehouseId')?.setValue(null);
+            this.updateWarehousesLists();
         });
 
         // Listen for changes on source warehouse to load its inventory
         this.transferForm.get('sourceWarehouseId')?.valueChanges.subscribe(warehouseId => {
             if (warehouseId) {
                 this.loadSourceInventory(warehouseId);
-                this.updateDestinationWarehouses();
+                this.updateWarehousesLists();
                 // Clear items array as source changed
                 this.items.clear();
             } else {
@@ -148,16 +167,7 @@ export class CreateStockTransferComponent implements OnInit {
             // Backend serializes Enums as Strings (e.g. "Damaged", "Main", "Branch") or Numbers.
             const isDamaged = (type: any) => type === 'Damaged' || type === 3 || type === '3';
 
-            // Source warehouses are strictly those in the current user's branch (excluding damaged)
-            if (this.currentUserBranchId > 0) {
-                this.sourceWarehouses = res.filter(w => !isDamaged(w.type) && Number(w.branchId) === this.currentUserBranchId);
-            } else {
-                // If branchId is unknown, show all non-damaged warehouses
-                this.sourceWarehouses = res.filter(w => !isDamaged(w.type));
-            }
-
-            console.log("Source Warehouses:", this.sourceWarehouses);
-            this.updateDestinationWarehouses();
+            this.updateWarehousesLists();
 
             if (this.sourceWarehouses.length === 0 && this.currentUserBranchId > 0) {
                 this.messageService.add({ severity: 'warn', summary: 'لا توجد مخازن', detail: 'فرعك الحالي لا يمتلك أي مخازن نشطة لإجراء عملية التحويل منها.' });
@@ -165,32 +175,45 @@ export class CreateStockTransferComponent implements OnInit {
         });
     }
 
-    updateDestinationWarehouses() {
+    updateWarehousesLists() {
         const type = this.transferForm.get('transferType')?.value;
         const sourceId = this.transferForm.get('sourceWarehouseId')?.value;
-        const sourceWarehouse = this.warehouses.find(w => Number(w.id) === Number(sourceId));
+        const isDamaged = (t: any) => t === 'Damaged' || t === 3 || t === '3';
 
-        // Determine the effective source branch
-        const effectiveSourceBranchId = sourceWarehouse ? Number(sourceWarehouse.branchId) : this.currentUserBranchId;
+        if (type === 'internal' || type === 'external_push') {
+            // Source is current branch
+            if (this.currentUserBranchId > 0) {
+                this.sourceWarehouses = this.warehouses.filter(w => !isDamaged(w.type) && Number(w.branchId) === this.currentUserBranchId);
+            } else {
+                this.sourceWarehouses = this.warehouses.filter(w => !isDamaged(w.type));
+            }
+        } else if (type === 'external_pull') {
+            // Source is selected other branch
+            const srcBranchId = this.transferForm.get('sourceBranchId')?.value;
+            if (srcBranchId) {
+                this.sourceWarehouses = this.warehouses.filter(w => !isDamaged(w.type) && Number(w.branchId) === Number(srcBranchId));
+            } else {
+                this.sourceWarehouses = [];
+            }
+        }
 
         if (type === 'internal') {
-            // For internal, destination must be in the same branch, and not the source itself
-            if (effectiveSourceBranchId > 0) {
-                this.destinationWarehouses = this.warehouses.filter(w =>
-                    Number(w.branchId) === effectiveSourceBranchId && Number(w.id) !== Number(sourceId));
+            // Destination is current branch, but not source
+            if (this.currentUserBranchId > 0) {
+                this.destinationWarehouses = this.warehouses.filter(w => Number(w.branchId) === this.currentUserBranchId && Number(w.id) !== Number(sourceId));
             } else {
                 this.destinationWarehouses = this.warehouses.filter(w => Number(w.id) !== Number(sourceId));
             }
-        } else {
-            // For external, destination must be in the selected destination branch
-            const destBranchId = this.transferForm.get('destinationBranchId')?.value;
-            if (destBranchId) {
-                this.destinationWarehouses = this.warehouses.filter(w => Number(w.branchId) === Number(destBranchId));
+        } else if (type === 'external_pull') {
+            // Destination is current branch
+            if (this.currentUserBranchId > 0) {
+                this.destinationWarehouses = this.warehouses.filter(w => !isDamaged(w.type) && Number(w.branchId) === this.currentUserBranchId);
             } else {
-                this.destinationWarehouses = [];
+                this.destinationWarehouses = this.warehouses.filter(w => !isDamaged(w.type));
             }
+        } else {
+            this.destinationWarehouses = []; // Push doesn't select destination warehouse initially
         }
-        console.log("Destination Warehouses:", this.destinationWarehouses);
     }
 
     loadSourceInventory(warehouseId: number) {
@@ -275,7 +298,7 @@ export class CreateStockTransferComponent implements OnInit {
             sourceWarehouseId: formValue.sourceWarehouseId,
             destinationWarehouseId: formValue.destinationWarehouseId,
             destinationBranchId: formValue.destinationBranchId,
-            transferType: formValue.transferType === 'external' ? 5 : 4, // 5 = External, 4 = Internal
+            transferType: formValue.transferType === 'internal' ? 4 : (formValue.transferType === 'external_pull' ? 3 : 5),
             notes: formValue.notes,
             items: formValue.items.map((item: any) => ({
                 medicineId: item.medicineId,

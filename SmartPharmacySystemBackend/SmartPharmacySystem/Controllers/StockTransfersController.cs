@@ -28,9 +28,9 @@ public class StockTransfersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] int? sourceWarehouseId, [FromQuery] int? destinationWarehouseId, [FromQuery] TransferStatus? status, [FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    public async Task<IActionResult> GetAll([FromQuery] int? sourceWarehouseId, [FromQuery] int? destinationWarehouseId, [FromQuery] TransferStatus? status, [FromQuery] DateTime? from, [FromQuery] DateTime? to, [FromQuery] TransferType? transferType)
     {
-        var result = await _transferService.GetAllAsync(sourceWarehouseId, destinationWarehouseId, status, from, to);
+        var result = await _transferService.GetAllAsync(sourceWarehouseId, destinationWarehouseId, status, from, to, transferType);
         return Ok(ApiResponse<IEnumerable<StockTransferDto>>.Succeeded(result, "تم جلب التحويلات"));
     }
 
@@ -88,6 +88,13 @@ public class StockTransfersController : ControllerBase
     {
         var result = await _transferService.ReceiveAsync(id, dto, receivedByUserId);
         return Ok(ApiResponse<StockTransferDto>.Succeeded(result, "تم استلام التحويل"));
+    }
+
+    [HttpGet("by-branch/{branchId}")]
+    public async Task<IActionResult> GetByBranch(int branchId, [FromQuery] TransferType? transferType)
+    {
+        var result = await _transferService.GetByBranchAsync(branchId, transferType);
+        return Ok(ApiResponse<IEnumerable<StockTransferDto>>.Succeeded(result, "تم جلب تحويلات الفرع"));
     }
 
     [HttpDelete("{id}")]

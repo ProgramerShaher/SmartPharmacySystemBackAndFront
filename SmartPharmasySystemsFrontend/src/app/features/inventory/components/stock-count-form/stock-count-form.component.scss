@@ -1,0 +1,91 @@
+.movement-container {
+  min-height: 100vh;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
+  color: #1e293b;
+}
+
+.page-header,
+.filters-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.icon-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+}
+
+.icon-circle i { font-size: 1rem; }
+
+h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.page-header p {
+  margin: 0.12rem 0 0;
+  color: #64748b;
+  font-size: 0.62rem;
+}
+
+.actions { display: flex; gap: 0.35rem; align-items: center; }
+
+.filters-panel {
+  display: grid;
+  align-items: start;
+  gap: 0.4rem;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.filter-field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #475569;
+}
+
+:host ::ng-deep {
+  .p-button.p-button-sm,
+  .p-button.p-button-icon-only {
+    height: 2rem;
+  }
+
+  .p-inputtext,
+  .p-dropdown,
+  .p-calendar .p-inputtext {
+    min-height: 1.8rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    padding: 0.3rem 0.5rem;
+  }
+}

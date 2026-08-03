@@ -1,0 +1,112 @@
+<div class="movement-container" dir="rtl">
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-check-square"></i></div>
+      <div>
+        <h1>الجرد المخزني</h1>
+        <p>إدارة جرد المخزون وتسوية الأرصدة</p>
+      </div>
+    </div>
+    
+    <div class="actions no-print">
+        <p-button icon="pi pi-plus" label="إنشاء أمر جرد جديد" [rounded]="true" severity="primary" size="small" routerLink="/inventory/stock-counts/new"></p-button>
+    </div>
+  </div>
+
+  <section class="filters-panel no-print">
+    <form [formGroup]="filterForm" (ngSubmit)="onFilter()" class="w-full" style="display: contents;">
+      <div class="filter-field">
+        <label>حالة الجرد</label>
+        <p-dropdown [options]="statusOptions" formControlName="status" placeholder="الكل"
+            styleClass="w-full" appendTo="body" (onChange)="onFilter()"></p-dropdown>
+      </div>
+      <div class="filter-field">
+        <label>من تاريخ</label>
+        <input pInputText type="date" class="w-full" formControlName="from" (change)="onFilter()">
+      </div>
+      <div class="filter-field">
+        <label>إلى تاريخ</label>
+        <input pInputText type="date" class="w-full" formControlName="to" (change)="onFilter()">
+      </div>
+      <div class="filter-field" style="grid-column: span 2;">
+          <label>&nbsp;</label>
+          <div class="flex gap-2">
+              <p-button icon="pi pi-search" type="submit" label="بحث" size="small"></p-button>
+              <p-button icon="pi pi-refresh" type="button" label="إعادة ضبط" severity="secondary" [outlined]="true" size="small" (onClick)="resetFilter()"></p-button>
+          </div>
+      </div>
+    </form>
+  </section>
+
+  <section class="table-panel">
+      <p-table [value]="stockCounts" [loading]="isLoading" [rowHover]="true" responsiveLayout="scroll"
+          styleClass="p-datatable-sm compact-table">
+
+          <ng-template pTemplate="header">
+              <tr>
+                  <th style="width: 10rem">رقم الجرد</th>
+                  <th>المخزن</th>
+                  <th class="text-center">نوع الجرد</th>
+                  <th class="text-center">تاريخ البدء</th>
+                  <th class="text-center">تاريخ الانتهاء</th>
+                  <th class="text-center">الحالة</th>
+                  <th class="text-center" style="width: 8rem">إجراءات</th>
+              </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-item>
+              <tr>
+                  <td><strong class="ref-number">#{{item.countCode}}</strong></td>
+                  <td>
+                      <strong class="medicine-name">{{item.warehouseName || 'مخزن رئيسي'}}</strong>
+                  </td>
+                  <td class="text-center">
+                      <span class="type-pill type-gray" *ngIf="isType(item, StockCountType.Daily, 'Daily')">يومي</span>
+                      <span class="type-pill type-green" *ngIf="isType(item, StockCountType.Monthly, 'Monthly')">شهري</span>
+                      <span class="type-pill type-amber" *ngIf="isType(item, StockCountType.BiAnnual, 'BiAnnual')">نصف سنوي</span>
+                      <span class="type-pill type-red" *ngIf="isType(item, StockCountType.Annual, 'Annual')">سنوي</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="date-main">{{item.startedAt | date:'dd/MM/yyyy'}}</span>
+                    <small class="date-time">{{item.startedAt | date:'HH:mm'}}</small>
+                  </td>
+                  <td class="text-center">
+                    <span class="date-main" *ngIf="item.finishedAt">{{item.finishedAt | date:'dd/MM/yyyy'}}</span>
+                    <small class="date-time" *ngIf="item.finishedAt">{{item.finishedAt | date:'HH:mm'}}</small>
+                    <span class="muted" *ngIf="!item.finishedAt">-</span>
+                  </td>
+                  <td class="text-center">
+                      <p-tag [severity]="'info'" value="مسودة" *ngIf="isStatus(item, StockCountStatus.Draft, 'Draft')"></p-tag>
+                      <p-tag [severity]="'contrast'" value="قيد الجرد"
+                          *ngIf="isStatus(item, StockCountStatus.InProgress, 'InProgress')"></p-tag>
+                      <p-tag [severity]="'warning'" value="بانتظار الاعتماد"
+                          *ngIf="isStatus(item, StockCountStatus.PendingApproval, 'PendingApproval')"></p-tag>
+                      <p-tag [severity]="'success'" value="معتمد"
+                          *ngIf="isStatus(item, StockCountStatus.Approved, 'Approved')"></p-tag>
+                      <p-tag [severity]="'danger'" value="مغلق"
+                          *ngIf="isStatus(item, StockCountStatus.Closed, 'Closed')"></p-tag>
+                  </td>
+                  <td class="text-center">
+                      <div class="flex justify-content-center gap-1">
+                          <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+                              pTooltip="التفاصيل" tooltipPosition="top" (onClick)="viewDetails(item.id)"></p-button>
+                          <p-button *ngIf="canEditOrDelete(item)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="success" size="small"
+                              pTooltip="تعديل" tooltipPosition="top" (onClick)="editStockCount(item.id)"></p-button>
+                          <p-button *ngIf="canEditOrDelete(item)" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+                              pTooltip="حذف" tooltipPosition="top" (onClick)="deleteStockCount(item)"></p-button>
+                      </div>
+                  </td>
+              </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+              <tr>
+                  <td colspan="7" class="empty-message">
+                      <i class="pi pi-inbox"></i>
+                      <span>لا يوجد أوامر جرد لعرضها</span>
+                  </td>
+              </tr>
+          </ng-template>
+      </p-table>
+  </section>
+</div>

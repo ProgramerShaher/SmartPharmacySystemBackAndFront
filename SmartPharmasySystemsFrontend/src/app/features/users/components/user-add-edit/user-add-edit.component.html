@@ -1,40 +1,46 @@
-<div class="user-form-container" dir="rtl">
-    <!-- Subtitle (matched to image) -->
-    <div class="form-intro">
-        <div class="decoration-dots">..</div>
-        <p class="subtitle">قم بتعبئة البيانات الأساسية للمستخدم أدناه</p>
-        <div class="divider"></div>
+<div class="modal-shell" dir="rtl">
+    <div class="modal-header">
+        <div class="modal-title">
+            <span class="modal-icon">
+                <i class="pi" [ngClass]="user?.id ? 'pi-pencil' : 'pi-user-plus'"></i>
+            </span>
+            <div>
+                <h2>{{ user?.id ? 'تعديل المستخدم' : 'إضافة مستخدم جديد' }}</h2>
+                <p>{{ user?.id ? 'تعديل بيانات وحساب المستخدم' : 'إدخال بيانات المستخدم الجديد والصلاحيات' }}</p>
+            </div>
+        </div>
+        <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn"
+            (click)="onCancel()"></button>
     </div>
 
-    <!-- Main Content -->
-    <div class="form-content">
+    <div class="modal-body p-fluid">
         <form [formGroup]="userForm" (ngSubmit)="saveUser()">
-            <div class="form-grid">
+            <div class="field-group-grid">
                 <!-- Full Name -->
                 <div class="field">
-                    <label for="fullName">الاسم الكامل</label>
-                    <div class="input-wrapper">
+                    <label for="fullName">الاسم الكامل <span class="text-red-500">*</span></label>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-user text-400"></i>
                         <input type="text" pInputText id="fullName" formControlName="fullName"
                             placeholder="أدخل الاسم الكامل">
-                        <i class="pi pi-user input-icon"></i>
-                    </div>
+                    </span>
                 </div>
 
                 <!-- Username -->
                 <div class="field">
-                    <label for="username">اسم المستخدم</label>
-                    <div class="input-wrapper">
+                    <label for="username">اسم المستخدم <span class="text-red-500">*</span></label>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-at text-400"></i>
                         <input type="text" pInputText id="username" formControlName="username"
                             placeholder="اسم المستخدم" [readonly]="!!user?.id">
-                        <i class="pi pi-at input-icon"></i>
-                    </div>
+                    </span>
                 </div>
 
                 <!-- Role -->
                 <div class="field">
-                    <label for="roleId">الصلاحية</label>
+                    <label for="roleId">الصلاحية <span class="text-red-500">*</span></label>
                     <p-dropdown [options]="roles" formControlName="roleId" styleClass="w-full" placeholder="اختر الصلاحية"
-                        [showClear]="false">
+                        [showClear]="false" appendTo="body">
                         <ng-template let-option pTemplate="item">
                             <div class="flex align-items-center gap-2">
                                 <i [class]="option.icon"></i>
@@ -48,7 +54,7 @@
                 <div class="field">
                     <label for="branchId">فرع التعيين</label>
                     <p-dropdown [options]="branches" formControlName="branchId" optionLabel="name" optionValue="id" styleClass="w-full"
-                        placeholder="اختر الفرع (لتعيين الموظف)" [showClear]="true" [loading]="isLoadingBranches">
+                        placeholder="اختر الفرع (لتعيين الموظف)" [showClear]="true" [loading]="isLoadingBranches" appendTo="body">
                         <ng-template let-option pTemplate="item">
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-building"></i>
@@ -60,14 +66,13 @@
 
                 <!-- Password -->
                 <div class="field">
-                    <label for="password">كلمة المرور</label>
-                    <div class="input-wrapper">
+                    <label for="password">كلمة المرور <span *ngIf="!user?.id" class="text-red-500">*</span></label>
+                    <div class="p-inputgroup w-full">
+                        <span class="p-inputgroup-addon"><i class="pi pi-lock text-400"></i></span>
                         <input [type]="showPassword ? 'text' : 'password'" pInputText id="password"
                             formControlName="password" placeholder="********">
-                        <i class="pi pi-lock input-icon"></i>
-                        <button type="button" class="password-toggle" (click)="togglePassword()">
-                            <i class="pi" [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
-                        </button>
+                        <button type="button" pButton class="p-button-secondary p-button-text" (click)="togglePassword()"
+                            [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></button>
                     </div>
                     <!-- Password Strength Meter -->
                     <div class="strength-meter" *ngIf="password.value">
@@ -81,61 +86,59 @@
 
                 <!-- Confirm Password -->
                 <div class="field">
-                    <label for="confirmPassword">تأكيد كلمة المرور</label>
-                    <div class="input-wrapper">
+                    <label for="confirmPassword">تأكيد كلمة المرور <span *ngIf="!user?.id" class="text-red-500">*</span></label>
+                    <div class="p-inputgroup w-full">
+                        <span class="p-inputgroup-addon"><i class="pi pi-lock text-400"></i></span>
                         <input [type]="showConfirmPassword ? 'text' : 'password'" pInputText id="confirmPassword"
                             formControlName="confirmPassword" placeholder="********">
-                        <i class="pi pi-lock input-icon"></i>
-                        <button type="button" class="password-toggle" (click)="toggleConfirmPassword()">
-                            <i class="pi" [ngClass]="showConfirmPassword ? 'pi-eye-slash' : 'pi-eye'"></i>
-                        </button>
+                        <button type="button" pButton class="p-button-secondary p-button-text" (click)="toggleConfirmPassword()"
+                            [icon]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></button>
                     </div>
-                    <small class="error-text"
-                        *ngIf="userForm.errors?.['passwordMismatch'] && confirmPassword.touched">كلمة المرور غير
-                        متطابقة</small>
+                    <small class="text-red-500 mt-1 block"
+                        *ngIf="userForm.errors?.['passwordMismatch'] && confirmPassword.touched">كلمة المرور غير متطابقة</small>
                 </div>
 
                 <!-- Phone -->
                 <div class="field">
                     <label for="phoneNumber">رقم الجوال</label>
-                    <div class="input-wrapper">
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-phone text-400"></i>
                         <input type="text" pInputText id="phoneNumber" formControlName="phoneNumber"
                             placeholder="05xxxxxxxx">
-                        <i class="pi pi-phone input-icon"></i>
-                    </div>
+                    </span>
                 </div>
 
                 <!-- Email -->
                 <div class="field">
                     <label for="email">البريد الإلكتروني</label>
-                    <div class="input-wrapper">
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-envelope text-400"></i>
                         <input type="email" pInputText id="email" formControlName="email"
                             placeholder="example@mail.com">
-                        <i class="pi pi-envelope input-icon"></i>
-                    </div>
+                    </span>
                 </div>
+            </div>
 
-                <!-- Active Status -->
-                <div class="field full-width">
-                    <div class="switch-field">
-                        <div class="switch-info">
-                            <span class="switch-label">حالة الحساب</span>
-                            <span class="switch-desc">{{isActive.value ? 'الحساب مفعل ويمكن للمستخدم تسجيل الدخول' :
-                                'الحساب معطل حالياً'}}</span>
-                        </div>
-                        <p-inputSwitch formControlName="isActive"></p-inputSwitch>
+            <!-- Active Status -->
+            <div class="field mt-4">
+                <div class="switch-field p-3 surface-ground border-round-xl flex align-items-center justify-content-between">
+                    <div class="switch-info">
+                        <span class="switch-label font-bold text-700 block mb-1">حالة الحساب</span>
+                        <span class="switch-desc text-500 text-sm block">{{isActive.value ? 'الحساب مفعل ويمكن للمستخدم تسجيل الدخول' :
+                            'الحساب معطل حالياً'}}</span>
                     </div>
+                    <p-inputSwitch formControlName="isActive"></p-inputSwitch>
                 </div>
             </div>
         </form>
     </div>
 
     <!-- Footer -->
-    <div class="form-footer">
-        <button pButton type="button" label="إلغاء" icon="pi pi-times" class="p-button-text p-button-secondary"
+    <div class="modal-footer">
+        <button pButton label="إلغاء" icon="pi pi-times" [rounded]="true" [outlined]="true" severity="secondary"
             (click)="onCancel()"></button>
-        <button pButton type="submit" [label]="user?.id ? 'حفظ التعديلات' : 'إضافة المستخدم'"
-            [icon]="user?.id ? 'pi pi-check' : 'pi pi-plus'" class="p-button-primary"
+        <button pButton [label]="user?.id ? 'حفظ التعديلات' : 'إضافة المستخدم'"
+            [icon]="user?.id ? 'pi pi-check' : 'pi pi-plus'" [rounded]="true" class="p-button-primary"
             [disabled]="userForm.invalid || loading" [loading]="loading" (click)="saveUser()"></button>
     </div>
 </div>

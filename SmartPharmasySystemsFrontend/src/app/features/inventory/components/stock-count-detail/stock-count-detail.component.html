@@ -1,0 +1,85 @@
+<div class="movement-container" dir="rtl" *ngIf="header">
+  
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-check-square"></i></div>
+      <div>
+        <h1 class="flex align-items-center gap-2">
+            تفاصيل الجرد <span class="ref-number" style="font-size: 1rem;">#{{header.countCode}}</span>
+            <p-tag [severity]="'info'" value="مسودة" *ngIf="isDraft()"></p-tag>
+            <p-tag [severity]="'contrast'" value="قيد الجرد" *ngIf="isInProgress()"></p-tag>
+            <p-tag [severity]="'warning'" value="بانتظار الاعتماد" *ngIf="isPendingApproval()"></p-tag>
+            <p-tag [severity]="'success'" value="معتمد" *ngIf="isApproved()"></p-tag>
+            <p-tag [severity]="'danger'" value="مغلق" *ngIf="isClosed()"></p-tag>
+        </h1>
+        <p>
+            المخزن: <strong style="color: var(--primary-color)">{{header.warehouseName || 'مخزن رئيسي'}}</strong> 
+            | التاريخ: {{header.startedAt | date:'yyyy-MM-dd'}}
+        </p>
+      </div>
+    </div>
+    
+    <div class="actions no-print">
+        <p-button icon="pi pi-arrow-right" label="عودة للقائمة" [outlined]="true" [rounded]="true" severity="secondary" size="small" routerLink="/inventory/stock-counts"></p-button>
+        <p-button *ngIf="canEdit()" icon="pi pi-paper-plane" label="إرسال للاعتماد" [rounded]="true" severity="warning" size="small" (onClick)="submitForApproval()"></p-button>
+        <p-button *ngIf="isPendingApproval()" icon="pi pi-check" label="اعتماد وتسوية" [rounded]="true" severity="success" size="small" (onClick)="approve()"></p-button>
+    </div>
+  </div>
+
+  <section class="table-panel">
+    <p-table [value]="items" [rowHover]="true" responsiveLayout="scroll" styleClass="p-datatable-sm compact-table">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>الدواء</th>
+                <th>التشغيلة</th>
+                <th class="text-center">النظامية</th>
+                <th class="text-center" style="width: 150px;">الفعلية</th>
+                <th class="text-center">الفارق</th>
+                <th>السبب</th>
+                <th class="text-center no-print" *ngIf="canEdit()" style="width: 8rem">حفظ</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr>
+                <td><strong class="medicine-name">{{item.medicineName}}</strong></td>
+                <td><span class="batch-chip">{{item.batchNumber}}</span></td>
+                <td class="text-center"><span class="movement-qty type-gray" style="font-size: 0.75rem;">{{item.systemQuantity}}</span></td>
+                <td class="text-center">
+                    <input pInputText *ngIf="canEdit()" type="number" class="text-center w-full" style="height: 1.8rem; font-size: 0.75rem; padding: 0.2rem;"
+                        [(ngModel)]="item.physicalQuantity" min="0" placeholder="أدخل الكمية">
+                    <strong class="movement-qty movement-qty-in" style="font-size: 0.75rem; background: #eef2ff;" *ngIf="!canEdit()">{{item.physicalQuantity ?? '-'}}</strong>
+                </td>
+                <td class="text-center">
+                    <span class="movement-qty" [ngClass]="{'type-green': item.variance > 0, 'type-red': item.variance < 0, 'type-gray': item.variance === 0}">
+                        {{item.variance > 0 ? '+' : ''}}{{item.variance}}
+                    </span>
+                </td>
+                <td>
+                    <input pInputText *ngIf="canEdit()" type="text" class="w-full" style="height: 1.8rem; font-size: 0.7rem; padding: 0.2rem;"
+                        [(ngModel)]="item.varianceReason" placeholder="...">
+                    <span class="muted m-0" *ngIf="!canEdit()">{{item.varianceReason || '-'}}</span>
+                </td>
+                <td class="text-center no-print" *ngIf="canEdit()">
+                    <div class="flex justify-content-center gap-1">
+                        <p-button icon="pi pi-save" [rounded]="true" [text]="true" severity="success" size="small" (onClick)="saveItem(item)" pTooltip="حفظ" tooltipPosition="top"></p-button>
+                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small" (onClick)="deleteItem(item)" pTooltip="حذف" tooltipPosition="top"></p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td [attr.colspan]="canEdit() ? 7 : 6" class="empty-message">
+                    <i class="pi pi-inbox"></i>
+                    <span>لا يوجد أصناف مدرجة في هذا الجرد</span>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+  </section>
+</div>
+
+<div class="flex flex-column align-items-center justify-content-center py-8" *ngIf="isLoading && !header">
+  <i class="pi pi-spin pi-spinner text-primary text-4xl mb-3"></i>
+  <p class="text-500 m-0">جاري تحميل بيانات الجرد...</p>
+</div>

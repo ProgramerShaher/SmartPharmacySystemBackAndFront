@@ -18,6 +18,8 @@ export interface StockTransferDto {
     destinationBranchName?: string;
     status: string | number;
     statusName: string;
+    transferType: number;
+    transferTypeName: string;
     notes?: string;
     requestedByUserId: number;
     requestedByName: string;
@@ -122,6 +124,13 @@ export class StockTransferService {
 
     getPendingReceipt(warehouseId: number): Observable<StockTransferDto[]> {
         return this.http.get<ApiResponse<StockTransferDto[]>>(`${this.apiUrl}/pending-receipt/${warehouseId}`)
+            .pipe(map(r => r.data || []));
+    }
+
+    getByBranch(branchId: number, transferType?: number): Observable<StockTransferDto[]> {
+        let params = new HttpParams();
+        if (transferType !== undefined) params = params.set('transferType', transferType.toString());
+        return this.http.get<ApiResponse<StockTransferDto[]>>(`${this.apiUrl}/by-branch/${branchId}`, { params })
             .pipe(map(r => r.data || []));
     }
 

@@ -32,6 +32,7 @@ export * from './department.interface';
 export * from './warehouse.interface';
 export * from './stock-transfer.interface';
 export * from './damaged-goods.interface';
+export * from './stock-count.interface';
 
 // Re-export PagedResult for convenience
 export type { PagedResult } from './api-response.interface';

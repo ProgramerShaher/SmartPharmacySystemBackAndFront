@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -91,20 +92,47 @@ export class ExternalTransferListComponent implements OnInit {
 
   loadTransfers() {
     this.loading = true;
-    this.transferService.getAll({ transferType: 5 }).subscribe({
-      next: (data) => {
-        const branchId = this.currentUserBranchId;
-        // outgoing: source branch is current branch
-        this.outgoingTransfers = data.filter(t => t.sourceBranchId === branchId || !branchId);
-        // incoming: destination branch is current branch
-        this.incomingTransfers = data.filter(t => t.destinationBranchId === branchId || !branchId);
-        this.loading = false;
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل تحويلات الفروع' });
-        this.loading = false;
-      }
-    });
+    const branchId = this.currentUserBranchId;
+
+    if (branchId > 0) {
+      // Use the dedicated branch endpoint — server filters source + destination correctly
+      forkJoin({
+        push: this.transferService.getByBranch(branchId, 5), // External Push (type=5)
+        pull: this.transferService.getByBranch(branchId, 3)  // BranchRequest/Pull (type=3)
+      }).subscribe({
+        next: (res) => {
+          const allExternal = [...res.push, ...res.pull];
+          // Deduplicate by id (a transfer could appear in both if branchId matches both src and dst)
+          const seen = new Set<number>();
+          const unique = allExternal.filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true; });
+
+          this.outgoingTransfers = unique.filter(t => t.sourceBranchId === branchId);
+          this.incomingTransfers = unique.filter(t => t.destinationBranchId === branchId);
+          this.loading = false;
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل تحويلات الفروع' });
+          this.loading = false;
+        }
+      });
+    } else {
+      // Admin without branch — show all external transfers
+      forkJoin({
+        push: this.transferService.getAll({ transferType: 5 }),
+        pull: this.transferService.getAll({ transferType: 3 })
+      }).subscribe({
+        next: (res) => {
+          const allExternal = [...res.push, ...res.pull];
+          this.outgoingTransfers = allExternal;
+          this.incomingTransfers = allExternal;
+          this.loading = false;
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل التحويلات' });
+          this.loading = false;
+        }
+      });
+    }
   }
 
   getTransferDirectionLabel(transfer: StockTransferDto): string {
@@ -146,7 +174,7 @@ export class ExternalTransferListComponent implements OnInit {
     switch (s) {
       case 'requested': case '1': return 'بانتظار الاعتماد';
       case 'approved': case '2': return 'معتمد';
-      case 'dispatched': case '3': return 'قيد الشحن';
+      case 'dispatched': case '3': return 'في الطريق';
       case 'received': case '4': return 'مستلم';
       case 'rejected': case '5': return 'مرفوض';
       default: return String(status);
@@ -156,6 +184,63 @@ export class ExternalTransferListComponent implements OnInit {
   viewDetails(transfer: StockTransferDto) {
     this.selectedTransfer = transfer;
     this.displayDetailDialog = true;
+  }
+
+  isExternalPush(tt: any): boolean {
+    return String(tt).toLowerCase() === 'external' || Number(tt) === 5;
+  }
+
+  isBranchRequest(tt: any): boolean {
+    return String(tt).toLowerCase() === 'branchrequest' || Number(tt) === 3;
+  }
+
+  canApprove(transfer: StockTransferDto): boolean {
+    if (!this.isStatus(transfer.status, 'Requested')) return false;
+    const branchId = this.currentUserBranchId;
+    // Admin (no branch) can approve anything pending
+    if (!branchId) return true;
+
+    // External Push (type=5): the DESTINATION branch approves
+    if (this.isExternalPush(transfer.transferType)) {
+      return transfer.destinationBranchId === branchId;
+    }
+    // BranchRequest Pull (type=3): the SOURCE branch approves
+    if (this.isBranchRequest(transfer.transferType)) {
+      return transfer.sourceBranchId === branchId;
+    }
+    return false;
+  }
+
+  canDispatch(transfer: StockTransferDto): boolean {
+    if (!this.isStatus(transfer.status, 'Approved')) return false;
+    const branchId = this.currentUserBranchId;
+    // Admin can dispatch anything
+    if (!branchId) return true;
+    // Only the SOURCE branch ships
+    return transfer.sourceBranchId === branchId;
+  }
+
+  canReceive(transfer: StockTransferDto): boolean {
+    if (!this.isStatus(transfer.status, 'Dispatched')) return false;
+    const branchId = this.currentUserBranchId;
+    // Admin can receive anything
+    if (!branchId) return true;
+    // Only the DESTINATION branch receives
+    return transfer.destinationBranchId === branchId;
+  }
+
+  canDelete(transfer: StockTransferDto): boolean {
+    // Can cancel only if Requested AND the current user is the requester
+    return this.isStatus(transfer.status, 'Requested') && transfer.requestedByUserId === this.currentUserId;
+  }
+
+  getTransferTypeLabel(transferType: any): string {
+    switch (Number(transferType)) {
+      case 3: return 'طلب (Pull)';
+      case 4: return 'داخلي';
+      case 5: return 'إرسال (Push)';
+      default: return String(transferType);
+    }
   }
 
   approveTransfer(transfer: StockTransferDto) {
@@ -215,7 +300,7 @@ export class ExternalTransferListComponent implements OnInit {
 
   confirmReceive() {
     if (!this.selectedTransfer || !this.selectedReceiveWarehouseId) {
-      this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'يجب اختيار مستودع الإيداع' });
+      this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى اختيار مستودع الاستلام' });
       return;
     }
 

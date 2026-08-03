@@ -1,174 +1,165 @@
-<div class="user-management-container">
-    <!-- ترويسة الصفحة -->
-    <header class="page-header">
-        <div class="header-content">
-            <div class="header-title-section">
-                <h1 class="page-title">
-                    <i class="pi pi-users header-icon"></i>
-                    إدارة المستخدمين
-                </h1>
-                <p class="page-subtitle">إدارة حسابات الموظفين، الصلاحيات، ومتابعة نشاط النظام</p>
+<div class="user-wrap" dir="rtl">
+    <!-- ===== Compact Header ===== -->
+    <div class="usr-header">
+        <div class="usr-header-start">
+            <div class="usr-icon">
+                <i class="pi pi-users"></i>
             </div>
-            <div class="header-actions">
-                <p-button label="إضافة مستخدم جديد" icon="pi pi-user-plus" class="new-user-btn" severity="success"
-                    (onClick)="openNew()">
-                </p-button>
+            <div>
+                <h1 class="usr-title">إدارة المستخدمين</h1>
+                <p class="usr-subtitle">إدارة حسابات الموظفين والصلاحيات</p>
             </div>
         </div>
-    </header>
+        <div class="usr-header-end">
+            <button pButton icon="pi pi-filter-slash" [rounded]="true" [text]="true"
+                pTooltip="مسح الفلاتر" tooltipPosition="top" (click)="clearSearch()"
+                styleClass="usr-btn-icon"></button>
+            <button pButton label="مستخدم جديد" icon="pi pi-plus"
+                (click)="openNew()" styleClass="usr-btn-primary"></button>
+        </div>
+    </div>
 
-    <main class="main-card">
-        <!-- شريط التحكم -->
-        <div class="table-controls">
-            <div class="search-box">
-                <i class="pi pi-search search-icon"></i>
-                <input pInputText type="text" [ngModel]="searchTerm" (input)="onSearch($any($event.target).value)"
-                    placeholder="بحث عن مستخدم بالاسم، اسم المستخدم، أو الصلاحية..." class="search-input" />
-                <p-button *ngIf="searchTerm" icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary"
-                    class="clear-filter-btn" (onClick)="clearSearch()">
-                </p-button>
+    <!-- ===== KPI Row ===== -->
+    <div class="usr-kpi-row">
+        <div class="usr-kpi-card" data-color="teal">
+            <div class="usr-kpi-inner">
+                <div class="usr-kpi-left">
+                    <span class="usr-kpi-label">إجمالي المستخدمين</span>
+                    <strong class="usr-kpi-value">{{ users.length }}</strong>
+                </div>
+                <div class="usr-kpi-badge usr-kpi-badge-teal">
+                    <i class="pi pi-users"></i>
+                </div>
             </div>
-            <div class="controls-right">
-                <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary"
-                    class="refresh-btn" pTooltip="تحديث البيانات" (onClick)="loadUsers()">
-                </p-button>
+            <small class="usr-kpi-extra">جميع المسجلين بالنظام</small>
+        </div>
+        <div class="usr-kpi-card" data-color="amber">
+            <div class="usr-kpi-inner">
+                <div class="usr-kpi-left">
+                    <span class="usr-kpi-label">مدراء النظام</span>
+                    <strong class="usr-kpi-value">{{ adminCount }}</strong>
+                </div>
+                <div class="usr-kpi-badge usr-kpi-badge-amber">
+                    <i class="pi pi-shield"></i>
+                </div>
+            </div>
+            <small class="usr-kpi-extra">صلاحيات الإدارة الشاملة</small>
+        </div>
+        <div class="usr-kpi-card" data-color="teal">
+            <div class="usr-kpi-inner">
+                <div class="usr-kpi-left">
+                    <span class="usr-kpi-label">مستخدمين عاديين</span>
+                    <strong class="usr-kpi-value">{{ regularUserCount }}</strong>
+                </div>
+                <div class="usr-kpi-badge usr-kpi-badge-teal">
+                    <i class="pi pi-user"></i>
+                </div>
+            </div>
+            <small class="usr-kpi-extra">صيادلة وكاشير وموظفين</small>
+        </div>
+        <div class="usr-kpi-card" data-color="amber">
+            <div class="usr-kpi-inner">
+                <div class="usr-kpi-left">
+                    <span class="usr-kpi-label">الموقوفين</span>
+                    <strong class="usr-kpi-value">0</strong>
+                </div>
+                <div class="usr-kpi-badge usr-kpi-badge-amber">
+                    <i class="pi pi-user-minus"></i>
+                </div>
+            </div>
+            <small class="usr-kpi-extra">حسابات غير نشطة</small>
+        </div>
+    </div>
+
+    <!-- ===== Filter Row ===== -->
+    <div class="usr-filter-panel">
+        <div class="usr-filter-grid">
+            <div class="usr-filter-field usr-filter-wide">
+                <label>بحث سريع</label>
+                <span class="p-input-icon-right">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" placeholder="الاسم، اسم المستخدم، أو الهاتف..."
+                        [ngModel]="searchTerm" (input)="onSearch($any($event.target).value)" />
+                </span>
+            </div>
+            <div class="usr-filter-action">
+                <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true"
+                    severity="info" (click)="loadUsers()" pTooltip="تحديث البيانات" tooltipPosition="top"
+                    styleClass="usr-btn-sm"></button>
             </div>
         </div>
+    </div>
 
-        <!-- الجدول -->
-        <p-table #dt [value]="filteredUsers" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10, 25, 50]"
-            [loading]="loading" [rowHover]="true" dataKey="id" responsiveLayout="scroll"
-            styleClass="users-table p-datatable-sm"
-            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} مستخدم"
-            [showCurrentPageReport]="true">
-
+    <!-- ===== Table ===== -->
+    <div class="usr-table-wrap">
+        <p-table #dt [value]="filteredUsers" [loading]="loading" [paginator]="true" [rows]="10"
+            [rowsPerPageOptions]="[5,10,15,25]" [totalRecords]="filteredUsers.length" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} من {totalRecords}"
+            styleClass="usr-table" responsiveLayout="scroll"
+            sortField="createdAt" [sortOrder]="-1">
+            <ng-template pTemplate="caption">
+                <div class="usr-table-caption">
+                    <span><i class="pi pi-list"></i> قائمة المستخدمين</span>
+                    <span class="usr-table-count">{{ filteredUsers.length }} مستخدم</span>
+                </div>
+            </ng-template>
             <ng-template pTemplate="header">
                 <tr>
-                    <th pSortableColumn="username" style="min-width: 14rem">
-                        <div class="column-header">المستخدم <p-sortIcon field="username"></p-sortIcon></div>
-                    </th>
-                    <th pSortableColumn="fullName" style="min-width: 14rem">
-                        <div class="column-header">الاسم الكامل <p-sortIcon field="fullName"></p-sortIcon></div>
-                    </th>
-                    <th pSortableColumn="role" style="min-width: 10rem">
-                        <div class="column-header">الصلاحية <p-sortIcon field="role"></p-sortIcon></div>
-                    </th>
-                    <th pSortableColumn="phoneNumber" style="min-width: 10rem">
-                        <div class="column-header">الهاتف <p-sortIcon field="phoneNumber"></p-sortIcon></div>
-                    </th>
-                    <th style="width: 10rem" class="text-center">الإجراءات</th>
+                    <th pSortableColumn="username">معلومات الحساب <p-sortIcon field="username"></p-sortIcon></th>
+                    <th pSortableColumn="fullName">الاسم الكامل <p-sortIcon field="fullName"></p-sortIcon></th>
+                    <th pSortableColumn="roleName">الصلاحية <p-sortIcon field="roleName"></p-sortIcon></th>
+                    <th pSortableColumn="phoneNumber">الهاتف <p-sortIcon field="phoneNumber"></p-sortIcon></th>
+                    <th style="width:110px;">الإجراءات</th>
                 </tr>
             </ng-template>
-
             <ng-template pTemplate="body" let-user>
-                <tr class="user-row">
-                    <td>
-                        <div class="user-cell">
-                            <div class="user-avatar">
-                                <i class="pi pi-user"></i>
-                            </div>
-                            <div class="user-info">
-                                <span class="username">{{user.username}}</span>
-                                <span class="user-id">ID: #{{user.id}}</span>
-                            </div>
-                        </div>
+                <tr>
+                    <td class="usr-cell-name">
+                        <i class="pi pi-user usr-cell-icon"></i>
+                        {{ user.username }}
+                        <small style="display: block; font-weight: normal; color: #64748b;">ID: #{{user.id}}</small>
                     </td>
-                    <td><span class="full-name">{{user.fullName}}</span></td>
+                    <td class="usr-cell-fullname">{{ user.fullName }}</td>
                     <td>
-                        <div [ngClass]="['role-badge', getRoleClass(user.role)]">
-                            <i [class]="getRoleIcon(user.role)"></i>
-                            <span>{{getRoleDisplayName(user.role)}}</span>
-                        </div>
+                        <span class="usr-chip" [ngClass]="getRoleClass(user.roleName)">
+                            <i [class]="getRoleIcon(user.roleName)"></i>
+                            {{ getRoleDisplayName(user.roleName) }}
+                        </span>
+                    </td>
+                    <td class="usr-cell-phone">
+                        <span *ngIf="user.phoneNumber">{{ user.phoneNumber }}</span>
+                        <span *ngIf="!user.phoneNumber" style="color:#94a3b8">---</span>
                     </td>
                     <td>
-                        <div class="phone-cell">
-                            <i class="pi pi-phone text-xs" *ngIf="user.phoneNumber"></i>
-                            {{user.phoneNumber || '---'}}
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" class="view-btn"
-                                pTooltip="عرض التفاصيل" (onClick)="viewUser(user)">
-                            </p-button>
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="success"
-                                class="edit-btn" pTooltip="تعديل" (onClick)="editUser(user)">
-                            </p-button>
-                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-                                class="delete-btn" pTooltip="حذف" (onClick)="deleteUser(user)">
-                            </p-button>
+                        <div class="usr-cell-actions">
+                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
+                                pTooltip="عرض التفاصيل" tooltipPosition="top" (click)="viewUser(user)"></button>
+                            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+                                pTooltip="تعديل" tooltipPosition="top" (click)="editUser(user)"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                                pTooltip="حذف" tooltipPosition="top" (click)="deleteUser(user)"></button>
                         </div>
                     </td>
                 </tr>
             </ng-template>
-
-            <ng-template pTemplate="emptymessage">
+            <ng-template pTemplate="emptydata">
                 <tr>
-                    <td colspan="5">
-                        <div class="empty-state">
-                            <i class="pi pi-users text-4xl text-200"></i>
-                            <h4>لا يوجد مستخدمين</h4>
-                            <p>لم يتم العثور على أي مستخدمين يطابقون معايير البحث.</p>
-                            <p-button label="إضافة مستخدم جديد" icon="pi pi-plus" severity="secondary" size="small"
-                                (onClick)="openNew()">
-                            </p-button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="loadingbody">
-                <tr>
-                    <td colspan="5">
-                        <div class="loading-row">
-                            <p-progressSpinner styleClass="w-2rem h-2rem" strokeWidth="4"></p-progressSpinner>
-                            <span class="mr-3">جاري تحميل بيانات المستخدمين...</span>
-                        </div>
+                    <td colspan="5" class="usr-empty">
+                        <i class="pi pi-users"></i>
+                        <span>لا يوجد مستخدمين</span>
+                        <small>لم يتم العثور على أي بيانات تطابق معايير البحث</small>
                     </td>
                 </tr>
             </ng-template>
         </p-table>
-
-        <!-- تذييل الجدول (الإحصائيات) -->
-        <footer class="table-footer">
-            <div class="stats">
-                <div class="stat-item">
-                    <div class="stat-icon total-users">
-                        <i class="pi pi-users"></i>
-                    </div>
-                    <div class="stat-text">
-                        <span class="stat-value">{{users.length}}</span>
-                        <span class="stat-label">إجمالي المستخدمين</span>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon admins">
-                        <i class="pi pi-shield"></i>
-                    </div>
-                    <div class="stat-text">
-                        <span class="stat-value">{{adminCount}}</span>
-                        <span class="stat-label">مدراء النظام</span>
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-icon regular-users">
-                        <i class="pi pi-user"></i>
-                    </div>
-                    <div class="stat-text">
-                        <span class="stat-value">{{regularUserCount}}</span>
-                        <span class="stat-label">مستخدمين عاديين</span>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    </main>
+    </div>
 </div>
 
 <!-- نافذة الإضافة والتعديل -->
-<p-dialog [(visible)]="userDialog" [header]="selectedUser ? 'تعديل بيانات مستخدم' : 'إضافة مستخدم جديد'" [modal]="true"
-    styleClass="user-dialog" [draggable]="false" [resizable]="false" [closable]="true"
+<p-dialog [(visible)]="userDialog" [modal]="true"
+    styleClass="user-dialog" [draggable]="false" [resizable]="false" [closable]="false"
+    [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
     [style]="{width: '900px', maxWidth: '95vw'}">
-
     <app-user-form *ngIf="userDialog" [user]="selectedUser" (save)="onSave($event)" (cancel)="hideDialog()">
     </app-user-form>
 </p-dialog>
@@ -176,51 +167,47 @@
 <!-- نافذة العرض -->
 <p-dialog [(visible)]="viewDialog" header="تفاصيل المستخدم" [modal]="true" styleClass="view-dialog" [draggable]="false"
     [resizable]="false" [style]="{width: '450px', maxWidth: '95vw'}">
-
-    <div class="user-details" *ngIf="viewedUser">
-        <div class="detail-avatar">
-            <i class="pi pi-user"></i>
+    <div class="user-details" *ngIf="viewedUser" style="padding: 1rem;" dir="rtl">
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="width: 60px; height: 60px; background: #f0fdfa; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #0d9488; font-size: 1.5rem; margin-bottom: 0.5rem;">
+                <i class="pi pi-user"></i>
+            </div>
+            <h3 style="margin: 0; color: #1e293b; font-size: 1.1rem;">{{viewedUser.fullName}}</h3>
+            <p style="margin: 0; color: #64748b; font-size: 0.85rem;">{{viewedUser.username}}</p>
         </div>
-        <div class="detail-info">
-            <div class="detail-row">
-                <span class="detail-label">اسم المستخدم:</span>
-                <span class="detail-value">{{viewedUser.username}}</span>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">الصلاحية:</span>
+                <span class="usr-chip" [ngClass]="getRoleClass(viewedUser.roleName)">
+                    {{getRoleDisplayName(viewedUser.roleName)}}
+                </span>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">الاسم الكامل:</span>
-                <span class="detail-value">{{viewedUser.fullName}}</span>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">البريد الإلكتروني:</span>
+                <span style="color: #1e293b; font-size: 0.85rem;">{{viewedUser.email || 'غير محدد'}}</span>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">الصلاحية:</span>
-                <span
-                    [ngClass]="['role-badge', getRoleClass(viewedUser.roleName)]">{{getRoleDisplayName(viewedUser.roleName)}}</span>
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">رقم الهاتف:</span>
+                <span style="color: #1e293b; font-size: 0.85rem;">{{viewedUser.phoneNumber || 'غير محدد'}}</span>
             </div>
-            <div class="detail-row">
-                <span class="detail-label">رقم الهاتف:</span>
-                <span class="detail-value">{{viewedUser.phoneNumber || '---'}}</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">البريد الإلكتروني:</span>
-                <span class="detail-value">{{viewedUser.email || '---'}}</span>
-            </div>
-            <div class="detail-row">
-                <span class="detail-label">الحالة:</span>
-                <span [class.text-success]="viewedUser.status === 1" [class.text-danger]="viewedUser.status !== 1">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">الحالة:</span>
+                <span [style.color]="viewedUser.status === 1 ? '#059669' : '#dc2626'" style="font-size: 0.85rem; font-weight: 700;">
                     {{viewedUser.status === 1 ? 'مفعل' : 'معطل'}}
                 </span>
             </div>
-            <div class="mt-4 flex justify-content-end gap-2">
-                <p-button label="تعديل" icon="pi pi-pencil" (onClick)="editViewedUser()"></p-button>
-                <p-button label="إغلاق" icon="pi pi-times" severity="secondary"
-                    (onClick)="viewDialog = false"></p-button>
-            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+            <button pButton icon="pi pi-pencil" label="تعديل" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="editViewedUser()"></button>
+            <button pButton icon="pi pi-times" label="إغلاق" severity="secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="viewDialog = false"></button>
         </div>
     </div>
 </p-dialog>
 
 <!-- نافذة التأكيد -->
-<p-confirmDialog [breakpoints]="{'960px': '75vw', '640px': '90vw'}" [style]="{width: '450px'}">
-</p-confirmDialog>
+<p-confirmDialog [breakpoints]="{'960px': '75vw', '640px': '90vw'}" [style]="{width: '450px'}"></p-confirmDialog>
 
 <!-- التنبيهات -->
 <p-toast position="top-center"></p-toast>

@@ -8,6 +8,7 @@ public interface IStockTransferRepository
     Task<StockTransfer?> GetByIdAsync(int id);
     Task<StockTransfer?> GetByCodeAsync(string transferCode);
     Task<IEnumerable<StockTransfer>> GetAllAsync(int? sourceWarehouseId = null, int? destinationWarehouseId = null, TransferStatus? status = null, DateTime? dateFrom = null, DateTime? dateTo = null, TransferType? transferType = null);
+    Task<IEnumerable<StockTransfer>> GetByBranchAsync(int branchId, TransferType? transferType = null);
     Task<IEnumerable<StockTransfer>> GetByStatusAsync(TransferStatus status);
     Task<IEnumerable<StockTransfer>> GetPendingForApprovalAsync();
     Task<IEnumerable<StockTransfer>> GetPendingForDispatchAsync();

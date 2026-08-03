@@ -182,7 +182,13 @@ export class UserFormComponent implements OnInit {
             });
         } else {
             // Create
-            const createDto: UserCreateDto = { ...formData };
+            const createDto: any = { 
+                ...formData,
+                passwordHash: formData.password,
+                confirmPassword: formData.password
+            };
+            delete createDto.password;
+            
             this.usersService.create(createDto).subscribe({
                 next: (res) => {
                     this.loading = false;

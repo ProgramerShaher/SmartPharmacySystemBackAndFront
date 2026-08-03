@@ -49,8 +49,53 @@ public class StockCountService : IStockCountService
     {
         var header = _mapper.Map<StockCountHeader>(dto);
         header.Status = StockCountStatus.InProgress;
+        
+        if (string.IsNullOrWhiteSpace(header.CountCode))
+        {
+            // STC-yyyyMMdd-XXXX
+            header.CountCode = $"STC-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+        }
+
+        if (header.StartedAt == default)
+        {
+            header.StartedAt = DateTime.UtcNow;
+        }
+
+        if (header.SnapshotAt == default)
+        {
+            header.SnapshotAt = DateTime.UtcNow;
+        }
+
         await _unitOfWork.StockCounts.AddHeaderAsync(header);
         await _unitOfWork.SaveChangesAsync();
+
+        // ═══════════════════════════════════════════════════════
+        // Auto-populate items from current warehouse inventory
+        // ═══════════════════════════════════════════════════════
+        var inventoryStocks = await _unitOfWork.InventoryStocks.GetByWarehouseIdAsync(header.WarehouseId);
+
+        foreach (var stock in inventoryStocks.Where(s => s.Quantity > 0))
+        {
+            var item = new StockCountItem
+            {
+                StockCountHeaderId = header.Id,
+                MedicineId = stock.MedicineId,
+                BatchNumber = stock.BatchNumber,
+                SystemQuantity = stock.Quantity,
+                ExpiryDate = stock.ExpiryDate,
+                PurchasePrice = 0,
+                // الكمية الفعلية = الكمية النظامية (جرد تلقائي 100%)
+                // يمكن للمستخدم تعديلها لاحقاً إن وُجد فارق
+                PhysicalQuantity = stock.Quantity
+            };
+            await _unitOfWork.StockCounts.AddItemAsync(item);
+        }
+
+        if (inventoryStocks.Any(s => s.Quantity > 0))
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+
         return _mapper.Map<StockCountHeaderDto>(header);
     }
 

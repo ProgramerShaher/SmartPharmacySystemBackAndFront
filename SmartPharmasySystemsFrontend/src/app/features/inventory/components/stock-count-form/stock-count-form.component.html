@@ -1,0 +1,64 @@
+<div class="movement-container" dir="rtl">
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-plus"></i></div>
+      <div>
+        <h1>إنشاء أمر جرد جديد</h1>
+        <p>قم بتحديد المخزن ونوع الجرد للبدء</p>
+      </div>
+    </div>
+    
+    <div class="actions no-print">
+        <p-button icon="pi pi-arrow-right" label="عودة للقائمة" [outlined]="true" [rounded]="true" severity="secondary" size="small" routerLink="/inventory/stock-counts"></p-button>
+    </div>
+  </div>
+
+  <section class="filters-panel max-w-800 mx-auto mt-4" style="grid-template-columns: 1fr;">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="w-full">
+        
+        <div class="filter-field mb-4">
+            <label>المخزن المراد جرده <span class="text-red-500">*</span></label>
+            <p-dropdown [options]="warehouses" formControlName="warehouseId" optionLabel="name" optionValue="id"
+                placeholder="-- اختر المخزن --" styleClass="w-full"
+                [ngClass]="{'ng-invalid ng-dirty': form.get('warehouseId')?.invalid && form.get('warehouseId')?.touched}">
+            </p-dropdown>
+            <small class="p-error block mt-1" *ngIf="form.get('warehouseId')?.invalid && form.get('warehouseId')?.touched">
+                يرجى اختيار المخزن
+            </small>
+        </div>
+
+        <div class="filter-field mb-4">
+            <label>نوع الجرد <span class="text-red-500">*</span></label>
+            <div class="flex flex-wrap gap-4 mt-2 p-2 bg-gray-50 border-round">
+                <div class="flex align-items-center">
+                    <p-radioButton name="countType" [value]="StockCountType.Daily" formControlName="countType" inputId="typeDaily"></p-radioButton>
+                    <label for="typeDaily" class="ml-2 mr-2 m-0" style="display: inline-block;">يومي (أصناف محددة)</label>
+                </div>
+                <div class="flex align-items-center">
+                    <p-radioButton name="countType" [value]="StockCountType.Monthly" formControlName="countType" inputId="typeMonthly"></p-radioButton>
+                    <label for="typeMonthly" class="ml-2 mr-2 m-0" style="display: inline-block;">شهري</label>
+                </div>
+                <div class="flex align-items-center">
+                    <p-radioButton name="countType" [value]="StockCountType.BiAnnual" formControlName="countType" inputId="typeBiAnnual"></p-radioButton>
+                    <label for="typeBiAnnual" class="ml-2 mr-2 m-0" style="display: inline-block;">نصف سنوي</label>
+                </div>
+                <div class="flex align-items-center">
+                    <p-radioButton name="countType" [value]="StockCountType.Annual" formControlName="countType" inputId="typeAnnual"></p-radioButton>
+                    <label for="typeAnnual" class="ml-2 mr-2 m-0" style="display: inline-block;">سنوي (شامل)</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-field mb-4">
+            <label>ملاحظات إضافية</label>
+            <textarea pInputTextarea formControlName="notes" rows="4" class="w-full"
+                placeholder="أي تفاصيل تخص أمر الجرد..."></textarea>
+        </div>
+
+        <div class="flex justify-content-end gap-2 border-top-1 border-300 pt-3 mt-4">
+            <p-button type="button" label="إلغاء" [outlined]="true" severity="secondary" routerLink="/inventory/stock-counts"></p-button>
+            <p-button type="submit" label="إنشاء وبدء الجرد" icon="pi pi-check" [loading]="isSubmitting"></p-button>
+        </div>
+    </form>
+  </section>
+</div>

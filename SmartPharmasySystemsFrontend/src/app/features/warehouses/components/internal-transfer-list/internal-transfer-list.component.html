@@ -1,182 +1,182 @@
-<div class="grid">
-    <div class="col-12">
-        <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+<div class="warehouse-wrap" dir="rtl">
+    <div class="wh-header">
+        <div class="wh-header-start">
+            <div class="wh-icon">
+                <i class="pi pi-arrow-right-arrow-left"></i>
+            </div>
             <div>
-                <h1 class="m-0 text-3xl font-semibold">التحويلات الداخلية</h1>
-                <p class="text-500 mt-1 mb-0">إدارة التحويلات المخزنية بين مستودعات فرعك الحالي</p>
-            </div>
-            <div class="mt-3 md:mt-0">
-                <button pButton icon="pi pi-plus" label="إنشاء تحويل داخلي" class="p-button-primary p-button-rounded shadow-2"
-                    routerLink="/warehouses/transfers/internal/create"></button>
+                <h1 class="wh-title">التحويلات الداخلية</h1>
+                <p class="wh-subtitle">إدارة التحويلات المخزنية بين مستودعات فرعك الحالي</p>
             </div>
         </div>
-
-        <!-- Summary Cards -->
-        <div class="grid mb-4">
-            <div class="col-12 md:col-3">
-                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-yellow-500 bg-white">
-                    <div class="flex justify-content-between align-items-center">
-                        <div>
-                            <span class="block text-500 font-medium mb-2">طلبات معلقة</span>
-                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Requested') }}</div>
-                        </div>
-                        <div class="flex align-items-center justify-content-center bg-yellow-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-clock text-yellow-500 text-xl"></i>
-                        </div>
-                    </div>
-                </p-card>
-            </div>
-            <div class="col-12 md:col-3">
-                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-blue-500 bg-white">
-                    <div class="flex justify-content-between align-items-center">
-                        <div>
-                            <span class="block text-500 font-medium mb-2">طلبات معتمدة</span>
-                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Approved') }}</div>
-                        </div>
-                        <div class="flex align-items-center justify-content-center bg-blue-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-check text-blue-500 text-xl"></i>
-                        </div>
-                    </div>
-                </p-card>
-            </div>
-            <div class="col-12 md:col-3">
-                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-orange-500 bg-white">
-                    <div class="flex justify-content-between align-items-center">
-                        <div>
-                            <span class="block text-500 font-medium mb-2">قيد الشحن (نقل)</span>
-                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Dispatched') }}</div>
-                        </div>
-                        <div class="flex align-items-center justify-content-center bg-orange-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-truck text-orange-500 text-xl"></i>
-                        </div>
-                    </div>
-                </p-card>
-            </div>
-            <div class="col-12 md:col-3">
-                <p-card styleClass="shadow-2 border-round-xl border-left-3 border-green-500 bg-white">
-                    <div class="flex justify-content-between align-items-center">
-                        <div>
-                            <span class="block text-500 font-medium mb-2">مستلمة بالكامل</span>
-                            <div class="text-900 font-bold text-2xl">{{ countByStatus('Received') }}</div>
-                        </div>
-                        <div class="flex align-items-center justify-content-center bg-green-100 border-round" style="width:2.5rem;height:2.5rem">
-                            <i class="pi pi-check-circle text-green-500 text-xl"></i>
-                        </div>
-                    </div>
-                </p-card>
-            </div>
+        <div class="wh-header-end">
+            <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="info"
+                (click)="loadTransfers()" pTooltip="تحديث" tooltipPosition="top" styleClass="wh-btn-sm"></button>
+            <button pButton label="تحويل داخلي جديد" icon="pi pi-plus"
+                routerLink="/warehouses/transfers/internal/create" styleClass="wh-btn-primary"></button>
         </div>
+    </div>
 
-        <p-card styleClass="shadow-2 border-round-xl">
-            <p-table [value]="transfers" [paginator]="true" [rows]="10" [loading]="loading"
-                [rowHover]="true" styleClass="p-datatable-sm p-datatable-gridlines"
-                responsiveLayout="scroll"
-                [globalFilterFields]="['transferCode','sourceWarehouseName','destinationWarehouseName']">
-                
-                <ng-template pTemplate="header">
-                    <tr class="bg-gray-50">
-                        <th pSortableColumn="transferCode">رقم الطلب <p-sortIcon field="transferCode"></p-sortIcon></th>
-                        <th>من مستودع</th>
-                        <th>إلى مستودع</th>
-                        <th pSortableColumn="requestedAt" class="text-center">تاريخ الطلب <p-sortIcon field="requestedAt"></p-sortIcon></th>
-                        <th class="text-center">الحالة</th>
-                        <th class="text-center">المسؤول</th>
-                        <th class="text-center">الإجراءات</th>
-                    </tr>
-                </ng-template>
-                
-                <ng-template pTemplate="body" let-transfer>
-                    <tr>
-                        <td class="font-semibold text-primary">{{ transfer.transferCode }}</td>
-                        <td class="font-bold">{{ transfer.sourceWarehouseName }}</td>
-                        <td class="font-bold">{{ transfer.destinationWarehouseName }}</td>
-                        <td class="text-center text-500 text-sm">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                        <td class="text-center">
-                            <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
-                        </td>
-                        <td class="text-center">{{ transfer.requestedByName }}</td>
-                        <td class="text-center flex justify-content-center gap-2">
-                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-secondary p-button-text" 
+    <div class="wh-kpi-row">
+        <div class="wh-kpi-card" data-color="teal">
+            <div class="wh-kpi-inner">
+                <div class="wh-kpi-left">
+                    <span class="wh-kpi-label">إجمالي الطلبات</span>
+                    <strong class="wh-kpi-value">{{ transfers.length }}</strong>
+                </div>
+                <div class="wh-kpi-badge wh-kpi-badge-teal">
+                    <i class="pi pi-list"></i>
+                </div>
+            </div>
+            <small class="wh-kpi-extra">كل التحويلات الداخلية</small>
+        </div>
+        <div class="wh-kpi-card" data-color="amber">
+            <div class="wh-kpi-inner">
+                <div class="wh-kpi-left">
+                    <span class="wh-kpi-label">تحتاج اعتماد</span>
+                    <strong class="wh-kpi-value">{{ countByStatus('Requested') + countByStatus(1) }}</strong>
+                </div>
+                <div class="wh-kpi-badge wh-kpi-badge-amber">
+                    <i class="pi pi-clock"></i>
+                </div>
+            </div>
+            <small class="wh-kpi-extra">طلبات معلقة</small>
+        </div>
+        <div class="wh-kpi-card" data-color="teal">
+            <div class="wh-kpi-inner">
+                <div class="wh-kpi-left">
+                    <span class="wh-kpi-label">قيد التنفيذ</span>
+                    <strong class="wh-kpi-value">{{ countByStatus('Approved') + countByStatus(2) + countByStatus('Dispatched') + countByStatus(3) }}</strong>
+                </div>
+                <div class="wh-kpi-badge wh-kpi-badge-teal">
+                    <i class="pi pi-truck"></i>
+                </div>
+            </div>
+            <small class="wh-kpi-extra">معتمدة أو قيد الشحن</small>
+        </div>
+        <div class="wh-kpi-card" data-color="amber">
+            <div class="wh-kpi-inner">
+                <div class="wh-kpi-left">
+                    <span class="wh-kpi-label">مكتملة</span>
+                    <strong class="wh-kpi-value">{{ countByStatus('Received') + countByStatus(5) }}</strong>
+                </div>
+                <div class="wh-kpi-badge wh-kpi-badge-amber">
+                    <i class="pi pi-check-circle"></i>
+                </div>
+            </div>
+            <small class="wh-kpi-extra">تم الاستلام بالكامل</small>
+        </div>
+    </div>
+
+    <div class="wh-table-wrap">
+        <p-table [value]="transfers" [paginator]="true" [rows]="10" [loading]="loading"
+            [rowsPerPageOptions]="[5,10,15,25]" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}-{last} من {totalRecords}" responsiveLayout="scroll"
+            styleClass="wh-table" sortField="requestedAt" [sortOrder]="-1"
+            [globalFilterFields]="['transferCode','sourceWarehouseName','destinationWarehouseName']">
+            <ng-template pTemplate="caption">
+                <div class="wh-table-caption">
+                    <span><i class="pi pi-list"></i> قائمة التحويلات الداخلية</span>
+                    <span class="wh-table-count">{{ transfers.length }} طلب</span>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="transferCode">رقم الطلب <p-sortIcon field="transferCode"></p-sortIcon></th>
+                    <th>من مستودع</th>
+                    <th>إلى مستودع</th>
+                    <th pSortableColumn="requestedAt">تاريخ الطلب <p-sortIcon field="requestedAt"></p-sortIcon></th>
+                    <th>الحالة</th>
+                    <th>المسؤول</th>
+                    <th style="width:110px;">الإجراءات</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-transfer>
+                <tr>
+                    <td class="wh-cell-name">
+                        <i class="pi pi-hashtag wh-cell-icon"></i>
+                        {{ transfer.transferCode }}
+                    </td>
+                    <td class="wh-cell-strong">{{ transfer.sourceWarehouseName }}</td>
+                    <td class="wh-cell-strong">{{ transfer.destinationWarehouseName }}</td>
+                    <td class="wh-cell-date">{{ transfer.requestedAt | date:'yyyy/MM/dd HH:mm' }}</td>
+                    <td>
+                        <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
+                    </td>
+                    <td class="wh-cell-branch">{{ transfer.requestedByName }}</td>
+                    <td>
+                        <div class="wh-cell-actions">
+                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
                                 pTooltip="تفاصيل المستند" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
-                            
-                            <button *ngIf="transfer.status === 'Requested'" pButton icon="pi pi-check" 
-                                class="p-button-rounded p-button-success p-button-text" 
-                                pTooltip="اعتماد الطلب" tooltipPosition="top" (click)="approveTransfer(transfer)"></button>
-                            
-                            <button *ngIf="transfer.status === 'Approved'" pButton icon="pi pi-truck" 
-                                class="p-button-rounded p-button-warning p-button-text" 
-                                pTooltip="بدء عملية النقل" tooltipPosition="top" (click)="dispatchTransfer(transfer)"></button>
-                                
-                            <button *ngIf="transfer.status === 'Dispatched'" pButton icon="pi pi-download" 
-                                class="p-button-rounded p-button-primary p-button-text" 
-                                pTooltip="تأكيد الاستلام" tooltipPosition="top" (click)="receiveTransfer(transfer)"></button>
-                                
-                            <button *ngIf="transfer.status === 'Requested'" pButton icon="pi pi-trash" 
-                                class="p-button-rounded p-button-danger p-button-text" 
+                            <button *ngIf="transfer.status === 'Requested' || transfer.status === 1" pButton icon="pi pi-check"
+                                class="p-button-rounded p-button-text p-button-sm p-button-success"
+                                pTooltip="اعتماد وتنفيذ النقل" tooltipPosition="top" (click)="approveTransfer(transfer)"></button>
+                            <button *ngIf="transfer.status === 'Requested' || transfer.status === 1" pButton icon="pi pi-trash"
+                                class="p-button-rounded p-button-text p-button-sm p-button-danger"
                                 pTooltip="إلغاء الطلب" tooltipPosition="top" (click)="deleteTransfer(transfer)"></button>
-                        </td>
-                    </tr>
-                </ng-template>
-                
-                <ng-template pTemplate="empty">
-                    <tr>
-                        <td colspan="7" class="text-center p-5">
-                            <i class="pi pi-inbox text-5xl text-300 mb-3 block"></i>
-                            <span class="text-500 font-medium">لا توجد طلبات تحويل داخلي</span>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </p-card>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="empty">
+                <tr>
+                    <td colspan="7" class="wh-empty">
+                        <i class="pi pi-inbox"></i>
+                        <span>لا توجد طلبات تحويل داخلي</span>
+                        <small>لم يتم إنشاء أي طلبات لهذا الفرع بعد</small>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
     </div>
 </div>
 
-<p-toast></p-toast>
+<p-toast position="top-center"></p-toast>
 <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
 
-<!-- Detail Dialog -->
-<p-dialog [(visible)]="displayDetailDialog" [style]="{width: '70vw'}" header="تفاصيل التحويل الداخلي" [modal]="true" [draggable]="false">
+<p-dialog [(visible)]="displayDetailDialog" [style]="{width: 'min(900px, 95vw)'}"
+    header="تفاصيل التحويل الداخلي" [modal]="true" [draggable]="false" styleClass="wh-dialog" dir="rtl">
     <ng-template pTemplate="content">
-        <div class="mb-4" *ngIf="selectedTransfer">
-            <div class="flex align-items-center justify-content-between mb-4 border-bottom-1 surface-border pb-3">
-                <div class="text-2xl font-bold text-primary">{{ selectedTransfer.transferCode }}</div>
+        <div *ngIf="selectedTransfer">
+            <div class="wh-detail-head">
+                <div>
+                    <div class="wh-detail-code">{{ selectedTransfer.transferCode }}</div>
+                    <small>مستند تحويل داخلي</small>
+                </div>
                 <p-tag [severity]="getStatusSeverity(selectedTransfer.status)" [value]="getStatusLabel(selectedTransfer.status)"></p-tag>
             </div>
-            
-            <div class="grid mb-4 bg-gray-50 p-3 border-round">
-                <div class="col-12 md:col-6 mb-2">
-                    <span class="font-bold text-500 text-sm block mb-1">المستودع المصدر</span>
-                    <span class="font-bold text-lg">{{ selectedTransfer.sourceWarehouseName }}</span>
+
+            <div class="wh-detail-grid">
+                <div class="wh-detail-item">
+                    <span>المستودع المصدر</span>
+                    <strong>{{ selectedTransfer.sourceWarehouseName }}</strong>
                 </div>
-                <div class="col-12 md:col-6 mb-2">
-                    <span class="font-bold text-500 text-sm block mb-1">المستودع الوجهة</span>
-                    <span class="font-bold text-lg">{{ selectedTransfer.destinationWarehouseName }}</span>
+                <div class="wh-detail-item">
+                    <span>المستودع الوجهة</span>
+                    <strong>{{ selectedTransfer.destinationWarehouseName }}</strong>
                 </div>
             </div>
 
-            <p-table [value]="selectedTransfer.items" styleClass="p-datatable-sm" [rowHover]="true">
+            <p-table [value]="selectedTransfer.items" styleClass="wh-table wh-dialog-table" responsiveLayout="scroll">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>الصنف</th>
                         <th>رقم التشغيلة</th>
-                        <th class="text-center">الكمية المطلوبة</th>
-                        <th class="text-center">الكمية المشحونة</th>
-                        <th class="text-center">الكمية المستلمة</th>
+                        <th>المطلوبة</th>
+                        <th>المشحونة</th>
+                        <th>المستلمة</th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr>
-                        <td class="font-semibold">{{ item.medicineName }}</td>
+                        <td class="wh-cell-strong">{{ item.medicineName }}</td>
                         <td>{{ item.batchNumber }}</td>
-                        <td class="text-center">
-                            <span class="bg-blue-50 text-blue-700 font-bold px-2 py-1 border-round">{{ item.quantityRequested }}</span>
-                        </td>
-                        <td class="text-center">
-                            <span class="bg-yellow-50 text-yellow-700 font-bold px-2 py-1 border-round">{{ item.quantityDispatched || '-' }}</span>
-                        </td>
-                        <td class="text-center">
-                            <span class="bg-green-50 text-green-700 font-bold px-2 py-1 border-round">{{ item.quantityReceived || '-' }}</span>
-                        </td>
+                        <td><span class="wh-chip wh-chip-teal">{{ item.quantityRequested }}</span></td>
+                        <td><span class="wh-chip wh-chip-amber">{{ item.quantityDispatched || '-' }}</span></td>
+                        <td><span class="wh-chip wh-chip-green">{{ item.quantityReceived || '-' }}</span></td>
                     </tr>
                 </ng-template>
             </p-table>

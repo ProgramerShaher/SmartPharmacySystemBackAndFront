@@ -149,66 +149,6 @@ export class InternalTransferListComponent implements OnInit {
         });
     }
 
-    dispatchTransfer(transfer: StockTransferDto) {
-        this.confirmationService.confirm({
-            message: `هل أنت متأكد من شحن بضاعة طلب التحويل الداخلي رقم ${transfer.transferCode}؟`,
-            header: 'تأكيد الشحن',
-            icon: 'pi pi-truck',
-            acceptLabel: 'تأكيد الشحن',
-            rejectLabel: 'إلغاء',
-            accept: () => {
-                if (this.processingAction) return;
-                this.processingAction = true;
-                this.transferService.dispatch(transfer.id, this.currentUserId).subscribe({
-                    next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تحديث حالة الطلب إلى (قيد الشحن)' });
-                        this.loadTransfers();
-                        this.processingAction = false;
-                    },
-                    error: (err) => {
-                        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل تأكيد الشحن' });
-                        this.processingAction = false;
-                    }
-                });
-            }
-        });
-    }
-
-    receiveTransfer(transfer: StockTransferDto) {
-        this.confirmationService.confirm({
-            message: `هل أنت متأكد من استلام كامل الكميات للتحويل الداخلي رقم ${transfer.transferCode}؟`,
-            header: 'تأكيد الاستلام',
-            icon: 'pi pi-download',
-            acceptLabel: 'استلام نهائي',
-            rejectLabel: 'إلغاء',
-            accept: () => {
-                if (this.processingAction) return;
-                this.processingAction = true;
-
-                // For internal transfer, destination warehouse is already known
-                const payload = {
-                    destinationWarehouseId: transfer.destinationWarehouseId!,
-                    items: transfer.items.map(i => ({
-                        stockTransferItemId: i.id,
-                        quantityReceived: i.quantityDispatched
-                    }))
-                };
-
-                this.transferService.receive(transfer.id, payload, this.currentUserId).subscribe({
-                    next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم استلام الكميات وإيداعها في المخزن بنجاح' });
-                        this.loadTransfers();
-                        this.processingAction = false;
-                    },
-                    error: (err) => {
-                        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل تأكيد الاستلام' });
-                        this.processingAction = false;
-                    }
-                });
-            }
-        });
-    }
-
     deleteTransfer(transfer: StockTransferDto) {
         this.confirmationService.confirm({
             message: `هل أنت متأكد من حذف طلب التحويل المخزني رقم ${transfer.transferCode}؟ لا يمكن التراجع عن هذا الإجراء.`,

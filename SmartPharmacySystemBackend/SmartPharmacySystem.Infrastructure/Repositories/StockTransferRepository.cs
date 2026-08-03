@@ -64,8 +64,31 @@ public class StockTransferRepository : IStockTransferRepository
             .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
             .Include(t => t.DestinationWarehouse).ThenInclude(w => w.Branch)
             .Include(t => t.DestinationBranch)
-            .Include(t => t.Items)
+            .Include(t => t.Items).ThenInclude(i => i.Medicine)
             .Include(t => t.RequestedByUser)
+            .OrderByDescending(t => t.Id)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<StockTransfer>> GetByBranchAsync(int branchId, TransferType? transferType = null)
+    {
+        var query = _context.StockTransfers.AsNoTracking().Where(t => !t.IsDeleted
+            && (t.BranchId == branchId 
+                || t.DestinationBranchId == branchId 
+                || (t.DestinationWarehouse != null && t.DestinationWarehouse.BranchId == branchId))).AsQueryable();
+
+        if (transferType.HasValue)
+            query = query.Where(t => t.TransferType == transferType.Value);
+
+        return await query
+            .Include(t => t.SourceWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationWarehouse).ThenInclude(w => w.Branch)
+            .Include(t => t.DestinationBranch)
+            .Include(t => t.Items).ThenInclude(i => i.Medicine)
+            .Include(t => t.RequestedByUser)
+            .Include(t => t.ApprovedByUser)
+            .Include(t => t.DispatchedByUser)
+            .Include(t => t.ReceivedByUser)
             .OrderByDescending(t => t.Id)
             .ToListAsync();
     }

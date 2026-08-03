@@ -147,6 +147,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             match: '/inventory',
             children: [
                 { label: 'الأدوية والمنتجات', route: '/inventory/medicines', icon: 'pi pi-box' },
+                { label: 'الجرد المخزني', route: '/inventory/stock-counts', icon: 'pi pi-check-square', badge: 'جديد' },
                 { label: 'التصنيفات', route: '/inventory/categories', icon: 'pi pi-tags' },
                 { label: 'حركات المخزون', route: '/inventory/movements', icon: 'pi pi-history' },
                 { label: 'الدفعات', route: '/inventory/batches', icon: 'pi pi-list' }

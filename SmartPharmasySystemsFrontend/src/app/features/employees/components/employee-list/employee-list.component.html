@@ -1,154 +1,282 @@
 <div class="report-container animate-fade-in" dir="rtl">
-  <!-- Header -->
+  <!-- Premium Header -->
   <div class="page-header">
     <div class="title-wrap">
       <div class="icon-circle"><i class="pi pi-users"></i></div>
       <div>
-        <h1>إدارة الموظفين</h1>
-        <p>إدارة بيانات موظفي الفروع والأقسام الإدارية والمالية والرواتب</p>
+        <h1>الموظفين والحضور</h1>
+        <p *ngIf="dashboardData()">موظفي فرع: <strong>{{ dashboardData().branchName }}</strong></p>
       </div>
     </div>
     <div class="actions no-print">
-      <p-button icon="pi pi-filter" [rounded]="true" [outlined]="true" severity="secondary"
-                pTooltip="الفلاتر" tooltipPosition="bottom" (onClick)="toggleFilters()"></p-button>
-      <p-button icon="pi pi-cog" [rounded]="true" [outlined]="true" severity="secondary"
-                pTooltip="إدارة الأعمدة" tooltipPosition="bottom" (onClick)="toggleColumnManager()"></p-button>
-      <p-button icon="pi pi-file-excel" [rounded]="true" [outlined]="true" severity="success"
-                pTooltip="تصدير Excel" tooltipPosition="bottom" (onClick)="exportExcel()"></p-button>
-      <p-button icon="pi pi-file-pdf" [rounded]="true" [outlined]="true" severity="danger"
-                pTooltip="تصدير PDF" tooltipPosition="bottom" (onClick)="exportPDF()"></p-button>
-      <p-button label="إضافة موظف" icon="pi pi-plus" size="small" severity="primary"
-                (onClick)="openAddDialog()"></p-button>
+      <p-button label="تصدير Excel" icon="pi pi-file-excel" size="small" severity="success" (onClick)="exportExcel()" [loading]="exporting" styleClass="mr-2"></p-button>
+      <p-button label="تصدير PDF" icon="pi pi-file-pdf" size="small" severity="danger" (onClick)="exportPdf()" [loading]="exporting" styleClass="mr-2"></p-button>
+      <p-button label="إضافة موظف" icon="pi pi-plus" size="small" severity="primary"></p-button>
     </div>
   </div>
 
-  <!-- Filter Indicator Banner -->
-  <div *ngIf="filters['branchId']" class="p-2 px-3 border-round bg-indigo-50 border-1 border-indigo-200" style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-    <i class="pi pi-filter text-indigo-500"></i>
-    <span class="text-indigo-700 font-bold" style="font-size: 0.65rem;">تصفية حسب الفرع: {{ getBranchName(+filters['branchId']) }}</span>
-    <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="danger" styleClass="p-button-sm mr-auto"
-              (onClick)="filters['branchId'] = ''; filterBranchId = undefined; applyFilters()"></p-button>
+  <!-- KPI Cards -->
+  <div class="kpi-grid" *ngIf="dashboardData()">
+    <div class="kpi-card stock">
+      <span class="kpi-label">إجمالي الموظفين</span>
+      <strong>{{ dashboardData().totalEmployees }} موظف</strong>
+      <small>العدد الكلي لموظفي الفرع</small>
+    </div>
+    <div class="kpi-card profit">
+      <span class="kpi-label">إجمالي الرواتب الأساسية</span>
+      <strong>{{ dashboardData().totalBranchSalaries | number:'1.0-2' }} ريال</strong>
+      <small>الرواتب المستحقة للفرع شهرياً</small>
+    </div>
+    <div class="kpi-card today">
+      <span class="kpi-label">الأقسام المعتمدة</span>
+      <strong>{{ dashboardData().departments.length }} قسم</strong>
+      <small>عدد الأقسام بالفرع</small>
+    </div>
   </div>
 
-  <!-- Filter Panel -->
-  <section class="filters-panel no-print" *ngIf="showFilters()" style="grid-template-columns: 1.5fr 1fr 1fr 1fr auto;">
-    <div class="filter-field">
-      <label>بحث عام</label>
-      <input pInputText type="text" placeholder="الاسم، الكود، الهوية..." (input)="globalFilter.set($any($event.target).value)" />
-    </div>
-    <div class="filter-field">
-      <label>الفرع</label>
-      <p-dropdown [options]="branches()" [(ngModel)]="filterBranchId" optionLabel="name" optionValue="id"
-                  placeholder="جميع الفروع" [showClear]="true"></p-dropdown>
-    </div>
-    <div class="filter-field">
-      <label>القسم</label>
-      <p-dropdown [options]="departments()" [(ngModel)]="filterDepartmentId" optionLabel="name" optionValue="id"
-                  placeholder="الكل" [showClear]="true"></p-dropdown>
-    </div>
-    <div class="filter-field">
-      <label>الحالة</label>
-      <p-dropdown [options]="[{label:'الكل',value:undefined},{label:'نشط',value:'true'},{label:'غير نشط',value:'false'}]"
-                  [(ngModel)]="filterIsActive" optionLabel="label" optionValue="value"
-                  placeholder="الكل"></p-dropdown>
-    </div>
-    <p-button label="بحث" icon="pi pi-search" size="small" (onClick)="loadEmployees()"></p-button>
-  </section>
+  <div *ngIf="loading()" class="text-center p-4">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #4338ca;"></i>
+    <p class="mt-2 text-gray-500">جاري تحميل بيانات الموظفين...</p>
+  </div>
 
-  <!-- Column Manager Dialog -->
-  <p-dialog header="إدارة الأعمدة" [visible]="showColumnManager()" (onHide)="showColumnManager.set(false)"
-            [modal]="true" [style]="{width:'320px'}" [dir]="'rtl'" [draggable]="false" [resizable]="false">
-    <div class="flex flex-column gap-1">
-      <div *ngFor="let col of columns()" class="flex align-items-center gap-2 p-1 border-round hover:surface-100 cursor-pointer"
-           (click)="toggleColumnVisibility(col.field)" style="font-size: 0.65rem;">
-        <p-checkbox [binary]="true" [ngModel]="col.visible" (onChange)="toggleColumnVisibility(col.field)"></p-checkbox>
-        <span>{{ col.header }}</span>
+  <!-- Departments and Employees Table -->
+  <div *ngIf="!loading() && dashboardData()">
+    
+    <div *ngFor="let dept of dashboardData().departments" class="dept-section">
+      
+      <div class="dept-header">
+        <div class="dept-title">
+          <i class="pi pi-briefcase"></i>
+          <h3>{{ dept.departmentName }}</h3>
+          <span class="badge">{{ dept.employeeCount }} موظف</span>
+        </div>
+        <div class="dept-stats">
+          <small>إجمالي رواتب القسم: <strong>{{ dept.totalBasicSalary | number:'1.0-2' }} ريال</strong></small>
+        </div>
       </div>
-    </div>
-  </p-dialog>
 
-  <!-- Table -->
-  <section class="table-panel">
-    <p-table [value]="filteredEmployees()" [rows]="25" [totalRecords]="filteredEmployees().length"
-             [loading]="loading()" [paginator]="true" [rowsPerPageOptions]="[10, 25, 50, 100]"
-             styleClass="p-datatable-sm compact-table" responsiveLayout="scroll"
-             currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} موظف"
-             [showCurrentPageReport]="true">
-
-      <ng-template pTemplate="header">
-        <tr>
-          <th *ngFor="let col of visibleColumns()">
-            {{ col.header }}
-          </th>
-          <th style="width: 90px" class="text-center no-print">الإجراءات</th>
-        </tr>
-        <tr class="no-print">
-          <th *ngFor="let col of visibleColumns()">
-            <ng-container [ngSwitch]="col.type">
-              <input *ngSwitchDefault pInputText type="text" class="w-full"
-                     [placeholder]="'فلترة '" (input)="onColumnFilter(col.field, $event)" />
-              <p-dropdown *ngSwitchCase="'boolean'"
-                          [options]="[{label:'الكل',value:''},{label:'نشط',value:'true'},{label:'غير نشط',value:'false'}]"
-                          [(ngModel)]="filters[col.field]" optionLabel="label" optionValue="value"
-                          placeholder="الكل" (onChange)="applyFilters()">
-              </p-dropdown>
-            </ng-container>
-          </th>
-          <th></th>
-        </tr>
-      </ng-template>
-
-      <ng-template pTemplate="body" let-employee>
-        <tr>
-          <td *ngFor="let col of visibleColumns()">
-            <ng-container [ngSwitch]="col.type">
-              <span *ngSwitchCase="'currency'" class="font-bold" style="color: #15803d; font-family: monospace;">
-                {{ (getFieldValue(employee, col.field) || 0) | number:'1.0-0' }} ر.ي
-              </span>
-              <div *ngSwitchCase="'date'">
-                <span class="muted" style="font-family: monospace; display: inline; font-size: 0.65rem;">
-                  {{ getFieldValue(employee, col.field) | date:'dd/MM/yyyy' }}
+      <section class="table-panel">
+        <p-table [value]="dept.employees" styleClass="p-datatable-sm compact-table" responsiveLayout="scroll">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 40px" class="text-center">#</th>
+              <th>الكود</th>
+              <th>الاسم</th>
+              <th>المسمى الوظيفي</th>
+              <th class="text-center">الراتب الأساسي</th>
+              <th class="text-center">الحالة</th>
+              <th style="width: 150px" class="text-center no-print">تحضير اليوم</th>
+              <th style="width: 140px" class="text-center no-print">الإجراءات</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-emp let-i="rowIndex">
+            <tr>
+              <td class="text-center"><span class="muted" style="display: inline;">{{ i + 1 }}</span></td>
+              <td>
+                <span class="code-badge" style="font-family: monospace; font-weight: 700; color: #4338ca;">
+                  {{ emp.employeeCode }}
                 </span>
-              </div>
-              <span *ngSwitchCase="'boolean'" class="type-pill" [class.type-green]="getFieldValue(employee, col.field)" [class.type-red]="!getFieldValue(employee, col.field)">
-                {{ getActiveLabel(getFieldValue(employee, col.field)) }}
-              </span>
-              <span *ngSwitchDefault [style.color]="col.field === 'fullName' ? '#0f172a' : '#334155'" [style.font-weight]="col.field === 'fullName' ? '700' : 'normal'">
-                {{ getFieldValue(employee, col.field) }}
-              </span>
-            </ng-container>
-          </td>
-          <td class="text-center no-print">
-            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" size="small"
-                      pTooltip="تعديل" tooltipPosition="top" (onClick)="openEditDialog(employee)"></p-button>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
-                      pTooltip="حذف" tooltipPosition="top" (onClick)="confirmDelete(employee.id, employee.fullName)"></p-button>
-          </td>
-        </tr>
-      </ng-template>
+              </td>
+              <td>
+                <strong style="color: #1e293b;">{{ emp.fullName }}</strong>
+              </td>
+              <td><span class="muted">{{ emp.jobTitle }}</span></td>
+              <td class="text-center">
+                <span class="salary">{{ emp.basicSalary | number:'1.0-2' }}</span>
+              </td>
+              <td class="text-center">
+                <span class="type-pill" [class.type-green]="emp.isActive" [class.type-red]="!emp.isActive">
+                  {{ emp.isActive ? 'نشط' : 'موقوف' }}
+                </span>
+              </td>
+              <td class="text-center no-print">
+                <button 
+                  type="button" 
+                  class="attendance-btn" 
+                  [class.present]="isEmployeePresent(emp.id)" 
+                  [class.absent]="!isEmployeePresent(emp.id)"
+                  (click)="toggleAttendance(emp)"
+                  [pTooltip]="isEmployeePresent(emp.id) ? 'انقر لتسجيل غياب وخصم يوم' : 'غائب'"
+                  tooltipPosition="top">
+                  <i class="pi" [class.pi-check-circle]="isEmployeePresent(emp.id)" [class.pi-times-circle]="!isEmployeePresent(emp.id)"></i>
+                  {{ isEmployeePresent(emp.id) ? 'حاضر' : 'غائب' }}
+                </button>
+              </td>
+              <td class="text-center no-print">
+                <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                  <p-button icon="pi pi-id-card" [rounded]="true" [text]="true" severity="secondary" size="small"
+                            pTooltip="تفاصيل الراتب" tooltipPosition="top" (onClick)="openSalaryDetails(emp)"></p-button>
+                  <p-button icon="pi pi-calendar" [rounded]="true" [text]="true" severity="info" size="small"
+                            pTooltip="عرض جدول الحضور" tooltipPosition="top" (onClick)="openAttendanceDialog(emp)"></p-button>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptydata">
+            <tr>
+              <td colspan="8" class="text-center p-3 muted">لا يوجد موظفين في هذا القسم</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </section>
+    </div>
 
-      <ng-template pTemplate="emptymessage">
-        <tr>
-          <td [attr.colspan]="visibleColumns().length + 1" class="text-center p-4">
-            <div class="muted">
-              <i class="pi pi-users" style="font-size: 2rem; color: #cbd5e1; display: block; margin-bottom: 0.5rem;"></i>
-              <strong>لا يوجد موظفين</strong>
-              <p style="font-size: 0.6rem; margin-top: 0.2rem;">ابدأ بإضافة موظف جديد</p>
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </section>
+    <!-- Empty State if no departments/employees -->
+    <div *ngIf="dashboardData().departments.length === 0" class="empty-state">
+      <i class="pi pi-users" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 1rem;"></i>
+      <h3>لا يوجد موظفين مسجلين</h3>
+      <p>لم يتم إضافة أي موظفين لهذا الفرع بعد.</p>
+    </div>
+
+  </div>
 </div>
 
-<app-employee-form *ngIf="showFormDialog()"
-    [visible]="showFormDialog()"
-    [employee]="selectedEmployee"
-    [editMode]="isEditMode"
-    (saved)="onFormSaved()"
-    (cancelled)="onFormCancelled()">
-</app-employee-form>
+<p-confirmDialog acceptLabel="تأكيد الخصم" rejectLabel="إلغاء"></p-confirmDialog>
+<p-toast position="top-center"></p-toast>
 
-<p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
-<p-toast position="top-left"></p-toast>
+<!-- Monthly Attendance Calendar Dialog -->
+<p-dialog 
+  [(visible)]="showAttendanceDialog" 
+  [header]="selectedEmployeeForAttendance ? 'سجل الحضور الشهري: ' + selectedEmployeeForAttendance.fullName : 'سجل الحضور الشهري'" 
+  [modal]="true" 
+  [style]="{width: '50vw'}" 
+  [breakpoints]="{'960px': '75vw', '640px': '95vw'}"
+  [draggable]="false">
+  
+  <div *ngIf="calendarLoading" class="text-center p-4">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #4338ca;"></i>
+    <p class="mt-2 text-gray-500">جاري تحميل السجل الشهري...</p>
+  </div>
+
+  <div *ngIf="!calendarLoading">
+    <div class="calendar-stats">
+      <div class="stat present">
+        <i class="pi pi-check-circle"></i>
+        <span>أيام الحضور: <strong>{{ presentDaysCount }}</strong></span>
+      </div>
+      <div class="stat absent">
+        <i class="pi pi-times-circle"></i>
+        <span>أيام الغياب: <strong>{{ absentDaysCount }}</strong></span>
+      </div>
+    </div>
+
+    <div class="calendar-grid">
+      <div class="calendar-day" 
+           *ngFor="let dayObj of calendarDays" 
+           [class.is-absent]="dayObj.isAbsent"
+           [class.is-present]="!dayObj.isAbsent"
+           [class.is-future]="isFutureDate(dayObj.date)"
+           (click)="toggleDayAttendance(dayObj)"
+           [pTooltip]="dayObj.isAbsent ? 'غائب - انقر لتغييره إلى حاضر' : 'حاضر - انقر لتسجيل الغياب'"
+           tooltipPosition="top">
+        <span class="day-num">{{ dayObj.day }}</span>
+        <i class="pi" [class.pi-check]="!dayObj.isAbsent" [class.pi-times]="dayObj.isAbsent"></i>
+      </div>
+    </div>
+
+    <p class="mt-3 text-sm text-gray-500 text-center" style="font-size: 0.8rem;">
+      <i class="pi pi-info-circle ml-1"></i>
+      ملاحظة: النقر على أي يوم سيقوم بتغيير حالته آلياً وسينعكس ذلك على سجل رواتب الشهر.
+    </p>
+  </div>
+</p-dialog>
+
+<!-- Salary Details Dialog -->
+<p-dialog 
+  [(visible)]="showSalaryDetailsDialog" 
+  [header]="selectedEmployeeForDetails ? 'تفاصيل الراتب: ' + selectedEmployeeForDetails.fullName : 'تفاصيل الراتب'" 
+  [modal]="true" 
+  [style]="{width: '45vw'}" 
+  [breakpoints]="{'960px': '75vw', '640px': '95vw'}"
+  [draggable]="false">
+  
+  <div *ngIf="detailsLoading" class="text-center p-4">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #4338ca;"></i>
+    <p class="mt-2 text-gray-500">جاري تحميل تفاصيل الراتب...</p>
+  </div>
+
+  <div *ngIf="!detailsLoading && salaryDetails">
+    <div class="salary-card-container">
+      
+      <div class="salary-header">
+        <i class="pi pi-wallet" style="font-size: 2rem; color: #4338ca;"></i>
+        <div>
+          <h3 style="margin: 0;">{{ selectedEmployeeForDetails.fullName }}</h3>
+          <small class="text-gray-500">{{ selectedEmployeeForDetails.jobTitle }} | كود: {{ selectedEmployeeForDetails.employeeCode }}</small>
+        </div>
+      </div>
+
+      <div class="salary-breakdown">
+        <div class="breakdown-item">
+          <span>الراتب الأساسي</span>
+          <strong>{{ salaryDetails.basicSalary | number:'1.0-2' }} ريال</strong>
+        </div>
+        
+        <!-- Add Allowances and Bonuses here if available -->
+
+        <div class="breakdown-item deduction">
+          <span>إجمالي الخصومات (بما فيها أيام الغياب)</span>
+          <strong>- {{ salaryDetails.totalDeductions | number:'1.0-2' }} ريال</strong>
+        </div>
+
+        <div class="breakdown-total">
+          <span>صافي الراتب المستحق</span>
+          <strong>{{ salaryDetails.netSalary | number:'1.0-2' }} ريال</strong>
+        </div>
+      </div>
+
+      <div class="mt-4" *ngIf="salaryDetails.deductions && salaryDetails.deductions.length > 0">
+        <h4 class="mb-2" style="color: #475569;">تفصيل الخصومات:</h4>
+        <ul class="deductions-list">
+          <li *ngFor="let ded of salaryDetails.deductions">
+            <span class="ded-desc">{{ ded.description }}</span>
+            <span class="ded-amt text-red-600 font-bold">-{{ ded.amount | number:'1.0-2' }}</span>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</p-dialog>
+
+<!-- Hidden Print Table for PDF Export -->
+<div class="print-only">
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <h2>مسير رواتب الموظفين</h2>
+    <p *ngIf="dashboardData()">فرع: {{ dashboardData().branchName }} | الشهر الحالي</p>
+  </div>
+  
+  <table class="print-table" dir="rtl">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>الكود</th>
+        <th>الاسم</th>
+        <th>الراتب الأساسي</th>
+        <th>إجمالي الخصومات</th>
+        <th>صافي الراتب المستحق</th>
+        <th>التوقيع / البصمة</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let s of printData; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ s.employeeCode }}</td>
+        <td>{{ s.employeeName }}</td>
+        <td>{{ s.basicSalary | number:'1.0-2' }}</td>
+        <td style="color: red;">{{ s.totalDeductions > 0 ? s.totalDeductions : 0 | number:'1.0-2' }}</td>
+        <td style="font-weight: bold;">{{ s.netSalary | number:'1.0-2' }}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div style="margin-top: 3rem; display: flex; justify-content: space-between;">
+    <div>
+      <p>توقيع المحاسب: _________________</p>
+    </div>
+    <div>
+      <p>اعتماد المدير: _________________</p>
+    </div>
+  </div>
+</div>

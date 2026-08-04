@@ -67,4 +67,20 @@ public class AttendancesController : ControllerBase
         await _attendanceService.DeleteAsync(id);
         return Ok(ApiResponse<string>.Succeeded("تم حذف سجل الحضور بنجاح", "تم الحذف"));
     }
+
+    [HttpPost("mark-absent")]
+    public async Task<IActionResult> MarkAbsent([FromQuery] int employeeId, [FromQuery] DateTime? date)
+    {
+        var attendanceDate = date ?? DateTime.Today;
+        var result = await _attendanceService.MarkAbsentAsync(employeeId, attendanceDate);
+        return Ok(ApiResponse<AttendanceDto>.Succeeded(result, "تم تسجيل الغياب وخصم الراتب بنجاح"));
+    }
+
+    [HttpPost("mark-present")]
+    public async Task<IActionResult> MarkPresent([FromQuery] int employeeId, [FromQuery] DateTime? date)
+    {
+        var attendanceDate = date ?? DateTime.Today;
+        var result = await _attendanceService.MarkPresentAsync(employeeId, attendanceDate);
+        return Ok(ApiResponse<AttendanceDto>.Succeeded(result, "تم تعديل الحالة لحاضر وإلغاء الخصم بنجاح"));
+    }
 }

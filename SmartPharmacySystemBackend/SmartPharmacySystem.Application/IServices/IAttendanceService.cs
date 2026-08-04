@@ -14,4 +14,6 @@ public interface IAttendanceService
     Task UpdateAsync(UpdateAttendanceDto dto);
     Task DeleteAsync(int id);
     Task<int> GetAbsentCountAsync(int branchId, DateTime date);
+    Task<AttendanceDto> MarkAbsentAsync(int employeeId, DateTime date);
+    Task<AttendanceDto> MarkPresentAsync(int employeeId, DateTime date);
 }

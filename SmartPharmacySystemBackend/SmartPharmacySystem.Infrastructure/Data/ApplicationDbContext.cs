@@ -92,6 +92,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
 
 
+    // ===== Shifts =====
+    public DbSet<UserShift> UserShifts { get; set; } = null!;
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);

@@ -8,6 +8,7 @@ public interface IAttendanceRepository
     Task<IEnumerable<Attendance>> GetByEmployeeIdAsync(int employeeId, DateTime? dateFrom = null, DateTime? dateTo = null);
     Task<IEnumerable<Attendance>> GetByBranchIdAsync(int branchId, DateTime? dateFrom = null, DateTime? dateTo = null);
     Task<Attendance?> GetTodayAttendanceAsync(int employeeId);
+    Task<Attendance?> GetAttendanceByDateAsync(int employeeId, DateTime date);
     Task<Attendance> AddAsync(Attendance attendance);
     Task UpdateAsync(Attendance attendance);
     Task DeleteAsync(int id);

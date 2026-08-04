@@ -139,6 +139,7 @@ builder.Services.AddScoped<IWarehouseService, WarehouseService>();
 builder.Services.AddScoped<IDepartmentService, DepartmentService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
+builder.Services.AddScoped<IShiftService, ShiftService>();
 builder.Services.AddScoped<IMonthlySalaryService, MonthlySalaryService>();
 builder.Services.AddScoped<IEmployeeLoanService, EmployeeLoanService>();
 

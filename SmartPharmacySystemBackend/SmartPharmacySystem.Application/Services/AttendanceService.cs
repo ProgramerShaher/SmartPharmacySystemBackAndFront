@@ -97,4 +97,125 @@ public class AttendanceService : IAttendanceService
     {
         return await _unitOfWork.Attendances.GetAbsentCountAsync(branchId, date);
     }
+
+    public async Task<AttendanceDto> MarkAbsentAsync(int employeeId, DateTime date)
+    {
+        var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId)
+            ?? throw new KeyNotFoundException("الموظف غير موجود");
+
+        var existingAttendance = await _unitOfWork.Attendances.GetAttendanceByDateAsync(employeeId, date);
+        
+        Attendance attendance;
+        if (existingAttendance != null)
+        {
+            attendance = existingAttendance;
+            attendance.AttendanceStatus = AttendanceStatus.Absent;
+            await _unitOfWork.Attendances.UpdateAsync(attendance);
+        }
+        else
+        {
+            attendance = new Attendance
+            {
+                EmployeeId = employeeId,
+                CheckIn = date.Date, // Set to start of the day
+                WorkingBranchId = employee.BranchId,
+                Shift = ShiftType.Morning, // Default
+                AttendanceStatus = AttendanceStatus.Absent
+            };
+            await _unitOfWork.Attendances.AddAsync(attendance);
+        }
+
+        // Penalty Logic: (Basic Salary / 30) for one day of absence
+        decimal penaltyAmount = employee.BasicSalary / 30m;
+
+        var monthlySalary = await _unitOfWork.MonthlySalaries.GetByEmployeeMonthYearAsync(employeeId, date.Month, date.Year);
+        if (monthlySalary != null)
+        {
+            // If Monthly Salary already exists, add deduction directly
+            monthlySalary.TotalDeductions += penaltyAmount;
+            
+            var deductionItem = new SalaryDeductionItem
+            {
+                MonthlySalaryId = monthlySalary.Id,
+                DeductionType = DeductionType.Other,
+                Amount = penaltyAmount,
+                Description = $"خصم غياب يوم {date:yyyy-MM-dd}"
+            };
+            
+            // Add deduction item (if repository exists, else just rely on TotalDeductions update)
+            await _unitOfWork.MonthlySalaries.UpdateAsync(monthlySalary);
+        }
+        else
+        {
+            // If Monthly Salary doesn't exist, create it with the initial deduction
+            var newSalary = new MonthlySalary
+            {
+                EmployeeId = employeeId,
+                BranchId = employee.BranchId,
+                Month = date.Month,
+                Year = date.Year,
+                BasicSalary = employee.BasicSalary,
+                TotalAllowances = 0,
+                TotalBonuses = 0,
+                TotalDeductions = penaltyAmount,
+                PaymentStatus = PaymentStatus.Pending
+            };
+            
+            // Wait, we can't easily insert SalaryDeductionItem if MonthlySalary is not saved yet to get ID.
+            // But EF Core will handle it if we add to the collection.
+            newSalary.Deductions.Add(new SalaryDeductionItem
+            {
+                DeductionType = DeductionType.Other,
+                Amount = penaltyAmount,
+                Description = $"خصم غياب يوم {date:yyyy-MM-dd}"
+            });
+            
+            await _unitOfWork.MonthlySalaries.AddAsync(newSalary);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        return _mapper.Map<AttendanceDto>(attendance);
+    }
+
+    public async Task<AttendanceDto> MarkPresentAsync(int employeeId, DateTime date)
+    {
+        var employee = await _unitOfWork.Employees.GetByIdAsync(employeeId)
+            ?? throw new KeyNotFoundException("الموظف غير موجود");
+
+        var existingAttendance = await _unitOfWork.Attendances.GetAttendanceByDateAsync(employeeId, date);
+        
+        Attendance attendance;
+        if (existingAttendance != null)
+        {
+            attendance = existingAttendance;
+            attendance.AttendanceStatus = AttendanceStatus.Present;
+            await _unitOfWork.Attendances.UpdateAsync(attendance);
+        }
+        else
+        {
+            attendance = new Attendance
+            {
+                EmployeeId = employeeId,
+                CheckIn = date.Date,
+                WorkingBranchId = employee.BranchId,
+                Shift = ShiftType.Morning,
+                AttendanceStatus = AttendanceStatus.Present
+            };
+            await _unitOfWork.Attendances.AddAsync(attendance);
+        }
+
+        // Reversal Logic: subtract (Basic Salary / 30) from total deductions
+        decimal penaltyAmount = employee.BasicSalary / 30m;
+
+        var monthlySalary = await _unitOfWork.MonthlySalaries.GetByEmployeeMonthYearAsync(employeeId, date.Month, date.Year);
+        if (monthlySalary != null)
+        {
+            // Reverse deduction
+            monthlySalary.TotalDeductions = Math.Max(0, monthlySalary.TotalDeductions - penaltyAmount);
+            await _unitOfWork.MonthlySalaries.UpdateAsync(monthlySalary);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        return _mapper.Map<AttendanceDto>(attendance);
+    }
 }

@@ -119,6 +119,65 @@
                 </div>
             </div>
 
+            <!-- Employee Toggle -->
+            <div class="field mt-4" *ngIf="!user?.id">
+                <div class="switch-field p-3 border-round-xl flex align-items-center justify-content-between" style="background: #eef2ff; border: 1px solid #c7d2fe;">
+                    <div class="switch-info">
+                        <span class="switch-label font-bold text-700 block mb-1">تسجيل كموظف؟</span>
+                        <span class="switch-desc text-500 text-sm block">عند التفعيل، سيتم إنشاء ملف موظف بهذا الاسم لربطه بالرواتب والحضور</span>
+                    </div>
+                    <p-inputSwitch formControlName="isEmployee"></p-inputSwitch>
+                </div>
+            </div>
+
+            <!-- Employee Specific Fields -->
+            <div class="field-group-grid mt-4" *ngIf="isEmployee.value && !user?.id" style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <div class="col-12 mb-3">
+                    <h3 style="margin: 0; color: #4338ca;"><i class="pi pi-id-card mr-2"></i> بيانات الموظف الأساسية</h3>
+                </div>
+
+                <!-- National ID -->
+                <div class="field">
+                    <label for="nationalId">رقم الهوية <span class="text-red-500">*</span></label>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-id-card text-400"></i>
+                        <input type="text" pInputText id="nationalId" formControlName="nationalId" placeholder="أدخل رقم الهوية">
+                    </span>
+                </div>
+
+                <!-- Job Title -->
+                <div class="field">
+                    <label for="jobTitle">المسمى الوظيفي <span class="text-red-500">*</span></label>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-briefcase text-400"></i>
+                        <input type="text" pInputText id="jobTitle" formControlName="jobTitle" placeholder="مثال: صيدلي أول">
+                    </span>
+                </div>
+
+                <!-- Department -->
+                <div class="field">
+                    <label for="departmentId">القسم <span class="text-red-500">*</span></label>
+                    <p-dropdown [options]="departments" formControlName="departmentId" optionLabel="name" optionValue="id" styleClass="w-full"
+                        placeholder="اختر القسم" [showClear]="true" [loading]="isLoadingDepartments" appendTo="body">
+                        <ng-template let-option pTemplate="item">
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-sitemap"></i>
+                                <span>{{option.name}}</span>
+                            </div>
+                        </ng-template>
+                    </p-dropdown>
+                </div>
+
+                <!-- Basic Salary -->
+                <div class="field">
+                    <label for="basicSalary">الراتب الأساسي (ريال) <span class="text-red-500">*</span></label>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-money-bill text-400"></i>
+                        <input type="number" pInputText id="basicSalary" formControlName="basicSalary" placeholder="0.00">
+                    </span>
+                </div>
+            </div>
+
             <!-- Active Status -->
             <div class="field mt-4">
                 <div class="switch-field p-3 surface-ground border-round-xl flex align-items-center justify-content-between">

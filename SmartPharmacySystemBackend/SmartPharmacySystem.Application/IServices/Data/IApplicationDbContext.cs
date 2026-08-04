@@ -64,6 +64,7 @@ public interface IApplicationDbContext
 
     // ===== Notifications =====
     DbSet<Notification> Notifications { get; }
+    DbSet<UserShift> UserShifts { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

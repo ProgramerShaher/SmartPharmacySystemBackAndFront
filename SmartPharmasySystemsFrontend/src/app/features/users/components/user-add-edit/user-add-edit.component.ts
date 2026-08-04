@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } 
 import { MessageService } from 'primeng/api';
 import { UsersService } from '../../services/users.service';
 import { BranchService } from '../../../branches/services/branch.service';
+import { DepartmentService } from '../../../departments/services/department.service';
+import { EmployeeService } from '../../../employees/services/employee.service';
 import { User, UserCreateDto, UserUpdateDto, BranchDto } from '../../../../core/models';
 
 // PrimeNG Imports
@@ -48,6 +50,9 @@ export class UserFormComponent implements OnInit {
     branches: BranchDto[] = [];
     isLoadingBranches = false;
 
+    departments: any[] = [];
+    isLoadingDepartments = false;
+
     // Backend expects RoleId (1 = Admin, 2 = Pharmacist)
     roles = [
         { label: 'مدير النظام (Admin)', value: 1, icon: 'pi pi-shield' },
@@ -58,6 +63,8 @@ export class UserFormComponent implements OnInit {
         private fb: FormBuilder,
         private usersService: UsersService,
         private branchService: BranchService,
+        private departmentService: DepartmentService,
+        private employeeService: EmployeeService,
         private messageService: MessageService
     ) {
         this.initForm();
@@ -65,6 +72,7 @@ export class UserFormComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadBranches();
+        this.loadDepartments();
 
         if (this.user) {
             this.userForm.patchValue({
@@ -94,6 +102,19 @@ export class UserFormComponent implements OnInit {
         });
     }
 
+    private loadDepartments() {
+        this.isLoadingDepartments = true;
+        this.departmentService.getAll().subscribe({
+            next: (data: any) => {
+                this.departments = data;
+                this.isLoadingDepartments = false;
+            },
+            error: () => {
+                this.isLoadingDepartments = false;
+            }
+        });
+    }
+
     private initForm(): void {
         this.userForm = this.fb.group({
             username: ['', [Validators.required, Validators.minLength(3)]],
@@ -104,7 +125,14 @@ export class UserFormComponent implements OnInit {
             roleId: [2, [Validators.required]], // Default to Pharmacist
             branchId: [null, [Validators.required]], // Required for employee setup
             phoneNumber: ['', [Validators.pattern(/^[0-9]+$/)]],
-            isActive: [true]
+            isActive: [true],
+
+            // Employee specific fields
+            isEmployee: [true],
+            basicSalary: [0, [Validators.required, Validators.min(0)]],
+            departmentId: [null, [Validators.required]],
+            jobTitle: ['', [Validators.required]],
+            nationalId: ['', [Validators.required]]
         }, { validators: this.passwordMatchValidator });
     }
 
@@ -127,6 +155,13 @@ export class UserFormComponent implements OnInit {
     get branchId() { return this.userForm.get('branchId')!; }
     get phoneNumber() { return this.userForm.get('phoneNumber')!; }
     get isActive() { return this.userForm.get('isActive')!; }
+
+    // Employee getters
+    get isEmployee() { return this.userForm.get('isEmployee')!; }
+    get basicSalary() { return this.userForm.get('basicSalary')!; }
+    get departmentId() { return this.userForm.get('departmentId')!; }
+    get jobTitle() { return this.userForm.get('jobTitle')!; }
+    get nationalId() { return this.userForm.get('nationalId')!; }
 
     togglePassword(): void {
         this.showPassword = !this.showPassword;
@@ -181,20 +216,56 @@ export class UserFormComponent implements OnInit {
                 error: () => this.loading = false
             });
         } else {
-            // Create
-            const createDto: any = { 
+            // Create User
+            const createDto: any = {
                 ...formData,
                 passwordHash: formData.password,
                 confirmPassword: formData.password
             };
             delete createDto.password;
-            
+
             this.usersService.create(createDto).subscribe({
                 next: (res) => {
-                    this.loading = false;
-                    this.save.emit(res);
+                    // Check if we need to create an employee too
+                    if (formData.isEmployee) {
+                        const employeeCode = 'EMP-' + Math.floor(1000 + Math.random() * 9000); // Generate random code
+                        const createEmpDto = {
+                            employeeCode: employeeCode,
+                            fullName: formData.fullName,
+                            nationalId: formData.nationalId,
+                            branchId: formData.branchId,
+                            departmentId: formData.departmentId,
+                            jobTitle: formData.jobTitle,
+                            hireDate: new Date(),
+                            basicSalary: formData.basicSalary,
+                            isActive: true
+                        };
+
+                        this.employeeService.create(createEmpDto as any).subscribe({
+                            next: () => {
+                                this.loading = false;
+                                this.save.emit(res);
+                            },
+                            error: (err) => {
+                                console.error('Error creating employee:', err);
+                                // User created but employee failed
+                                this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'تم إنشاء المستخدم بنجاح، لكن حدث خطأ أثناء إنشاء بيانات الموظف (تأكد من رقم الهوية).' });
+                                this.loading = false;
+                                this.save.emit(res);
+                            }
+                        });
+                    } else {
+                        this.loading = false;
+                        this.save.emit(res);
+                    }
                 },
-                error: () => this.loading = false
+                error: (err) => {
+                    console.error('Error creating user:', err);
+                    let errMsg = 'فشل في إنشاء المستخدم، قد يكون اسم المستخدم مستخدماً بالفعل';
+                    if (err?.error?.message) errMsg = err.error.message;
+                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: errMsg });
+                    this.loading = false;
+                }
             });
         }
     }

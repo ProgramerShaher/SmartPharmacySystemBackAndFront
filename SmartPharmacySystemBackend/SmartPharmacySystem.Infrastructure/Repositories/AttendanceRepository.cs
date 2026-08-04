@@ -60,6 +60,16 @@ public class AttendanceRepository : IAttendanceRepository
                 && !a.IsDeleted);
     }
 
+    public async Task<Attendance?> GetAttendanceByDateAsync(int employeeId, DateTime date)
+    {
+        var targetDate = date.Date;
+        return await _context.Attendances
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.EmployeeId == employeeId
+                && a.CheckIn.Date == targetDate
+                && !a.IsDeleted);
+    }
+
     public async Task<Attendance> AddAsync(Attendance attendance)
     {
         await _context.Attendances.AddAsync(attendance);

@@ -1,73 +1,82 @@
-<div class="compact-square-card">
-    <!-- Header -->
-    <div class="card-header">
-      <div class="header-title">
-        <i class="pi" [class]="isEditMode ? 'pi-pencil' : 'pi-plus-circle'"></i>
-        <h3>{{ isEditMode ? 'تعديل التنبيه' : 'إضافة تنبيه جديد' }}</h3>
+<div class="modal-shell" dir="rtl">
+  <div class="modal-header">
+    <div class="modal-title">
+      <span class="modal-icon">
+        <i class="pi" [ngClass]="isEditMode ? 'pi-pencil' : 'pi-bell'"></i>
+      </span>
+      <div>
+        <h2>{{ isEditMode ? 'تعديل التنبيه' : 'إضافة تنبيه جديد' }}</h2>
+        <p>{{ isEditMode ? 'تعديل بيانات وإعدادات التنبيه' : 'إدخال تفاصيل التنبيه المستهدف' }}</p>
       </div>
-        <p-tag *ngIf="isEditMode" value="تعديل" severity="warning" [rounded]="true"></p-tag>
     </div>
+    <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn"
+      (click)="onCancel()"></button>
+  </div>
 
-    <!-- Body (Scrollable interior if needed, but designed to fit) -->
-    <div class="card-body">
-      <form [formGroup]="alertForm" (ngSubmit)="onSubmit()">
-            <div class="form-grid">
-            
-              <!-- Row 1 -->
-              <div class="field-wrapper col-span-1">
-                <label class="field-label">نوع التنبيه</label>
-                <p-dropdown [options]="alertTypeOptions" formControlName="alertType" [autoDisplayFirst]="false" appendTo="body"
-                  placeholder="اختر النوع">
-                  <ng-template pTemplate="selectedItem" let-selected>
-                    <div class="flex align-items-center gap-2" *ngIf="selected">
-                      <i [class]="getAlertTypeIcon(selected.value)" class="text-primary text-sm"></i>
-                      <span class="text-sm font-bold">{{ selected.label }}</span>
-                    </div>
-                  </ng-template>
-                </p-dropdown>
-                </div>
+  <div class="modal-body p-fluid">
+    <form [formGroup]="alertForm" (ngSubmit)="onSubmit()">
+      <div class="field-group-grid">
+        <!-- Alert Type -->
+        <div class="field">
+          <label for="alertType">نوع التنبيه <span class="text-red-500">*</span></label>
+          <p-dropdown [options]="alertTypeOptions" formControlName="alertType" [autoDisplayFirst]="false" appendTo="body"
+            placeholder="اختر النوع" styleClass="w-full">
+            <ng-template pTemplate="selectedItem" let-selected>
+              <div class="flex align-items-center gap-2" *ngIf="selected">
+                <i [class]="getAlertTypeIcon(selected.value)" class="text-teal-600 text-sm"></i>
+                <span class="text-sm font-bold">{{ selected.label }}</span>
+              </div>
+            </ng-template>
+          </p-dropdown>
+        </div>
 
-                <div class="field-wrapper col-span-1">
-                  <label class="field-label">الحالة</label>
-                  <p-dropdown [options]="statusOptions" formControlName="status" [autoDisplayFirst]="true" appendTo="body"></p-dropdown>
-                </div>
+        <!-- Status -->
+        <div class="field">
+          <label for="status">حالة التنبيه <span class="text-red-500">*</span></label>
+          <p-dropdown [options]="statusOptions" formControlName="status" [autoDisplayFirst]="true" appendTo="body" styleClass="w-full"></p-dropdown>
+        </div>
 
-                <div class="field-wrapper col-span-1">
-                  <label class="field-label">رقم الدفعة</label>
-                  <input type="text" pInputText formControlName="batchNumber" placeholder="BATCH-001" />
-                </div>
+        <!-- Batch Select -->
+        <div class="field" *ngIf="batches.length > 0">
+          <label for="batchId">الدفعة (Batch) <span class="text-red-500">*</span></label>
+          <p-dropdown [options]="batches" formControlName="batchId" optionLabel="label" optionValue="value" styleClass="w-full"
+            placeholder="اختر الدفعة" [showClear]="true" [filter]="true" filterBy="label" appendTo="body">
+            <ng-template let-option pTemplate="item">
+              <div class="flex align-items-center gap-2">
+                <i class="pi pi-box text-teal-600"></i>
+                <span>{{ option.label }}</span>
+              </div>
+            </ng-template>
+          </p-dropdown>
+        </div>
 
-                <!-- Row 2 -->
-                <div class="field-wrapper col-span-1">
-                  <label class="field-label">الدواء</label>
-                  <input type="text" pInputText formControlName="medicineName" placeholder="اسم الدواء..." />
-                </div>
+        <!-- Execution Date -->
+        <div class="field">
+          <label for="executionDate">تاريخ التفعيل <span class="text-red-500">*</span></label>
+          <p-calendar formControlName="executionDate" dateFormat="yy/mm/dd" [showIcon]="true" appendTo="body" styleClass="w-full"></p-calendar>
+        </div>
 
-                <div class="field-wrapper col-span-1">
-                  <label class="field-label">تاريخ التفعيل</label>
-                  <p-calendar formControlName="executionDate" dateFormat="yy/mm/dd" [showIcon]="true" appendTo="body"></p-calendar>
-                </div>
+        <!-- Expiry Date -->
+        <div class="field">
+          <label for="expiryDate">تاريخ الانتهاء</label>
+          <p-calendar formControlName="expiryDate" dateFormat="yy/mm/dd" [showIcon]="true" appendTo="body" styleClass="w-full"></p-calendar>
+        </div>
 
-                <div class="field-wrapper col-span-1">
-                  <label class="field-label">تاريخ الانتهاء</label>
-                  <p-calendar formControlName="expiryDate" dateFormat="yy/mm/dd" [showIcon]="true" appendTo="body"></p-calendar>
-                </div>
+        <!-- Message -->
+        <div class="field col-span-2">
+          <label for="message">نص التنبيه <span class="text-red-500">*</span></label>
+          <textarea pInputTextarea formControlName="message" rows="3" placeholder="أدخل نص ورسالة التنبيه هنا..." styleClass="w-full"></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
 
-                <!-- Row 3: Message (Full Width) -->
-                <div class="field-wrapper col-12">
-                  <label class="field-label">نص التنبيه <span class="text-red-500">*</span></label>
-                  <textarea pInputTextarea formControlName="message" rows="3" placeholder="أدخل رسالة التنبيه هنا..."></textarea>
-                </div>
-
-            </div>
-        </form>
-    </div>
-<!-- Footer -->
-<div class="card-footer">
-  <button pButton type="button" label="إلغاء الأمر" class="p-button-secondary" (click)="onCancel()"></button>
-  <button pButton type="button" [label]="isEditMode ? 'حفظ التعديلات' : 'إضافة الآن'" icon="pi pi-check"
-    (click)="onSubmit()" [loading]="loading"></button>
-    </div>
-
+  <div class="modal-footer">
+    <button pButton label="إلغاء" icon="pi pi-times" [rounded]="true" [outlined]="true" severity="secondary"
+      (click)="onCancel()"></button>
+    <button pButton [label]="isEditMode ? 'حفظ التعديلات' : 'إنشاء التنبيه'"
+      [icon]="isEditMode ? 'pi pi-check' : 'pi pi-plus'" [rounded]="true" class="p-button-primary"
+      [disabled]="alertForm.invalid || loading" [loading]="loading" (click)="onSubmit()"></button>
+  </div>
 </div>
 <p-toast></p-toast>

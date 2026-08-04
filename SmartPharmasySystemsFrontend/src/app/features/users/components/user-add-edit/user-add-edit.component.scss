@@ -1,161 +1,235 @@
 :host ::ng-deep {
     .modal-shell {
         background: white;
-        border-radius: 20px;
+        border-radius: 14px;
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        max-height: 85vh; /* Keep it within viewport */
+        max-height: 85vh;
+        border: 1px solid #e2e8f0;
     }
 
     .modal-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        padding: 1.5rem 2rem 1rem;
+        padding: 0.85rem 1.25rem 0.6rem;
         border-bottom: 1px solid #f1f5f9;
+        background: #fafafa;
     }
 
     .modal-title {
         display: flex;
         align-items: center;
-        gap: 1rem;
+        gap: 0.65rem;
 
         h2 {
             margin: 0;
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-size: 1.05rem;
+            font-weight: 800;
             color: #1e293b;
         }
 
         p {
-            margin: 0.25rem 0 0;
-            font-size: 0.85rem;
-            color: #94a3b8;
+            margin: 0.1rem 0 0;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
         }
     }
 
     .modal-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, #0d9488, #0f766e);
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #0d9488;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        box-shadow: 0 6px 16px rgba(13, 148, 136, 0.2);
 
         i {
             color: white;
-            font-size: 1.3rem;
+            font-size: 1.05rem;
         }
     }
 
     .close-btn {
-        width: 36px;
-        height: 36px;
+        width: 30px;
+        height: 30px;
+        color: #64748b !important;
     }
 
     .modal-body {
-        padding: 1.5rem 2rem;
-        overflow-y: auto; /* Allow scrolling inside the body */
-        flex: 1; /* Take up available space */
+        padding: 0.85rem 1.25rem;
+        overflow-y: auto;
+        flex: 1;
     }
 
     .field-group-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-        gap: 1.25rem;
+        gap: 0.65rem 0.85rem;
     }
 
     .field {
         label {
             display: block;
-            margin-bottom: 0.4rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #475569;
+            margin-bottom: 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
         }
     }
 
     .modal-footer {
         display: flex;
         justify-content: flex-end;
-        gap: 0.75rem;
-        padding: 1rem 2rem 1.5rem;
+        gap: 0.5rem;
+        padding: 0.65rem 1.25rem 0.85rem;
         border-top: 1px solid #f1f5f9;
+        background: #fafafa;
     }
 
     .p-dropdown {
         width: 100%;
-        border-radius: 10px;
+        height: 34px !important;
+        border-radius: 6px !important;
+        font-size: 0.78rem !important;
+
+        .p-dropdown-label {
+            padding: 0.35rem 0.6rem !important;
+            font-size: 0.78rem !important;
+            line-height: 1.5 !important;
+        }
+
         &:not(.p-disabled).p-focus {
-            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
-            border-color: #0d9488;
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.12) !important;
+            border-color: #0d9488 !important;
         }
     }
 
     .p-inputtext {
-        border-radius: 10px;
-        padding: 0.65rem 1rem;
+        border-radius: 6px !important;
+        padding: 0.35rem 0.6rem !important;
+        font-size: 0.78rem !important;
+        height: 34px !important;
         width: 100%;
+
         &:enabled:focus {
-            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.2);
-            border-color: #0d9488;
+            box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.12) !important;
+            border-color: #0d9488 !important;
         }
     }
 
     .p-inputgroup {
+        height: 34px !important;
+
         .p-inputgroup-addon {
-            border-radius: 0 10px 10px 0;
+            border-radius: 0 6px 6px 0 !important;
             background: #f8fafc;
-            border-color: #cbd5e1;
+            border-color: #e2e8f0;
+            padding: 0 0.5rem !important;
+            font-size: 0.75rem !important;
         }
         .p-inputtext {
-            border-radius: 0;
+            border-radius: 0 !important;
+            height: 34px !important;
         }
         .p-button {
-            border-radius: 10px 0 0 10px;
-            border: 1px solid #cbd5e1;
+            border-radius: 6px 0 0 6px !important;
+            border: 1px solid #e2e8f0;
             border-right: 0;
             background: #f8fafc;
             color: #64748b;
+            height: 34px !important;
+            width: 34px !important;
+            padding: 0 !important;
         }
     }
 
     .p-input-icon-right {
         > i {
-            right: 0.75rem;
-            margin-top: -0.5rem;
+            right: 0.6rem;
+            margin-top: -0.45rem;
+            font-size: 0.75rem;
         }
         > .p-inputtext {
-            padding-right: 2.5rem;
+            padding-right: 2.2rem !important;
         }
     }
 
     .p-button.p-button-rounded {
-        border-radius: 10px;
+        border-radius: 6px !important;
+        font-size: 0.75rem !important;
+        padding: 0.35rem 0.75rem !important;
     }
 
     .p-button-primary {
         background: #0d9488 !important;
         border: none !important;
         &:hover {
-            background: #0f766e !important;
+            background: #115e59 !important;
+        }
+    }
+}
+
+.switch-card {
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+
+    &.neutral {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+    .switch-title {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.1rem;
+    }
+
+    .switch-sub {
+        display: block;
+        font-size: 0.68rem;
+        color: #64748b;
+    }
+}
+
+.employee-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.65rem 0.85rem;
+
+    .emp-header {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: #0d9488;
+        margin-bottom: 0.4rem;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+
+        i {
+            font-size: 0.85rem;
         }
     }
 }
 
 .strength-meter {
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
     
     .meter-bar {
-        height: 4px;
+        height: 3px;
         background: #e2e8f0;
         border-radius: 2px;
         overflow: hidden;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.15rem;
         
         .fill {
             height: 100%;
@@ -170,24 +244,24 @@
     }
     
     .strength-label {
-        font-size: 0.75rem;
+        font-size: 0.68rem;
         color: #64748b;
     }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 600px) {
     :host ::ng-deep {
         .field-group-grid {
             grid-template-columns: 1fr;
         }
         .modal-body {
-            padding: 1rem;
+            padding: 0.75rem;
         }
         .modal-header {
-            padding: 1rem 1rem 0.75rem;
+            padding: 0.75rem 0.75rem 0.5rem;
         }
         .modal-footer {
-            padding: 0.75rem 1rem 1rem;
+            padding: 0.5rem 0.75rem 0.75rem;
         }
     }
 }

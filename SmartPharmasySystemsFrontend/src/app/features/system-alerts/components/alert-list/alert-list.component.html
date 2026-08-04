@@ -1,128 +1,223 @@
-<div class="block">
-  <!-- Header -->
-  <div class="page-header">
-    <div class="title-section">
-      <h2><i class="pi pi-table"></i> إدارة التنبيهات المركزية</h2>
+<div class="alt-wrap" dir="rtl">
+    <!-- ===== Compact Header ===== -->
+    <div class="alt-header">
+        <div class="alt-header-start">
+            <div class="alt-icon">
+                <i class="pi pi-bell"></i>
+            </div>
+            <div>
+                <h1 class="alt-title">إدارة التنبيهات المركزية</h1>
+                <p class="alt-subtitle">متابعة تنبيهات انتهاء الصلاحية والمخزون والتنبيهات الحرجة</p>
+            </div>
+        </div>
+        <div class="alt-header-end">
+            <button pButton icon="pi pi-filter-slash" [rounded]="true" [text]="true"
+                pTooltip="مسح الفلاتر" tooltipPosition="top" (click)="clearSearch()"
+                styleClass="alt-btn-icon"></button>
+            <button pButton icon="pi pi-sync" label="فحص الصلاحية"
+                (click)="generateExpiryAlerts()" styleClass="alt-btn-secondary p-button-warning"></button>
+            <button pButton icon="pi pi-plus" label="تنبيه جديد"
+                (click)="createAlert()" styleClass="alt-btn-primary"></button>
+        </div>
     </div>
-      <div class="flex gap-2">
-        <p-button label="فحص الصلاحية" icon="pi pi-sync" styleClass="p-button-warning p-button-sm"
-          (onClick)="generateExpiryAlerts()"></p-button>
-        <p-button label="تنبيه جديد" icon="pi pi-plus" styleClass="p-button-primary p-button-sm"
-          (onClick)="createAlert()"></p-button>
-      </div>
-  </div>
 
-  <!-- Structured Control Panel -->
-  <div class="control-panel">
-    <span class="panel-title">أدوات الفرز والبحث</span>
-    <div class="filters-grid">
-      <div class="filter-item">
-        <label class="filter-label">البحث الشامل</label>
-        <span class="p-input-icon-left">
-          <i class="pi pi-search"></i>
-                <input type="text" pInputText placeholder="ابحث هنا..." [(ngModel)]="searchTerm" (input)="onSearch()" />
+    <!-- ===== KPI Row ===== -->
+    <div class="alt-kpi-row">
+        <div class="alt-kpi-card" data-color="teal">
+            <div class="alt-kpi-inner">
+                <div class="alt-kpi-left">
+                    <span class="alt-kpi-label">إجمالي التنبيهات</span>
+                    <strong class="alt-kpi-value">{{ alerts.length }}</strong>
+                </div>
+                <div class="alt-kpi-badge alt-kpi-badge-teal">
+                    <i class="pi pi-bell"></i>
+                </div>
+            </div>
+            <small class="alt-kpi-extra">جميع التنبيهات بالنظام</small>
+        </div>
+
+        <div class="alt-kpi-card" data-color="amber">
+            <div class="alt-kpi-inner">
+                <div class="alt-kpi-left">
+                    <span class="alt-kpi-label">تنبيهات معلقة</span>
+                    <strong class="alt-kpi-value">{{ pendingCount }}</strong>
+                </div>
+                <div class="alt-kpi-badge alt-kpi-badge-amber">
+                    <i class="pi pi-exclamation-circle"></i>
+                </div>
+            </div>
+            <small class="alt-kpi-extra">تتطلب المراجعة والإجراء</small>
+        </div>
+
+        <div class="alt-kpi-card" data-color="red">
+            <div class="alt-kpi-inner">
+                <div class="alt-kpi-left">
+                    <span class="alt-kpi-label">منتهية الصلاحية</span>
+                    <strong class="alt-kpi-value">{{ expiredCount }}</strong>
+                </div>
+                <div class="alt-kpi-badge alt-kpi-badge-red">
+                    <i class="pi pi-calendar-times"></i>
+                </div>
+            </div>
+            <small class="alt-kpi-extra">مواد متجاوزة لتاريخ الانتهاء</small>
+        </div>
+
+        <div class="alt-kpi-card" data-color="teal">
+            <div class="alt-kpi-inner">
+                <div class="alt-kpi-left">
+                    <span class="alt-kpi-label">تمت معالجتها</span>
+                    <strong class="alt-kpi-value">{{ readCount }}</strong>
+                </div>
+                <div class="alt-kpi-badge alt-kpi-badge-teal">
+                    <i class="pi pi-check-circle"></i>
+                </div>
+            </div>
+            <small class="alt-kpi-extra">تنبيهات مقروءة أو مكتملة</small>
+        </div>
+    </div>
+
+    <!-- ===== Filter Row ===== -->
+    <div class="alt-filter-panel">
+        <div class="alt-filter-grid">
+            <div class="alt-filter-field alt-filter-wide">
+                <label>بحث شامل</label>
+                <span class="p-input-icon-right">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" placeholder="ابحث في نص التنبيه أو المرجع..."
+                        [(ngModel)]="searchTerm" (input)="onSearch()" />
                 </span>
-                </div>
-        <div class="filter-item">
-          <label class="filter-label">حالة التنبيه</label>
-          <p-dropdown [options]="statusOptions" [(ngModel)]="statusFilter" (onChange)="onStatusFilterChange()"
-                placeholder="-- اختر الحالة --" [showClear]="true"></p-dropdown>
-        </div>
-        <div class="filter-item">
-          <label class="filter-label">رقم الدفعة (Batch)</label>
-          <input type="text" pInputText placeholder="مثال: BN-2024" [(ngModel)]="batchNumberFilter" (input)="onSearch()" />
-        </div>
-        <div class="filter-item">
-          <label class="filter-label">اسم الدواء</label>
-          <input type="text" pInputText placeholder="اسم المنتج..." [(ngModel)]="medicineNameFilter" (input)="onSearch()" />
+            </div>
+
+            <div class="alt-filter-field">
+                <label>حالة التنبيه</label>
+                <p-dropdown [options]="statusOptions" [(ngModel)]="statusFilter" (onChange)="onStatusFilterChange()"
+                    placeholder="-- الكل --" [showClear]="true" styleClass="alt-dropdown"></p-dropdown>
+            </div>
+
+            <div class="alt-filter-field">
+                <label>رقم الدفعة (Batch)</label>
+                <input pInputText type="text" placeholder="مثال: BN-2024" [(ngModel)]="batchNumberFilter" (input)="onSearch()" />
+            </div>
+
+            <div class="alt-filter-field">
+                <label>اسم الدواء</label>
+                <input pInputText type="text" placeholder="اسم المنتج..." [(ngModel)]="medicineNameFilter" (input)="onSearch()" />
+            </div>
+
+            <div class="alt-filter-action">
+                <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true"
+                    severity="info" (click)="loadAlerts()" pTooltip="تحديث البيانات" tooltipPosition="top"
+                    styleClass="alt-btn-sm"></button>
+            </div>
         </div>
     </div>
-  </div>
 
-  <!-- Structured Grid Table -->
-  <div class="table-wrapper">
-    <p-table [value]="alerts" [rows]="10" [paginator]="true" [rowHover]="true"
-      styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped" responsiveLayout="scroll">
-        <ng-template pTemplate="header">
-            <tr>
-              <th style="width: 5%">ID</th>
-              <th style="width: 5%; text-align: center">نوع</th>
-              <th style="width: 15%">تصنيف</th>
-              <th style="width: 25%">نص التنبيه</th>
-              <th style="width: 15%">المرجع</th>
-              <th style="width: 10%">تاريخ التنبيه</th>
-              <th style="width: 10%">تاريخ الانتهاء</th>
-              <th style="width: 8%">الحالة</th>
-              <th style="width: 7%; text-align: center">خيارات</th>
-            </tr>
-            </ng-template>
-
-        <ng-template pTemplate="body" let-alert>
-            <tr>
-              <td class="font-bold text-center">{{ alert.id }}</td>
-            
-              <td class="text-center">
-                <div class="icon-box" [ngClass]="{
-                                    'bg-red': getAlertTypeSeverity(alert.alertType) === 'danger',
-                                    'bg-orange': getAlertTypeSeverity(alert.alertType) === 'warning',
-                                    'bg-blue': getAlertTypeSeverity(alert.alertType) === 'info',
-                                    'bg-green': getAlertTypeSeverity(alert.alertType) === 'success'
-                                }">
-                  <i [class]="getAlertTypeIcon(alert.alertType)"></i>
+    <!-- ===== Table ===== -->
+    <div class="alt-table-wrap">
+        <p-table #dt [value]="alerts" [loading]="loading" [paginator]="true" [rows]="10"
+            [rowsPerPageOptions]="[5,10,15,25]" [totalRecords]="alerts.length" [showCurrentPageReport]="true"
+            currentPageReportTemplate="{first}–{last} من {totalRecords}"
+            styleClass="alt-table" responsiveLayout="scroll"
+            sortField="id" [sortOrder]="-1">
+            <ng-template pTemplate="caption">
+                <div class="alt-table-caption">
+                    <span><i class="pi pi-list"></i> قائمة التنبيهات المركزية</span>
+                    <span class="alt-table-count">{{ alerts.length }} تنبيه</span>
                 </div>
-              </td>
-
-                <td>
-                    <span class="type-text">{{ getAlertTypeLabel(alert.alertType) }}</span>
-                    </td>
-
-                <td>
-                    <div class="msg-text" pTooltip="{{ alert.message }}">{{ alert.message }}</div>
-                    </td>
-
-                <td>
-                    <span class="ref-text" *ngIf="alert.medicineName">{{ alert.medicineName }}</span>
-                    <span class="batch-tag" *ngIf="alert.batchNumber">BN:{{ alert.batchNumber }}</span>
-                    <span *ngIf="!alert.medicineName" class="text-400">--</span>
-                    </td>
-
-                <td>
-                    <span class="date-mono">{{ alert.executionDate | date:'yyyy-MM-dd' }}</span>
-                    </td>
-
-                <td>
-                  <span class="date-mono" [class.text-danger]="isExpired(alert.expiryDate)" *ngIf="alert.expiryDate">
-                    {{ alert.expiryDate | date:'yyyy-MM-dd' }}
-                  </span>
-                  <span *ngIf="!alert.expiryDate" class="text-400">--</span>
-                </td>
-
-                <td>
-                  <p-tag [value]="getStatusLabel(alert.status)" [severity]="getStatusSeverity(alert.status)"></p-tag>
-                </td>
-
-                <td class="text-center">
-                  <div class="btn-group">
-                    <button pButton icon="pi pi-eye" class="p-button-outlined p-button-secondary action-sq" (click)="viewDetails(alert)"
-                      pTooltip="عرض"></button>
-                    <button pButton icon="pi pi-pencil" class="p-button-outlined p-button-primary action-sq" *ngIf="alert.status === 0"
-                      (click)="editAlert(alert)" pTooltip="تعديل"></button>
-                    <button pButton icon="pi pi-trash" class="p-button-outlined p-button-danger action-sq"
-                      (click)="deleteAlert($event, alert)" pTooltip="حذف"></button>
-                  </div>
-                </td>
+            </ng-template>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="id" style="width: 70px;">ID <p-sortIcon field="id"></p-sortIcon></th>
+                    <th pSortableColumn="alertType">النوع <p-sortIcon field="alertType"></p-sortIcon></th>
+                    <th>نص التنبيه</th>
+                    <th>المرجع / الدواء</th>
+                    <th pSortableColumn="executionDate">تاريخ التنبيه <p-sortIcon field="executionDate"></p-sortIcon></th>
+                    <th pSortableColumn="expiryDate">تاريخ الانتهاء <p-sortIcon field="expiryDate"></p-sortIcon></th>
+                    <th>الحالة</th>
+                    <th style="width: 120px;">الإجراءات</th>
                 </tr>
-                </ng-template>
-
-        <ng-template pTemplate="emptymessage">
-          <tr>
-                <td colspan="9" class="text-center p-4">
-                  لاتوجد بيانات
-                </td>
+            </ng-template>
+            <ng-template pTemplate="body" let-alert>
+                <tr>
+                    <td class="alt-cell-id">#{{ alert.id }}</td>
+                    <td>
+                        <span class="alt-chip alt-chip-type" [ngClass]="{
+                            'danger': getAlertTypeSeverity(alert.alertType) === 'danger',
+                            'warning': getAlertTypeSeverity(alert.alertType) === 'warning',
+                            'info': getAlertTypeSeverity(alert.alertType) === 'info'
+                        }">
+                            <i [class]="getAlertTypeIcon(alert.alertType)"></i>
+                            {{ getAlertTypeLabel(alert.alertType) }}
+                        </span>
+                    </td>
+                    <td class="alt-cell-msg">
+                        <span pTooltip="{{ alert.message }}">{{ alert.message }}</span>
+                    </td>
+                    <td class="alt-cell-ref">
+                        <span *ngIf="alert.medicineName" class="alt-med-name">{{ alert.medicineName }}</span>
+                        <span *ngIf="alert.batchNumber" class="alt-batch-tag">BN: {{ alert.batchNumber }}</span>
+                        <span *ngIf="!alert.medicineName && !alert.batchNumber" style="color:#94a3b8">---</span>
+                    </td>
+                    <td class="alt-cell-date">
+                        <i class="pi pi-calendar" style="margin-left: 0.2rem; color: #64748b;"></i>
+                        <span>{{ alert.executionDate | date:'yyyy-MM-dd' }}</span>
+                    </td>
+                    <td class="alt-cell-date">
+                        <span *ngIf="alert.expiryDate" [class.text-danger]="isExpired(alert.expiryDate)">
+                            <i class="pi pi-clock" style="margin-left: 0.2rem;"></i>
+                            {{ alert.expiryDate | date:'yyyy-MM-dd' }}
+                        </span>
+                        <span *ngIf="!alert.expiryDate" style="color:#94a3b8">---</span>
+                    </td>
+                    <td>
+                        <p-tag [value]="getStatusLabel(alert.status)" [severity]="getStatusSeverity(alert.status)"></p-tag>
+                    </td>
+                    <td>
+                        <div class="alt-cell-actions">
+                            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
+                                pTooltip="عرض التفاصيل" tooltipPosition="top" (click)="viewDetails(alert)"></button>
+                            <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
+                                *ngIf="alert.status === 0"
+                                pTooltip="تعديل" tooltipPosition="top" (click)="editAlert(alert)"></button>
+                            <button pButton icon="pi pi-check" class="p-button-rounded p-button-text p-button-sm p-button-success"
+                                *ngIf="alert.status === 0"
+                                pTooltip="تحديد كمقروء" tooltipPosition="top" (click)="markAsRead(alert)"></button>
+                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-sm p-button-danger"
+                                pTooltip="حذف" tooltipPosition="top" (click)="deleteAlert($event, alert)"></button>
+                        </div>
+                    </td>
                 </tr>
-                </ng-template>
-    </p-table>
-  </div>
+            </ng-template>
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="8" class="alt-empty">
+                        <i class="pi pi-bell-slash"></i>
+                        <span>لا توجد تنبيهات</span>
+                        <small>لم يتم العثور على أي بيانات تطابق معايير البحث</small>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
 </div>
-<p-toast></p-toast>
-<p-confirmDialog></p-confirmDialog>
+
+<!-- نافذة الإضافة والتعديل -->
+<p-dialog [(visible)]="alertDialog" [modal]="true"
+    styleClass="alert-dialog" [draggable]="false" [resizable]="false" [closable]="false"
+    [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
+    [style]="{width: '540px', maxWidth: '95vw'}">
+    <app-alert-add-edit *ngIf="alertDialog" [alertId]="selectedAlertId" (save)="onAlertSave($event)" (cancel)="hideAlertDialog()">
+    </app-alert-add-edit>
+</p-dialog>
+
+<!-- نافذة العرض -->
+<p-dialog [(visible)]="viewDialog" [modal]="true"
+    styleClass="alert-dialog" [draggable]="false" [resizable]="false" [closable]="false"
+    [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
+    [style]="{width: '460px', maxWidth: '95vw'}">
+    <app-alert-detail *ngIf="viewDialog" [alertId]="selectedAlertId" [alertData]="selectedAlert" (close)="hideViewDialog()" (edit)="onEditFromDetail($event)">
+    </app-alert-detail>
+</p-dialog>
+
+<p-toast position="top-center"></p-toast>
+<p-confirmDialog [breakpoints]="{'960px': '75vw', '640px': '90vw'}" [style]="{width: '450px'}"></p-confirmDialog>

@@ -11,11 +11,10 @@
             </div>
         </div>
         <div class="usr-header-end">
-            <button pButton icon="pi pi-filter-slash" [rounded]="true" [text]="true"
-                pTooltip="مسح الفلاتر" tooltipPosition="top" (click)="clearSearch()"
-                styleClass="usr-btn-icon"></button>
-            <button pButton label="مستخدم جديد" icon="pi pi-plus"
-                (click)="openNew()" styleClass="usr-btn-primary"></button>
+            <button pButton icon="pi pi-filter-slash" [rounded]="true" [text]="true" pTooltip="مسح الفلاتر"
+                tooltipPosition="top" (click)="clearSearch()" styleClass="usr-btn-icon"></button>
+            <button pButton label="مستخدم جديد" icon="pi pi-plus" (click)="openNew()"
+                styleClass="usr-btn-primary"></button>
         </div>
     </div>
 
@@ -78,13 +77,13 @@
                 <label>بحث سريع</label>
                 <span class="p-input-icon-right">
                     <i class="pi pi-search"></i>
-                    <input pInputText type="text" placeholder="الاسم، اسم المستخدم، أو الهاتف..."
-                        [ngModel]="searchTerm" (input)="onSearch($any($event.target).value)" />
+                    <input pInputText type="text" placeholder="الاسم، اسم المستخدم، أو الهاتف..." [ngModel]="searchTerm"
+                        (input)="onSearch($any($event.target).value)" />
                 </span>
             </div>
             <div class="usr-filter-action">
-                <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true"
-                    severity="info" (click)="loadUsers()" pTooltip="تحديث البيانات" tooltipPosition="top"
+                <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="info"
+                    (click)="loadUsers()" pTooltip="تحديث البيانات" tooltipPosition="top"
                     styleClass="usr-btn-sm"></button>
             </div>
         </div>
@@ -94,9 +93,8 @@
     <div class="usr-table-wrap">
         <p-table #dt [value]="filteredUsers" [loading]="loading" [paginator]="true" [rows]="10"
             [rowsPerPageOptions]="[5,10,15,25]" [totalRecords]="filteredUsers.length" [showCurrentPageReport]="true"
-            currentPageReportTemplate="{first}–{last} من {totalRecords}"
-            styleClass="usr-table" responsiveLayout="scroll"
-            sortField="createdAt" [sortOrder]="-1">
+            currentPageReportTemplate="{first}–{last} من {totalRecords}" styleClass="usr-table"
+            responsiveLayout="scroll" sortField="createdAt" [sortOrder]="-1">
             <ng-template pTemplate="caption">
                 <div class="usr-table-caption">
                     <span><i class="pi pi-list"></i> قائمة المستخدمين</span>
@@ -121,9 +119,9 @@
                     </td>
                     <td class="usr-cell-fullname">{{ user.fullName }}</td>
                     <td>
-                        <span class="usr-chip" [ngClass]="getRoleClass(user.roleName)">
-                            <i [class]="getRoleIcon(user.roleName)"></i>
-                            {{ getRoleDisplayName(user.roleName) }}
+                        <span class="usr-chip" [ngClass]="getRoleClass(user.roleName || user.role)">
+                            <i [class]="getRoleIcon(user.roleName || user.role)"></i>
+                            {{ getRoleDisplayName(user.roleName || user.role) }}
                         </span>
                     </td>
                     <td class="usr-cell-phone">
@@ -136,8 +134,9 @@
                                 pTooltip="عرض التفاصيل" tooltipPosition="top" (click)="viewUser(user)"></button>
                             <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
                                 pTooltip="تعديل" tooltipPosition="top" (click)="editUser(user)"></button>
-                            <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-sm p-button-danger"
-                                pTooltip="حذف" tooltipPosition="top" (click)="deleteUser(user)"></button>
+                            <button pButton icon="pi pi-trash"
+                                class="p-button-rounded p-button-text p-button-sm p-button-danger" pTooltip="حذف"
+                                tooltipPosition="top" (click)="deleteUser(user)"></button>
                         </div>
                     </td>
                 </tr>
@@ -156,52 +155,74 @@
 </div>
 
 <!-- نافذة الإضافة والتعديل -->
-<p-dialog [(visible)]="userDialog" [modal]="true"
-    styleClass="user-dialog" [draggable]="false" [resizable]="false" [closable]="false"
-    [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
-    [style]="{width: '900px', maxWidth: '95vw'}">
+<p-dialog [(visible)]="userDialog" [modal]="true" styleClass="user-dialog" [draggable]="false" [resizable]="false"
+    [closable]="false" [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
+    [style]="{width: '600px', maxWidth: '95vw'}">
     <app-user-form *ngIf="userDialog" [user]="selectedUser" (save)="onSave($event)" (cancel)="hideDialog()">
     </app-user-form>
 </p-dialog>
 
 <!-- نافذة العرض -->
-<p-dialog [(visible)]="viewDialog" header="تفاصيل المستخدم" [modal]="true" styleClass="view-dialog" [draggable]="false"
-    [resizable]="false" [style]="{width: '450px', maxWidth: '95vw'}">
-    <div class="user-details" *ngIf="viewedUser" style="padding: 1rem;" dir="rtl">
-        <div style="text-align: center; margin-bottom: 1.5rem;">
-            <div style="width: 60px; height: 60px; background: #f0fdfa; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #0d9488; font-size: 1.5rem; margin-bottom: 0.5rem;">
-                <i class="pi pi-user"></i>
+<p-dialog [(visible)]="viewDialog" [modal]="true" styleClass="user-dialog" [draggable]="false" [resizable]="false"
+    [closable]="false" [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
+    [style]="{width: '420px', maxWidth: '95vw'}">
+    <div class="modal-shell" *ngIf="viewedUser" dir="rtl">
+        <div class="modal-header">
+            <div class="modal-title">
+                <span class="modal-icon">
+                    <i class="pi pi-user"></i>
+                </span>
+                <div>
+                    <h2>{{ viewedUser.fullName }}</h2>
+                    <p>{{ viewedUser.username }}</p>
+                </div>
             </div>
-            <h3 style="margin: 0; color: #1e293b; font-size: 1.1rem;">{{viewedUser.fullName}}</h3>
-            <p style="margin: 0; color: #64748b; font-size: 0.85rem;">{{viewedUser.username}}</p>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn"
+                (click)="viewDialog = false"></button>
         </div>
-        
-        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
-                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">الصلاحية:</span>
-                <span class="usr-chip" [ngClass]="getRoleClass(viewedUser.roleName)">
-                    {{getRoleDisplayName(viewedUser.roleName)}}
-                </span>
-            </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
-                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">البريد الإلكتروني:</span>
-                <span style="color: #1e293b; font-size: 0.85rem;">{{viewedUser.email || 'غير محدد'}}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
-                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">رقم الهاتف:</span>
-                <span style="color: #1e293b; font-size: 0.85rem;">{{viewedUser.phoneNumber || 'غير محدد'}}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
-                <span style="color: #64748b; font-size: 0.85rem; font-weight: 700;">الحالة:</span>
-                <span [style.color]="viewedUser.status === 1 ? '#059669' : '#dc2626'" style="font-size: 0.85rem; font-weight: 700;">
-                    {{viewedUser.status === 1 ? 'مفعل' : 'معطل'}}
-                </span>
+
+        <div class="modal-body p-fluid">
+            <div style="display: flex; flex-direction: column; gap: 0.55rem;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.75rem; font-weight: 700;">الصلاحية:</span>
+                    <span class="usr-chip" [ngClass]="getRoleClass(viewedUser.roleName || viewedUser.role)">
+                        {{ getRoleDisplayName(viewedUser.roleName || viewedUser.role) }}
+                    </span>
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.75rem; font-weight: 700;">البريد الإلكتروني:</span>
+                    <span style="color: #1e293b; font-size: 0.78rem; font-weight: 600;">{{ viewedUser.email || 'غير
+                        محدد' }}</span>
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.75rem; font-weight: 700;">رقم الهاتف:</span>
+                    <span style="color: #1e293b; font-size: 0.78rem; font-weight: 600;">{{ viewedUser.phoneNumber ||
+                        'غير محدد' }}</span>
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.2rem;">
+                    <span style="color: #64748b; font-size: 0.75rem; font-weight: 700;">الحالة:</span>
+                    <span
+                        [style.color]="(viewedUser.status === 1 || viewedUser.status === undefined || viewedUser.status === null) ? '#0d9488' : '#dc2626'"
+                        style="font-size: 0.78rem; font-weight: 800;">
+                        {{ (viewedUser.status === 1 || viewedUser.status === undefined || viewedUser.status === null) ?
+                        'مفعل' : 'معطل' }}
+                    </span>
+                </div>
             </div>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-            <button pButton icon="pi pi-pencil" label="تعديل" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="editViewedUser()"></button>
-            <button pButton icon="pi pi-times" label="إغلاق" severity="secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" (click)="viewDialog = false"></button>
+        <div class="modal-footer">
+            <button pButton label="إغلاق" icon="pi pi-times" [rounded]="true" [outlined]="true" severity="secondary"
+                (click)="viewDialog = false"></button>
+            <button pButton label="تعديل" icon="pi pi-pencil" [rounded]="true" class="usr-btn-primary"
+                (click)="editViewedUser()"></button>
         </div>
     </div>
 </p-dialog>

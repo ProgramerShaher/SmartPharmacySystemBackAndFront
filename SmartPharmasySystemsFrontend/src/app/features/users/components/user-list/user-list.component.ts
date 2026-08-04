@@ -209,10 +209,10 @@ export class UserListComponent implements OnInit {
         if (!role) return 'role-unknown';
 
         const roleLower = role.toLowerCase();
-        if (roleLower.includes('admin')) return 'role-admin';
-        if (roleLower.includes('manager')) return 'role-manager';
-        if (roleLower.includes('user') || roleLower.includes('regular')) return 'role-user';
-        if (roleLower.includes('editor')) return 'role-editor';
+        if (roleLower.includes('admin') || roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'role-admin';
+        if (roleLower.includes('manager') || roleLower.includes('مدير')) return 'role-manager';
+        if (roleLower.includes('user') || roleLower.includes('regular') || roleLower.includes('مستخدم')) return 'role-user';
+        if (roleLower.includes('editor') || roleLower.includes('محرر')) return 'role-editor';
         return 'role-other';
     }
 
@@ -224,7 +224,8 @@ export class UserListComponent implements OnInit {
 
         const roleLower = role.toLowerCase();
         if (roleLower.includes('admin')) return 'pi pi-shield';
-        if (roleLower.includes('manager')) return 'pi pi-briefcase';
+        if (roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'pi pi-user';
+        if (roleLower.includes('manager') || roleLower.includes('مدير')) return 'pi pi-briefcase';
         if (roleLower.includes('user') || roleLower.includes('regular')) return 'pi pi-user';
         if (roleLower.includes('editor')) return 'pi pi-file-edit';
         return 'pi pi-tag';
@@ -237,10 +238,11 @@ export class UserListComponent implements OnInit {
         if (!role) return 'غير محدد';
 
         const roleLower = role.toLowerCase();
-        if (roleLower.includes('admin')) return 'مدير';
-        if (roleLower.includes('manager')) return 'مدير';
-        if (roleLower.includes('user') || roleLower.includes('regular')) return 'مستخدم';
-        if (roleLower.includes('editor')) return 'محرر';
+        if (roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'صيدلي النظام';
+        if (roleLower.includes('admin')) return 'مدير النظام';
+        if (roleLower.includes('manager') || roleLower.includes('مدير')) return 'مدير';
+        if (roleLower.includes('user') || roleLower.includes('regular') || roleLower.includes('مستخدم')) return 'مستخدم';
+        if (roleLower.includes('editor') || roleLower.includes('محرر')) return 'محرر';
         return role;
     }
 

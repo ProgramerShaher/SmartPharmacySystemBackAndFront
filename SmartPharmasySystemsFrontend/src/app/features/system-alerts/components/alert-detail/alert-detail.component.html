@@ -1,83 +1,69 @@
-<div class="detail-wrapper" *ngIf="alert; else loadingMetrics">
-  <div class="glass-panel" [ngClass]="'theme-' + getAlertTypeSeverity(alert.alertType)">
-    <!-- Blobs -->
-    <div class="decorative-blob blob-1"></div>
-    <div class="decorative-blob blob-2"></div>
-  
-    <div class="panel-content">
-  
-      <!-- Top Section -->
-      <div class="top-section">
-        <div class="alert-identity">
-          <div class="icon-bubble">
-            <i [class]="getAlertTypeIcon(alert.alertType)"></i>
-          </div>
-          <div class="info-text">
-            <h1>{{ getAlertTypeLabel(alert.alertType) }}</h1>
-            <div class="date-badge">
-              <i class="pi pi-calendar"></i>
-              <span>{{ alert.createdAt | date:'fullDate' }} ({{ alert.createdAt | date:'shortTime' }})</span>
-            </div>
-          </div>
-          </div>
+<div class="modal-shell" dir="rtl" *ngIf="alert; else loadingSpinner">
+  <div class="modal-header">
+    <div class="modal-title">
+      <span class="modal-icon">
+        <i [class]="getAlertTypeIcon(alert.alertType)"></i>
+      </span>
+      <div>
+        <h2>{{ getAlertTypeLabel(alert.alertType) }}</h2>
+        <p>تاريخ الإنشاء: {{ alert.createdAt | date:'yyyy-MM-dd HH:mm' }}</p>
+      </div>
+    </div>
+    <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn"
+      (click)="goBack()"></button>
+  </div>
 
-        <div class="status-pill">
-          <p-tag [value]="getStatusLabel(alert.status)" [severity]="getStatusSeverity(alert.status)"
-            styleClass="text-lg px-4 py-2" [rounded]="true"></p-tag>
-        </div>
-        </div>
+  <div class="modal-body p-fluid">
+    <div class="status-banner mb-3">
+      <span class="status-label">حالة التنبيه الحالية:</span>
+      <p-tag [value]="getStatusLabel(alert.status)" [severity]="getStatusSeverity(alert.status)" [rounded]="true"></p-tag>
+    </div>
 
-      <!-- Message Card -->
-      <div class="message-card">
-        <i class="pi pi-comment quote-icon"></i>
-        <p>{{ alert.message }}</p>
+    <!-- Message Card -->
+    <div class="message-box mb-4">
+      <div class="message-header"><i class="pi pi-comment"></i> نص التنبيه</div>
+      <p class="message-text">{{ alert.message }}</p>
+    </div>
+
+    <!-- Detail Items Grid -->
+    <div class="detail-grid">
+      <div class="detail-card">
+        <span class="detail-label"><i class="pi pi-box"></i> اسم الدواء / المنتج</span>
+        <strong class="detail-val">{{ alert.medicineName || 'غير محدد' }}</strong>
       </div>
 
-      <!-- Details Grid -->
-      <div class="details-grid">
-        <div class="detail-item">
-          <div class="detail-label"><i class="pi pi-box"></i> الدواء</div>
-          <div class="detail-value highlight">{{ alert.medicineName || 'غير محدد' }}</div>
-        </div>
+      <div class="detail-card">
+        <span class="detail-label"><i class="pi pi-barcode"></i> رقم الدفعة (Batch)</span>
+        <strong class="detail-val">{{ alert.batchNumber || '---' }}</strong>
+      </div>
 
-        <div class="detail-item">
-          <div class="detail-label"><i class="pi pi-barcode"></i> الدفعة</div>
-          <div class="detail-value">{{ alert.batchNumber || '---' }}</div>
-        </div>
-<div class="detail-item">
-  <div class="detail-label"><i class="pi pi-clock"></i> موعد التنفيذ</div>
-  <div class="detail-value">{{ alert.executionDate | date:'yyyy/MM/dd' }}</div>
-</div>
-<div class="detail-item">
-  <div class="detail-label"><i class="pi pi-calendar-times"></i> الصلاحية</div>
-  <div class="detail-value" [class.danger]="isExpired(alert.expiryDate)">
-    {{ alert.expiryDate ? (alert.expiryDate | date:'yyyy/MM/dd') : 'غير محدد' }}
-    <span *ngIf="isExpired(alert.expiryDate)" class="text-xs mr-2">(منتهية)</span>
-            </div>
-        </div>
-        </div>
+      <div class="detail-card">
+        <span class="detail-label"><i class="pi pi-calendar"></i> تاريخ التفعيل</span>
+        <strong class="detail-val">{{ alert.executionDate | date:'yyyy-MM-dd' }}</strong>
+      </div>
 
-      <!-- Footer Actions -->
-      <div class="footer-actions">
-        <p-button label="رجوع" icon="pi pi-arrow-right" [text]="true" severity="secondary" (onClick)="goBack()"></p-button>
-        <div class="left-group">
-          <p-button *ngIf="alert.status === 0 || alert.status === 1" label="تعديل" icon="pi pi-pencil" severity="warning"
-            [outlined]="true" (onClick)="editAlert()"></p-button>
-            <p-button *ngIf="alert.status === 0" label="قراءة" icon="pi pi-check" severity="success"
-              (onClick)="markAsRead()"></p-button>
-            <p-button icon="pi pi-trash" label="حذف" severity="danger" (onClick)="deleteAlert($event)"></p-button>
-            </div>
-            </div>
-
+      <div class="detail-card">
+        <span class="detail-label"><i class="pi pi-clock"></i> تاريخ الانتهاء</span>
+        <strong class="detail-val" [class.text-danger]="isExpired(alert.expiryDate)">
+          {{ alert.expiryDate ? (alert.expiryDate | date:'yyyy-MM-dd') : 'غير محدد' }}
+          <small *ngIf="isExpired(alert.expiryDate)" class="text-red-500 font-bold block">(منتهية الصلاحية)</small>
+        </strong>
+      </div>
     </div>
-    </div>
+  </div>
 
+  <div class="modal-footer">
+    <button pButton label="إغلاق" icon="pi pi-times" [rounded]="true" [outlined]="true" severity="secondary"
+      (click)="goBack()"></button>
+    <button pButton *ngIf="alert.status === 0" label="تحديد كمقروء" icon="pi pi-check" [rounded]="true" severity="success"
+      (click)="markAsRead()"></button>
+    <button pButton *ngIf="alert.status === 0 || alert.status === 1" label="تعديل" icon="pi pi-pencil" [rounded]="true" severity="warning"
+      (click)="editAlert()"></button>
+  </div>
 </div>
 
-<ng-template #loadingMetrics>
-  <div class="flex align-items-center justify-content-center min-h-screen">
+<ng-template #loadingSpinner>
+  <div class="flex align-items-center justify-content-center p-5">
     <p-progressSpinner strokeWidth="4"></p-progressSpinner>
   </div>
 </ng-template>
-
-<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

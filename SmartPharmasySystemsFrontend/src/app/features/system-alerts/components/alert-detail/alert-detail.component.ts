@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -37,8 +37,14 @@ import { ProgressSpinnerModule } from "primeng/progressspinner";
   providers: [MessageService, ConfirmationService],
 })
 export class AlertDetailComponent implements OnInit {
+  @Input() alertId?: number | null = null;
+  @Input() alertData?: Alert | null = null;
+  @Output() close = new EventEmitter<void>();
+  @Output() edit = new EventEmitter<Alert>();
+
   alert?: Alert;
   loading: boolean = true;
+  isModalMode = false;
 
   constructor(
     private systemAlertsService: SystemAlertsService,
@@ -50,13 +56,22 @@ export class AlertDetailComponent implements OnInit {
 
   ngOnInit(): void {
     console.log('🚀 Alert Detail Component Initialized');
-    this.route.params.subscribe((params) => {
-      if (params['id']) {
-        const alertId = +params['id'];
-        console.log(`📋 Loading details for alert ID: ${alertId}`);
-        this.loadAlert(alertId);
-      }
-    });
+    if (this.alertData) {
+      this.isModalMode = true;
+      this.alert = this.alertData;
+      this.loading = false;
+    } else if (this.alertId) {
+      this.isModalMode = true;
+      this.loadAlert(this.alertId);
+    } else {
+      this.route.params.subscribe((params) => {
+        if (params['id']) {
+          const id = +params['id'];
+          console.log(`📋 Loading details for alert ID: ${id}`);
+          this.loadAlert(id);
+        }
+      });
+    }
   }
 
   loadAlert(id: number): void {
@@ -122,8 +137,11 @@ export class AlertDetailComponent implements OnInit {
 
   editAlert(): void {
     if (this.alert) {
-      console.log(`✏️ Navigating to edit alert ID: ${this.alert.id}`);
-      this.router.navigate(['/system-alerts/edit', this.alert.id]);
+      console.log(`✏️ Navigating/Emitting edit for alert ID: ${this.alert.id}`);
+      this.edit.emit(this.alert);
+      if (!this.isModalMode) {
+        this.router.navigate(['/system-alerts/edit', this.alert.id]);
+      }
     }
   }
 
@@ -158,10 +176,13 @@ export class AlertDetailComponent implements OnInit {
               summary: 'تم الحذف',
               detail: 'تم حذف التنبيه بنجاح',
             });
-            setTimeout(() => {
-              console.log('🔄 Redirecting to alerts list after deletion');
-              this.router.navigate(['/system-alerts']);
-            }, 1000);
+            this.close.emit();
+            if (!this.isModalMode) {
+              setTimeout(() => {
+                console.log('🔄 Redirecting to alerts list after deletion');
+                this.router.navigate(['/system-alerts']);
+              }, 1000);
+            }
           },
           error: (err) => {
             console.error(
@@ -183,8 +204,11 @@ export class AlertDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    console.log('↩️ Going back to alerts list');
-    this.router.navigate(['/system-alerts']);
+    console.log('↩️ Emitting close / going back to alerts list');
+    this.close.emit();
+    if (!this.isModalMode) {
+      this.router.navigate(['/system-alerts']);
+    }
   }
 
   getStatusLabel(status: string | number): string {

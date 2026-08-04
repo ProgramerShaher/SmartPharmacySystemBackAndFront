@@ -1,3 +1,5 @@
+using SmartPharmacySystem.Core.Enums;
+
 namespace SmartPharmacySystem.Application.DTOs.User;
 
 /// <summary>
@@ -21,12 +23,19 @@ public class UserDto
     /// Role name
     /// </summary>
     public string Role { get; set; } = string.Empty;
+    public string RoleName { get; set; } = string.Empty;
 
     /// <summary>
     /// وصف الدور
     /// Role description
     /// </summary>
     public string? RoleDescription { get; set; }
+
+    /// <summary>
+    /// حالة المستخدم
+    /// User status
+    /// </summary>
+    public UserStatus Status { get; set; } = UserStatus.Active;
 
     public string Email { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;

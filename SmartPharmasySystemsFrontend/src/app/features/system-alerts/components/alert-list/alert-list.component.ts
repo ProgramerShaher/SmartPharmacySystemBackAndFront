@@ -12,8 +12,11 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToolbarModule } from 'primeng/toolbar';
+import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { SystemAlertsService } from '../../services/system-alerts.service';
+import { AlertAddEditComponent } from '../alert-add-edit/alert-add-edit.component';
+import { AlertDetailComponent } from '../alert-detail/alert-detail.component';
 import {
   Alert,
   AlertQueryDto,
@@ -40,7 +43,10 @@ import { of } from 'rxjs';
     TooltipModule,
     DropdownModule,
     ProgressSpinnerModule,
-    ToolbarModule
+    ToolbarModule,
+    DialogModule,
+    AlertAddEditComponent,
+    AlertDetailComponent
   ],
   templateUrl: './alert-list.component.html',
   styleUrl: './alert-list.component.scss',
@@ -57,6 +63,12 @@ export class AlertListComponent implements OnInit {
   alertTypeFilter: string = '';
   statusFilter: number | '' = ''; // To handle 0 correctly
   today = new Date();
+
+  // Modal Dialogs Control
+  alertDialog: boolean = false;
+  viewDialog: boolean = false;
+  selectedAlertId: number | null = null;
+  selectedAlert: Alert | null = null;
 
   statusOptions = [
     { label: 'الكل', value: '' },
@@ -138,22 +150,67 @@ export class AlertListComponent implements OnInit {
     this.loadAlerts();
   }
 
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.batchNumberFilter = '';
+    this.medicineNameFilter = '';
+    this.alertTypeFilter = '';
+    this.statusFilter = '';
+    this.loadAlerts();
+  }
+
+  get pendingCount(): number {
+    return this.alerts.filter(a => a.status === AlertStatus.Pending || a.status === 0).length;
+  }
+
+  get expiredCount(): number {
+    return this.alerts.filter(a => this.isExpired(a.expiryDate)).length;
+  }
+
+  get readCount(): number {
+    return this.alerts.filter(a => a.status === AlertStatus.Read || a.status === 1).length;
+  }
+
   createAlert(): void {
-    this.router.navigate(['create'], {
-      relativeTo: this.route,
-    });
+    this.selectedAlertId = null;
+    this.selectedAlert = null;
+    this.alertDialog = true;
   }
 
   editAlert(alert: Alert): void {
-    this.router.navigate(['edit', alert.id], {
-      relativeTo: this.route,
-    });
+    this.selectedAlertId = alert.id;
+    this.selectedAlert = alert;
+    this.alertDialog = true;
   }
 
   viewDetails(alert: Alert): void {
-    this.router.navigate(['detail', alert.id], {
-      relativeTo: this.route,
-    });
+    this.selectedAlertId = alert.id;
+    this.selectedAlert = alert;
+    this.viewDialog = true;
+  }
+
+  hideAlertDialog(): void {
+    this.alertDialog = false;
+    this.selectedAlertId = null;
+    this.selectedAlert = null;
+  }
+
+  hideViewDialog(): void {
+    this.viewDialog = false;
+    this.selectedAlertId = null;
+    this.selectedAlert = null;
+  }
+
+  onAlertSave(result: any): void {
+    this.hideAlertDialog();
+    this.loadAlerts();
+  }
+
+  onEditFromDetail(alert: Alert): void {
+    this.hideViewDialog();
+    setTimeout(() => {
+      this.editAlert(alert);
+    }, 150);
   }
 
   markAsRead(alert: Alert): void {

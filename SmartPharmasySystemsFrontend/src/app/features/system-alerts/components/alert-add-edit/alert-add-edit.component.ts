@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import {
@@ -43,11 +43,15 @@ import { CreateAlertDto, UpdateAlertDto, AlertStatus } from '../../../../core/mo
   providers: [MessageService],
 })
 export class AlertAddEditComponent implements OnInit {
+  @Input() alertId?: number | null = null;
+  @Output() save = new EventEmitter<any>();
+  @Output() cancel = new EventEmitter<void>();
+
   alertForm!: FormGroup;
   isEditMode = false;
-  alertId?: number;
   loading = false;
   batches: any[] = [];
+  isModalMode = false;
 
   // Use values matching ExpiryStatus enum strings
   alertTypeOptions = [
@@ -80,16 +84,27 @@ export class AlertAddEditComponent implements OnInit {
     console.log('🚀 Alert Add/Edit Component Initialized');
     this.loadBatches();
 
-    this.route.params.subscribe((params) => {
-      if (params['id']) {
-        this.isEditMode = true;
-        this.alertId = +params['id'];
-        console.log(`📝 Edit mode for alert ID: ${this.alertId}`);
-        this.loadAlert(this.alertId);
-      } else {
-        console.log('➕ Create mode');
-      }
-    });
+    if (this.alertId !== undefined && this.alertId !== null) {
+      this.isModalMode = true;
+      this.isEditMode = true;
+      console.log(`📝 Modal Edit mode for alert ID: ${this.alertId}`);
+      this.loadAlert(this.alertId);
+    } else if (this.alertId === null) {
+      this.isModalMode = true;
+      this.isEditMode = false;
+      console.log('➕ Modal Create mode');
+    } else {
+      this.route.params.subscribe((params) => {
+        if (params['id']) {
+          this.isEditMode = true;
+          this.alertId = +params['id'];
+          console.log(`📝 Route Edit mode for alert ID: ${this.alertId}`);
+          this.loadAlert(this.alertId);
+        } else {
+          console.log('➕ Route Create mode');
+        }
+      });
+    }
   }
 
   private initializeForm(): void {
@@ -199,7 +214,10 @@ export class AlertAddEditComponent implements OnInit {
           detail: 'تم إنشاء التنبيه بنجاح',
         });
         this.loading = false;
-        this.router.navigate(['/system-alerts']);
+        this.save.emit(alert);
+        if (!this.isModalMode) {
+          this.router.navigate(['/system-alerts']);
+        }
       },
       error: (error) => {
         console.error('❌ Failed to create alert:', error);
@@ -236,7 +254,10 @@ export class AlertAddEditComponent implements OnInit {
           detail: 'تم تحديث التنبيه بنجاح',
         });
         this.loading = false;
-        this.router.navigate(['/system-alerts']);
+        this.save.emit(alert);
+        if (!this.isModalMode) {
+          this.router.navigate(['/system-alerts']);
+        }
       },
       error: (error) => {
         console.error(`❌ Failed to update alert ${id}:`, error);
@@ -259,7 +280,10 @@ export class AlertAddEditComponent implements OnInit {
 
   goBack(): void {
     console.log('↩️ Going back to alerts list');
-    this.router.navigate(['/system-alerts']);
+    this.cancel.emit();
+    if (!this.isModalMode) {
+      this.router.navigate(['/system-alerts']);
+    }
   }
 
   get formTitle(): string {
@@ -282,6 +306,9 @@ export class AlertAddEditComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['/system-alerts']);
+    this.cancel.emit();
+    if (!this.isModalMode) {
+      this.router.navigate(['/system-alerts']);
+    }
   }
 }

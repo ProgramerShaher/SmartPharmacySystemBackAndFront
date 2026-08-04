@@ -16,6 +16,7 @@ export interface User {
     username: string;
     roleId: number;
     roleName: string;
+    role?: string;
     status: UserStatus;
     email?: string;
     phoneNumber?: string;

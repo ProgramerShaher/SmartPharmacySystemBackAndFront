@@ -12,10 +12,19 @@
         <!-- Scrollable Content -->
         <div class="layout-content-scrollable">
             <div class="content-wrapper">
-                <!-- Dynamic Content -->
-                <router-outlet></router-outlet>
+                <!-- Page Content -->
+                <div class="page-content">
+                    <router-outlet></router-outlet>
+                </div>
             </div>
         </div>
+
+        <!-- Shift Modal -->
+        <app-shift-modal 
+            [visible]="shiftModalVisible" 
+            [mode]="shiftModalMode"
+            (shiftProcessed)="onShiftProcessed($event)">
+        </app-shift-modal>
 
         <!-- Footer -->
         <div class="layout-footer bg-gray-900">

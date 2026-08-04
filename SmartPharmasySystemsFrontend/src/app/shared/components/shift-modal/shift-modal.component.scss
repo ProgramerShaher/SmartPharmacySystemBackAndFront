@@ -1,0 +1,118 @@
+:host ::ng-deep {
+    .shift-dialog {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        
+        .p-dialog-header {
+            background: white;
+            padding: 2rem 2rem 1rem;
+            border-bottom: none;
+        }
+
+        .p-dialog-content {
+            background: white;
+            padding: 0 2rem;
+        }
+
+        .p-dialog-footer {
+            background: #f8fafc;
+            padding: 1.5rem 2rem;
+            border-top: 1px solid #e2e8f0;
+        }
+    }
+
+    .shift-header {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        width: 100%;
+
+        .shift-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+
+            i {
+                font-size: 1.75rem;
+                color: white;
+            }
+
+            &.icon-open {
+                background: linear-gradient(135deg, #0d9488, #0f766e);
+                box-shadow: 0 8px 16px rgba(13, 148, 136, 0.25);
+            }
+
+            &.icon-close {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                box-shadow: 0 8px 16px rgba(245, 158, 11, 0.25);
+            }
+        }
+
+        .shift-title {
+            h2 {
+                margin: 0 0 0.25rem 0;
+                font-size: 1.35rem;
+                font-weight: 800;
+                color: #1e293b;
+            }
+
+            p {
+                margin: 0;
+                font-size: 0.9rem;
+                color: #64748b;
+                line-height: 1.4;
+            }
+        }
+    }
+
+    .shift-body {
+        padding: 1rem 0 2rem;
+        
+        .p-input-icon-right {
+            width: 100%;
+            
+            > i {
+                right: 1rem;
+                color: #94a3b8 !important;
+                font-size: 1.25rem;
+            }
+            
+            > .p-inputtext {
+                width: 100%;
+                border-radius: 12px;
+                padding-right: 3rem;
+                font-size: 1.25rem;
+                text-align: left; /* numbers usually look better left-aligned or centered, but it's up to you */
+                direction: ltr;
+                
+                &:enabled:focus {
+                    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+                    border-color: #0d9488;
+                }
+            }
+        }
+
+        .p-inputtextarea {
+            width: 100%;
+            border-radius: 12px;
+            padding: 1rem;
+            
+            &:enabled:focus {
+                box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+                border-color: #0d9488;
+            }
+        }
+    }
+
+    .p-button-lg {
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+}

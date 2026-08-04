@@ -1,0 +1,50 @@
+<p-dialog [(visible)]="visible" [modal]="true" [closable]="false" [draggable]="false" [resizable]="false"
+    styleClass="shift-dialog" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
+    [style]="{width: '450px', maxWidth: '95vw'}">
+    
+    <ng-template pTemplate="header">
+        <div class="shift-header">
+            <div class="shift-icon" [ngClass]="{'icon-open': mode === 'open', 'icon-close': mode === 'close'}">
+                <i class="pi" [ngClass]="mode === 'open' ? 'pi-sign-in' : 'pi-sign-out'"></i>
+            </div>
+            <div class="shift-title">
+                <h2>{{ mode === 'open' ? 'بدء وردية جديدة' : 'إنهاء الوردية' }}</h2>
+                <p>{{ mode === 'open' ? 'الرجاء إدخال المبلغ المتوفر حالياً في الصندوق للبدء.' : 'الرجاء إدخال المبلغ الفعلي في الصندوق لإنهاء عملك.' }}</p>
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="shift-body p-fluid" dir="rtl">
+        <form [formGroup]="shiftForm" (ngSubmit)="submit()">
+            <div class="field">
+                <label for="cashAmount" class="font-bold text-700">
+                    {{ mode === 'open' ? 'المبلغ الافتتاحي في الصندوق' : 'المبلغ الفعلي في الصندوق' }} <span class="text-red-500">*</span>
+                </label>
+                <span class="p-input-icon-right">
+                    <i class="pi pi-money-bill text-400"></i>
+                    <input pInputText type="number" id="cashAmount" formControlName="cashAmount" 
+                        placeholder="0.00" class="p-inputtext-lg font-bold" />
+                </span>
+                <small class="text-red-500 mt-1 block" *ngIf="shiftForm.get('cashAmount')?.touched && shiftForm.get('cashAmount')?.invalid">
+                    يجب إدخال المبلغ بشكل صحيح
+                </small>
+            </div>
+
+            <div class="field mt-3">
+                <label for="notes" class="text-700">ملاحظات (اختياري)</label>
+                <textarea pInputTextarea id="notes" formControlName="notes" rows="3" 
+                    placeholder="أي تفاصيل أخرى ترغب بإضافتها..."></textarea>
+            </div>
+        </form>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="shift-footer w-full flex gap-2">
+            <button pButton class="w-full p-button-lg" [ngClass]="mode === 'open' ? 'p-button-primary' : 'p-button-warning'" 
+                [icon]="mode === 'open' ? 'pi pi-play' : 'pi pi-stop'" 
+                [label]="mode === 'open' ? 'بدء الوردية' : 'إغلاق الوردية وتسجيل الخروج'" 
+                [disabled]="shiftForm.invalid || loading" [loading]="loading" (click)="submit()">
+            </button>
+        </div>
+    </ng-template>
+</p-dialog>

@@ -1,0 +1,34 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { ShiftDto, OpenShiftDto, CloseShiftDto, ApiResponse } from '../models';
+import { environment } from '../../../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ShiftService {
+  private apiUrl = `${environment.apiUrl}/Shifts`;
+
+  // Subject to trigger modal from anywhere
+  private showModalSubject = new Subject<'open' | 'close'>();
+  showModal$ = this.showModalSubject.asObservable();
+
+  constructor(private http: HttpClient) { }
+
+  requestShiftModal(mode: 'open' | 'close') {
+    this.showModalSubject.next(mode);
+  }
+
+  getCurrentShift(): Observable<ApiResponse<ShiftDto>> {
+    return this.http.get<ApiResponse<ShiftDto>>(`${this.apiUrl}/Current`);
+  }
+
+  openShift(data: OpenShiftDto): Observable<ApiResponse<ShiftDto>> {
+    return this.http.post<ApiResponse<ShiftDto>>(`${this.apiUrl}/Open`, data);
+  }
+
+  closeShift(data: CloseShiftDto): Observable<ApiResponse<ShiftDto>> {
+    return this.http.post<ApiResponse<ShiftDto>>(`${this.apiUrl}/Close`, data);
+  }
+}

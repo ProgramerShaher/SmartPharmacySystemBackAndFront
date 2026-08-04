@@ -50,4 +50,5 @@ export class BranchService {
         return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`)
             .pipe(map(r => r.data));
     }
+
 }

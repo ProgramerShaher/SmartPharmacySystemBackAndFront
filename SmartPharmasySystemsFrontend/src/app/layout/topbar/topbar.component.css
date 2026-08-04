@@ -720,3 +720,102 @@
 .notifications-viewport::-webkit-scrollbar-thumb:hover {
     background: var(--text-color-secondary);
 }
+
+/* Confirmation Dialog Styling */
+:host ::ng-deep .logout-confirm-dialog {
+    border-radius: 1.5rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    border: none !important;
+    direction: rtl !important;
+    text-align: right !important;
+    margin: 0 auto;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-dialog-header {
+    background: var(--surface-hover) !important;
+    padding: 1.5rem !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    display: flex;
+    justify-content: space-between;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-dialog-title {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: var(--text-color) !important;
+    font-family: inherit !important;
+    margin-right: auto;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-dialog-content {
+    padding: 2.5rem 2rem !important;
+    background: var(--card-bg) !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 1.5rem !important;
+    flex-direction: row-reverse;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-confirm-dialog-icon {
+    font-size: 2.5rem !important;
+    color: #ef4444 !important;
+    margin-right: 0 !important;
+    margin-left: 1.5rem !important;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-confirm-dialog-message {
+    font-size: 1.2rem !important;
+    color: var(--text-color) !important;
+    margin: 0 !important;
+    line-height: 1.6 !important;
+    text-align: right !important;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-dialog-footer {
+    background: var(--surface-hover) !important;
+    padding: 1.25rem 1.5rem !important;
+    border-top: 1px solid var(--border-color) !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1rem !important;
+    flex-direction: row-reverse;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-button {
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 0.75rem !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem !important;
+    transition: all 0.2s ease !important;
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: row-reverse;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-button-text {
+    color: var(--text-color-secondary) !important;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-button-text:hover {
+    background: var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-button-danger {
+    background: #ef4444 !important;
+    border: none !important;
+    color: white !important;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-button-danger:hover {
+    background: #dc2626 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+}
+
+:host ::ng-deep .logout-confirm-dialog .p-button-icon-left {
+    margin-right: 0 !important;
+    margin-left: 0.5rem !important;
+}
+

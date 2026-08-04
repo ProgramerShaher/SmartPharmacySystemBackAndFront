@@ -77,7 +77,7 @@ public class StockCountRepository : IStockCountRepository
         _context.Entry(header).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
         await Task.CompletedTask;
     }
-
+        
     public async Task DeleteHeaderAsync(int id)
     {
         // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.

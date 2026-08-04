@@ -12,6 +12,7 @@ import { ThemeService, Theme } from '../../core/services/theme.service';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { AlertService } from '../../core/services/alert.service';
 import { SystemNotificationService } from '../../core/services/notifications/system-notification.service';
+import { ShiftService } from '../../core/services/shift.service';
 import { ThemeSettingsComponent } from '../theme-settings/theme-settings.component';
 
 @Component({
@@ -70,6 +71,7 @@ export class TopbarComponent {
         private authService: AuthService,
         public alertService: AlertService,
         public systemNotificationService: SystemNotificationService,
+        private shiftService: ShiftService,
         @Inject(PLATFORM_ID) private platformId: Object,
         @Inject(DOCUMENT) private document: Document
     ) { }
@@ -140,7 +142,7 @@ export class TopbarComponent {
             acceptButtonStyleClass: 'p-button-danger',
             rejectButtonStyleClass: 'p-button-text',
             accept: () => {
-                this.authService.logout();
+                this.shiftService.requestShiftModal('close');
             }
         });
     }

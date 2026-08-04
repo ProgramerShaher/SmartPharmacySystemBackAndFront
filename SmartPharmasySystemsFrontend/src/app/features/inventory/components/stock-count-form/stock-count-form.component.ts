@@ -4,6 +4,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } 
 import { Router, RouterModule } from '@angular/router';
 import { StockCountService } from '../../services/stock-count.service';
 import { WarehouseService } from '../../../warehouses/services/warehouse.service';
+import { AuthService } from '../../../auth/services/auth.service';
 import { StockCountType, CreateStockCountHeaderDto, WarehouseDto } from '../../../../core/models';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
@@ -14,8 +15,8 @@ import { RadioButtonModule } from 'primeng/radiobutton';
   selector: 'app-stock-count-form',
   standalone: true,
   imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
+    CommonModule,
+    ReactiveFormsModule,
     FormsModule,
     RouterModule,
     DropdownModule,
@@ -38,7 +39,8 @@ export class StockCountFormComponent implements OnInit {
     private fb: FormBuilder,
     private stockCountService: StockCountService,
     private warehouseService: WarehouseService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {
     this.form = this.fb.group({
       warehouseId: ['', Validators.required],
@@ -48,9 +50,17 @@ export class StockCountFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.warehouseService.getAll().subscribe(res => {
-      this.warehouses = res;
-    });
+    const user = this.authService.currentUserValue;
+    if (user && user.branchId) {
+      this.warehouseService.getByBranchId(user.branchId).subscribe(res => {
+        this.warehouses = res;
+      });
+    } else {
+      // Fallback if no branch is selected (e.g., admin without specific branch)
+      this.warehouseService.getAll().subscribe(res => {
+        this.warehouses = res;
+      });
+    }
   }
 
   onSubmit(): void {
@@ -61,10 +71,10 @@ export class StockCountFormComponent implements OnInit {
 
     this.isSubmitting = true;
     const dto: CreateStockCountHeaderDto = {
-        ...this.form.value,
-        snapshotAt: new Date().toISOString()
+      ...this.form.value,
+      snapshotAt: new Date().toISOString()
     };
-    
+
     this.stockCountService.createHeader(dto).subscribe({
       next: (res) => {
         this.isSubmitting = false;

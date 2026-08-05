@@ -1629,6 +1629,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             new JournalEntry 
             { 
                 Id = 1, 
+                BranchId = 1,
                 VoucherNumber = "OB-2025-001", 
                 EntryDate = new DateTime(2025, 1, 1), 
                 Description = "قيد افتتاحي - رصيد الصندوق", 
@@ -1645,6 +1646,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             new JournalEntryLine 
             { 
                 Id = 1, 
+                BranchId = 1,
                 JournalEntryId = 1, 
                 AccountId = 1101, // الصندوق الرئيسي (تم تحديثه)
                 Debit = 50000m, 
@@ -1654,6 +1656,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             new JournalEntryLine 
             { 
                 Id = 2, 
+                BranchId = 1,
                 JournalEntryId = 1, 
                 AccountId = 3101, // رأس مال الشركاء (تم تحديثه)
                 Debit = 0, 

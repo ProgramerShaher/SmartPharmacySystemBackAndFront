@@ -239,7 +239,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             id: [detail.id || 0],
             medicineId: [detail.medicineId, Validators.required],
             medicineName: [detail.medicineName],
-            companyBatchNumber: [detail.companyBatchNumber, Validators.required],
+            companyBatchNumber: [detail.companyBatchNumber],
             expiryDate: [detail.expiryDate ? new Date(detail.expiryDate) : null],
             quantity: [detail.quantity, [Validators.required, Validators.min(1)]],
             purchaseUnitId: [detail.purchaseUnitId || null],

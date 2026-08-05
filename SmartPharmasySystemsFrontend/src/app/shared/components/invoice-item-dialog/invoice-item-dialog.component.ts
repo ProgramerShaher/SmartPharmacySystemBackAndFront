@@ -96,7 +96,8 @@ export class InvoiceItemDialogComponent implements OnInit {
         const expiryDate = this.itemForm.get('expiryDate');
 
         if (this.invoiceType === 'Purchase') {
-            batchNum?.setValidators([Validators.required]);
+            // Batch number is now optional as requested by the user, backend will auto-generate if empty
+            batchNum?.clearValidators();
             expiryDate?.setValidators([Validators.required]);
         } else {
             batchNum?.clearValidators();

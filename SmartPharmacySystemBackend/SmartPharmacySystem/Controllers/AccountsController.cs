@@ -204,6 +204,7 @@ namespace SmartPharmacySystem.Controllers
         {
             try
             {
+                endDate = endDate.Date.AddDays(1).AddTicks(-1);
                 var ledger = await _accountService.GetGeneralLedgerAsync(id, startDate, endDate);
                 return Ok(ApiResponse<LedgerReportDto>.Succeeded(ledger, "تم جلب كشف الحساب بنجاح"));
             }
@@ -283,6 +284,10 @@ namespace SmartPharmacySystem.Controllers
             {
                 var start = startDate ?? DateTime.UtcNow.AddMonths(-1);
                 var end = endDate ?? DateTime.UtcNow;
+                if (endDate.HasValue)
+                {
+                    end = end.Date.AddDays(1).AddTicks(-1);
+                }
                 var ledgers = await _accountService.GetAllLedgersAsync(start, end);
                 return Ok(ApiResponse<IEnumerable<LedgerReportDto>>.Succeeded(ledgers, "تم جلب جميع كشوفات الحسابات بنجاح"));
             }

@@ -24,6 +24,9 @@ public class WarehouseRepository : IWarehouseRepository
     {
         var query = _context.Warehouses.AsNoTracking().Where(w => !w.IsDeleted).AsQueryable();
 
+        // Auto-filter by current branch if not explicitly specified
+        branchId ??= _context.CurrentBranchId;
+
         if (branchId.HasValue)
             query = query.Where(w => w.BranchId == branchId.Value);
 

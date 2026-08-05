@@ -53,8 +53,28 @@ public class FinancialService : IFinancialService
             type, amount, referenceType, referenceId);
 
         // 1. الحصول على الحساب
-        var account = await _unitOfWork.Financials.GetAccountByIdAsync(accountId)
-            ?? throw new KeyNotFoundException($"الحساب برقم {accountId} غير موجود");
+        PharmacyAccount account = null;
+        
+        // If they passed 1 (the hardcoded default in many services), or we want the main account
+        if (accountId == 1)
+        {
+            account = await _unitOfWork.Financials.GetMainAccountAsync();
+            accountId = account.Id; // Update to the real branch account ID
+        }
+        else
+        {
+            account = await _unitOfWork.Financials.GetAccountByIdAsync(accountId);
+            
+            // Fallback just in case
+            if (account == null)
+            {
+                account = await _unitOfWork.Financials.GetMainAccountAsync();
+                accountId = account.Id;
+            }
+        }
+
+        if (account == null)
+            throw new KeyNotFoundException($"الحساب برقم {accountId} غير موجود");
 
         if (!account.IsActive)
             throw new InvalidOperationException("الحساب غير نشط");

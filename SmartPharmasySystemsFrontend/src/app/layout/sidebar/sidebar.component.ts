@@ -261,6 +261,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
             children: [
                 { label: 'المبيعات اليومية', route: '/reports/daily-sales', icon: 'pi pi-calendar' },
                 { label: 'تقرير أداء الموظفين', route: '/reports/employee-performance', icon: 'pi pi-id-card' },
+                { label: 'تقارير الورديات', route: '/reports/shifts', icon: 'pi pi-clock', badge: 'جديد' },
                 { label: 'الأكثر مبيعاً', route: '/reports/best-selling', icon: 'pi pi-star' },
                 { label: 'ديون العملاء', route: '/reports/customer-debts', icon: 'pi pi-users' },
                 { label: 'ديون الموردين', route: '/reports/supplier-debts', icon: 'pi pi-truck' },

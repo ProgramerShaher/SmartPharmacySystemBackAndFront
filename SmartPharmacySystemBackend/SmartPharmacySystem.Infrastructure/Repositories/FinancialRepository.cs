@@ -17,25 +17,47 @@ public class FinancialRepository : IFinancialRepository
 
     public async Task<PharmacyAccount> GetMainAccountAsync()
     {
-        // Global Query Filter will ensure we only get accounts for the current branch
-        var account = await _context.PharmacyAccounts.OrderBy(a => a.Id).FirstOrDefaultAsync(a => a.IsActive);
+        int branchId = _context.CurrentBranchId ?? 1;
+
+        // Try to find an active account for this branch first
+        var account = await _context.PharmacyAccounts
+            .OrderBy(a => a.Id)
+            .FirstOrDefaultAsync(a => a.IsActive && a.BranchId == branchId);
         
         if (account == null)
         {
-            // Auto-create a default account for this branch to prevent crashes
-            int branchId = _context.CurrentBranchId ?? 1;
-            account = new PharmacyAccount
+            var accountName = "الخزينة الرئيسية - فرع " + branchId;
+
+            // Try to find ANY account (even inactive) by name and branch to avoid duplicate key error
+            account = await _context.PharmacyAccounts.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(a => a.Name == accountName && a.BranchId == branchId);
+
+            if (account != null)
             {
-                Name = "الخزينة الرئيسية - فرع " + branchId,
-                Balance = 0,
-                IsActive = true,
-                BranchId = branchId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            
-            await _context.PharmacyAccounts.AddAsync(account);
-            await _context.SaveChangesAsync();
+                // If found but inactive, reactivate it
+                if (!account.IsActive)
+                {
+                    account.IsActive = true;
+                    _context.PharmacyAccounts.Update(account);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                // Auto-create a default account for this branch to prevent crashes
+                account = new PharmacyAccount
+                {
+                    Name = accountName,
+                    Balance = 0,
+                    IsActive = true,
+                    BranchId = branchId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                
+                await _context.PharmacyAccounts.AddAsync(account);
+                await _context.SaveChangesAsync();
+            }
         }
         
         return account;

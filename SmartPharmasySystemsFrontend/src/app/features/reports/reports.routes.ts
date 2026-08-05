@@ -23,6 +23,12 @@ export const REPORTS_ROUTES: Routes = [
         title: 'تقييم المخزون'
       },
       {
+        path: 'shifts',
+        loadComponent: () => import('./shift-reports/shift-reports.component')
+          .then(m => m.ShiftReportsComponent),
+        title: 'تقارير الوردية'
+      },
+      {
         path: 'daily-sales',
         loadComponent: () => import('./daily-sales/daily-sales.component')
           .then(m => m.DailySalesComponent),

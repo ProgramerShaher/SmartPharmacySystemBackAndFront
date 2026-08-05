@@ -76,8 +76,10 @@ public class FinancialController : ControllerBase
         // In a real scenario, this would be checked via [Authorize(Roles = "Admin")]
         var isAdmin = User.IsInRole("Admin") || true;
 
+        var mainAccount = await _financialService.GetBalanceAsync(); // Get current branch's main account
+        
         var transaction = await _financialService.AddManualAdjustmentAsync(
-            accountId: 1, // Default main account
+            accountId: mainAccount.Id,
             amount: request.Amount,
             description: request.Description,
             isAdminUser: isAdmin
@@ -92,6 +94,10 @@ public class FinancialController : ControllerBase
     [HttpGet("general-ledger")]
     public async Task<IActionResult> GetGeneralLedger([FromQuery] DateTime? start, [FromQuery] DateTime? end, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
+        if (end.HasValue)
+        {
+            end = end.Value.Date.AddDays(1).AddTicks(-1);
+        }
         var result = await _financialService.GetGeneralLedgerAsync(start, end, page, pageSize);
         return Ok(ApiResponse<PagedResponse<GeneralLedgerDto>>.Succeeded(result, "تم جلب كشف الحساب العام بنجاح"));
     }

@@ -1,176 +1,228 @@
-    <div class="financial-dashboard flex flex-column gap-3 animate-fade-in" dir="rtl">
-        <p-toast></p-toast>
-        <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+<div class="fin-wrap animate-fade-in" dir="rtl">
+    <p-toast position="top-center"></p-toast>
+    <p-confirmDialog [breakpoints]="{'960px': '75vw', '640px': '90vw'}" [style]="{width: '450px'}"></p-confirmDialog>
 
-        <!-- Header -->
-        <div class="dash-header flex justify-content-between align-items-center">
+    <!-- ===== Compact Header ===== -->
+    <div class="fin-header">
+        <div class="fin-header-start">
+            <div class="fin-icon">
+                <i class="pi pi-wallet"></i>
+            </div>
             <div>
-                 <h1 class="text-2xl font-bold text-900 m-0">الرقابة المالية</h1>
-                 <span class="text-600 text-sm">نظرة شاملة على الوضع المالي للصيدلية</span>
+                <h1 class="fin-title">الرقابة المالية</h1>
+                <p class="fin-subtitle">نظرة شاملة على الوضع المالي للصيدلية</p>
             </div>
-            <div class="flex gap-2">
-                <p-button label="تسوية يدوية" icon="pi pi-sliders-h" styleClass="p-button-outlined p-button-sm" (onClick)="showAdjustmentDialog()"></p-button>
-                <p-button label="تحديث البيانات" icon="pi pi-refresh" styleClass="p-button-sm" (onClick)="refreshAll()"></p-button>
+        </div>
+        <div class="fin-header-end">
+            <button pButton label="تسوية يدوية" icon="pi pi-sliders-h" class="fin-btn-outlined" (click)="showAdjustmentDialog()"></button>
+            <button pButton label="تحديث البيانات" icon="pi pi-refresh" class="fin-btn-primary" (click)="refreshAll()"></button>
+        </div>
+    </div>
+
+    <!-- ===== KPI Row ===== -->
+    <div class="fin-kpi-row">
+        <!-- Balance Card -->
+        <div class="fin-kpi-card" data-color="teal" [ngClass]="{'shadow-green': currentBalance > 0, 'shadow-red': currentBalance < 0}">
+            <div class="fin-kpi-inner">
+                <div class="fin-kpi-left">
+                    <span class="fin-kpi-label">الرصيد الحالي</span>
+                    <strong class="fin-kpi-value">
+                        <ng-container *ngIf="loadingBalance; else balanceContent">
+                            <p-skeleton width="80px" height="1.4rem"></p-skeleton>
+                        </ng-container>
+                        <ng-template #balanceContent>{{ currentBalance | number:'1.0-0' }}</ng-template>
+                    </strong>
+                </div>
+                <div class="fin-kpi-badge">
+                    <i class="pi pi-wallet"></i>
+                </div>
+            </div>
+            <div class="fin-kpi-extra">
+                <span>رصيد الصندوق والبنوك</span>
+                <span class="font-bold">ريال يمني</span>
             </div>
         </div>
 
-        <!-- Metric Cards -->
-        <div class="grid">
-            <div class="col-12 md:col-4">
-                <p-card styleClass="h-full shadow-1 border-round-lg surface-card metric-card metric-balance">
-                    <div class="flex flex-column gap-2">
-                        <div class="flex align-items-center gap-2 metric-head">
-                             <span class="metric-icon ink"><i class="pi pi-wallet"></i></span>
-                             <span class="font-bold text-base">الرصيد الحالي</span>
-                        </div>
-                        <div *ngIf="loadingBalance; else balanceContent">
-                            <p-skeleton width="60%" height="1.4rem"></p-skeleton>
-                        </div>
-                        <ng-template #balanceContent>
-                            <span class="metric-value">{{ currentBalance | number:'1.2-2' }}</span>
-                            <span class="text-xs text-600">ريال يمني</span>
-                        </ng-template>
-                    </div>
-                </p-card>
+        <!-- Income Card -->
+        <div class="fin-kpi-card" data-color="amber">
+            <div class="fin-kpi-inner">
+                <div class="fin-kpi-left">
+                    <span class="fin-kpi-label">إجمالي الوارد (الشهر)</span>
+                    <strong class="fin-kpi-value">
+                        <ng-container *ngIf="loadingReport; else incomeContent">
+                            <p-skeleton width="80px" height="1.4rem"></p-skeleton>
+                        </ng-container>
+                        <ng-template #incomeContent>{{ report?.totalIncome | number:'1.0-0' }}</ng-template>
+                    </strong>
+                </div>
+                <div class="fin-kpi-badge">
+                    <i class="pi pi-arrow-down-left"></i>
+                </div>
             </div>
-            
-             <div class="col-12 md:col-4">
-                <p-card styleClass="h-full shadow-1 border-round-lg surface-card metric-card metric-income">
-                    <div class="flex flex-column gap-2">
-                         <div class="flex align-items-center gap-2 metric-head">
-                             <span class="metric-icon ok"><i class="pi pi-arrow-down-left"></i></span>
-                             <span class="font-bold text-base">إجمالي الوارد (الشهر)</span>
-                        </div>
-                        <div *ngIf="loadingReport; else incomeContent">
-                            <p-skeleton width="60%" height="1.4rem"></p-skeleton>
-                        </div>
-                        <ng-template #incomeContent>
-                             <span class="metric-value green">{{ report?.totalIncome | number:'1.2-2' }}</span>
-                             <span class="text-xs text-600">ريال يمني</span>
-                        </ng-template>
-                    </div>
-                </p-card>
-            </div>
-
-            <div class="col-12 md:col-4">
-                <p-card styleClass="h-full shadow-1 border-round-lg surface-card metric-card metric-expense">
-                    <div class="flex flex-column gap-2">
-                         <div class="flex align-items-center gap-2 metric-head">
-                             <span class="metric-icon bad"><i class="pi pi-arrow-up-right"></i></span>
-                             <span class="font-bold text-base">إجمالي المنصرف (الشهر)</span>
-                        </div>
-                        <div *ngIf="loadingReport; else expenseContent">
-                            <p-skeleton width="60%" height="1.4rem"></p-skeleton>
-                        </div>
-                        <ng-template #expenseContent>
-                             <span class="metric-value red">{{ report?.totalExpense | number:'1.2-2' }}</span>
-                             <span class="text-xs text-600">ريال يمني</span>
-                        </ng-template>
-                    </div>
-                </p-card>
+            <div class="fin-kpi-extra">
+                <span>مبيعات وإيرادات أخرى</span>
+                <span class="font-bold">ريال يمني</span>
             </div>
         </div>
 
-        <!-- Main Content Tabs -->
-        <div class="card shadow-2 border-round-xl p-0 overflow-hidden">
-             <p-tabView styleClass="p-tabview-custom">
-                <!-- Transactions Tab -->
-                <p-tabPanel header="سجل الحركات المالية">
+        <!-- Expense Card -->
+        <div class="fin-kpi-card" data-color="red">
+            <div class="fin-kpi-inner">
+                <div class="fin-kpi-left">
+                    <span class="fin-kpi-label">إجمالي المنصرف (الشهر)</span>
+                    <strong class="fin-kpi-value">
+                        <ng-container *ngIf="loadingReport; else expenseContent">
+                            <p-skeleton width="80px" height="1.4rem"></p-skeleton>
+                        </ng-container>
+                        <ng-template #expenseContent>{{ report?.totalExpense | number:'1.0-0' }}</ng-template>
+                    </strong>
+                </div>
+                <div class="fin-kpi-badge">
+                    <i class="pi pi-arrow-up-right"></i>
+                </div>
+            </div>
+            <div class="fin-kpi-extra">
+                <span>مشتريات ومصروفات</span>
+                <span class="font-bold">ريال يمني</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Main Content Tabs ===== -->
+    <div class="fin-table-wrap">
+        <p-tabView styleClass="fin-tabview">
+            <!-- Transactions Tab -->
+            <p-tabPanel header="سجل الحركات">
+                <ng-template pTemplate="header">
+                    <i class="pi pi-list"></i>
+                    <span>سجل الحركات المالية</span>
+                </ng-template>
+
+                <div class="fin-filter-panel mb-2">
+                    <span class="p-input-icon-right fin-search-input">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="بحث في الحركات، الأوصاف، والمراجع..." />
+                    </span>
+                    <p-calendar [(ngModel)]="dateFilter" selectionMode="range" [readonlyInput]="true" placeholder="تصفية بالتاريخ" (onSelect)="loadTransactions()" [showIcon]="true" styleClass="fin-calendar"></p-calendar>
+                </div>
+
+                <p-table #dt [value]="transactions" [rows]="10" [paginator]="true" 
+                    [loading]="loadingTransactions" styleClass="fin-table" responsiveLayout="scroll">
                     <ng-template pTemplate="header">
-                        <i class="pi pi-list ml-2"></i>
-                        <span>سجل الحركات</span>
+                        <tr>
+                            <th style="width: 15%">التاريخ</th>
+                            <th style="width: 35%">الوصف</th>
+                            <th style="width: 15%">رقم المرجع</th>
+                            <th style="width: 15%">النوع</th>
+                            <th style="width: 20%;">المبلغ</th>
+                        </tr>
                     </ng-template>
-                    
-                    <p-table #dt [value]="transactions" [rows]="10" [paginator]="true" 
-                        [loading]="loadingTransactions" styleClass="p-datatable-sm p-datatable-striped tx-table" responsiveLayout="scroll">
-                        <ng-template pTemplate="caption">
-                             <div class="flex flex-wrap gap-2 align-items-center justify-content-between">
-                                 <span class="p-input-icon-left w-full sm:w-auto tx-filter">
-                                     <i class="pi pi-search"></i>
-                                     <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="بحث في الحركات..." />
-                                 </span>
-                                 <p-calendar [(ngModel)]="dateFilter" selectionMode="range" [readonlyInput]="true" placeholder="تصفية بالتاريخ" (onSelect)="loadTransactions()" [showIcon]="true"></p-calendar>
-                             </div>
-                        </ng-template>
-                        <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 15%">التاريخ</th>
-                                <th style="width: 35%">الوصف</th>
-                                <th style="width: 15%">رقم المرجع (فاتورة)</th>
-                                <th style="width: 15%">النوع</th>
-                                <th style="width: 20%" class="text-left">المبلغ</th>
-                            </tr>
-                        </ng-template>
-                        <ng-template pTemplate="body" let-tx>
-                            <tr>
-                                <td>{{ tx.transactionDate | date:'dd/MM/yyyy hh:mm a' }}</td>
-                                <td>{{ tx.description }}</td>
-                                <td>
-                                    <span *ngIf="tx.relatedInvoiceId" class="text-blue-600 cursor-pointer font-bold">#{{tx.relatedInvoiceId}}</span>
-                                    <span *ngIf="!tx.relatedInvoiceId">-</span>
-                                </td>
-                                <td>
-                                    <p-tag [value]="getTransactionTypeLabel(tx.type)" [severity]="getTransactionSeverity(tx.type)" rounded="true"></p-tag>
-                                </td>
-                                <td class="text-left font-bold" [ngClass]="{'text-green-600': isIncome(tx.type), 'text-red-600': isExpense(tx.type)}">
-                                    {{ isExpense(tx.type) ? '-' : '+' }} {{ tx.amount | number:'1.2-2' }}
-                                </td>
-                            </tr>
-                        </ng-template>
-                    </p-table>
-                </p-tabPanel>
-
-                <!-- Annual Chart Tab -->
-                <p-tabPanel header="التحليل السنوي">
-                     <ng-template pTemplate="header">
-                        <i class="pi pi-chart-bar ml-2"></i>
-                        <span>التحليل السنوي</span>
+                    <ng-template pTemplate="body" let-tx>
+                        <tr>
+                            <td style="color: #64748b; font-size: 0.75rem;">{{ tx.transactionDate | date:'dd/MM/yyyy hh:mm a' }}</td>
+                            <td class="font-bold" style="color: #1e293b;">{{ tx.description }}</td>
+                            <td>
+                                <span *ngIf="tx.relatedInvoiceId" style="color: #0d9488; font-weight: 700; cursor: pointer;">#{{tx.relatedInvoiceId}}</span>
+                                <span *ngIf="!tx.relatedInvoiceId" style="color: #cbd5e1;">-</span>
+                            </td>
+                            <td>
+                                <span class="usr-chip" [ngClass]="getTransactionSeverity(tx.type) === 'success' ? 'role-user' : (getTransactionSeverity(tx.type) === 'danger' ? 'role-editor' : 'role-other')" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.65rem; font-weight: 700;">
+                                    {{ getTransactionTypeLabel(tx.type) }}
+                                </span>
+                            </td>
+                            <td style="text-align: right; vertical-align: middle;">
+                                <span dir="ltr" class="amount-badge" [ngClass]="{'income-badge': isIncome(tx.type), 'expense-badge': isExpense(tx.type)}">
+                                    {{ isExpense(tx.type) ? '-' : '+' }} {{ tx.amount | number:'1.0-0' }}
+                                </span>
+                            </td>
+                        </tr>
                     </ng-template>
+                    <ng-template pTemplate="emptydata">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: #64748b;">
+                                <i class="pi pi-receipt" style="font-size: 1.5rem; color: #e2e8f0; display: block; margin-bottom: 0.5rem;"></i>
+                                <span style="font-weight: 700; color: #1e293b;">لا توجد حركات مالية</span>
+                                <small style="display: block; margin-top: 0.25rem;">لم يتم العثور على بيانات تطابق بحثك</small>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-tabPanel>
 
+            <!-- Annual Chart Tab -->
+            <p-tabPanel header="التحليل السنوي">
+                <ng-template pTemplate="header">
+                    <i class="pi pi-chart-bar"></i>
+                    <span>التحليل السنوي</span>
+                </ng-template>
+
+                <div style="padding: 1rem;">
                     <div class="flex justify-content-end mb-4">
-                        <p-dropdown [options]="years" [(ngModel)]="selectedYear" (onChange)="loadCharts()" label="السنة المالية"></p-dropdown>
+                        <p-dropdown [options]="years" [(ngModel)]="selectedYear" (onChange)="loadCharts()" label="السنة المالية" styleClass="p-dropdown-sm"></p-dropdown>
                     </div>
 
                     <div class="grid" *ngIf="chartData">
-                        <div class="col-12 md:col-6">
-                            <p-chart type="bar" [data]="chartData" [options]="basicOptions"></p-chart>
+                        <div class="col-12 md:col-7">
+                            <p-chart type="bar" [data]="chartData" [options]="basicOptions" height="300px"></p-chart>
                         </div>
-                         <div class="col-12 md:col-6">
-                            <p-chart type="doughnut" [data]="pieData" [options]="pieOptions"></p-chart>
+                        <div class="col-12 md:col-5 flex justify-content-center align-items-center">
+                            <p-chart type="doughnut" [data]="pieData" [options]="pieOptions" width="250px" height="250px"></p-chart>
                         </div>
                     </div>
-                </p-tabPanel>
-             </p-tabView>
+                </div>
+            </p-tabPanel>
+        </p-tabView>
+    </div>
+</div>
+
+<!-- Manual Adjustment Dialog (Using super compact modal-shell design) -->
+<p-dialog [(visible)]="displayAdjustmentDialog" [modal]="true" styleClass="fin-dialog" [draggable]="false" [resizable]="false"
+    [closable]="false" [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
+    [style]="{width: '450px', maxWidth: '95vw'}">
+    <div class="modal-shell" *ngIf="displayAdjustmentDialog" dir="rtl">
+        <div class="modal-header">
+            <div class="modal-title">
+                <span class="modal-icon">
+                    <i class="pi pi-sliders-h"></i>
+                </span>
+                <div>
+                    <h2>تسوية مالية يدوية</h2>
+                    <p>إضافة أو خصم مبالغ يدوياً من الصندوق</p>
+                </div>
+            </div>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text close-btn"
+                (click)="displayAdjustmentDialog = false"></button>
         </div>
 
-        <!-- Manual Adjustment Dialog -->
-        <p-dialog header="تسوية مالية يدوية" [(visible)]="displayAdjustmentDialog" [modal]="true" [style]="{width: '450px'}" styleClass="p-fluid">
-            <ng-template pTemplate="content">
-                <form [formGroup]="adjustmentForm">
-                    <div class="field">
-                        <label for="amount">المبلغ (سالب للخصم، موجب للإضافة)</label>
-                        <p-inputNumber
-                            inputId="amount"
-                            formControlName="amount"
-                            mode="decimal"
-                            locale="en-US"
-                            [minFractionDigits]="0"
-                            [maxFractionDigits]="2"
-                            styleClass="w-full"
-                            inputStyleClass="w-full"
-                            [inputStyle]="{ width: '100%' }">
-                        </p-inputNumber>
-                        <small class="text-secondary block mt-1">مثال: 5000 لإضافة رصيد، -2000 لخصم مصروفات نثرية</small>
-                    </div>
-                    <div class="field">
-                        <label for="description">سبب التسوية</label>
-                        <textarea id="description" pInputTextarea formControlName="description" rows="3" autoResize="autoResize" class="w-full"></textarea>
-                    </div>
-                </form>
-            </ng-template>
-            <ng-template pTemplate="footer">
-                <p-button label="إلغاء" icon="pi pi-times" (onClick)="displayAdjustmentDialog = false" styleClass="p-button-text"></p-button>
-                <p-button label="حفظ التسوية" icon="pi pi-check" (onClick)="saveAdjustment()" [loading]="saving"></p-button>
-            </ng-template>
-        </p-dialog>
+        <div class="modal-body p-fluid">
+            <form [formGroup]="adjustmentForm">
+                <div class="field" style="margin-bottom: 1rem;">
+                    <label for="amount" style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.4rem; display: block;">المبلغ (سالب للخصم، موجب للإضافة)</label>
+                    <p-inputNumber
+                        inputId="amount"
+                        formControlName="amount"
+                        mode="decimal"
+                        locale="en-US"
+                        [minFractionDigits]="0"
+                        [maxFractionDigits]="2"
+                        styleClass="w-full"
+                        inputStyleClass="w-full"
+                        [inputStyle]="{ width: '100%', borderRadius: '6px', padding: '0.5rem 0.65rem', fontSize: '0.85rem' }">
+                    </p-inputNumber>
+                    <small style="color: #94a3b8; font-size: 0.65rem; display: block; margin-top: 0.3rem;">مثال: 5000 لإضافة رصيد، -2000 لخصم مصروفات نثرية</small>
+                </div>
+                <div class="field" style="margin-bottom: 0.5rem;">
+                    <label for="description" style="font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 0.4rem; display: block;">سبب التسوية</label>
+                    <textarea id="description" pInputTextarea formControlName="description" rows="3" autoResize="autoResize" class="w-full" style="border-radius: 6px; padding: 0.5rem 0.65rem; font-size: 0.8rem;"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="modal-footer">
+            <button pButton label="إلغاء" icon="pi pi-times" [rounded]="true" class="fin-btn-outlined" style="border: 1px solid #cbd5e1; color: #64748b; background: white;"
+                (click)="displayAdjustmentDialog = false"></button>
+            <button pButton label="حفظ التسوية" icon="pi pi-check" [rounded]="true" class="fin-btn-primary"
+                (click)="saveAdjustment()" [loading]="saving"></button>
+        </div>
     </div>
+</p-dialog>

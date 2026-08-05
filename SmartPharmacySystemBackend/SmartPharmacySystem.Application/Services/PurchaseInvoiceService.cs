@@ -66,25 +66,20 @@ namespace SmartPharmacySystem.Application.Services
 
             decimal calculatedTotal = 0;
 
-            // لا نحتاج transaction هنا لأن الفاتورة مسودة فقط
-            // GetOrCreateBatchIdAsync تحفظ بشكل مستقل لضرورة الحصول على BatchId
             foreach (var itemDto in dto.Items)
             {
-                // Validation: Past Expiry Date
                 if (itemDto.ExpiryDate.Date < DateTime.Today)
                 {
                     var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
                     throw new InvalidOperationException($"عذراً، تاريخ الانتهاء ({itemDto.ExpiryDate:yyyy-MM-dd}) للدواء '{med?.Name}' غير صالح (قديم).");
                 }
 
-                // Validation: Profit Safeguard
                 if (itemDto.SalePrice < itemDto.PurchasePrice)
                 {
                     var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
                     throw new InvalidOperationException($"عذراً، سعر البيع ({itemDto.SalePrice}) أقل من سعر الشراء ({itemDto.PurchasePrice}) للدواء '{med?.Name}'.");
                 }
 
-                // Resolve Batch (Find or Create Placeholder)
                 int batchId = await GetOrCreateBatchIdAsync(itemDto.MedicineId, itemDto.BatchBarcode, itemDto.CompanyBatchNumber, itemDto.ExpiryDate, userId);
 
                 var detail = _mapper.Map<PurchaseInvoiceDetail>(itemDto);
@@ -110,33 +105,29 @@ namespace SmartPharmacySystem.Application.Services
             MedicineBatch? existingBatch = null;
             var currentBranchId = _currentUserService.GetCurrentBranchId();
 
-            // 1. البحث بالباركود أولاً
             if (!string.IsNullOrEmpty(barcode))
             {
                 existingBatch = await _unitOfWork.MedicineBatches.GetByBarcodeAsync(barcode);
             }
 
-            // 2. إذا لم نجد بالباركود، نبحث برقم دفعة الشركة لمنع خطأ التكرار
-            if (existingBatch == null && !string.IsNullOrEmpty(companyBatch))
+            if (existingBatch == null && !string.IsNullOrWhiteSpace(companyBatch))
             {
                 existingBatch = await _unitOfWork.MedicineBatches.GetByCompanyBatchNumberAsync(companyBatch);
             }
 
-            // Security/Isolation:
-            // MedicineBatch isn't branch-filtered, so do NOT reuse an existing batch unless we can prove it belongs
-            // to the current branch context (via linked PurchaseInvoice). Otherwise create a new placeholder batch.
             if (existingBatch != null && currentBranchId.HasValue && existingBatch.PurchaseInvoiceId.HasValue)
             {
                 var linkedInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(existingBatch.PurchaseInvoiceId.Value);
                 if (linkedInvoice != null && linkedInvoice.BranchId == currentBranchId.Value)
                     return existingBatch.Id;
-
-                existingBatch = null;
             }
 
-            // If we found a batch but can't prove it's for the current branch, treat it as non-existent to avoid cross-branch reuse.
-            if (existingBatch != null)
-                existingBatch = null;
+            // If we are creating a new batch, we must ensure CompanyBatchNumber is strictly unique!
+            if (string.IsNullOrWhiteSpace(companyBatch) || companyBatch == "N/A" || existingBatch != null)
+            {
+                var baseBatch = string.IsNullOrWhiteSpace(companyBatch) || companyBatch == "N/A" ? $"BAT-{DateTime.UtcNow:yyMMdd}" : companyBatch;
+                companyBatch = $"{baseBatch}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}";
+            }
 
             var newBatch = new MedicineBatch
             {
@@ -147,7 +138,7 @@ namespace SmartPharmacySystem.Application.Services
                 RetailPrice = 0,
                 ExpiryDate = expiry,
                 BatchBarcode = barcode,
-                CompanyBatchNumber = companyBatch ?? "N/A",
+                CompanyBatchNumber = companyBatch,
                 Status = "Incoming",
                 EntryDate = DateTime.UtcNow,
                 CreatedBy = userId
@@ -166,7 +157,6 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("لا يمكن تعديل فاتورة تم اعتمادها أو إلغاؤها.");
 
-            // Update Header Fields
             invoice.SupplierId = dto.SupplierId;
             invoice.SupplierInvoiceNumber = dto.SupplierInvoiceNumber;
             invoice.PurchaseDate = dto.PurchaseDate;
@@ -174,30 +164,25 @@ namespace SmartPharmacySystem.Application.Services
             invoice.WarehouseId = await ResolveReceivingWarehouseIdAsync(dto.WarehouseId);
             invoice.Notes = dto.Notes;
 
-            // Clear Existing Details
             _unitOfWork.PurchaseInvoiceDetails.RemoveRange(invoice.PurchaseInvoiceDetails);
             invoice.PurchaseInvoiceDetails.Clear();
 
             decimal calculatedTotal = 0;
 
-            // Add New Details
             foreach (var itemDto in dto.Items)
             {
-                // Validation: Past Expiry Date
                 if (itemDto.ExpiryDate.Date < DateTime.Today)
                 {
                     var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
                     throw new InvalidOperationException($"عذراً، تاريخ الانتهاء ({itemDto.ExpiryDate:yyyy-MM-dd}) للدواء '{med?.Name}' غير صالح (قديم).");
                 }
 
-                // Validation: Profit Safeguard
                 if (itemDto.SalePrice < itemDto.PurchasePrice)
                 {
                     var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
                     throw new InvalidOperationException($"عذراً، سعر البيع ({itemDto.SalePrice}) أقل من سعر الشراء ({itemDto.PurchasePrice}) للدواء '{med?.Name}'.");
                 }
 
-                // Resolve Batch
                 int batchId = await GetOrCreateBatchIdAsync(itemDto.MedicineId, itemDto.BatchBarcode, itemDto.CompanyBatchNumber, itemDto.ExpiryDate, invoice.CreatedBy);
 
                 var detail = _mapper.Map<PurchaseInvoiceDetail>(itemDto);
@@ -231,10 +216,10 @@ namespace SmartPharmacySystem.Application.Services
         public async Task ApproveAsync(int id, int userId)
         {
             var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException($"\u0641\u0627\u062a\u0648\u0631\u0629 \u0627\u0644\u0634\u0631\u0627\u0621 \u0628\u0631\u0642\u0645 {id} \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f\u0629");
+                ?? throw new KeyNotFoundException($"فاتورة الشراء برقم {id} غير موجودة");
 
             if (invoice.Status != DocumentStatus.Draft)
-                throw new InvalidOperationException("\u0627\u0644\u0641\u0627\u062a\u0648\u0631\u0629 \u064a\u062c\u0628 \u0623\u0646 \u062a\u0643\u0648\u0646 \u0645\u0633\u0648\u062f\u0629 \u0644\u0644\u0627\u0639\u062a\u0645\u0627\u062f.");
+                throw new InvalidOperationException("الفاتورة يجب أن تكون مسودة للاعتماد.");
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -247,11 +232,8 @@ namespace SmartPharmacySystem.Application.Services
                 foreach (var detail in invoice.PurchaseInvoiceDetails)
                 {
                     var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId)
-                        ?? throw new KeyNotFoundException($"\u0627\u0644\u062f\u0641\u0639\u0629 {detail.BatchId} \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f\u0629");
+                        ?? throw new KeyNotFoundException($"الدفعة {detail.BatchId} غير موجودة");
 
-                    // ====================================================
-                    // UoM: Convert entered quantity to base unit (pills)
-                    // ====================================================
                     int conversionFactor = 1;
                     if (detail.PurchaseUnitId.HasValue)
                     {
@@ -259,18 +241,17 @@ namespace SmartPharmacySystem.Application.Services
                         conversionFactor = purchaseUnit?.ConversionFactor ?? 1;
                     }
 
-                    int rawQty = detail.Quantity;       // what user typed (e.g. 5 cartons)
+                    int rawQty = detail.Quantity;
                     int rawBonus = detail.BonusQuantity;
                     int baseUnits = (rawQty + rawBonus) * conversionFactor;
 
-                    detail.QuantityInPurchaseUnit = rawQty;   // save as entered
-                    detail.Quantity = baseUnits;               // store in base units
+                    detail.QuantityInPurchaseUnit = rawQty;
+                    detail.Quantity = baseUnits;
 
                     batch.Quantity += baseUnits;
                     batch.RemainingQuantity += baseUnits;
                     batch.Status = "Active";
 
-                    // Cost per base unit (e.g. cost per pill)
                     decimal trueUnitCost = baseUnits > 0 ? detail.Total / baseUnits : detail.PurchasePrice;
                     batch.UnitPurchasePrice = trueUnitCost;
                     batch.RetailPrice = detail.SalePrice;
@@ -280,7 +261,6 @@ namespace SmartPharmacySystem.Application.Services
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
                     await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, baseUnits);
 
-                    // Update Medicine MAC & Default Pricing
                     var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
                     if (medicine != null)
                     {
@@ -300,12 +280,11 @@ namespace SmartPharmacySystem.Application.Services
 
                 invoice.TotalAmount = validTotal;
 
-                // ==================== Journal Entry ====================
                 var journalEntry = new JournalEntryDto
                 {
                     EntryDate = invoice.PurchaseDate,
                     VoucherNumber = invoice.PurchaseInvoiceNumber,
-                    Description = $"\u0642\u064a\u062f \u0645\u0634\u062a\u0631\u064a\u0627\u062a \u0622\u0644\u064a - \u0641\u0627\u062a\u0648\u0631\u0629 \u0631\u0642\u0645: {invoice.PurchaseInvoiceNumber} - \u0627\u0644\u0645\u0648\u0631\u062f: {invoice.Supplier?.Name ?? "\u063a\u064a\u0631 \u0645\u0639\u0631\u0648\u0641"}",
+                    Description = $"قيد مشتريات آلي - فاتورة رقم: {invoice.PurchaseInvoiceNumber} - المورد: {invoice.Supplier?.Name ?? "غير معروف"}",
                     Type = VoucherType.PurchaseInvoice,
                     Lines = new List<JournalEntryLineDto>()
                 };
@@ -315,7 +294,7 @@ namespace SmartPharmacySystem.Application.Services
                     AccountId = 1301,
                     Debit = invoice.TotalAmount,
                     Credit = 0,
-                    Description = $"\u0625\u0636\u0627\u0641\u0629 \u0644\u0644\u0645\u062e\u0632\u0648\u0646 - \u0641\u0627\u062a\u0648\u0631\u0629 \u0634\u0631\u0627\u0621 {invoice.PurchaseInvoiceNumber}"
+                    Description = $"إضافة للمخزون - فاتورة شراء {invoice.PurchaseInvoiceNumber}"
                 });
 
                 if (invoice.PaymentMethod == PaymentType.Cash)
@@ -325,21 +304,30 @@ namespace SmartPharmacySystem.Application.Services
                         AccountId = 1101,
                         Debit = 0,
                         Credit = invoice.TotalAmount,
-                        Description = $"\u0635\u0631\u0641 \u0642\u064a\u0645\u0629 \u0645\u0634\u062a\u0631\u064a\u0627\u062a \u0646\u0642\u062f\u064a\u0629 - \u0641\u0627\u062a\u0648\u0631\u0629 {invoice.PurchaseInvoiceNumber}"
+                        Description = $"صرف قيمة مشتريات نقدية - فاتورة {invoice.PurchaseInvoiceNumber}"
                     });
                     invoice.IsPaid = true;
+                    
+                    // NEW: Record Expense for Cash Purchase!
+                    await _financialService.ProcessTransactionAsync(
+                        accountId: 1, 
+                        amount: invoice.TotalAmount, 
+                        type: FinancialTransactionType.Expense, 
+                        referenceType: ReferenceType.PurchaseInvoice, 
+                        referenceId: invoice.Id, 
+                        description: $"مشتريات نقدية - فاتورة {invoice.PurchaseInvoiceNumber}");
                 }
                 else
                 {
                     var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId)
-                        ?? throw new KeyNotFoundException("\u0627\u0644\u0645\u0648\u0631\u062f \u063a\u064a\u0631 \u0645\u0648\u062c\u0648\u062f");
+                        ?? throw new KeyNotFoundException("المورد غير موجود");
 
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
                         AccountId = supplier.AccountId ?? 2101,
                         Debit = 0,
                         Credit = invoice.TotalAmount,
-                        Description = $"\u0645\u0634\u062a\u0631\u064a\u0627\u062a \u0622\u062c\u0644\u0629 - \u0641\u0627\u062a\u0648\u0631\u0629 {invoice.PurchaseInvoiceNumber}"
+                        Description = $"مشتريات آجلة - فاتورة {invoice.PurchaseInvoiceNumber}"
                     });
 
                     supplier.Balance += invoice.TotalAmount;
@@ -371,7 +359,6 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.Status == DocumentStatus.Cancelled)
                 throw new InvalidOperationException("الفاتورة ملغاة بالفعل.");
 
-            // 1. Sale Integrity Check
             foreach (var detail in invoice.PurchaseInvoiceDetails)
             {
                 var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
@@ -488,17 +475,12 @@ namespace SmartPharmacySystem.Application.Services
             }
         }
 
-        /// <summary>
-        /// Get dashboard statistics with optimized aggregate queries
-        /// Uses .AsNoTracking() and direct Sum() for performance (<100ms)
-        /// </summary>
         public async Task<DTOs.Dashboard.PurchasesDashboardStatsDto> GetDashboardStatsAsync()
         {
             var today = DateTime.Today;
             var startOfMonth = new DateTime(today.Year, today.Month, 1);
             var sevenDaysAgo = today.AddDays(-6);
 
-            // Get all approved purchases this month
             var allInvoices = await _unitOfWork.PurchaseInvoices.GetAllAsync();
             var approvedThisMonth = allInvoices
                 .Where(p => p.Status == DocumentStatus.Approved && p.PurchaseDate >= startOfMonth)
@@ -506,14 +488,11 @@ namespace SmartPharmacySystem.Application.Services
 
             var monthlyTotalPurchases = approvedThisMonth.Sum(p => p.TotalAmount);
 
-            // Supplier debts
             var suppliers = await _unitOfWork.Suppliers.GetAllAsync();
             var supplierDebts = suppliers.Where(s => s.Balance > 0).Sum(s => s.Balance);
 
-            // Overdue count (invoices that are credit and not paid)
             var overdueCount = approvedThisMonth.Count(p => p.PaymentMethod == PaymentType.Credit && !p.IsPaid);
 
-            // Monthly returns
             var returns = await _unitOfWork.PurchaseReturns.GetAllAsync();
             var monthlyReturns = returns
                 .Where(r => r.Status == DocumentStatus.Approved && r.ReturnDate >= startOfMonth)
@@ -521,7 +500,6 @@ namespace SmartPharmacySystem.Application.Services
 
             var returnRate = monthlyTotalPurchases > 0 ? (monthlyReturns / monthlyTotalPurchases) * 100 : 0;
 
-            // Top 5 suppliers by purchase amount (for donut chart)
             var supplierDistribution = approvedThisMonth
                 .GroupBy(p => p.SupplierId)
                 .Select(g => new { SupplierId = g.Key, TotalAmount = g.Sum(p => p.TotalAmount) })
@@ -538,7 +516,6 @@ namespace SmartPharmacySystem.Application.Services
                 TotalAmount = sd.TotalAmount
             }).ToList();
 
-            // Last 7 days purchases for sparkline
             var last7DaysPurchases = new List<decimal>();
             var recentInvoices = allInvoices
                 .Where(p => p.Status == DocumentStatus.Approved && p.PurchaseDate >= sevenDaysAgo)
@@ -569,7 +546,6 @@ namespace SmartPharmacySystem.Application.Services
         {
             _logger.LogInformation("Creating Quick Purchase for medicine {MedicineId} by user {UserId}", dto.MedicineId, userId);
 
-            // 1. Validation
             if (dto.ExpiryDate.Date < DateTime.Today)
                 throw new InvalidOperationException($"عذراً، تاريخ الانتهاء ({dto.ExpiryDate:yyyy-MM-dd}) غير صالح (قديم).");
 
@@ -579,14 +555,13 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // 2. Create the Invoice Header
                 var invoice = new PurchaseInvoice
                 {
-                    SupplierId = dto.SupplierId, // Can be null for cash
+                    SupplierId = dto.SupplierId,
                     PurchaseDate = DateTime.UtcNow,
                     PaymentMethod = dto.PaymentMethod,
                     Notes = dto.Notes ?? "توريد سريع من قائمة الأدوية",
-                    Status = DocumentStatus.Approved, // Auto-Approve
+                    Status = DocumentStatus.Approved,
                     CreatedBy = userId,
                     CreatedAt = DateTime.UtcNow,
                     ApprovedBy = userId,
@@ -595,10 +570,8 @@ namespace SmartPharmacySystem.Application.Services
                     PurchaseInvoiceNumber = await _invoiceNumberGenerator.GeneratePurchaseInvoiceNumberAsync()
                 };
 
-                // 3. Resolve Batch (Find or Create)
                 int batchId = await GetOrCreateBatchIdAsync(dto.MedicineId, dto.BatchBarcode, dto.CompanyBatchNumber, dto.ExpiryDate, userId);
 
-                // 4. Create Invoice Detail
                 var detail = new PurchaseInvoiceDetail
                 {
                     MedicineId = dto.MedicineId,
@@ -613,7 +586,6 @@ namespace SmartPharmacySystem.Application.Services
                 invoice.PurchaseInvoiceDetails = new List<PurchaseInvoiceDetail> { detail };
                 invoice.TotalAmount = detail.Total;
 
-                // 5. Apply Approval Logic (Same as ApproveAsync)
                 var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(batchId)
                     ?? throw new KeyNotFoundException($"الدفعة {batchId} غير موجودة");
 
@@ -621,17 +593,15 @@ namespace SmartPharmacySystem.Application.Services
                 batch.RemainingQuantity += (detail.Quantity + detail.BonusQuantity);
                 batch.Status = "Active";
 
-                // Cost Calculation
                 decimal trueUnitCost = detail.Total / (detail.Quantity + detail.BonusQuantity);
                 batch.UnitPurchasePrice = trueUnitCost;
                 batch.RetailPrice = detail.SalePrice;
-                batch.PurchaseInvoiceId = 0; // Temporary, will set after invoice is saved
+                batch.PurchaseInvoiceId = 0;
                 detail.TrueUnitCost = trueUnitCost;
 
                 await _unitOfWork.MedicineBatches.UpdateAsync(batch);
                 await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, detail.Quantity + detail.BonusQuantity);
 
-                // Update Medicine MAC & Default Pricing
                 var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
                 if (medicine != null)
                 {
@@ -646,7 +616,6 @@ namespace SmartPharmacySystem.Application.Services
                     await _unitOfWork.Medicines.UpdateAsync(medicine);
                 }
 
-                // 6. Accounting (Journal Entry)
                 var journalEntry = new JournalEntryDto
                 {
                     EntryDate = invoice.PurchaseDate,
@@ -656,7 +625,6 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<JournalEntryLineDto>()
                 };
 
-                // Debit: Stock (1301)
                 journalEntry.Lines.Add(new JournalEntryLineDto
                 {
                     AccountId = 1301,
@@ -665,7 +633,6 @@ namespace SmartPharmacySystem.Application.Services
                     Description = $"توريد سريع للمخزون - {medicine?.Name}"
                 });
 
-                // Credit: Cash or Supplier
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
@@ -676,6 +643,15 @@ namespace SmartPharmacySystem.Application.Services
                         Description = $"صرف نقدي لتوريد سريع - {medicine?.Name}"
                     });
                     invoice.IsPaid = true;
+
+                    // NEW: Record Expense for Cash Purchase!
+                    await _financialService.ProcessTransactionAsync(
+                        accountId: 1, 
+                        amount: invoice.TotalAmount, 
+                        type: FinancialTransactionType.Expense, 
+                        referenceType: ReferenceType.PurchaseInvoice, 
+                        referenceId: invoice.Id, 
+                        description: $"مشتريات نقدية سريع - {medicine?.Name}");
                 }
                 else
                 {
@@ -697,25 +673,20 @@ namespace SmartPharmacySystem.Application.Services
                     invoice.IsPaid = false;
                 }
 
-                // Save Invoice and get ID
                 await _unitOfWork.PurchaseInvoices.AddAsync(invoice);
                 await _unitOfWork.SaveChangesAsync();
 
-                // Update Batch with Invoice ID
                 batch.PurchaseInvoiceId = invoice.Id;
                 await _unitOfWork.MedicineBatches.UpdateAsync(batch);
 
-                // Save Journal Entry
                 var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
                 await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
 
-                // Record Stock Movement
                 await _unitOfWork.SaveChangesAsync();
                 await _stockMovementService.ProcessDocumentMovementsAsync(invoice.Id, ReferenceType.PurchaseInvoice);
 
                 await _unitOfWork.CommitAsync();
 
-                // 7. Sync Alerts (New Batch might be near expiry)
                 try
                 {
                     await _alertService.SyncMedicineAlertsAsync(dto.MedicineId);
@@ -749,15 +720,12 @@ namespace SmartPharmacySystem.Application.Services
             var result = await _barcodeService.GetProductByBarcodeAsync(query, userId)
                 ?? throw new KeyNotFoundException("الصنف غير موجود في قاعدة البيانات. يرجى إضافة الصنف في شاشة الأدوية أولاً.");
 
-            // For Purchase, we usually allow scanning even if out of stock
-            // But we can check if it's expired in existing batches to warn
             if (result.ExpiryDate < DateTime.Today && result.BatchId > 0)
             {
                 _logger.LogWarning("Scanned batch for purchase is already expired: {Name}", result.TradeName);
-                // We don't block purchase because they might be buying a NEW batch of the same medicine
             }
 
-                return result;
+            return result;
         }
 
         private async Task<int> ResolveReceivingWarehouseIdAsync(int? requestedWarehouseId)

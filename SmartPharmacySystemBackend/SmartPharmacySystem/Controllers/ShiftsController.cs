@@ -30,6 +30,17 @@ public class ShiftsController : ControllerBase
         return BadRequest(result);
     }
 
+    [HttpGet("All")]
+    public async Task<ActionResult<ApiResponse<IEnumerable<ShiftDto>>>> GetAllShifts()
+    {
+        var result = await _shiftService.GetAllShiftsAsync();
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        return BadRequest(result);
+    }
+
     [HttpPost("Open")]
     public async Task<ActionResult<ApiResponse<ShiftDto>>> OpenShift(OpenShiftDto request)
     {

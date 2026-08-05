@@ -1,0 +1,94 @@
+<div class="page-container" dir="rtl">
+    <p-toast position="top-left"></p-toast>
+  
+    <div class="page-header">
+      <div class="header-title">
+        <div class="icon-box">
+          <i class="pi pi-users"></i>
+        </div>
+        <div>
+          <h1>إدارة وتقارير الورديات</h1>
+          <p>مراقبة أرصدة وحركات الموظفين (الكاشير) وحساب العجز والزيادة</p>
+        </div>
+      </div>
+  
+      <div class="header-actions">
+        <div class="search-box">
+          <i class="pi pi-search"></i>
+          <input type="text" [(ngModel)]="searchTerm" (input)="filterShifts()" placeholder="بحث باسم الموظف أو الحالة...">
+        </div>
+        <button class="btn btn-primary" (click)="refresh()" [disabled]="isLoading">
+          <i class="pi pi-refresh" [class.pi-spin]="isLoading"></i>
+          <span>تحديث البيانات</span>
+        </button>
+      </div>
+    </div>
+  
+    <div class="card table-card">
+      <div class="table-responsive">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>الموظف</th>
+              <th>تاريخ الوردية</th>
+              <th>رصيد الافتتاح</th>
+              <th>رصيد الإغلاق المتوقع</th>
+              <th>رصيد الإغلاق الفعلي</th>
+              <th>العجز / الزيادة</th>
+              <th>الحالة</th>
+              <th>ملاحظات</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="isLoading">
+              <td colspan="8" class="text-center py-5">
+                <i class="pi pi-spinner pi-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+                <p class="mt-2 text-muted">جاري تحميل البيانات...</p>
+              </td>
+            </tr>
+            <tr *ngIf="!isLoading && filteredShifts.length === 0">
+              <td colspan="8" class="text-center py-5">
+                <i class="pi pi-inbox text-muted" style="font-size: 2.5rem;"></i>
+                <p class="mt-2 text-muted">لا توجد ورديات مطابقة للبحث</p>
+              </td>
+            </tr>
+            <tr *ngFor="let shift of filteredShifts">
+              <td>
+                <div class="user-info">
+                  <div class="avatar">{{ shift.userName?.charAt(0) || 'U' }}</div>
+                  <span>{{ shift.userName || 'مستخدم غير معروف' }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="date-col">
+                  <div class="start-date"><i class="pi pi-sign-in"></i> {{ shift.startTime | date:'dd/MM/yyyy hh:mm a' }}</div>
+                  <div class="end-date" *ngIf="shift.endTime"><i class="pi pi-sign-out"></i> {{ shift.endTime | date:'dd/MM/yyyy hh:mm a' }}</div>
+                </div>
+              </td>
+              <td class="amount font-weight-bold">{{ shift.openingCash | number }} ريال</td>
+              <td class="amount text-muted">{{ shift.expectedClosingCash | number }} ريال</td>
+              <td class="amount font-weight-bold" [ngClass]="{'text-success': shift.status === 'Closed' && shift.actualClosingCash! >= shift.expectedClosingCash, 'text-danger': shift.status === 'Closed' && shift.actualClosingCash! < shift.expectedClosingCash}">
+                {{ shift.status === 'Closed' ? (shift.actualClosingCash | number) + ' ريال' : '-' }}
+              </td>
+              <td>
+                <div *ngIf="shift.status === 'Closed'" class="difference-badge" [ngClass]="{'overage': shift.difference > 0, 'shortage': shift.difference < 0, 'matched': shift.difference === 0}">
+                  <span *ngIf="shift.difference > 0">زيادة: +{{ shift.difference | number }}</span>
+                  <span *ngIf="shift.difference < 0">عجز: {{ shift.difference | number }}</span>
+                  <span *ngIf="shift.difference === 0">مطابق</span>
+                </div>
+                <span *ngIf="shift.status !== 'Closed'" class="text-muted">-</span>
+              </td>
+              <td>
+                <span class="status-badge" [ngClass]="getStatusClass(shift.status)">
+                  {{ getStatusLabel(shift.status) }}
+                </span>
+              </td>
+              <td class="notes-cell">
+                <span class="truncate-text" [title]="shift.notes || 'لا يوجد'">{{ shift.notes || '-' }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>

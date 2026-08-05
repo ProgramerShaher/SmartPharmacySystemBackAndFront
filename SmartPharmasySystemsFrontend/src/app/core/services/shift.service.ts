@@ -24,6 +24,10 @@ export class ShiftService {
     return this.http.get<ApiResponse<ShiftDto>>(`${this.apiUrl}/Current`);
   }
 
+  getAllShifts(): Observable<ApiResponse<ShiftDto[]>> {
+    return this.http.get<ApiResponse<ShiftDto[]>>(`${this.apiUrl}/All`);
+  }
+
   openShift(data: OpenShiftDto): Observable<ApiResponse<ShiftDto>> {
     return this.http.post<ApiResponse<ShiftDto>>(`${this.apiUrl}/Open`, data);
   }

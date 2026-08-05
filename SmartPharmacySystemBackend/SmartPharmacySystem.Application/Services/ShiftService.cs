@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,22 @@ public class ShiftService : IShiftService
             return ApiResponse<ShiftDto>.Failed("No open shift found.");
 
         return ApiResponse<ShiftDto>.Succeeded(MapToDto(shift), "Success");
+    }
+
+    public async Task<ApiResponse<IEnumerable<ShiftDto>>> GetAllShiftsAsync()
+    {
+        var branchId = _currentUserService.GetCurrentBranchId();
+        if (branchId == null)
+            return ApiResponse<IEnumerable<ShiftDto>>.Failed("Branch not found in context.");
+
+        var shifts = await _context.UserShifts
+            .Include(s => s.User)
+            .Where(s => s.BranchId == branchId)
+            .OrderByDescending(s => s.StartTime)
+            .ToListAsync();
+
+        var shiftDtos = shifts.Select(MapToDto).ToList();
+        return ApiResponse<IEnumerable<ShiftDto>>.Succeeded(shiftDtos, "Success");
     }
 
     public async Task<ApiResponse<ShiftDto>> OpenShiftAsync(OpenShiftDto request)

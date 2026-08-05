@@ -352,7 +352,19 @@ namespace SmartPharmacySystem.Application.Services
                 var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
                 await _journalEntryService.ApproveAsync(createdEntry.Id, userId); // ترحيل مباشر وتحديث الأرصدة
 
-                // تم إزالة نداء النظام القديم - يكفي القيد المحاسبي الاحترافي
+                // تحديث رصيد الصندوق المباشر إذا كان البيع نقداً
+                if (invoice.PaymentMethod == PaymentType.Cash)
+                {
+                    await _financialService.ProcessTransactionAsync(
+                        accountId: 1, // Will be dynamically mapped to branch main account in FinancialService
+                        amount: invoice.TotalAmount,
+                        type: FinancialTransactionType.Income,
+                        referenceType: ReferenceType.SaleInvoice,
+                        referenceId: invoice.Id,
+                        description: $"إيراد مبيعات نقدية - فاتورة {invoice.SaleInvoiceNumber}"
+                    );
+                    invoice.IsPaid = true;
+                }
 
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
                 await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.SaleInvoice);

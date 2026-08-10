@@ -16,6 +16,7 @@ import { MenuModule } from 'primeng/menu';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { PurchaseReturnDetailsComponent } from '../purchase-return-details/purchase-return-details.component';
 
 @Component({
     selector: 'app-purchase-return-list',
@@ -30,7 +31,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
         TooltipModule,
         MenuModule,
         ConfirmDialogModule,
-        ToastModule
+        ToastModule,
+        PurchaseReturnDetailsComponent
     ],
     providers: [ConfirmationService],
     templateUrl: './purchase-return-list.component.html',
@@ -39,6 +41,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 export class PurchaseReturnListComponent implements OnInit {
     returns: PurchaseReturn[] = [];
     loading = true;
+    displayDetailsModal = false;
+    selectedReturnId: number | null = null;
 
     constructor(
         private purchaseReturnService: PurchaseReturnService,
@@ -70,7 +74,8 @@ export class PurchaseReturnListComponent implements OnInit {
     }
 
     viewReturn(ret: PurchaseReturn) {
-        this.router.navigate(['/purchases/returns', ret.id]);
+        this.selectedReturnId = ret.id;
+        this.displayDetailsModal = true;
     }
 
     editReturn(ret: PurchaseReturn) {

@@ -14,7 +14,7 @@ import { CustomerDebtsReport } from '../../../core/models/reports.interface';
   standalone: true,
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, TableModule, TagModule, ProgressSpinnerModule],
   templateUrl: './customer-debts.component.html',
-  styleUrls: ['./customer-debts.component.css']
+  styleUrls: ['./customer-debts.component.scss']
 })
 export class CustomerDebtsComponent implements OnInit {
   protected readonly Math = Math;

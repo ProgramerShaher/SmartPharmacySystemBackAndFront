@@ -1,101 +1,151 @@
-<div class="report-container" dir="rtl">
-  <!-- Header Section -->
-  <div class="page-header">
-    <div class="title-wrap">
-      <div class="icon-circle"><i class="pi pi-box"></i></div>
-      <div>
-        <h1>تقرير تقييم المخزون الذكي</h1>
-        <p>تحليل القيمة المالية للمخزون والأرباح المتوقعة وتواريخ الانتهاء</p>
+<div class="rpt-wrap" dir="rtl">
+  <!-- ===== Compact Header ===== -->
+  <div class="rpt-header">
+    <div class="rpt-header-start">
+      <div class="rpt-icon">
+        <i class="pi pi-box"></i>
       </div>
-    </div>
-
-    <div class="actions no-print">
-      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadValuation()" [loading]="loading()"></p-button>
-      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+      <div>
+        <h1 class="rpt-title">تقرير تقييم المخزون الذكي</h1>
+        <p class="rpt-subtitle">تحليل القيمة المالية للمخزون والأرباح المتوقعة وتواريخ الانتهاء</p>
+      </div>
     </div>
   </div>
 
-  <!-- Filters Section -->
-  <section class="filters-panel no-print">
-    <div class="filter-field">
-      <label>بحث عن منتج</label>
-      <input type="text" pInputText placeholder="اسم المنتج..." [(ngModel)]="searchTerm" (input)="applyFilter()" />
-    </div>
-    <div class="filter-field">
-      <label>حالة الانتهاء</label>
-      <p-dropdown [options]="expiryOptions" [(ngModel)]="expiryFilter" (onChange)="applyFilter()"></p-dropdown>
-    </div>
-  </section>
-
-  <!-- Summary Cards -->
-  <div class="kpi-grid" *ngIf="valuation() && !loading()">
-    <div class="kpi-card stock">
-      <span class="kpi-label">إجمالي رأس المال (شراء)</span>
-      <strong>{{ formatCurrency(summary().totalCapital) }} ر.ي</strong>
-      <small>تكلفة شراء المخزون الحالي</small>
-    </div>
-
-    <div class="kpi-card items">
-      <span class="kpi-label">القيمة البيعية المتوقعة</span>
-      <strong style="color: #0284c7;">{{ formatCurrency(summary().totalRetailValue) }} ر.ي</strong>
-      <small>إجمالي قيمة البيع المفترضة</small>
-    </div>
-
-    <div class="kpi-card profit">
-      <span class="kpi-label">إجمالي الربح المتوقع</span>
-      <strong>{{ formatCurrency(summary().potentialProfit) }} ر.ي</strong>
-      <small>الربح المتوقع عند بيع كامل المخزون</small>
-    </div>
-
-    <div class="kpi-card today">
-      <span class="kpi-label">إجمالي الوحدات المتوفرة</span>
-      <strong>{{ summary().totalQuantity }} وحدة</strong>
-      <small>كميات الأدوية المتبقية</small>
+  <!-- ===== Filter Row ===== -->
+  <div class="rpt-filter-panel no-print">
+    <div class="rpt-filter-grid">
+      <div class="rpt-filter-field" style="flex: 1; max-width: 400px;">
+        <label>البحث السريع</label>
+        <span class="p-input-icon-right" style="width: 100%;">
+          <i class="pi pi-search" style="right: 0.75rem; color: #64748b; font-size: 0.85rem;"></i>
+          <input pInputText type="text" [(ngModel)]="searchTerm" (keyup.enter)="applyFilter()" placeholder="بحث باسم الصنف..." style="width: 100%; padding-right: 2rem !important;" />
+        </span>
+      </div>
+      <div class="rpt-filter-field">
+        <label>حالة الصلاحية</label>
+        <p-dropdown [options]="expiryOptions" [(ngModel)]="expiryFilter" optionLabel="label" optionValue="value" (onChange)="applyFilter()"></p-dropdown>
+      </div>
+      <div class="rpt-filter-action">
+        <button pButton icon="pi pi-sync" [rounded]="true" [outlined]="true" severity="info" pTooltip="تحديث البيانات" tooltipPosition="top" (click)="loadValuation()" [loading]="loading()" styleClass="rpt-btn-sm"></button>
+        <button pButton icon="pi pi-print" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="طباعة" tooltipPosition="top" (click)="printReport()" styleClass="rpt-btn-sm"></button>
+      </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
+  <div class="rpt-table-wrap" *ngIf="loading()" style="padding: 3rem; text-align: center;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
-  <!-- Detailed Table -->
-  <section class="table-panel" *ngIf="valuation() && !loading()">
-    <p-table [value]="valuation()!.batches" [paginator]="true" [rows]="15" styleClass="p-datatable-sm compact-table" [rowHover]="true" [responsive]="true">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>المنتج</th>
-          <th class="text-center" style="width: 80px;">الكمية</th>
-          <th class="text-center" style="width: 100px;">سعر الشراء</th>
-          <th class="text-center" style="width: 100px;">سعر البيع</th>
-          <th class="text-center" style="width: 110px;">تاريخ الانتهاء</th>
-          <th class="text-center" style="width: 110px;">إجمالي الشراء</th>
-          <th class="text-center" style="width: 110px;">إجمالي البيع</th>
-          <th class="text-center" style="width: 100px;">الحالة</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-batch>
-        <tr>
-          <td>
-            <strong style="color: #1d4ed8; font-size: 0.65rem;">{{ batch.medicineName }}</strong>
-            <small class="muted">رقم الدفعة: {{ batch.companyBatchNumber }}</small>
-          </td>
-          <td class="text-center">
-            <span class="type-pill type-blue">{{ batch.remainingQuantity }}</span>
-          </td>
-          <td class="text-center">{{ formatCurrency(batch.unitPurchasePrice) }}</td>
-          <td class="text-center">{{ formatCurrency(batch.retailPrice) }}</td>
-          <td class="text-center" style="font-family: monospace;">{{ batch.expiryDate | date:'yyyy-MM-dd' }}</td>
-          <td class="text-center" style="font-weight: 700; color: #1e293b;">{{ formatCurrency(batch.batchCapital) }}</td>
-          <td class="text-center" style="font-weight: 700; color: #0284c7;">{{ formatCurrency(batch.batchRetailValue) }}</td>
-          <td class="text-center">
-            <p-tag [value]="getExpiryLabel(batch)" [severity]="getExpiryStatus(batch)"></p-tag>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage">
-        <tr><td colspan="8" class="text-center p-4">لا توجد بيانات تطابق البحث حالياً</td></tr>
-      </ng-template>
-    </p-table>
-  </section>
+  <!-- Error State -->
+  <div class="rpt-table-wrap" *ngIf="error() && !loading()" style="padding: 1.5rem; border-color: #ef4444; color: #ef4444; text-align: center;">
+    <i class="pi pi-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i> {{ error() }}
+  </div>
+
+  <!-- ===== KPI Row ===== -->
+  <div class="rpt-kpi-row" *ngIf="valuation() && !loading()">
+    <div class="rpt-kpi-card" data-color="teal">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">قيمة المخزون (بالتكلفة)</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().totalCapital) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-money-bill"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | القيمة الدفترية للأصناف</small>
+    </div>
+    
+    <div class="rpt-kpi-card" data-color="teal">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">قيمة المخزون (بالبيع)</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().totalRetailValue) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-tag"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | القيمة المتوقعة عند البيع</small>
+    </div>
+
+    <div class="rpt-kpi-card" data-color="amber">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">الربح المتوقع</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().potentialProfit) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-chart-line"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | الفارق بين البيع والتكلفة</small>
+    </div>
+
+    <div class="rpt-kpi-card" data-color="amber">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي القطع المتوفرة</span>
+          <strong class="rpt-kpi-value">{{ summary().totalQuantity }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-box"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">وحدة | الكمية الإجمالية الحالية</small>
+    </div>
+  </div>
+
+  <!-- ===== Analytics Row ===== -->
+  <div class="analytics-grid" *ngIf="valuation() && !loading()">
+    <!-- Table -->
+    <div class="rpt-table-wrap">
+      <p-table [value]="valuation()!.batches" styleClass="rpt-table" [responsive]="true" [paginator]="true" [rows]="10">
+        <ng-template pTemplate="caption">
+          <div class="rpt-table-caption">
+            <span><i class="pi pi-sitemap"></i> تفاصيل المخزون والصلاحيات</span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th>الصنف</th>
+            <th>رقم التشغيلة</th>
+            <th class="text-center">تاريخ الانتهاء</th>
+            <th class="text-center">الكمية</th>
+            <th class="text-center">تكلفة الوحدة</th>
+            <th class="text-center">سعر البيع</th>
+            <th class="text-center">إجمالي التكلفة</th>
+            <th class="text-center">إجمالي البيع</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-batch>
+          <tr>
+            <td>
+              <strong style="color: #1e293b;">{{ batch.medicineName }}</strong>
+              <small style="display: block; color: #64748b;">{{ batch.scientificName || '-' }}</small>
+            </td>
+            <td><span style="font-family: monospace; color: #4f46e5;">{{ batch.companyBatchNumber }}</span></td>
+            <td class="text-center">
+               <span class="rpt-chip" [ngClass]="'chip-' + getExpiryStatus(batch)">
+                  {{ getExpiryLabel(batch) }}
+               </span>
+            </td>
+            <td class="text-center"><span class="rpt-chip chip-info">{{ batch.remainingQuantity }}</span></td>
+            <td class="text-center" style="color: #64748b;">{{ formatCurrency(batch.unitPurchasePrice) }}</td>
+            <td class="text-center" style="color: #64748b;">{{ formatCurrency(batch.retailPrice) }}</td>
+            <td class="text-center" style="font-weight: 700; color: #475569;">{{ formatCurrency(batch.batchCapital) }}</td>
+            <td class="text-center" style="font-weight: 800; color: #0d9488;">{{ formatCurrency(batch.batchRetailValue) }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="8" class="rpt-empty">
+            <i class="pi pi-folder-open"></i>
+            <span>لا توجد بيانات مطابقة</span>
+          </td></tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
 </div>

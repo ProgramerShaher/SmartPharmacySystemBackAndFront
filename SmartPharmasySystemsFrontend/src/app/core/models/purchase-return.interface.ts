@@ -14,7 +14,12 @@ export interface PurchaseReturn {
     createdBy: number;
     createdAt: Date;
     isDeleted: boolean;
-    purchaseInvoice?: PurchaseInvoice;
-    supplier?: Supplier;
-    purchaseReturnDetails?: PurchaseReturnDetail[];
+
+    // Status
+    status: number;
+    statusName?: string;
+    statusColor?: string;
+    statusIcon?: string;
+
+    items?: PurchaseReturnDetail[];
 }

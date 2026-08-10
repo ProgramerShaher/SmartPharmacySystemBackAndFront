@@ -15,4 +15,8 @@ public interface IEmployeeRepository
     Task<bool> NationalIdExistsAsync(string nationalId, int? excludeId = null);
     Task<int> GetEmployeeCountAsync(int branchId);
     Task<IEnumerable<Employee>> GetActiveEmployeesAsync();
+    /// <summary>
+    /// جلب جميع الموظفين المرتبطين بحساب المستخدم (مثلاً نفس المستخدم يعمل في عدة فروع)
+    /// </summary>
+    Task<IEnumerable<Employee>> GetByUserIdAsync(int userId);
 }

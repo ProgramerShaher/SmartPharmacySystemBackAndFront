@@ -53,6 +53,11 @@ public interface IUnitOfWork
     IBranchRepository Branches { get; }
     IEmployeeBranchAssignmentRepository EmployeeBranchAssignments { get; }
 
+    // ===== RBAC: Roles, Permissions, Audit =====
+    IPermissionRepository Permissions { get; }
+    IUserPermissionOverrideRepository UserPermissionOverrides { get; }
+    IAuditLogRepository AuditLogs { get; }
+
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitAsync();

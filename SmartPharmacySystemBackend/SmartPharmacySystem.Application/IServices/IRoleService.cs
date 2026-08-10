@@ -43,4 +43,24 @@ public interface IRoleService
     /// Delete role
     /// </summary>
     Task DeleteRoleAsync(int id);
+
+    /// <summary>
+    /// جلب الدور مع صلاحياته
+    /// </summary>
+    Task<RoleDto?> GetRoleWithPermissionsAsync(int id);
+
+    /// <summary>
+    /// جلب معرفات الصلاحيات الخاصة بدور
+    /// </summary>
+    Task<IEnumerable<int>> GetRolePermissionIdsAsync(int id);
+
+    /// <summary>
+    /// تحديث صلاحيات الدور
+    /// </summary>
+    Task UpdateRolePermissionsAsync(int id, IEnumerable<int> permissionIds);
+
+    /// <summary>
+    /// استنساخ دور
+    /// </summary>
+    Task<RoleDto> CloneRoleAsync(int sourceRoleId, string newName, string? newNameAr, string? newColor);
 }

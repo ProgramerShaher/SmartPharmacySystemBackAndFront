@@ -53,6 +53,7 @@ export interface Medicine {
  * Create Medicine DTO
  */
 export interface CreateMedicineDto {
+    internalCode?: string;
     name: string;
     scientificName?: string;
     activeIngredient?: string;
@@ -75,6 +76,7 @@ export interface CreateMedicineDto {
  */
 export interface UpdateMedicineDto {
     id: number;
+    internalCode?: string;
     name?: string;
     scientificName?: string;
     activeIngredient?: string;

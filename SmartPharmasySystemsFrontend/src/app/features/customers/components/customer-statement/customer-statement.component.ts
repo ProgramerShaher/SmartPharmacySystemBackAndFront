@@ -43,6 +43,9 @@ export class CustomerStatementComponent implements OnInit {
   dateTo: Date | null = null;
   today: Date = new Date();
 
+  totalSales = signal(0);
+  totalReceipts = signal(0);
+
   constructor(
     private route: ActivatedRoute,
     private customerService: CustomerService,
@@ -67,6 +70,19 @@ export class CustomerStatementComponent implements OnInit {
     this.customerService.getStatement(this.customerId, from, to).subscribe({
       next: (res) => {
         this.statement.set(res);
+        
+        // Calculate totals since they are not returned by this API
+        let sales = 0;
+        let receipts = 0;
+        if (res && res.items) {
+          res.items.forEach(tx => {
+            sales += tx.debit;
+            receipts += tx.credit;
+          });
+        }
+        this.totalSales.set(sales);
+        this.totalReceipts.set(receipts);
+
         this.loading.set(false);
       },
       error: () => {
@@ -81,20 +97,13 @@ export class CustomerStatementComponent implements OnInit {
   }
 
   getTransactionSeverity(type: string): string {
-    switch (type) {
-      case 'SaleInvoice': return 'info';
-      case 'Receipt': return 'success';
-      case 'Return': return 'warning';
-      default: return 'secondary';
-    }
+    if (type.includes('مبيعات') && !type.includes('مرتجع')) return 'info';
+    if (type.includes('قبض')) return 'success';
+    if (type.includes('مرتجع')) return 'warning';
+    return 'secondary';
   }
 
   getTransactionLabel(type: string): string {
-    switch (type) {
-      case 'SaleInvoice': return 'فاتورة مبيعات';
-      case 'Receipt': return 'سند قبض';
-      case 'Return': return 'مرتجع مبيعات';
-      default: return type;
-    }
+    return type; // Backend already returns Arabic strings like "فاتورة مبيعات"
   }
 }

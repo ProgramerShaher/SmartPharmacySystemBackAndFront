@@ -17,5 +17,6 @@ public interface IEmployeeBranchAssignmentRepository
     Task DeleteAsync(int id);
     Task<EmployeeBranchAssignment?> GetActiveAssignmentByUserIdAsync(int userId);
     Task<IEnumerable<EmployeeBranchAssignment>> GetAssignmentsByUserIdAsync(int userId);
+    Task<IEnumerable<EmployeeBranchAssignment>> GetActiveAssignmentsByUserIdAsync(int userId);
     Task<IEnumerable<EmployeeBranchAssignment>> GetAssignmentsByBranchIdAsync(int branchId);
 }

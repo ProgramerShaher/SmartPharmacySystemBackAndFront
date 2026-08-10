@@ -254,12 +254,27 @@ namespace SmartPharmacySystem.Application.Services
 
                     decimal trueUnitCost = baseUnits > 0 ? detail.Total / baseUnits : detail.PurchasePrice;
                     batch.UnitPurchasePrice = trueUnitCost;
-                    batch.RetailPrice = detail.SalePrice;
+                    decimal perBaseUnitSalePrice = conversionFactor > 0 ? detail.SalePrice / conversionFactor : detail.SalePrice;
+                    decimal perBaseUnitPurchasePrice = conversionFactor > 0 ? detail.PurchasePrice / conversionFactor : detail.PurchasePrice;
+                    
+                    batch.RetailPrice = perBaseUnitSalePrice;
                     batch.PurchaseInvoiceId = invoice.Id;
                     detail.TrueUnitCost = trueUnitCost;
 
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
                     await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, baseUnits);
+
+                    // Update Unit prices if a specific unit was used
+                    if (detail.PurchaseUnitId.HasValue)
+                    {
+                        var unit = await _unitOfWork.MedicineUnits.GetByIdAsync(detail.PurchaseUnitId.Value);
+                        if (unit != null)
+                        {
+                            unit.DefaultPurchasePrice = detail.PurchasePrice;
+                            unit.DefaultSalePrice = detail.SalePrice;
+                            await _unitOfWork.MedicineUnits.UpdateAsync(unit);
+                        }
+                    }
 
                     var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
                     if (medicine != null)
@@ -269,8 +284,8 @@ namespace SmartPharmacySystem.Application.Services
                         decimal newVal = oldVal + detail.Total;
                         medicine.MovingAverageCost = totalStock > 0 ? newVal / totalStock : trueUnitCost;
 
-                        medicine.DefaultSalePrice = detail.SalePrice;
-                        medicine.DefaultPurchasePrice = detail.PurchasePrice;
+                        medicine.DefaultSalePrice = perBaseUnitSalePrice;
+                        medicine.DefaultPurchasePrice = perBaseUnitPurchasePrice;
 
                         await _unitOfWork.Medicines.UpdateAsync(medicine);
                     }

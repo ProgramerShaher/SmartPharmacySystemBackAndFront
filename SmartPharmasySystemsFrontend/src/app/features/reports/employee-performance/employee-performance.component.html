@@ -1,151 +1,192 @@
-<div class="report-container" dir="rtl">
-  <!-- Header Section -->
-  <div class="page-header">
-    <div class="title-wrap">
-      <div class="icon-circle"><i class="pi pi-id-card"></i></div>
-      <div>
-        <h1>تقرير أداء الموظفين المميز</h1>
-        <p>متابعة ذكية للمبيعات والمردودات حسب الموظف والفترة الزمنية</p>
+<div class="rpt-wrap" dir="rtl">
+  <!-- ===== Compact Header ===== -->
+  <div class="rpt-header">
+    <div class="rpt-header-start">
+      <div class="rpt-icon">
+        <i class="pi pi-id-card"></i>
       </div>
-    </div>
-
-    <div class="actions no-print">
-      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="applyFilter()" [loading]="loading()"></p-button>
-      <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تصفير الفلاتر" tooltipPosition="bottom" (onClick)="resetFilters()"></p-button>
-      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+      <div>
+        <h1 class="rpt-title">تقرير أداء الموظفين المميز</h1>
+        <p class="rpt-subtitle">متابعة ذكية للمبيعات والمردودات حسب الموظف والفترة الزمنية</p>
+      </div>
     </div>
   </div>
 
-  <!-- Filters Section -->
-  <section class="filters-panel no-print">
-    <div class="filter-field">
-      <label>الموظف</label>
-      <p-dropdown [options]="employeeOptions()" [(ngModel)]="selectedEmployeeId" optionLabel="label" optionValue="value" placeholder="كل الموظفين" [showClear]="true"></p-dropdown>
+  <!-- ===== Filter Row ===== -->
+  <div class="rpt-filter-panel no-print">
+    <div class="rpt-filter-grid">
+      <div class="rpt-filter-field">
+        <label>الموظف</label>
+        <p-dropdown [options]="employeeOptions()" [(ngModel)]="selectedEmployeeId" optionLabel="label" optionValue="value" placeholder="كل الموظفين" [showClear]="true"></p-dropdown>
+      </div>
+      <div class="rpt-filter-field">
+        <label>الدور الوظيفي</label>
+        <p-dropdown [options]="roleOptions()" [(ngModel)]="selectedRoleId" optionLabel="label" optionValue="value" placeholder="كل الأدوار" [showClear]="true"></p-dropdown>
+      </div>
+      <div class="rpt-filter-field">
+        <label>نوع العملية</label>
+        <p-dropdown [options]="operationTypes" [(ngModel)]="selectedOperationType" optionLabel="label" optionValue="value"></p-dropdown>
+      </div>
+      <div class="rpt-filter-field">
+        <label>من تاريخ</label>
+        <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
+      </div>
+      <div class="rpt-filter-field">
+        <label>إلى تاريخ</label>
+        <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
+      </div>
+      <div class="rpt-filter-action">
+        <button pButton icon="pi pi-sync" [rounded]="true" [outlined]="true" severity="info" pTooltip="تحديث" tooltipPosition="top" (click)="applyFilter()" [loading]="loading()" styleClass="rpt-btn-sm"></button>
+        <button pButton icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تصفير الفلاتر" tooltipPosition="top" (click)="resetFilters()" styleClass="rpt-btn-sm"></button>
+        <button pButton icon="pi pi-print" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="طباعة" tooltipPosition="top" (click)="printReport()" styleClass="rpt-btn-sm"></button>
+      </div>
     </div>
-    <div class="filter-field">
-      <label>الدور الوظيفي</label>
-      <p-dropdown [options]="roleOptions()" [(ngModel)]="selectedRoleId" optionLabel="label" optionValue="value" placeholder="كل الأدوار" [showClear]="true"></p-dropdown>
-    </div>
-    <div class="filter-field">
-      <label>نوع العملية</label>
-      <p-dropdown [options]="operationTypes" [(ngModel)]="selectedOperationType" optionLabel="label" optionValue="value"></p-dropdown>
-    </div>
-    <div class="filter-field">
-      <label>من تاريخ</label>
-      <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
-    </div>
-    <div class="filter-field">
-      <label>إلى تاريخ</label>
-      <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
-    </div>
-  </section>
+  </div>
 
   <!-- Loading State -->
-  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
+  <div class="rpt-table-wrap" *ngIf="loading()" style="padding: 3rem; text-align: center;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
-  <!-- Error Card -->
-  <div class="panel text-center" *ngIf="error() && !loading()" style="padding: 1.5rem; border-color: #ef4444; color: #ef4444;">
+  <!-- Error State -->
+  <div class="rpt-table-wrap" *ngIf="error() && !loading()" style="padding: 1.5rem; border-color: #ef4444; color: #ef4444; text-align: center;">
     <i class="pi pi-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i> {{ error() }}
   </div>
 
-  <!-- Summary Cards Section -->
-  <div class="kpi-grid" *ngIf="report() && !loading()">
-    <div class="kpi-card stock">
-      <span class="kpi-label">إجمالي المبيعات</span>
-      <strong>{{ formatCurrency(summary().totalSales) }} ر.ي</strong>
-      <small>المبيعات الكلية الصادرة</small>
+  <!-- ===== KPI Row ===== -->
+  <div class="rpt-kpi-row" *ngIf="report() && !loading()">
+    <div class="rpt-kpi-card" data-color="teal">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي المبيعات</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().totalSales) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-wallet"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | المبيعات الكلية الصادرة</small>
     </div>
 
-    <div class="kpi-card expiry">
-      <span class="kpi-label">إجمالي المردودات</span>
-      <strong>{{ formatCurrency(summary().totalReturns) }} ر.ي</strong>
-      <small>المرتجع الكلي للفترة</small>
+    <div class="rpt-kpi-card" data-color="amber">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي المردودات</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().totalReturns) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-arrow-circle-left"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | المرتجع الكلي للفترة</small>
     </div>
 
-    <div class="kpi-card profit">
-      <span class="kpi-label">صافي المبيعات</span>
-      <strong>{{ formatCurrency(summary().netSales) }} ر.ي</strong>
-      <small>صافي القيمة الفعلية للمبيعات</small>
+    <div class="rpt-kpi-card" data-color="teal">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">صافي المبيعات</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().netSales) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-chart-line"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | صافي القيمة الفعلية للمبيعات</small>
     </div>
 
-    <div class="kpi-card today">
-      <span class="kpi-label">العمليات (بيع/إرجاع)</span>
-      <strong>{{ summary().invoiceCount }} / {{ summary().returnCount }}</strong>
-      <small>عدد الفواتير المنفذة</small>
+    <div class="rpt-kpi-card" data-color="amber">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">العمليات (بيع/إرجاع)</span>
+          <strong class="rpt-kpi-value">{{ summary().invoiceCount }} / {{ summary().returnCount }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-receipt"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">عدد الفواتير المنفذة</small>
     </div>
   </div>
 
-  <!-- Employees Table -->
-  <section class="table-panel" *ngIf="report() && !loading()">
-    <div class="panel-head" style="padding: 0.4rem 0.5rem; margin-bottom: 0.25rem;">
-      <h3 style="font-size: 0.75rem; font-weight: 800; color: #0f172a;"><i class="pi pi-users" style="margin-left: 0.35rem; color: #0f766e;"></i>ملخص أداء الكادر</h3>
+  <!-- ===== Analytics Row ===== -->
+  <div *ngIf="report() && !loading()" style="display: flex; flex-direction: column; gap: 0.6rem;">
+    <!-- Employees Table -->
+    <div class="rpt-table-wrap">
+      <p-table [value]="report()!.employees" styleClass="rpt-table" [responsive]="true">
+        <ng-template pTemplate="caption">
+          <div class="rpt-table-caption">
+            <span><i class="pi pi-users"></i> ملخص أداء الكادر</span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th>الموظف</th>
+            <th>الدور</th>
+            <th class="text-center">فواتير البيع</th>
+            <th class="text-center">قيمة المبيعات</th>
+            <th class="text-center">فواتير المردود</th>
+            <th class="text-center">قيمة المردودات</th>
+            <th class="text-center">الصافي النهائي</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-employee>
+          <tr>
+            <td>
+              <strong style="color: #1e293b;">{{ employee.employeeName }}</strong>
+              <small style="display: block; color: #64748b;">&#64;{{ employee.username }}</small>
+            </td>
+            <td><span class="rpt-chip chip-info">{{ employee.roleName }}</span></td>
+            <td class="text-center"><span class="rpt-chip chip-info">{{ employee.salesInvoiceCount }}</span></td>
+            <td class="text-center" style="font-weight: 700; color: #1e293b;">{{ formatCurrency(employee.totalSales) }}</td>
+            <td class="text-center"><span class="rpt-chip chip-warning">{{ employee.salesReturnCount }}</span></td>
+            <td class="text-center" style="font-weight: 700; color: #dc2626;">{{ formatCurrency(employee.totalReturns) }}</td>
+            <td class="text-center" style="font-weight: 800; color: #0d9488;">{{ formatCurrency(employee.netSales) }}</td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="7" class="rpt-empty">
+            <i class="pi pi-folder-open"></i>
+            <span>لا توجد بيانات متاحة حالياً</span>
+          </td></tr>
+        </ng-template>
+      </p-table>
     </div>
-    <p-table [value]="report()!.employees" [rowHover]="true" styleClass="p-datatable-sm compact-table">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>الموظف</th>
-          <th>الدور</th>
-          <th class="text-center" style="width: 80px;">فواتير البيع</th>
-          <th class="text-center" style="width: 100px;">قيمة المبيعات</th>
-          <th class="text-center" style="width: 90px;">فواتير المردود</th>
-          <th class="text-center" style="width: 100px;">قيمة المردودات</th>
-          <th class="text-center" style="width: 110px;">الصافي النهائي</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-employee>
-        <tr>
-          <td>
-            <strong style="color: #1e293b;">{{ employee.employeeName }}</strong>
-            <small class="muted">&#64;{{ employee.username }}</small>
-          </td>
-          <td><span class="type-pill type-blue">{{ employee.roleName }}</span></td>
-          <td class="text-center"><span class="type-pill type-gray">{{ employee.salesInvoiceCount }}</span></td>
-          <td class="text-center" style="font-weight: 700; color: #1e293b;">{{ formatCurrency(employee.totalSales) }}</td>
-          <td class="text-center"><span class="type-pill type-amber">{{ employee.salesReturnCount }}</span></td>
-          <td class="text-center text-danger" style="font-weight: 700;">{{ formatCurrency(employee.totalReturns) }}</td>
-          <td class="text-center text-success" style="font-weight: 800;">{{ formatCurrency(employee.netSales) }}</td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage">
-        <tr><td colspan="7" class="text-center p-4">لا توجد بيانات متاحة حالياً</td></tr>
-      </ng-template>
-    </p-table>
-  </section>
 
-  <!-- Sales Detail Table -->
-  <section class="table-panel" *ngIf="report() && !loading() && report()!.saleInvoices.length" style="margin-top: 0.5rem;">
-    <div class="panel-head" style="padding: 0.4rem 0.5rem; margin-bottom: 0.25rem;">
-      <h3 style="font-size: 0.75rem; font-weight: 800; color: #0f172a;"><i class="pi pi-receipt" style="margin-left: 0.35rem; color: #0f766e;"></i>تفاصيل فواتير المبيعات</h3>
+    <!-- Sales Detail Table -->
+    <div class="rpt-table-wrap" *ngIf="report()!.saleInvoices.length">
+      <p-table [value]="report()!.saleInvoices" styleClass="rpt-table" [paginator]="true" [rows]="10" [responsive]="true">
+        <ng-template pTemplate="caption">
+          <div class="rpt-table-caption">
+            <span><i class="pi pi-receipt"></i> تفاصيل فواتير المبيعات</span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+          <tr>
+            <th>رقم الفاتورة</th>
+            <th>الوقت والتاريخ</th>
+            <th>الموظف</th>
+            <th>العميل</th>
+            <th>الأصناف</th>
+            <th class="text-center">الإجمالي</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-invoice>
+          <tr>
+            <td><strong style="color: #4f46e5; font-family: monospace;">{{ invoice.invoiceNumber }}</strong></td>
+            <td><span style="color: #64748b; font-size: 0.72rem;">{{ formatDateTime(invoice.invoiceDate) }}</span></td>
+            <td><strong style="color: #1e293b;">{{ invoice.employeeName }}</strong></td>
+            <td>{{ invoice.customerName || '-' }}</td>
+            <td>
+              <div style="display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.72rem; color: #64748b;">
+                <span *ngFor="let item of invoice.items">
+                  • {{ item.medicineName }} ({{ item.quantity }})
+                </span>
+              </div>
+            </td>
+            <td class="text-center" style="font-weight: 800; color: #1d4ed8;">{{ formatCurrency(invoice.totalAmount) }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
     </div>
-    <p-table [value]="report()!.saleInvoices" [rowHover]="true" styleClass="p-datatable-sm compact-table" [paginator]="true" [rows]="10">
-      <ng-template pTemplate="header">
-        <tr>
-          <th style="width: 100px;">رقم الفاتورة</th>
-          <th style="width: 110px;">الوقت والتاريخ</th>
-          <th>الموظف</th>
-          <th>العميل</th>
-          <th>الأصناف</th>
-          <th class="text-center" style="width: 110px;">الإجمالي</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-invoice>
-        <tr>
-          <td><strong style="color: #4f46e5; font-family: monospace;">{{ invoice.invoiceNumber }}</strong></td>
-          <td><span class="muted" style="font-size: 0.55rem;">{{ formatDateTime(invoice.invoiceDate) }}</span></td>
-          <td><strong style="color: #1e293b;">{{ invoice.employeeName }}</strong></td>
-          <td>{{ invoice.customerName || '-' }}</td>
-          <td>
-            <div class="items-list" style="display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.55rem; color: #64748b;">
-              <span *ngFor="let item of invoice.items">
-                • {{ item.medicineName }} ({{ item.quantity }})
-              </span>
-            </div>
-          </td>
-          <td class="text-center" style="font-weight: 800; color: #1d4ed8;">{{ formatCurrency(invoice.totalAmount) }}</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </section>
+  </div>
 </div>

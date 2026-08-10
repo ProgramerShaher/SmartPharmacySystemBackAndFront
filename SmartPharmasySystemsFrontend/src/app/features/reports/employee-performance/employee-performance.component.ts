@@ -28,7 +28,7 @@ import { Role, User } from '../../../core/models';
     ProgressSpinnerModule
   ],
   templateUrl: './employee-performance.component.html',
-  styleUrls: ['./employee-performance.component.css']
+  styleUrls: ['./employee-performance.component.scss']
 })
 export class EmployeePerformanceComponent implements OnInit {
   private readonly reportService = inject(ReportService);

@@ -37,7 +37,7 @@ import { NetProfitReport, ExpenseBreakdown } from '../../../core/models/reports.
         DividerModule
     ],
     templateUrl: './net-profit.component.html',
-    styleUrls: ['./net-profit.component.css']
+    styleUrls: ['./net-profit.component.scss']
 })
 export class NetProfitComponent implements OnInit {
     // Injected Services

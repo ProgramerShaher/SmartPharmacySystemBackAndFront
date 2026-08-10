@@ -1,91 +1,130 @@
-<div class="report-container" dir="rtl">
-  <!-- Header Section -->
-  <div class="page-header">
-    <div class="title-wrap">
-      <div class="icon-circle"><i class="pi pi-chart-line"></i></div>
+<div class="rpt-wrap" dir="rtl">
+  <!-- ===== Compact Header ===== -->
+  <div class="rpt-header">
+    <div class="rpt-header-start">
+      <div class="rpt-icon">
+        <i class="pi pi-chart-line"></i>
+      </div>
       <div>
-        <h1>تقرير المبيعات الذكي</h1>
-        <p>بيانات المبيعات والأرباح اليومية مع تحليل الاتجاه الزمني والمنتجات الأكثر طلباً</p>
+        <h1 class="rpt-title">تقرير المبيعات الذكي</h1>
+        <p class="rpt-subtitle">بيانات المبيعات والأرباح اليومية مع تحليل الاتجاه الزمني والمنتجات الأكثر طلباً</p>
       </div>
     </div>
+  </div>
 
-    <div class="actions no-print">
-      <p-calendar [(ngModel)]="selectedDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="تاريخ التقرير"></p-calendar>
-      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="applyFilter()" [loading]="loading()"></p-button>
-      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+  <!-- ===== Filter Row ===== -->
+  <div class="rpt-filter-panel no-print">
+    <div class="rpt-filter-grid">
+      <div class="rpt-filter-field">
+        <label>تاريخ التقرير</label>
+        <p-calendar [(ngModel)]="selectedDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="اختر التاريخ"></p-calendar>
+      </div>
+      <div class="rpt-filter-action">
+        <button pButton icon="pi pi-sync" [rounded]="true" [outlined]="true" severity="info" pTooltip="تحديث" tooltipPosition="top" (click)="applyFilter()" [loading]="loading()" styleClass="rpt-btn-sm"></button>
+        <button pButton icon="pi pi-print" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="طباعة" tooltipPosition="top" (click)="printReport()" styleClass="rpt-btn-sm"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== KPI Row ===== -->
+  <div class="rpt-kpi-row" *ngIf="report() && !loading()">
+    <div class="rpt-kpi-card" data-color="teal">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي المبيعات</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().totalSales) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-money-bill"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | قيمة فواتير المبيعات الصادرة</small>
+    </div>
+    
+    <div class="rpt-kpi-card" data-color="amber">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">صافي الأرباح</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().grossProfit) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-chart-line"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | الربح الكلي بعد خصم التكاليف</small>
+    </div>
+
+    <div class="rpt-kpi-card" data-color="teal">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي العمليات</span>
+          <strong class="rpt-kpi-value">{{ summary().invoiceCount }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-receipt"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">عدد الفواتير الصادرة</small>
+    </div>
+
+    <div class="rpt-kpi-card" data-color="amber">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">الوحدات المباعة</span>
+          <strong class="rpt-kpi-value">{{ summary().itemsSold }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-box"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">وحدة | عدد القطع المباعة</small>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
+  <div class="rpt-table-wrap" *ngIf="loading()" style="padding: 3rem; text-align: center;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
-  <!-- Summary Cards Section -->
-  <div class="kpi-grid" *ngIf="report() && !loading()">
-    <div class="kpi-card sales">
-      <span class="kpi-label">إجمالي المبيعات</span>
-      <strong>{{ formatCurrency(summary().totalSales) }} ر.ي</strong>
-      <small>قيمة فواتير المبيعات الصادرة</small>
-    </div>
-    <div class="kpi-card profit">
-      <span class="kpi-label">صافي الأرباح</span>
-      <strong>{{ formatCurrency(summary().grossProfit) }} ر.ي</strong>
-      <small>الربح الكلي بعد خصم التكاليف</small>
-    </div>
-    <div class="kpi-card invoices">
-      <span class="kpi-label">إجمالي العمليات</span>
-      <strong>{{ summary().invoiceCount }}</strong>
-      <small>عدد الفواتير الصادرة</small>
-    </div>
-    <div class="kpi-card items">
-      <span class="kpi-label">الوحدات المباعة</span>
-      <strong>{{ summary().itemsSold }} وحدة</strong>
-      <small>عدد علب/قطع الأدوية المباعة</small>
-    </div>
-  </div>
-
-  <!-- Analytics Row -->
-  <div class="charts-grid" *ngIf="report() && !loading()">
-    <section class="panel trend-panel">
-      <div class="panel-head">
-        <div>
-          <h3>الاتجاه الزمني للمبيعات</h3>
-          <p>توزيع المبيعات الكلية على مدار اليوم (كل ساعة)</p>
-        </div>
-        <i class="pi pi-chart-bar"></i>
+  <!-- ===== Analytics Row ===== -->
+  <div class="analytics-grid" *ngIf="report() && !loading()">
+    <!-- Chart -->
+    <div class="rpt-table-wrap">
+      <div class="rpt-table-caption" style="padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0;">
+        <span><i class="pi pi-chart-bar"></i> الاتجاه الزمني للمبيعات (كل ساعة)</span>
       </div>
-      <p-chart type="bar" [data]="chartData()" [options]="chartOptions" height="200px" *ngIf="chartData()"></p-chart>
-    </section>
-
-    <section class="panel table-panel">
-      <div class="panel-head">
-        <div>
-          <h3>المنتجات الأكثر طلباً</h3>
-          <p>أعلى الأدوية حركة ومبيعات</p>
-        </div>
-        <i class="pi pi-star"></i>
+      <div style="padding: 1rem;">
+        <p-chart type="bar" [data]="chartData()" [options]="chartOptions" height="250px" *ngIf="chartData()"></p-chart>
       </div>
-      <p-table [value]="report()!.topSellingItems" styleClass="p-datatable-sm compact-table" [responsive]="true">
+    </div>
+
+    <!-- Table -->
+    <div class="rpt-table-wrap mt-2">
+      <p-table [value]="report()!.topSellingItems" styleClass="rpt-table" [responsive]="true">
+        <ng-template pTemplate="caption">
+          <div class="rpt-table-caption">
+            <span><i class="pi pi-star"></i> المنتجات الأكثر طلباً</span>
+          </div>
+        </ng-template>
         <ng-template pTemplate="header">
           <tr>
             <th>اسم المنتج</th>
-            <th class="text-center" style="width: 70px;">الكمية</th>
-            <th class="text-center" style="width: 90px;">القيمة</th>
+            <th class="text-center" style="width: 100px;">الكمية</th>
+            <th class="text-center" style="width: 120px;">القيمة (ر.ي)</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
           <tr>
-            <td><strong style="color: #1e293b;">{{ item.medicineName }}</strong></td>
+            <td style="font-weight: 700;">{{ item.medicineName }}</td>
             <td class="text-center">
-              <span class="type-pill type-blue">{{ item.quantitySold }}</span>
+              <span class="rpt-chip chip-info">{{ item.quantitySold }}</span>
             </td>
-            <td class="text-center" style="font-weight: 700; color: #1d4ed8;">
+            <td class="text-center" style="font-weight: 700; color: #0d9488;">
               {{ formatCurrency(item.revenue) }}
             </td>
           </tr>
         </ng-template>
       </p-table>
-    </section>
+    </div>
   </div>
 </div>

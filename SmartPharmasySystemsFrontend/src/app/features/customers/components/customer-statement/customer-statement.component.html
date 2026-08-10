@@ -8,7 +8,7 @@
                 class="p-button-rounded p-button-text p-button-secondary back-btn"></button>
         <div>
           <h1 class="page-title">كشف الحساب المالي التفصيلي</h1>
-          <p class="page-subtitle">العميل: <span class="highlight-text">{{ s.customer.name }}</span> <span class="badge-code font-mono">#CUST-{{ customerId }}</span></p>
+          <p class="page-subtitle">العميل: <span class="highlight-text">{{ s.customerName }}</span> <span class="badge-code font-mono">#CUST-{{ customerId }}</span></p>
         </div>
       </div>
       <div class="header-actions">
@@ -70,7 +70,7 @@
         </div>
         <div class="stat-content">
           <span class="stat-label">ملف العميل المالي</span>
-          <span class="stat-value supplier-title text-ellipsis">{{ s.customer.name }}</span>
+          <span class="stat-value supplier-title text-ellipsis">{{ s.customerName }}</span>
         </div>
       </div>
 
@@ -81,7 +81,7 @@
         </div>
         <div class="stat-content">
           <span class="stat-label">إجمالي الفواتير (مدين)</span>
-          <span class="stat-value value-credit">{{ s.summary.totalSales | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+          <span class="stat-value value-credit">{{ totalSales() | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
         </div>
       </div>
 
@@ -92,18 +92,18 @@
         </div>
         <div class="stat-content">
           <span class="stat-label">إجمالي المقبوضات (دائن)</span>
-          <span class="stat-value value-paid">{{ s.summary.totalReceipts | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+          <span class="stat-value value-paid">{{ totalReceipts() | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
         </div>
       </div>
 
       <!-- Current Balance -->
-      <div class="statement-stat-card" [ngClass]="s.summary.currentBalance > 0 ? 'bal-debt' : 'bal-clear'">
+      <div class="statement-stat-card" [ngClass]="s.currentBalance > 0 ? 'bal-debt' : 'bal-clear'">
         <div class="stat-icon-wrapper">
           <i class="pi pi-wallet"></i>
         </div>
         <div class="stat-content">
           <span class="stat-label">صافي الرصيد القائم</span>
-          <span class="stat-value">{{ s.summary.currentBalance | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
+          <span class="stat-value">{{ s.currentBalance | number:'1.0-0' }}<span class="stat-unit">ر.ي</span></span>
         </div>
       </div>
     </div>
@@ -124,7 +124,7 @@
 
     <!-- ═══════════ Detailed Account Ledger Table ═══════════ -->
     <div class="ledger-card-wrapper mb-3">
-      <p-table [value]="s.transactions" [loading]="loading()" styleClass="p-datatable-striped p-datatable-sm imperial-statement-table"
+      <p-table [value]="s.items" [loading]="loading()" styleClass="p-datatable-striped p-datatable-sm imperial-statement-table"
                 responsiveLayout="scroll" [tableStyle]="{'min-width': '60rem'}">
         <ng-template pTemplate="header">
           <tr>
@@ -139,39 +139,39 @@
         </ng-template>
         <ng-template pTemplate="body" let-tx let-index="rowIndex">
           <tr [ngClass]="{
-                'row-invoice': tx.transactionType === 'SaleInvoice',
-                'row-payment': tx.transactionType === 'Receipt',
-                'row-return': tx.transactionType === 'Return'
+                'row-invoice': tx.type.includes('مبيعات') && !tx.type.includes('مرتجع'),
+                'row-payment': tx.type.includes('قبض'),
+                'row-return': tx.type.includes('مرتجع')
               }">
             <!-- Serial Number -->
             <td class="text-center font-bold text-gray-500">{{ index + 1 }}</td>
 
             <!-- Transaction Date -->
             <td class="text-center">
-              <span class="font-bold">{{ tx.transactionDate | date:'yyyy/MM/dd' }}</span>
-              <div class="transaction-detail-notes font-mono">{{ tx.transactionDate | date:'HH:mm' }}</div>
+              <span class="font-bold">{{ tx.date | date:'yyyy/MM/dd' }}</span>
+              <div class="transaction-detail-notes font-mono">{{ tx.date | date:'HH:mm' }}</div>
             </td>
 
             <!-- Transaction Type -->
             <td>
               <span class="statement-type-pill" [ngClass]="{
-                      'pill-invoice': tx.transactionType === 'SaleInvoice',
-                      'pill-payment': tx.transactionType === 'Receipt',
-                      'pill-return': tx.transactionType === 'Return'
+                      'pill-invoice': tx.type.includes('مبيعات') && !tx.type.includes('مرتجع'),
+                      'pill-payment': tx.type.includes('قبض'),
+                      'pill-return': tx.type.includes('مرتجع')
                     }">
                 <i class="pi" [ngClass]="{
-                     'pi-shopping-cart': tx.transactionType === 'SaleInvoice',
-                     'pi-dollar': tx.transactionType === 'Receipt',
-                     'pi-refresh': tx.transactionType === 'Return'
+                     'pi-shopping-cart': tx.type.includes('مبيعات') && !tx.type.includes('مرتجع'),
+                     'pi-dollar': tx.type.includes('قبض'),
+                     'pi-refresh': tx.type.includes('مرتجع')
                    }"></i>
-                {{ getTransactionLabel(tx.transactionType) }}
+                {{ getTransactionLabel(tx.type) }}
               </span>
-              <div class="transaction-detail-notes mt-1">{{ tx.description }}</div>
+              <div class="transaction-detail-notes mt-1">{{ tx.notes || '---' }}</div>
             </td>
 
             <!-- Reference Number -->
             <td>
-              <span class="ref-code-chip">{{ tx.referenceNumber || 'بدون مرجع' }}</span>
+              <span class="ref-code-chip">{{ tx.reference || 'بدون مرجع' }}</span>
             </td>
 
             <!-- Debit (مدين +) -->
@@ -206,10 +206,10 @@
         <ng-template pTemplate="footer">
           <tr class="ledger-totals-row">
             <td colspan="4" class="totals-label">إجمالي الحركات والترصيد النهائي:</td>
-            <td class="text-center amount-cell text-credit-light">{{ s.summary.totalSales | number:'1.0-0' }}</td>
-            <td class="text-center amount-cell text-paid-light">{{ s.summary.totalReceipts | number:'1.0-0' }}</td>
+            <td class="text-center amount-cell text-credit-light">{{ totalSales() | number:'1.0-0' }}</td>
+            <td class="text-center amount-cell text-paid-light">{{ totalReceipts() | number:'1.0-0' }}</td>
             <td class="text-center amount-cell text-paid-light" style="background: rgba(255,255,255,0.08) !important;">
-              {{ s.summary.currentBalance | number:'1.0-0' }}
+              {{ s.currentBalance | number:'1.0-0' }}
             </td>
           </tr>
         </ng-template>

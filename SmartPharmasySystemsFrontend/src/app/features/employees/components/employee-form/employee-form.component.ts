@@ -2,7 +2,8 @@ import { Component, Input, Output, EventEmitter, OnInit, signal } from '@angular
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmployeeService } from '../../services/employee.service';
-import { EmployeeDto, CreateEmployeeDto, UpdateEmployeeDto, BranchDto, DepartmentDto } from '../../../../core/models';
+import { EmployeeDto, CreateEmployeeDto, UpdateEmployeeDto, BranchDto, DepartmentDto, User } from '../../../../core/models';
+import { UsersService } from '../../../users/services/users.service';
 
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -35,6 +36,7 @@ export class EmployeeFormComponent implements OnInit {
     saving = signal(false);
     branches = signal<BranchDto[]>([]);
     departments = signal<DepartmentDto[]>([]);
+    users = signal<User[]>([]);
 
     errors: Record<string, string> = {};
 
@@ -47,13 +49,15 @@ export class EmployeeFormComponent implements OnInit {
         jobTitle: '',
         hireDate: '',
         basicSalary: 0,
-        isActive: true
+        isActive: true,
+        userId: null
     };
 
     constructor(
         private employeeService: EmployeeService,
+        private usersService: UsersService,
         private messageService: MessageService
-    ) {}
+    ) { }
 
     ngOnInit() {
         this.loadDropdowns();
@@ -69,7 +73,8 @@ export class EmployeeFormComponent implements OnInit {
                     ? this.employee.hireDate.substring(0, 10)
                     : this.employee.hireDate,
                 basicSalary: this.employee.basicSalary,
-                isActive: this.employee.isActive
+                isActive: this.employee.isActive,
+                userId: this.employee.userId
             };
         }
     }
@@ -77,11 +82,15 @@ export class EmployeeFormComponent implements OnInit {
     loadDropdowns() {
         this.employeeService.getBranches().subscribe({
             next: (data) => this.branches.set(data),
-            error: () => {}
+            error: () => { }
         });
         this.employeeService.getDepartments().subscribe({
             next: (data) => this.departments.set(data),
-            error: () => {}
+            error: () => { }
+        });
+        this.usersService.search({}).subscribe({
+            next: (data) => this.users.set(data.items),
+            error: () => { }
         });
     }
 
@@ -120,7 +129,8 @@ export class EmployeeFormComponent implements OnInit {
             jobTitle: this.model.jobTitle,
             hireDate: hireDateStr,
             basicSalary: this.model.basicSalary,
-            isActive: this.model.isActive
+            isActive: this.model.isActive,
+            userId: this.model.userId
         };
 
         if (this.editMode && this.employee) {

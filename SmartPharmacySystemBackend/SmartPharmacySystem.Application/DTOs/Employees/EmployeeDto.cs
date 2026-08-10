@@ -17,6 +17,10 @@ public class EmployeeDto
     public DateTime? TerminationDate { get; set; }
     public decimal BasicSalary { get; set; }
     public bool IsActive { get; set; }
+
+    public int? UserId { get; set; }
+    public string? UserName { get; set; }
+
     public string Shift { get; set; } = "صباحي"; // Temporary shift field based on user feedback request
     public decimal TotalLoans { get; set; }
     public decimal RemainingLoans { get; set; }

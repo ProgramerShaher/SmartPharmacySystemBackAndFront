@@ -1,94 +1,106 @@
-<div class="page-container" dir="rtl">
-    <p-toast position="top-left"></p-toast>
+<div class="rpt-wrap" dir="rtl">
+  <p-toast position="top-left"></p-toast>
   
-    <div class="page-header">
-      <div class="header-title">
-        <div class="icon-box">
-          <i class="pi pi-users"></i>
-        </div>
-        <div>
-          <h1>إدارة وتقارير الورديات</h1>
-          <p>مراقبة أرصدة وحركات الموظفين (الكاشير) وحساب العجز والزيادة</p>
-        </div>
+  <!-- ===== Compact Header ===== -->
+  <div class="rpt-header">
+    <div class="rpt-header-start">
+      <div class="rpt-icon">
+        <i class="pi pi-users"></i>
       </div>
-  
-      <div class="header-actions">
-        <div class="search-box">
-          <i class="pi pi-search"></i>
-          <input type="text" [(ngModel)]="searchTerm" (input)="filterShifts()" placeholder="بحث باسم الموظف أو الحالة...">
-        </div>
-        <button class="btn btn-primary" (click)="refresh()" [disabled]="isLoading">
-          <i class="pi pi-refresh" [class.pi-spin]="isLoading"></i>
-          <span>تحديث البيانات</span>
-        </button>
-      </div>
-    </div>
-  
-    <div class="card table-card">
-      <div class="table-responsive">
-        <table class="modern-table">
-          <thead>
-            <tr>
-              <th>الموظف</th>
-              <th>تاريخ الوردية</th>
-              <th>رصيد الافتتاح</th>
-              <th>رصيد الإغلاق المتوقع</th>
-              <th>رصيد الإغلاق الفعلي</th>
-              <th>العجز / الزيادة</th>
-              <th>الحالة</th>
-              <th>ملاحظات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngIf="isLoading">
-              <td colspan="8" class="text-center py-5">
-                <i class="pi pi-spinner pi-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
-                <p class="mt-2 text-muted">جاري تحميل البيانات...</p>
-              </td>
-            </tr>
-            <tr *ngIf="!isLoading && filteredShifts.length === 0">
-              <td colspan="8" class="text-center py-5">
-                <i class="pi pi-inbox text-muted" style="font-size: 2.5rem;"></i>
-                <p class="mt-2 text-muted">لا توجد ورديات مطابقة للبحث</p>
-              </td>
-            </tr>
-            <tr *ngFor="let shift of filteredShifts">
-              <td>
-                <div class="user-info">
-                  <div class="avatar">{{ shift.userName?.charAt(0) || 'U' }}</div>
-                  <span>{{ shift.userName || 'مستخدم غير معروف' }}</span>
-                </div>
-              </td>
-              <td>
-                <div class="date-col">
-                  <div class="start-date"><i class="pi pi-sign-in"></i> {{ shift.startTime | date:'dd/MM/yyyy hh:mm a' }}</div>
-                  <div class="end-date" *ngIf="shift.endTime"><i class="pi pi-sign-out"></i> {{ shift.endTime | date:'dd/MM/yyyy hh:mm a' }}</div>
-                </div>
-              </td>
-              <td class="amount font-weight-bold">{{ shift.openingCash | number }} ريال</td>
-              <td class="amount text-muted">{{ shift.expectedClosingCash | number }} ريال</td>
-              <td class="amount font-weight-bold" [ngClass]="{'text-success': shift.status === 'Closed' && shift.actualClosingCash! >= shift.expectedClosingCash, 'text-danger': shift.status === 'Closed' && shift.actualClosingCash! < shift.expectedClosingCash}">
-                {{ shift.status === 'Closed' ? (shift.actualClosingCash | number) + ' ريال' : '-' }}
-              </td>
-              <td>
-                <div *ngIf="shift.status === 'Closed'" class="difference-badge" [ngClass]="{'overage': shift.difference > 0, 'shortage': shift.difference < 0, 'matched': shift.difference === 0}">
-                  <span *ngIf="shift.difference > 0">زيادة: +{{ shift.difference | number }}</span>
-                  <span *ngIf="shift.difference < 0">عجز: {{ shift.difference | number }}</span>
-                  <span *ngIf="shift.difference === 0">مطابق</span>
-                </div>
-                <span *ngIf="shift.status !== 'Closed'" class="text-muted">-</span>
-              </td>
-              <td>
-                <span class="status-badge" [ngClass]="getStatusClass(shift.status)">
-                  {{ getStatusLabel(shift.status) }}
-                </span>
-              </td>
-              <td class="notes-cell">
-                <span class="truncate-text" [title]="shift.notes || 'لا يوجد'">{{ shift.notes || '-' }}</span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div>
+        <h1 class="rpt-title">إدارة وتقارير الورديات</h1>
+        <p class="rpt-subtitle">مراقبة أرصدة وحركات الموظفين (الكاشير) وحساب العجز والزيادة</p>
       </div>
     </div>
   </div>
+
+  <!-- ===== Filter Row ===== -->
+  <div class="rpt-filter-panel no-print">
+    <div class="rpt-filter-grid">
+      <div class="rpt-filter-field" style="flex: 1; max-width: 400px;">
+        <label>البحث السريع</label>
+        <span class="p-input-icon-right" style="width: 100%;">
+          <i class="pi pi-search" style="right: 0.75rem; color: #64748b; font-size: 0.85rem;"></i>
+          <input pInputText type="text" [(ngModel)]="searchTerm" (input)="filterShifts()" placeholder="بحث باسم الموظف أو الحالة..." style="width: 100%; padding-right: 2rem !important;" />
+        </span>
+      </div>
+      <div class="rpt-filter-action">
+        <button pButton icon="pi pi-sync" [rounded]="true" [outlined]="true" severity="info" pTooltip="تحديث البيانات" tooltipPosition="top" (click)="refresh()" [disabled]="isLoading" [loading]="isLoading" styleClass="rpt-btn-sm"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Table ===== -->
+  <div class="rpt-table-wrap">
+    <div class="rpt-table-caption" style="padding: 0.75rem 1rem; border-bottom: 1px solid #e2e8f0;">
+      <span><i class="pi pi-list"></i> سجل الورديات</span>
+    </div>
+    
+    <div *ngIf="isLoading" style="padding: 3rem; text-align: center;">
+      <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
+      <p style="color: #64748b; margin-top: 1rem; font-size: 0.85rem; font-weight: 600;">جاري تحميل البيانات...</p>
+    </div>
+
+    <div *ngIf="!isLoading && filteredShifts.length === 0" style="padding: 3rem; text-align: center;">
+      <i class="pi pi-inbox" style="font-size: 2.5rem; color: #cbd5e1; margin-bottom: 1rem; display: block;"></i>
+      <p style="color: #64748b; font-size: 0.85rem; font-weight: 600;">لا توجد ورديات مطابقة للبحث</p>
+    </div>
+
+    <!-- We use a standard HTML table styled with our rpt-table classes for consistency -->
+    <table class="p-datatable-table rpt-table" *ngIf="!isLoading && filteredShifts.length > 0" style="width: 100%; border-collapse: collapse;">
+      <thead class="p-datatable-thead">
+        <tr>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">الموظف</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">تاريخ الوردية</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">رصيد الافتتاح</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">رصيد الإغلاق المتوقع</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">رصيد الإغلاق الفعلي</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">العجز / الزيادة</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">الحالة</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">ملاحظات</th>
+        </tr>
+      </thead>
+      <tbody class="p-datatable-tbody">
+        <tr *ngFor="let shift of filteredShifts" style="background: #ffffff; transition: background 0.15s; border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 0.65rem; font-weight: 700; color: #1e293b;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <div style="width: 24px; height: 24px; border-radius: 50%; background: #e2e8f0; color: #64748b; display: flex; align-items: center; justify-content: center; font-size: 0.65rem;">
+                {{ shift.userName?.charAt(0) || 'U' }}
+              </div>
+              <span>{{ shift.userName || 'مستخدم غير معروف' }}</span>
+            </div>
+          </td>
+          <td style="padding: 0.65rem;">
+            <div style="display: flex; flex-direction: column; gap: 0.1rem; font-size: 0.72rem; color: #64748b;">
+              <div style="color: #0d9488;"><i class="pi pi-sign-in" style="font-size: 0.65rem;"></i> {{ shift.startTime | date:'dd/MM/yyyy hh:mm a' }}</div>
+              <div style="color: #d97706;" *ngIf="shift.endTime"><i class="pi pi-sign-out" style="font-size: 0.65rem;"></i> {{ shift.endTime | date:'dd/MM/yyyy hh:mm a' }}</div>
+            </div>
+          </td>
+          <td style="padding: 0.65rem; font-weight: 700; color: #1e293b;">{{ shift.openingCash | number }} ر.ي</td>
+          <td style="padding: 0.65rem; color: #64748b;">{{ shift.expectedClosingCash | number }} ر.ي</td>
+          <td style="padding: 0.65rem; font-weight: 800;" [ngClass]="{'text-success': shift.status === 'Closed' && shift.actualClosingCash! >= shift.expectedClosingCash, 'text-danger': shift.status === 'Closed' && shift.actualClosingCash! < shift.expectedClosingCash}" [style.color]="shift.status === 'Closed' && shift.actualClosingCash! >= shift.expectedClosingCash ? '#0d9488' : (shift.status === 'Closed' && shift.actualClosingCash! < shift.expectedClosingCash ? '#dc2626' : '#1e293b')">
+            {{ shift.status === 'Closed' ? (shift.actualClosingCash | number) + ' ر.ي' : '-' }}
+          </td>
+          <td style="padding: 0.65rem;">
+            <div *ngIf="shift.status === 'Closed'">
+              <span class="rpt-chip" [ngClass]="{'chip-success': shift.difference > 0, 'chip-danger': shift.difference < 0, 'chip-info': shift.difference === 0}">
+                <span *ngIf="shift.difference > 0">زيادة: +{{ shift.difference | number }}</span>
+                <span *ngIf="shift.difference < 0">عجز: {{ shift.difference | number }}</span>
+                <span *ngIf="shift.difference === 0">مطابق</span>
+              </span>
+            </div>
+            <span *ngIf="shift.status !== 'Closed'" style="color: #94a3b8;">-</span>
+          </td>
+          <td style="padding: 0.65rem;">
+            <span class="rpt-chip" [ngClass]="shift.status === 'Open' ? 'chip-success' : 'chip-warning'">
+              {{ shift.status === 'Open' ? 'مفتوحة' : 'مغلقة' }}
+            </span>
+          </td>
+          <td style="padding: 0.65rem;">
+            <span style="font-size: 0.72rem; color: #64748b;" [title]="shift.notes || 'لا يوجد'">{{ (shift.notes && shift.notes.length > 20) ? (shift.notes | slice:0:20) + '...' : (shift.notes || '-') }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

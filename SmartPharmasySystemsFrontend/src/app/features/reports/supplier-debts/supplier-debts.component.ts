@@ -14,7 +14,7 @@ import { SupplierDebtsReport } from '../../../core/models/reports.interface';
   standalone: true,
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, TableModule, TagModule, ProgressSpinnerModule],
   templateUrl: './supplier-debts.component.html',
-  styleUrls: ['./supplier-debts.component.css']
+  styleUrls: ['./supplier-debts.component.scss']
 })
 export class SupplierDebtsComponent implements OnInit {
   private readonly reportService = inject(ReportService);

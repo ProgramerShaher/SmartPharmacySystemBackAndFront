@@ -53,4 +53,27 @@ public class LoginResponseDto
     /// Current Branch Name
     /// </summary>
     public string? BranchName { get; set; }
+
+    /// <summary>
+    /// معرف الموظف المرتبط (إن وجد) - ERP Style
+    /// Employee ID linked to this user (if any)
+    /// </summary>
+    public int? EmployeeId { get; set; }
+
+    /// <summary>
+    /// كود الموظف
+    /// Employee code
+    /// </summary>
+    public string? EmployeeCode { get; set; }
+
+    /// <summary>
+    /// اسم الموظف الكامل (من سجل الموظف)
+    /// Employee full name (from employee record)
+    /// </summary>
+    public string? EmployeeName { get; set; }
+
+    /// <summary>
+    /// الفروع المتاحة للمستخدم
+    /// </summary>
+    public List<int> AllowedBranchIds { get; set; } = new();
 }

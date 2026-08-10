@@ -116,4 +116,14 @@ public class EmployeeRepository : IEmployeeRepository
             .OrderBy(e => e.FullName)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Employee>> GetByUserIdAsync(int userId)
+    {
+        return await _context.Employees
+            .AsNoTracking()
+            .Include(e => e.Branch)
+            .Include(e => e.Department)
+            .Where(e => e.UserId == userId && !e.IsDeleted)
+            .ToListAsync();
+    }
 }

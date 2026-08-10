@@ -1,0 +1,83 @@
+.modal-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--surface-border);
+    background-color: var(--surface-card);
+    border-radius: 12px 12px 0 0;
+
+    .modal-title {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .modal-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--primary-50);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        h2 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.25rem;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        p {
+            margin: 0;
+            color: var(--text-color-secondary);
+            font-size: 0.875rem;
+        }
+    }
+}
+
+.modal-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: var(--surface-ground);
+}
+
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--surface-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    background-color: var(--surface-card);
+    border-radius: 0 0 12px 12px;
+}
+
+:host ::ng-deep {
+    .p-accordion .p-accordion-header .p-accordion-header-link {
+        background: var(--surface-card);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        border: 1px solid var(--surface-border);
+        transition: all 0.2s;
+
+        &:hover {
+            border-color: var(--primary-color);
+        }
+    }
+
+    .p-accordion .p-accordion-content {
+        border: none;
+        background: transparent;
+        padding: 1rem 0.5rem;
+    }
+}

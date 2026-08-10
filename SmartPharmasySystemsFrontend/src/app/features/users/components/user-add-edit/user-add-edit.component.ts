@@ -16,6 +16,7 @@ import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { TooltipModule } from 'primeng/tooltip';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 @Component({
     selector: 'app-user-form',
@@ -30,7 +31,8 @@ import { TooltipModule } from 'primeng/tooltip';
         PasswordModule,
         ButtonModule,
         InputSwitchModule,
-        TooltipModule
+        TooltipModule,
+        MultiSelectModule
     ],
     templateUrl: './user-add-edit.component.html',
     styleUrl: './user-add-edit.component.scss'
@@ -56,7 +58,11 @@ export class UserFormComponent implements OnInit {
     // Backend expects RoleId (1 = Admin, 2 = Pharmacist)
     roles = [
         { label: 'مدير النظام (Admin)', value: 1, icon: 'pi pi-shield' },
-        { label: 'صيدلي (Pharmacist)', value: 2, icon: 'pi pi-user' }
+        { label: 'صيدلي (Pharmacist)', value: 2, icon: 'pi pi-heart-fill' },
+        { label: 'محاسب (Accounting)', value: 3, icon: 'pi pi-calculator' },
+        { label: 'مدير فني (User Manager)', value: 4, icon: 'pi pi-users' },
+        { label: 'مدير مخزون (Inventory Manager)', value: 5, icon: 'pi pi-box' },
+
     ];
 
     constructor(
@@ -81,6 +87,7 @@ export class UserFormComponent implements OnInit {
             });
             // If editing, password is not required
             this.password.setValidators([Validators.minLength(8)]);
+            this.password.updateValueAndValidity();
         }
 
         // Listen to password changes for strength meter
@@ -123,16 +130,10 @@ export class UserFormComponent implements OnInit {
             password: ['', [Validators.required, Validators.minLength(8)]],
             confirmPassword: [''],
             roleId: [2, [Validators.required]], // Default to Pharmacist
-            branchId: [null, [Validators.required]], // Required for employee setup
+            defaultBranchId: [null],
+            allowedBranchIds: [[], [Validators.required]], // Require at least one branch
             phoneNumber: ['', [Validators.pattern(/^[0-9]+$/)]],
-            isActive: [true],
-
-            // Employee specific fields
-            isEmployee: [true],
-            basicSalary: [0, [Validators.required, Validators.min(0)]],
-            departmentId: [null, [Validators.required]],
-            jobTitle: ['', [Validators.required]],
-            nationalId: ['', [Validators.required]]
+            isActive: [true]
         }, { validators: this.passwordMatchValidator });
     }
 
@@ -152,16 +153,10 @@ export class UserFormComponent implements OnInit {
     get password() { return this.userForm.get('password')!; }
     get confirmPassword() { return this.userForm.get('confirmPassword')!; }
     get roleId() { return this.userForm.get('roleId')!; }
-    get branchId() { return this.userForm.get('branchId')!; }
+    get defaultBranchId() { return this.userForm.get('defaultBranchId')!; }
+    get allowedBranchIds() { return this.userForm.get('allowedBranchIds')!; }
     get phoneNumber() { return this.userForm.get('phoneNumber')!; }
     get isActive() { return this.userForm.get('isActive')!; }
-
-    // Employee getters
-    get isEmployee() { return this.userForm.get('isEmployee')!; }
-    get basicSalary() { return this.userForm.get('basicSalary')!; }
-    get departmentId() { return this.userForm.get('departmentId')!; }
-    get jobTitle() { return this.userForm.get('jobTitle')!; }
-    get nationalId() { return this.userForm.get('nationalId')!; }
 
     togglePassword(): void {
         this.showPassword = !this.showPassword;
@@ -194,6 +189,8 @@ export class UserFormComponent implements OnInit {
     }
 
     saveUser(): void {
+        if (this.loading) return;
+
         if (this.userForm.invalid) {
             this.userForm.markAllAsTouched();
             return;
@@ -205,7 +202,7 @@ export class UserFormComponent implements OnInit {
 
         if (this.user) {
             // Update
-            const updateDto: UserUpdateDto = { ...formData };
+            const updateDto: UserUpdateDto = { ...formData, id: this.user.id };
             if (!updateDto.password) delete updateDto.password;
 
             this.usersService.update(this.user.id, updateDto).subscribe({
@@ -213,7 +210,15 @@ export class UserFormComponent implements OnInit {
                     this.loading = false;
                     this.save.emit(res);
                 },
-                error: () => this.loading = false
+                error: (err) => {
+                    this.loading = false;
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'خطأ',
+                        detail: err.error?.message || 'حدث خطأ أثناء حفظ البيانات',
+                        life: 3000
+                    });
+                }
             });
         } else {
             // Create User

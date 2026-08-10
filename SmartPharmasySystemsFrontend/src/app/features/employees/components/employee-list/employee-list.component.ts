@@ -13,6 +13,7 @@ import * as XLSX from 'xlsx';
 import { EmployeeService } from '../../services/employee.service';
 import { AttendanceService } from '../../services/attendance.service';
 import { MonthlySalaryService } from '../../services/monthly-salary.service';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @Component({
   selector: 'app-employee-list',
@@ -26,7 +27,8 @@ import { MonthlySalaryService } from '../../services/monthly-salary.service';
     TooltipModule,
     ToastModule,
     ConfirmDialogModule,
-    DialogModule
+    DialogModule,
+    ProgressSpinnerModule
   ],
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss'],
@@ -269,7 +271,18 @@ export class EmployeeListComponent implements OnInit {
     const today = new Date();
     this.monthlySalaryService.getByEmployeeMonthYear(employee.id, today.getMonth() + 1, today.getFullYear()).subscribe({
       next: (res) => {
-        this.salaryDetails = res;
+        if (res) {
+          this.salaryDetails = res;
+        } else {
+          this.salaryDetails = {
+            basicSalary: employee.basicSalary || 0,
+            totalAllowances: 0,
+            totalBonuses: 0,
+            totalDeductions: 0,
+            netSalary: employee.basicSalary || 0,
+            deductions: []
+          };
+        }
         this.detailsLoading = false;
       },
       error: () => {

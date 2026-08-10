@@ -38,34 +38,19 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.Users.AddAsync(user);
                 await _unitOfWork.SaveChangesAsync(); // Save to get the generated UserId
 
-                if (dto.BranchId.HasValue && dto.BranchId.Value > 0)
+                if (dto.AllowedBranchIds != null && dto.AllowedBranchIds.Any())
                 {
-                    // Create Employee Record automatically
-                    var randomCode = "EMP-" + new Random().Next(1000, 9999);
-                    var employee = new Employee
+                    foreach (var branchId in dto.AllowedBranchIds)
                     {
-                        EmployeeCode = randomCode,
-                        FullName = dto.FullName,
-                        NationalId = "000000000", // Default
-                        BranchId = dto.BranchId.Value,
-                        DepartmentId = 1, // Default department
-                        JobTitle = "موظف صيدلية",
-                        HireDate = DateTime.UtcNow,
-                        BasicSalary = 0,
-                        IsActive = true
-                    };
-                    await _unitOfWork.Employees.AddAsync(employee);
-
-                    // Create Branch Assignment
-                    var assignment = new EmployeeBranchAssignment
-                    {
-                        UserId = user.Id,
-                        BranchId = dto.BranchId.Value,
-                        CreatedAt = DateTime.UtcNow,
-                        IsActive = true
-                    };
-                    await _unitOfWork.EmployeeBranchAssignments.AddAsync(assignment);
-                    
+                        var assignment = new EmployeeBranchAssignment
+                        {
+                            UserId = user.Id,
+                            BranchId = branchId,
+                            CreatedAt = DateTime.UtcNow,
+                            IsActive = true
+                        };
+                        await _unitOfWork.EmployeeBranchAssignments.AddAsync(assignment);
+                    }
                     await _unitOfWork.SaveChangesAsync();
                 }
 
@@ -97,12 +82,51 @@ namespace SmartPharmacySystem.Application.Services
             // Map other fields but exclude Password to avoid overwriting it if empty (handled manually above)
             _mapper.Map(dto, user);
 
-            // Re-ensure password isn't lost if Map accidentally touched it (though typically Map won't touch it if ignored or name mismatch, but safety first)
-            // Actually, a better way is to tell AutoMapper to ignore Password in UpdateUserDto -> User mapping if it's null/empty.
-            // For now, manual assignment is clear.
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                await _unitOfWork.Users.UpdateAsync(user);
 
-            await _unitOfWork.Users.UpdateAsync(user);
-            await _unitOfWork.SaveChangesAsync();
+                // Update Branch Assignments
+                if (dto.AllowedBranchIds != null)
+                {
+                    // Deactivate old assignments not in the new list
+                    var currentAssignments = await _unitOfWork.EmployeeBranchAssignments.GetActiveAssignmentsByUserIdAsync(id); // NOTE: NEED TO IMPLEMENT THIS METHOD in Repo
+                    foreach (var assignment in currentAssignments)
+                    {
+                        if (!dto.AllowedBranchIds.Contains(assignment.BranchId))
+                        {
+                            assignment.IsActive = false;
+                            await _unitOfWork.EmployeeBranchAssignments.UpdateAsync(assignment);
+                        }
+                    }
+
+                    // Add new assignments
+                    var currentBranchIds = currentAssignments.Where(a => a.IsActive).Select(a => a.BranchId).ToList();
+                    foreach (var branchId in dto.AllowedBranchIds)
+                    {
+                        if (!currentBranchIds.Contains(branchId))
+                        {
+                            var newAssignment = new EmployeeBranchAssignment
+                            {
+                                UserId = id,
+                                BranchId = branchId,
+                                CreatedAt = DateTime.UtcNow,
+                                IsActive = true
+                            };
+                            await _unitOfWork.EmployeeBranchAssignments.AddAsync(newAssignment);
+                        }
+                    }
+                }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task DeleteUserAsync(int id)

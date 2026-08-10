@@ -113,14 +113,23 @@ export class SalesReturnListComponent implements OnInit {
 
     calculateLocalStats(data: SalesReturn[]) {
         this.returnsCount.set(data.length);
-        const total = data.reduce((sum, r) => sum + r.totalAmount, 0);
+        const total = data.reduce((sum, r) => sum + (r.totalAmount || 0), 0);
         this.totalReturnsValue.set(total);
         this.returnsPercentage.set(5.2); // Setting a realistic mock percentage for now
 
-        // Mock Reasons Distribution based on filtered Reasons (or just use status for now if reason not available)
-        // Here assuming we want to show Status Distribution as "Returns Analysis"
-        const drafts = data.filter(r => r.status === DocumentStatus.Draft).length;
-        const approved = data.filter(r => r.status === DocumentStatus.Approved).length;
+        let drafts = 0;
+        let approved = 0;
+        
+        data.forEach(r => {
+            const s: any = r.status;
+            if (s === 'Draft' || Number(s) === DocumentStatus.Draft) drafts++;
+            if (s === 'Approved' || Number(s) === DocumentStatus.Approved) approved++;
+        });
+
+        // Fallback if status format is unexpected to ensure chart renders
+        if (drafts === 0 && approved === 0 && data.length > 0) {
+            approved = data.length;
+        }
 
         this.returnsReasonData = {
             labels: ['معتمد', 'مسودة'],
@@ -128,6 +137,34 @@ export class SalesReturnListComponent implements OnInit {
                 data: [approved, drafts],
                 backgroundColor: ['#dc3545', '#ffc107'],
                 hoverBackgroundColor: ['#c82333', '#e0a800']
+            }]
+        };
+
+        // Generate Daily Returns Trend for the last 7 days
+        const labels = [];
+        const returnsData = [];
+        
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' }));
+            
+            const dateStr = date.toDateString();
+            const dayReturns = data.filter(r => new Date(r.returnDate).toDateString() === dateStr);
+            returnsData.push(dayReturns.length);
+        }
+
+        this.returnsTrendData = {
+            labels: labels,
+            datasets: [{
+                label: 'عدد المرتجعات اليومية',
+                data: returnsData,
+                borderColor: '#dc3545',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6
             }]
         };
     }

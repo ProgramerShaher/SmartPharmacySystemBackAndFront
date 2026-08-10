@@ -7,7 +7,7 @@
     </app-customer-add-edit>
 </p-dialog>
 
-<div class="customer-detail-page fadein" dir="rtl" *ngIf="customer() as c">
+<div class="supplier-detail-page fadein" dir="rtl" *ngIf="customer() as c">
 
   <!-- ═══════════ Imperial Header / Breadcrumb / Actions ═══════════ -->
   <div class="imperial-header mb-3 no-print">
@@ -21,8 +21,6 @@
         </div>
       </div>
       <div class="header-actions">
-        <button pButton label="كشف الحساب" icon="pi pi-book" [routerLink]="['/customers/statement', c.id]"
-                class="imperial-btn-outline p-button-sm"></button>
         <button pButton label="تعديل البيانات" icon="pi pi-pencil" (click)="openEdit(c.id)"
                 class="imperial-btn-warning p-button-sm"></button>
       </div>
@@ -47,7 +45,7 @@
         <!-- Body content -->
         <div class="profile-card-body">
           <div class="profile-header-text">
-            <h2 class="customer-display-name">{{ c.name }}</h2>
+            <h2 class="supplier-display-name">{{ c.name }}</h2>
             <div class="contact-person-label">
               <i class="pi pi-user ml-1 text-primary"></i>
               عميل معتمد لدى الصيدلية
@@ -55,7 +53,7 @@
           </div>
 
           <div class="profile-info-list">
-            <!-- Phone Number -->
+            <!-- Phone -->
             <div class="profile-info-item">
               <div class="info-icon phone-bg">
                 <i class="pi pi-phone"></i>
@@ -66,7 +64,7 @@
               </div>
             </div>
 
-            <!-- Email Address -->
+            <!-- Email -->
             <div class="profile-info-item">
               <div class="info-icon email-bg">
                 <i class="pi pi-envelope"></i>
@@ -77,7 +75,7 @@
               </div>
             </div>
 
-            <!-- Geographical Address -->
+            <!-- Address -->
             <div class="profile-info-item">
               <div class="info-icon address-bg">
                 <i class="pi pi-map-marker"></i>
@@ -87,11 +85,11 @@
                 <span class="info-value">{{ c.address || 'غير محدد' }}</span>
               </div>
             </div>
-
-            <!-- Registration Date (Mocked or Defaulted) -->
+            
+            <!-- Default Registration Date -->
             <div class="profile-info-item">
               <div class="info-icon date-bg">
-                <i class="pi pi-calendar-plus"></i>
+                <i class="pi pi-calendar"></i>
               </div>
               <div class="info-texts">
                 <span class="info-label">تاريخ التسجيل بالنظام</span>
@@ -102,80 +100,68 @@
 
           <div class="profile-divider"></div>
 
-          <!-- Purchase Categories Donut Chart -->
-          <div class="categories-donut-section">
-            <h4 class="donut-title">تحليل المشتريات (تصنيفات)</h4>
-            <div class="donut-chart-wrapper">
-              <div class="chart-box" style="height: 120px; width: 120px; position: relative; margin: 0 auto;">
-                <p-chart type="doughnut" [data]="purchaseCategoryData"
-                          [options]="purchaseCategoryOptions" height="120px" width="120px"></p-chart>
-                <div class="chart-center-icon">
-                  <i class="pi pi-chart-pie"></i>
-                </div>
-              </div>
-              <div class="donut-legend">
-                <span class="legend-chip"><span class="chip-color ch-chronic"></span> مزمنة</span>
-                <span class="legend-chip"><span class="chip-color ch-antibiotics"></span> مضادات</span>
-                <span class="legend-chip"><span class="chip-color ch-care"></span> عناية</span>
-              </div>
-            </div>
+          <!-- Shortcuts -->
+          <div class="profile-actions-panel">
+            <button pButton label="إصدار سند قبض مباشر" icon="pi pi-plus-circle"
+                    [routerLink]="['/customers/receipts']"
+                    class="p-button-text p-button-sm w-full imperial-btn-success-text"></button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ═══════════ Main Content Area ═══════════ -->
-    <div class="main-content-col">
-      <!-- KPI stats grid -->
+    <!-- ═══════════ Main Content: KPIs & Tables ═══════════ -->
+    <div class="main-col">
+      <!-- High Density KPIs Rows -->
       <div class="kpi-grid">
-        <!-- Total Debt Card -->
+        <!-- Balance KPI -->
         <div class="imperial-kpi-card">
           <div class="kpi-main-row">
             <div>
               <span class="kpi-title">إجمالي المديونية (مدين)</span>
-              <div class="kpi-value debt">
+              <span class="kpi-value font-mono" [class.debt]="c.balance > 0" [class.clear]="c.balance <= 0">
                 {{ c.balance | number }}
                 <span class="kpi-unit">ر.ي</span>
-              </div>
+              </span>
             </div>
             <div class="kpi-icon-box debt-bg-icon">
               <i class="pi pi-wallet"></i>
             </div>
           </div>
           <div class="kpi-footer-row">
-            <i class="pi pi-info-circle ml-1 orange-color-text"></i>
-            <span>الرصيد القائم المستحق دفعه فوراً</span>
+            <i class="pi pi-info-circle ml-1"></i>
+            <span>{{ c.balance > 0 ? 'الرصيد القائم المستحق دفعه فوراً' : 'الحساب مصفر وخالص تماماً' }}</span>
           </div>
         </div>
 
-        <!-- Credit Limit Card -->
+        <!-- Sales KPI -->
         <div class="imperial-kpi-card">
           <div class="kpi-main-row">
             <div>
-              <span class="kpi-title">سقف المديونية الأقصى</span>
-              <div class="kpi-value clear">
-                {{ c.creditLimit ? (c.creditLimit | number) : '∞' }}
-                <span class="kpi-unit" *ngIf="c.creditLimit">ر.ي</span>
-              </div>
+              <span class="kpi-title">إجمالي مبيعات العميل</span>
+              <span class="kpi-value font-mono primary-color-text">
+                {{ getTotalSales() | number }}
+                <span class="kpi-unit">ر.ي</span>
+              </span>
             </div>
             <div class="kpi-icon-box purchases-bg-icon">
-              <i class="pi pi-shield"></i>
+              <i class="pi pi-shopping-bag"></i>
             </div>
           </div>
           <div class="kpi-footer-row">
-            <i class="pi pi-check-circle ml-1 primary-color-text"></i>
-            <span>الحد الأقصى للبيع الآجل المسموح به</span>
+            <i class="pi pi-chart-line ml-1"></i>
+            <span>مجموع فواتير البيع للعميل</span>
           </div>
         </div>
 
-        <!-- Last Visit Card -->
+        <!-- Last Visit KPI -->
         <div class="imperial-kpi-card">
           <div class="kpi-main-row">
             <div>
-              <span class="kpi-title">آخر زيارة / نشاط مالي</span>
-              <div class="kpi-value" style="font-size: 1.1rem; padding-top: 0.2rem;">
-                اليوم
-              </div>
+              <span class="kpi-title">تاريخ آخر زيارة</span>
+              <span class="kpi-value font-mono orange-color-text" style="font-size: 1.1rem; padding-top: 0.2rem;">
+                {{ getLastVisit() }}
+              </span>
             </div>
             <div class="kpi-icon-box returns-bg-icon">
               <i class="pi pi-calendar text-orange-500"></i>
@@ -188,7 +174,7 @@
         </div>
       </div>
 
-      <!-- Credit Limit Progress & Chart Column -->
+      <!-- Credit Limit Progress -->
       <div class="financial-progress-section mb-3">
         <div class="progress-info-row">
           <div>
@@ -207,49 +193,67 @@
         </p-progressBar>
       </div>
 
-      <!-- Chart and Notes section -->
-      <div class="chart-and-notes-section">
-        <!-- Balance evolutionary chart -->
-        <div class="imperial-chart-card mb-3">
-          <div class="chart-header">
-            <div class="flex align-items-center gap-2">
-              <i class="pi pi-chart-line chart-icon"></i>
-              <div>
-                <h3 class="chart-title">النشاط والمسار المالي للعميل</h3>
-                <p class="chart-subtitle">تطور ومنحنى رصيد المديونية التراكمي خلال آخر 15 حركة مالية مسجلة</p>
+      <!-- Compact TabView Component -->
+      <div class="imperial-tabs-card">
+        <p-tabView styleClass="imperial-premium-tabview">
+
+          <!-- ── Tab 1: Financial Track ── -->
+          <p-tabPanel>
+            <ng-template pTemplate="header">
+              <div class="tab-header-item">
+                <i class="pi pi-chart-line ml-1"></i>
+                <span>تطور المسار المالي</span>
+              </div>
+            </ng-template>
+
+            <div class="tab-content-box">
+              <div class="chart-area-box" style="height: 250px; position: relative; padding: 1rem;">
+                <p-chart type="line" [data]="historyChartData" [options]="historyChartOptions"
+                          *ngIf="historyChartData"></p-chart>
+                <div *ngIf="!historyChartData"
+                     class="flex align-items-center justify-content-center h-full empty-chart-placeholder" style="color: #64748b; font-size: 0.9rem;">
+                  <i class="pi pi-chart-line ml-2"></i> لا توجد حركات مالية كافية لتتبع المسار البياني
+                </div>
               </div>
             </div>
-          </div>
-          <div class="chart-area-box" style="height: 250px; position: relative;">
-            <p-chart type="line" [data]="historyChartData" [options]="historyChartOptions"
-                      *ngIf="historyChartData"></p-chart>
-            <div *ngIf="!historyChartData"
-                 class="flex align-items-center justify-content-center h-full empty-chart-placeholder">
-              <i class="pi pi-chart-line ml-2"></i> لا توجد حركات مالية كافية لتتبع المسار البياني
-            </div>
-          </div>
-        </div>
+          </p-tabPanel>
 
-        <!-- Notes Card interior -->
-        <div class="imperial-notes-card">
-          <h4 class="notes-header-title">
-            <i class="pi pi-file-edit"></i> ملاحظات وسجل العميل الخاص
-          </h4>
-          <div class="notes-body-text">
-            {{ c.notes || 'لا توجد ملاحظات مسجلة أو تحذيرات ائتمانية على هذا العميل حتى الآن.' }}
-          </div>
-        </div>
+          <!-- ── Tab 2: Notes ── -->
+          <p-tabPanel>
+            <ng-template pTemplate="header">
+              <div class="tab-header-item">
+                <i class="pi pi-comments ml-1"></i>
+                <span>ملاحظات وبيانات إضافية</span>
+              </div>
+            </ng-template>
+
+            <div class="tab-content-box notes-tab-box">
+              <div class="notes-card-interior">
+                <h4 class="notes-header-title">الملاحظات العامة المدونة حول العميل</h4>
+                <div class="notes-text-body" *ngIf="c.notes">
+                  {{ c.notes }}
+                </div>
+                <div class="empty-notes-prompt" *ngIf="!c.notes">
+                  <i class="pi pi-comment"></i>
+                  <span>لم يتم تدوين أي ملاحظات أو شروط خاصة بهذا العميل مسبقاً.</span>
+                </div>
+              </div>
+            </div>
+          </p-tabPanel>
+
+        </p-tabView>
       </div>
     </div>
   </div>
 
 </div>
 
-<!-- Loading Ring shell -->
-<div class="imperial-loading-shell" *ngIf="loading()">
+<!-- Loading State -->
+<div *ngIf="loading()" class="imperial-loading-shell">
   <div class="imperial-spinner-ring"></div>
   <div class="loading-main-text">جاري تحميل ملف العميل المالي...</div>
   <div class="loading-sub-text">يرجى الانتظار قليلاً لتجميع السجلات المالية والائتمانية</div>
 </div>
 
+<!-- Global Helpers -->
 <p-toast position="top-left"></p-toast>

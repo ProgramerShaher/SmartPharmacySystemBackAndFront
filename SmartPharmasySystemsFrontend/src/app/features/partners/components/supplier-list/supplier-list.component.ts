@@ -143,15 +143,4 @@ export class SupplierListComponent implements OnInit {
     return colors[(name?.charCodeAt(0) || 0) % colors.length];
   }
 
-  showMenu(menu: any, event: any, supplier: Supplier) {
-    this.items = [
-      { label: 'الملف الشخصي', icon: 'pi pi-id-card', routerLink: ['/partners/suppliers/detail', supplier.id] },
-      { label: 'كشف الحساب', icon: 'pi pi-file-pdf', routerLink: ['/partners/suppliers/statement', supplier.id] },
-      { label: 'سند صرف جديد', icon: 'pi pi-wallet', command: () => this.openPaymentDialog(supplier) },
-      { separator: true },
-      { label: 'تعديل البيانات', icon: 'pi pi-pencil', command: () => this.openEditSupplier(supplier) },
-      { label: 'حذف المورد', icon: 'pi pi-trash', styleClass: 'text-red-500', command: (e) => this.deleteSupplier(e.originalEvent!, supplier) }
-    ];
-    menu.toggle(event);
-  }
 }

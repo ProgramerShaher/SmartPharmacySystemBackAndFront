@@ -153,4 +153,32 @@ public class RolesController : ControllerBase
             return StatusCode(500, ApiResponse<object>.Failed("حدث خطأ أثناء حذف الدور"));
         }
     }
+
+    [HttpGet("{id}/permissions")]
+    public async Task<IActionResult> GetRolePermissions(int id)
+    {
+        var permissionIds = await _roleService.GetRolePermissionIdsAsync(id);
+        return Ok(ApiResponse<IEnumerable<int>>.Succeeded(permissionIds, "تم جلب الصلاحيات"));
+    }
+
+    [HttpPut("{id}/permissions")]
+    public async Task<IActionResult> UpdateRolePermissions(int id, [FromBody] List<int> permissionIds)
+    {
+        await _roleService.UpdateRolePermissionsAsync(id, permissionIds);
+        return Ok(ApiResponse<object>.Succeeded(null, "تم تحديث صلاحيات الدور"));
+    }
+
+    [HttpPost("{id}/clone")]
+    public async Task<IActionResult> CloneRole(int id, [FromBody] CloneRoleRequest req)
+    {
+        var newRole = await _roleService.CloneRoleAsync(id, req.NewName, req.NewNameAr, req.NewColor);
+        return Ok(ApiResponse<RoleDto>.Succeeded(newRole, "تم استنساخ الدور بنجاح"));
+    }
+}
+
+public class CloneRoleRequest
+{
+    public string NewName { get; set; } = string.Empty;
+    public string? NewNameAr { get; set; }
+    public string? NewColor { get; set; }
 }

@@ -248,7 +248,8 @@ export class PurchaseInvoiceListComponent implements OnInit {
                         summary: 'نجاح',
                         detail: 'تم اعتماد التوريد بنجاح'
                     });
-                    this.loadInvoices();
+                        this.loadInvoices();
+                        this.loadKPIStats();
                 },
                 error: (err) => this.handleError(err)
             });
@@ -272,7 +273,8 @@ export class PurchaseInvoiceListComponent implements OnInit {
                         summary: 'تم الإلغاء',
                         detail: 'تم إلغاء الفاتورة'
                     });
-                    this.loadInvoices();
+                        this.loadInvoices();
+                        this.loadKPIStats();
                 },
                 error: (err) => this.handleError(err)
             });
@@ -296,7 +298,8 @@ export class PurchaseInvoiceListComponent implements OnInit {
                             summary: 'تم الحذف',
                             detail: 'تم حذف المسودة بنجاح'
                         });
-                        this.loadInvoices();
+                            this.loadInvoices();
+                        this.loadKPIStats();
                     },
                     error: (err) => this.handleError(err)
                 });

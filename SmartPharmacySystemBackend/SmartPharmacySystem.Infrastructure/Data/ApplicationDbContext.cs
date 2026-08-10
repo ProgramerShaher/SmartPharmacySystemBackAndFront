@@ -90,7 +90,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     // ===== Notifications =====
     public DbSet<Notification> Notifications { get; set; } = null!;
 
-
+    // ===== RBAC — Roles & Permissions =====
+    public DbSet<Permission> Permissions { get; set; } = null!;
+    public DbSet<RolePermission> RolePermissions { get; set; } = null!;
+    public DbSet<UserPermissionOverride> UserPermissionOverrides { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
     // ===== Shifts =====
     public DbSet<UserShift> UserShifts { get; set; } = null!;
@@ -126,7 +130,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                 UpdatedAt = new DateTime(2025, 1, 1)
             });
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
             
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -142,7 +146,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.TotalCost).HasPrecision(18, 2);
             entity.Property(e => e.TotalProfit).HasPrecision(18, 2);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -162,7 +166,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.HasIndex(e => e.PaymentDate);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -188,7 +192,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .OnDelete(DeleteBehavior.Restrict);
             entity.HasIndex(e => e.ReceiptDate);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -209,7 +213,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(ft => ft.AccountId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -242,7 +246,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(e => e.AccountId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -319,7 +323,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(mb => mb.CreatedBy)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -377,7 +381,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         // Dynamic Multi-Branch Tenant Filter
         modelBuilder.Entity<PurchaseInvoice>()
-            .HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            .HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
         // Configure Foreign Key Constraints
         modelBuilder.Entity<PurchaseInvoice>()
@@ -441,7 +445,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         // Dynamic Multi-Branch Tenant Filter
         modelBuilder.Entity<SaleInvoice>()
-            .HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            .HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
         // Configure Foreign Key Constraints
         modelBuilder.Entity<SaleInvoice>()
@@ -514,7 +518,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         // Dynamic Multi-Branch Tenant Filter
         modelBuilder.Entity<InventoryMovement>()
-            .HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            .HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
         // Configure Foreign Key Constraints
         modelBuilder.Entity<InventoryMovement>()
@@ -538,7 +542,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
         // Smart Filter: Main Branch (1) sees all, others see their own or global (null)
         modelBuilder.Entity<Alert>()
-            .HasQueryFilter(a => !CurrentBranchId.HasValue || CurrentBranchId.Value == 1 || a.BranchId == null || a.BranchId == CurrentBranchId.Value);
+            .HasQueryFilter(a => CurrentBranchId == null || CurrentBranchId == 1 || a.BranchId == null || a.BranchId == CurrentBranchId);
 
         // Alert - Enum Configuration (store as integers)
         modelBuilder.Entity<Alert>()
@@ -677,7 +681,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.Property(pr => pr.TotalAmount).HasPrecision(18, 2);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -729,7 +733,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(t => t.Notes).HasMaxLength(500);
 
             // Multi-Branch tenant filter
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             // Source Warehouse FK
             entity.HasOne(t => t.SourceWarehouse)
@@ -792,8 +796,77 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         {
             entity.HasKey(r => r.Id);
             entity.Property(r => r.Name).IsRequired().HasMaxLength(50);
-            entity.Property(r => r.Description).HasMaxLength(200);
+            entity.Property(r => r.NameAr).HasMaxLength(100);
+            entity.Property(r => r.Description).HasMaxLength(500);
+            entity.Property(r => r.Color).HasMaxLength(20).HasDefaultValue("#64748b");
             entity.HasIndex(r => r.Name).IsUnique();
+        });
+
+        // Permission Configuration
+        modelBuilder.Entity<Permission>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Module).IsRequired().HasMaxLength(50);
+            entity.Property(p => p.ModuleAr).HasMaxLength(100);
+            entity.Property(p => p.Action).IsRequired().HasMaxLength(50);
+            entity.Property(p => p.ActionAr).HasMaxLength(100);
+            entity.Property(p => p.Code).IsRequired().HasMaxLength(100);
+            entity.Property(p => p.Description).HasMaxLength(300);
+            entity.Property(p => p.Icon).HasMaxLength(50);
+            entity.HasIndex(p => p.Code).IsUnique();
+            entity.HasQueryFilter(p => !p.IsDeleted);
+        });
+
+        // RolePermission Configuration (junction table)
+        modelBuilder.Entity<RolePermission>(entity =>
+        {
+            entity.HasKey(rp => rp.Id);
+            entity.HasIndex(rp => new { rp.RoleId, rp.PermissionId }).IsUnique();
+
+            entity.HasOne(rp => rp.Role)
+                  .WithMany(r => r.RolePermissions)
+                  .HasForeignKey(rp => rp.RoleId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(rp => rp.Permission)
+                  .WithMany(p => p.RolePermissions)
+                  .HasForeignKey(rp => rp.PermissionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // UserPermissionOverride Configuration
+        modelBuilder.Entity<UserPermissionOverride>(entity =>
+        {
+            entity.HasKey(o => o.Id);
+            entity.Property(o => o.GrantType).HasConversion<int>();
+            entity.Property(o => o.Reason).HasMaxLength(500);
+            entity.HasIndex(o => new { o.UserId, o.PermissionId });
+
+            entity.HasOne(o => o.User)
+                  .WithMany(u => u.UserPermissionOverrides)
+                  .HasForeignKey(o => o.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(o => o.Permission)
+                  .WithMany(p => p.UserPermissionOverrides)
+                  .HasForeignKey(o => o.PermissionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasQueryFilter(o => !o.IsDeleted);
+        });
+
+        // AuditLog Configuration
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasKey(a => a.Id);
+            entity.Property(a => a.Action).IsRequired().HasMaxLength(50);
+            entity.Property(a => a.UserName).HasMaxLength(100);
+            entity.Property(a => a.EntityType).HasMaxLength(100);
+            entity.Property(a => a.IpAddress).HasMaxLength(50);
+            entity.Property(a => a.Notes).HasMaxLength(500);
+            entity.HasIndex(a => a.CreatedAt);
+            entity.HasIndex(a => a.UserId);
+            entity.HasQueryFilter(a => !a.IsDeleted);
         });
 
         // User Configuration
@@ -1174,6 +1247,15 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .WithMany()
                   .HasForeignKey(e => e.DepartmentId)
                   .OnDelete(DeleteBehavior.Restrict);
+
+            // علاقة One-to-Many اختيارية: حساب النظام يمكن أن يرتبط بأكثر من موظف (نفس الشخص في عدة فروع)
+            entity.HasOne(e => e.User)
+                  .WithMany(u => u.Employees)
+                  .HasForeignKey(e => e.UserId)
+                  .IsRequired(false)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasIndex(e => e.UserId).HasFilter("[UserId] IS NOT NULL");
         });
 
         // Attendance Configuration
@@ -1261,7 +1343,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(e => e.CustomerId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -1312,7 +1394,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
             entity.Property(e => e.BranchId).IsRequired();
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -1354,7 +1436,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .OnDelete(DeleteBehavior.Restrict);
                   
             // Smart Filter: Main Branch (1) sees all, others see their own or global (null)
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || CurrentBranchId.Value == 1 || e.BranchId == null || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || CurrentBranchId == 1 || e.BranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasIndex(e => new { e.UserId, e.IsRead });
             entity.HasIndex(e => e.CreatedAt);
@@ -1498,7 +1580,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasIndex(e => e.VoucherNumber).IsUnique();
             entity.HasIndex(e => e.EntryDate);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()
@@ -1522,7 +1604,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .HasForeignKey(e => e.AccountId)
                   .OnDelete(DeleteBehavior.Restrict);
 
-            entity.HasQueryFilter(e => !CurrentBranchId.HasValue || e.BranchId == CurrentBranchId.Value);
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
 
             entity.HasOne(e => e.Branch)
                   .WithMany()

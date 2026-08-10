@@ -23,11 +23,21 @@ public class Role : BaseEntity
     /// </summary>
     [MaxLength(200)]
     public string? Description { get; set; }
-
+    
+    [MaxLength(50)]
+    public string? NameAr { get; set; }
+    
+    [MaxLength(7)]
+    public string? Color { get; set; }
+    
+    public bool IsSystemRole { get; set; } = false;
+    public bool IsActive { get; set; } = true;
 
     /// <summary>
     /// مجموعة المستخدمين المرتبطين بهذا الدور
     /// Collection of users with this role
     /// </summary>
     public virtual ICollection<User> Users { get; set; } = new List<User>();
+    
+    public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 }

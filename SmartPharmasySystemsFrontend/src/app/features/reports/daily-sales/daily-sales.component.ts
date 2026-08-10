@@ -16,7 +16,7 @@ import { DailySalesReport } from '../../../core/models/reports.interface';
   standalone: true,
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, CalendarModule, TableModule, ChartModule, TagModule, ProgressSpinnerModule],
   templateUrl: './daily-sales.component.html',
-  styleUrls: ['./daily-sales.component.css']
+  styleUrls: ['./daily-sales.component.scss']
 })
 export class DailySalesComponent implements OnInit {
   private readonly reportService = inject(ReportService);

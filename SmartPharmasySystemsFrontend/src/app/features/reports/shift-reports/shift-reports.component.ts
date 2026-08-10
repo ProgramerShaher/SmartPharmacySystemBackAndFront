@@ -5,11 +5,14 @@ import { ShiftService } from '../../../core/services/shift.service';
 import { ShiftDto } from '../../../core/models';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-shift-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, DecimalPipe, DatePipe],
+  imports: [CommonModule, FormsModule, ToastModule, DecimalPipe, DatePipe, ButtonModule, ProgressSpinnerModule, InputTextModule],
   providers: [MessageService],
   templateUrl: './shift-reports.component.html',
   styleUrls: ['./shift-reports.component.scss']

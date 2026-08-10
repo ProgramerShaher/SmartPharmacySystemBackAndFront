@@ -86,30 +86,30 @@ export class SaleInvoiceCreateComponent implements OnInit {
     total = computed(() => Math.max(0, this.subtotal() - this.discount()));
     totalQuantity = computed(() => this.items().reduce((sum, item) => sum + item.quantity, 0));
 
-    // 💡 MODAL LIVE TOTAL (Instant Calculation) - Using getter for non-signal properties
-    get modalLivePrice(): number {
-        if (this.selectedBatchForModal) {
-            if (this.selectedUnitForModal && this.selectedUnitForModal.salePrice) {
-                return this.selectedUnitForModal.salePrice;
+    // 💡 INLINE LIVE TOTAL (Instant Calculation)
+    get inlineLivePrice(): number {
+        if (this.inlineBatch) {
+            if (this.inlineUnit && this.inlineUnit.salePrice) {
+                return this.inlineUnit.salePrice;
             }
-            const unitFactor = this.selectedUnitForModal ? this.selectedUnitForModal.factor : 1;
-            const basePrice = this.selectedBatchForModal.retailPrice || this.selectedBatchForModal.unitPurchasePrice || 0;
+            const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
+            const basePrice = this.inlineBatch.retailPrice || this.inlineBatch.unitPurchasePrice || 0;
             return basePrice * unitFactor;
         }
         return 0;
     }
 
-    get modalLiveTotal(): number {
-        if (this.selectedBatchForModal && this.modalQuantity) {
-            return this.modalLivePrice * this.modalQuantity;
+    get inlineLiveTotal(): number {
+        if (this.inlineBatch && this.inlineQuantity) {
+            return this.inlineLivePrice * this.inlineQuantity;
         }
         return 0;
     }
 
-    get maxAllowedQuantity(): number {
-        if (!this.selectedBatchForModal) return 0;
-        const unitFactor = this.selectedUnitForModal ? this.selectedUnitForModal.factor : 1;
-        return Math.floor(this.selectedBatchForModal.remainingQuantity / unitFactor);
+    get maxAllowedQuantityInline(): number {
+        if (!this.inlineBatch) return 0;
+        const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
+        return Math.floor(this.inlineBatch.remainingQuantity / unitFactor);
     }
 
     // 🛫 OPERATIONAL STATE
@@ -124,17 +124,15 @@ export class SaleInvoiceCreateComponent implements OnInit {
     customers: any[] = []; // All customers loaded from backend
 
     // 📦 BATCH CONTROL
-    batchDialogVisible = false;
-    selectedMedicine: Medicine | null = null;
     availableBatches: MedicineBatchResponseDto[] = [];
 
-    // 🎭 MODAL STATE (New)
-    addItemDialogVisible = false;
-    selectedMedicineForModal: Medicine | null = null;
-    selectedBatchForModal: MedicineBatchResponseDto | null = null;
-    modalQuantity: number = 1;
-    unitOptionsForModal: any[] = [];
-    selectedUnitForModal: any = null; // Holds the selected option object
+    // ⚡ INLINE FORM STATE
+    inlineMedicine: Medicine | null = null;
+    inlineBatch: MedicineBatchResponseDto | null = null;
+    inlineQuantity: number = 1;
+    inlineUnitOptions: any[] = [];
+    inlineUnit: any = null;
+    editingItemIndex: number | null = null;
 
     // 💳 PAYMENT METHODS
     paymentMethods = [
@@ -180,8 +178,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 this.medicineService.getById(medicineId).subscribe({
                     next: (medicine) => {
                         if (medicine) {
-                            this.openAddItemDialog();
-                            this.onMedicineSelectInModal(medicine);
+                            this.onMedicineSelectInline(medicine);
                         }
                     },
                     error: (err) => {
@@ -245,31 +242,64 @@ export class SaleInvoiceCreateComponent implements OnInit {
     }
 
     private addBarcodeItemToInvoice(data: any) {
-        // Check if item already exists in cart with same batch
-        const existingItem = this.items().find(i => i.batchId === data.batchId);
+        // بدلاً من إضافة الصنف مباشرة للجدول، نضعه في حقول الإدخال بالأعلى ونحدد حقل الكمية ليقوم المستخدم بإدخالها
 
-        if (existingItem) {
-            this.updateItemQuantity(existingItem, existingItem.quantity + 1);
-            this.messageService.add({ severity: 'success', summary: 'تحديث الكمية', detail: `تم زيادة كمية ${data.tradeName}` });
-        } else {
-            const newItem: InvoiceItem = {
-                medicineId: data.medicineId,
-                medicineName: data.tradeName,
-                batchId: data.batchId,
-                batchNumber: data.batchNumber,
-                quantity: 1,
-                salePrice: data.salePrice,
-                unitCost: data.movingAverageCost, // Best estimate for profit if batch cost not clear
-                total: data.salePrice,
-                profit: data.salePrice - data.movingAverageCost,
-                expiryDate: new Date(data.expiryDate),
-                availableQuantity: data.availableQuantity,
-                saleUnitId: null,
-                unitName: 'أساسية'
-            };
+        // 1. تجهيز الدواء
+        this.inlineMedicine = {
+            id: data.medicineId,
+            name: data.tradeName,
+        } as any;
 
-            this.items.update(current => [...current, newItem]);
-            this.messageService.add({ severity: 'success', summary: 'إضافة صنف', detail: `تم إضافة ${data.tradeName} للفاتورة` });
+        // 2. تجهيز الوحدة الأساسية
+        this.inlineUnitOptions = [
+            { label: 'أساسية', value: null, factor: 1, salePrice: data.salePrice, name: 'أساسية' }
+        ];
+        this.inlineUnit = this.inlineUnitOptions[0];
+
+        // 3. تجهيز الدفعة
+        this.inlineBatch = {
+            id: data.batchId,
+            companyBatchNumber: data.batchNumber,
+            retailPrice: data.salePrice,
+            unitPurchasePrice: data.movingAverageCost,
+            remainingQuantity: data.availableQuantity,
+            expiryDate: data.expiryDate ? new Date(data.expiryDate).toISOString() : '',
+            medicineId: data.medicineId,
+            quantity: 0,
+            soldQuantity: 0,
+            status: 'Active',
+            isDeleted: false,
+            entryDate: '',
+            isSellable: true,
+            medicineName: data.tradeName,
+            isExpired: false,
+            isExpiringSoon: false,
+            daysUntilExpiry: 0
+        } as any;
+
+        this.availableBatches = this.inlineBatch ? [this.inlineBatch] : [];
+
+        // تجهيز الكمية لتكون 1 مبدئياً
+        this.inlineQuantity = 1;
+        this.editingItemIndex = null;
+
+        this.messageService.add({ severity: 'success', summary: 'تم استدعاء الصنف', detail: `تم إدراج ${data.tradeName} أدخل الكمية` });
+
+        // 4. الانتقال التلقائي لحقل الكمية وتظليل النص
+        setTimeout(() => {
+            const qtyInput = document.getElementById('inlineQty');
+            if (qtyInput) {
+                qtyInput.focus();
+                (qtyInput as HTMLInputElement).select();
+            }
+        }, 100);
+    }
+
+    selectText(event: any) {
+        if (event && event.originalEvent && event.originalEvent.target) {
+            event.originalEvent.target.select();
+        } else if (event && event.target) {
+            event.target.select();
         }
     }
 
@@ -350,63 +380,12 @@ export class SaleInvoiceCreateComponent implements OnInit {
         });
     }
 
-    // 💊 FAST SEARCH & BATCH SELECTION
+    // 💊 FAST SEARCH
     searchMedicine(event: any) {
         this.medicineService.getAll({ search: event.query, pageSize: 20 }).subscribe({
             next: (res) => this.filteredMedicines = res.items || [],
             error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Search failed' })
         });
-    }
-
-    onMedicineSelect(medicine: Medicine) {
-        this.selectedMedicine = medicine;
-        this.medicineService.getFefoBatches(medicine.id).subscribe({
-            next: (batches) => {
-                this.availableBatches = batches
-                    .filter(b => b.remainingQuantity > 0 && (b.isSellable ?? true));
-
-                if (this.availableBatches.length > 0) {
-                    this.batchDialogVisible = true;
-                } else {
-                    this.messageService.add({ severity: 'warn', summary: 'Out of Stock', detail: 'No batches available for this medicine' });
-                }
-            },
-            error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not load batches' })
-        });
-    }
-
-    selectBatch(batch: MedicineBatchResponseDto) {
-        if (!this.selectedMedicine) return;
-
-        // Check if item already exists in cart with same batch
-        const existingItem = this.items().find(i => i.batchId === batch.id);
-        if (existingItem) {
-            this.messageService.add({ severity: 'info', summary: 'Item Updated', detail: 'Incremented quantity' });
-            this.updateItemQuantity(existingItem, existingItem.quantity + 1);
-            this.batchDialogVisible = false;
-            this.selectedMedicine = null;
-            return;
-        }
-
-        const newItem: InvoiceItem = {
-            medicineId: this.selectedMedicine.id,
-            medicineName: this.selectedMedicine.name,
-            batchId: batch.id,
-            batchNumber: batch.companyBatchNumber,
-            quantity: 1,
-            salePrice: batch.retailPrice,
-            unitCost: batch.unitPurchasePrice,
-            total: batch.retailPrice,
-            profit: (batch.unitPurchasePrice > 0) ? (batch.retailPrice - batch.unitPurchasePrice) * 1 : 0, // Initial Profit
-            expiryDate: new Date(batch.expiryDate),
-            availableQuantity: batch.remainingQuantity,
-            saleUnitId: null,
-            unitName: 'أساسية'
-        };
-
-        this.items.update(current => [...current, newItem]);
-        this.batchDialogVisible = false;
-        this.selectedMedicine = null;
     }
 
     updateItemQuantity(item: InvoiceItem, qty: number) {
@@ -449,24 +428,9 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
         this.saving = true;
 
-        // If Flying Customer with a name - create customer first
+        // If Flying Customer with a name - do NOT save to database, just pass the name to the invoice
         if (this.isCashCustomer && this.flyingCustomerName && this.flyingCustomerName.trim()) {
-            this.customerService.create({
-                name: this.flyingCustomerName.trim(),
-                phoneNumber: '',
-                address: '',
-                notes: 'عميل طيار - تم إنشاؤه تلقائياً'
-            }).subscribe({
-                next: (newCustomer) => {
-                    // Now create invoice with the new customer
-                    this.createInvoiceWithCustomer(approve, newCustomer.id, newCustomer.name);
-                },
-                error: (err) => {
-                    console.warn('Could not create customer, proceeding with name only:', err);
-                    // Fallback: create invoice without customer ID
-                    this.createInvoiceWithCustomer(approve, null, this.flyingCustomerName.trim());
-                }
-            });
+            this.createInvoiceWithCustomer(approve, null, this.flyingCustomerName.trim());
         } else if (this.isCashCustomer) {
             // Cash customer without name
             this.createInvoiceWithCustomer(approve, null, 'زبون نقدي');
@@ -551,38 +515,20 @@ export class SaleInvoiceCreateComponent implements OnInit {
         }
     }
 
-    // 🎭 MODAL METHODS
-    openAddItemDialog() {
-        this.addItemDialogVisible = true;
-        this.selectedMedicineForModal = null;
-        this.selectedBatchForModal = null;
-        this.modalQuantity = 1;
-        this.availableBatches = [];
-    }
+    // 🎭 INLINE FORM METHODS
+    onMedicineSelectInline(medicine: Medicine) {
+        this.inlineMedicine = medicine;
+        this.inlineBatch = null;
+        this.inlineQuantity = 1;
 
-    closeAddItemDialog() {
-        this.addItemDialogVisible = false;
-        this.selectedMedicineForModal = null;
-        this.selectedBatchForModal = null;
-        this.modalQuantity = 1;
-        this.availableBatches = [];
-        this.unitOptionsForModal = [];
-        this.selectedUnitForModal = null;
-    }
-
-    onMedicineSelectInModal(medicine: Medicine) {
-        this.selectedMedicineForModal = medicine;
-        this.selectedBatchForModal = null;
-        this.modalQuantity = 1;
-        
         const baseName = medicine.baseUnitName || 'حبة';
-        this.unitOptionsForModal = [
+        this.inlineUnitOptions = [
             { label: `${baseName} (أساسية)`, value: null, factor: 1, salePrice: medicine.defaultSalePrice || 0, name: baseName }
         ];
 
         if (medicine.medicineUnits && medicine.medicineUnits.length > 0) {
             medicine.medicineUnits.forEach(u => {
-                this.unitOptionsForModal.push({
+                this.inlineUnitOptions.push({
                     label: `${u.name} (x${u.conversionFactor})`,
                     value: u.id,
                     factor: u.conversionFactor,
@@ -591,18 +537,17 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 });
             });
         }
-        this.selectedUnitForModal = this.unitOptionsForModal[0];
+        this.inlineUnit = this.inlineUnitOptions[0];
 
         // Load batches for selected medicine (FEFO order from Backend)
         this.medicineService.getFefoBatches(medicine.id).subscribe({
             next: (batches) => {
                 this.availableBatches = batches
-                    // Double check filtering just in case, but backend should handle it
                     .filter(b => b.remainingQuantity > 0 && (b.isSellable ?? true));
 
                 // Auto-select first batch (FEFO)
                 if (this.availableBatches.length > 0) {
-                    this.selectedBatchForModal = this.availableBatches[0];
+                    this.inlineBatch = this.availableBatches[0];
                 } else {
                     this.messageService.add({ severity: 'warn', summary: 'نفاذ المخزون', detail: 'لا توجد دفعات متاحة لهذا الصنف' });
                 }
@@ -611,98 +556,136 @@ export class SaleInvoiceCreateComponent implements OnInit {
         });
     }
 
-    selectBatchForModal(batch: MedicineBatchResponseDto) {
-        this.selectedBatchForModal = batch;
-        this.modalQuantity = 1; // Reset quantity
+    onBatchSelectInline() {
+        this.inlineQuantity = 1; // Reset quantity when batch changes
     }
 
-    addItemFromModal() {
-        if (!this.selectedMedicineForModal || !this.selectedBatchForModal || !this.modalQuantity) {
+    addItemInline() {
+        if (!this.inlineMedicine || !this.inlineBatch || !this.inlineQuantity) {
             return;
         }
 
         // Selected Unit Info
-        const unitFactor = this.selectedUnitForModal ? this.selectedUnitForModal.factor : 1;
-        const saleUnitId = this.selectedUnitForModal ? this.selectedUnitForModal.value : null;
-        const unitName = this.selectedUnitForModal ? this.selectedUnitForModal.name : 'أساسية';
+        const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
+        const saleUnitId = this.inlineUnit ? this.inlineUnit.value : null;
+        const unitName = this.inlineUnit ? this.inlineUnit.name : 'أساسية';
 
-        // Price calculations. We use the custom sale price of the unit if set, otherwise multiply the batch base retail price by factor
-        const baseSalePrice = this.selectedBatchForModal.retailPrice || this.selectedBatchForModal.unitPurchasePrice || 0;
+        // Price calculations
+        const baseSalePrice = this.inlineBatch.retailPrice || this.inlineBatch.unitPurchasePrice || 0;
         let salePrice = baseSalePrice * unitFactor;
-        
-        if (this.selectedUnitForModal && this.selectedUnitForModal.salePrice) {
-             salePrice = this.selectedUnitForModal.salePrice;
+
+        if (this.inlineUnit && this.inlineUnit.salePrice) {
+            salePrice = this.inlineUnit.salePrice;
         }
 
-        const baseUnitCost = this.selectedBatchForModal.unitPurchasePrice || 0;
+        const baseUnitCost = this.inlineBatch.unitPurchasePrice || 0;
         const unitCost = baseUnitCost * unitFactor;
 
-        // Note: quantity validation against available stock MUST be in base units. 
-        // We calculate if availableQuantity (which is base units) >= modalQuantity * unitFactor
-        const requestedBaseUnits = this.modalQuantity * unitFactor;
-        if (requestedBaseUnits > this.selectedBatchForModal.remainingQuantity) {
-             this.messageService.add({ severity: 'error', summary: 'رصيد غير كاف', detail: `الكمية المتوفرة ${this.selectedBatchForModal.remainingQuantity} وحدة أساسية فقط.` });
-             return;
+        // Validation against stock
+        const requestedBaseUnits = this.inlineQuantity * unitFactor;
+        if (requestedBaseUnits > this.inlineBatch.remainingQuantity) {
+            this.messageService.add({ severity: 'error', summary: 'رصيد غير كاف', detail: `الكمية المتوفرة ${this.inlineBatch.remainingQuantity} وحدة أساسية فقط.` });
+            return;
         }
 
-        // Check if item already exists
-        const existingItem = this.items().find(i => i.batchId === this.selectedBatchForModal!.id);
-        if (existingItem) {
-            this.updateItemQuantity(existingItem, existingItem.quantity + this.modalQuantity);
-            this.messageService.add({ severity: 'success', summary: 'تم التحديث', detail: 'تم زيادة الكمية' });
+        if (this.editingItemIndex !== null) {
+            // Update existing item
+            const item = this.items()[this.editingItemIndex];
+
+            // Check if we changed batch and it conflicts with another existing item (other than the one being edited)
+            const conflictingItemIndex = this.items().findIndex((i, idx) => i.batchId === this.inlineBatch!.id && idx !== this.editingItemIndex);
+
+            if (conflictingItemIndex !== -1) {
+                // Merge into the conflicting item and remove the current one
+                const conflictingItem = this.items()[conflictingItemIndex];
+                this.updateItemQuantity(conflictingItem, conflictingItem.quantity + this.inlineQuantity);
+                this.removeItem(this.editingItemIndex);
+                this.messageService.add({ severity: 'success', summary: 'تم الدمج', detail: 'تم دمج الكمية مع الدفعة الموجودة' });
+            } else {
+                // Update properties in place
+                item.medicineId = this.inlineMedicine.id;
+                item.medicineName = `${this.inlineMedicine.name} (${unitName})`;
+                item.batchId = this.inlineBatch.id;
+                item.batchNumber = this.inlineBatch.companyBatchNumber;
+                item.quantity = this.inlineQuantity;
+                item.salePrice = salePrice;
+                item.unitCost = unitCost;
+                item.total = this.inlineQuantity * salePrice;
+                item.profit = (salePrice - unitCost) * this.inlineQuantity;
+                item.expiryDate = new Date(this.inlineBatch.expiryDate);
+                item.availableQuantity = Math.floor(this.inlineBatch.remainingQuantity / unitFactor);
+                item.saleUnitId = saleUnitId;
+                item.unitName = unitName;
+
+                this.items.set([...this.items()]); // Trigger update
+                this.messageService.add({ severity: 'success', summary: 'تم التعديل', detail: 'تم تعديل الصنف بنجاح' });
+            }
         } else {
-            const newItem: InvoiceItem = {
-                medicineId: this.selectedMedicineForModal.id,
-                medicineName: `${this.selectedMedicineForModal.name} (${unitName})`,
-                batchId: this.selectedBatchForModal.id,
-                batchNumber: this.selectedBatchForModal.companyBatchNumber,
-                quantity: this.modalQuantity,
-                salePrice: salePrice,
-                unitCost: unitCost,
-                total: this.modalQuantity * salePrice,
-                profit: (salePrice - unitCost) * this.modalQuantity,
-                expiryDate: new Date(this.selectedBatchForModal.expiryDate),
-                availableQuantity: Math.floor(this.selectedBatchForModal.remainingQuantity / unitFactor),
-                saleUnitId: saleUnitId,
-                unitName: unitName
-            };
+            // Add new item
+            const existingItem = this.items().find(i => i.batchId === this.inlineBatch!.id);
+            if (existingItem) {
+                this.updateItemQuantity(existingItem, existingItem.quantity + this.inlineQuantity);
+                this.messageService.add({ severity: 'success', summary: 'تم التحديث', detail: 'تم زيادة الكمية' });
+            } else {
+                const newItem: InvoiceItem = {
+                    medicineId: this.inlineMedicine.id,
+                    medicineName: `${this.inlineMedicine.name} (${unitName})`,
+                    batchId: this.inlineBatch.id,
+                    batchNumber: this.inlineBatch.companyBatchNumber,
+                    quantity: this.inlineQuantity,
+                    salePrice: salePrice,
+                    unitCost: unitCost,
+                    total: this.inlineQuantity * salePrice,
+                    profit: (salePrice - unitCost) * this.inlineQuantity,
+                    expiryDate: new Date(this.inlineBatch.expiryDate),
+                    availableQuantity: Math.floor(this.inlineBatch.remainingQuantity / unitFactor),
+                    saleUnitId: saleUnitId,
+                    unitName: unitName
+                };
 
-            this.items.update(current => [...current, newItem]);
-            this.messageService.add({ severity: 'success', summary: 'تمت الإضافة', detail: 'تم إضافة الصنف بنجاح' });
+                this.items.update(current => [...current, newItem]);
+                this.messageService.add({ severity: 'success', summary: 'تمت الإضافة', detail: 'تم إضافة الصنف بنجاح' });
+            }
         }
 
-        this.closeAddItemDialog();
+        this.resetInlineForm();
     }
 
-    // 💡 UPDATE MODAL TOTAL (For manual trigger if needed)
-    updateModalTotal() {
-        // The computed signal handles this automatically
-        // This method is here for explicit calls if needed
+    resetInlineForm() {
+        this.inlineMedicine = null;
+        this.inlineBatch = null;
+        this.inlineQuantity = 1;
+        this.availableBatches = [];
+        this.inlineUnitOptions = [];
+        this.inlineUnit = null;
+        this.editingItemIndex = null;
     }
 
-    // 🖊️ EDIT ITEM IN MODAL
-    editingItemIndex: number | null = null;
-
-    editItemInModal(item: InvoiceItem, index: number) {
+    editItemInline(item: InvoiceItem, index: number) {
         this.editingItemIndex = index;
 
-        // Set the medicine
-        this.selectedMedicineForModal = {
+        // Hydrate Medicine
+        this.inlineMedicine = {
             id: item.medicineId,
-            name: item.medicineName,
-            // ... other props if needed for display
+            name: item.medicineName.split(' (')[0], // Extract base name without unit
         } as any;
 
-        // Set the batch (Hydrate from item)
-        this.selectedBatchForModal = {
+        // Setup options manually to restore state quickly without making HTTP call if not needed
+        this.inlineUnitOptions = [
+            { label: `${item.unitName}`, value: item.saleUnitId, factor: 1, salePrice: item.salePrice, name: item.unitName }
+        ];
+        this.inlineUnit = this.inlineUnitOptions[0];
+
+        // Hydrate Batch
+        this.inlineBatch = {
             id: item.batchId,
             companyBatchNumber: item.batchNumber,
             retailPrice: item.salePrice,
             unitPurchasePrice: item.unitCost,
-            remainingQuantity: item.availableQuantity, // Use available not current
+            remainingQuantity: item.availableQuantity, // Simplified for editing view
             expiryDate: item.expiryDate ? item.expiryDate.toISOString() : '',
             medicineId: item.medicineId,
-            quantity: 0, // Not important for this context
+            quantity: 0,
             soldQuantity: 0,
             status: 'Active',
             isDeleted: false,
@@ -714,13 +697,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
             daysUntilExpiry: 0
         } as MedicineBatchResponseDto;
 
-        // Reload actual batches to allow switching?
-        // Ideally yes, but for now we just load the current one into context
-
-        // Set quantity
-        this.modalQuantity = item.quantity;
-
-        // Open dialog
-        this.addItemDialogVisible = true;
+        this.availableBatches = [this.inlineBatch];
+        this.inlineQuantity = item.quantity;
     }
 }

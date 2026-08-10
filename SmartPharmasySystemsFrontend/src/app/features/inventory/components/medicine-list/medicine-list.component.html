@@ -44,9 +44,9 @@
                         المنتج الدوائي
                         <div class="header-subtext">الاسم التجاري والعلمي</div>
                     </th>
-                    <th class="text-center" style="width: 8rem">
+                    <th class="text-center" style="width: 9rem">
                         معلومات الصنف
-                        <div class="header-subtext">التصنيف / الكود</div>
+                        <div class="header-subtext">التصنيف / الكود / الباركود</div>
                     </th>
                     <th class="text-center" style="width: 18rem">
                         هيكلة الوحدات والأسعار
@@ -80,11 +80,14 @@
                     
                     <td class="text-center">
                         <div class="flex flex-column gap-1 align-items-center">
-                            <span class="inventory-chip green w-full justify-content-center">
+                            <span class="inventory-chip green w-full justify-content-center" title="التصنيف">
                                 {{medicine.categoryName || 'عام'}}
                             </span>
-                            <span class="inventory-chip gray w-full justify-content-center font-mono">
+                            <span class="inventory-chip gray w-full justify-content-center font-mono" title="الكود الداخلي">
                                 #{{medicine.internalCode}}
+                            </span>
+                            <span *ngIf="medicine.defaultBarcode" class="inventory-chip blue w-full justify-content-center font-mono text-xs" title="الباركود">
+                                <i class="pi pi-barcode ml-1 text-xs"></i> {{medicine.defaultBarcode}}
                             </span>
                         </div>
                     </td>

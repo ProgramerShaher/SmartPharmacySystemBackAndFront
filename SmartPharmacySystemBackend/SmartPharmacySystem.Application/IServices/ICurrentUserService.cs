@@ -53,4 +53,22 @@ public interface ICurrentUserService
     /// Current branch ID
     /// </summary>
     int? GetCurrentBranchId();
+
+    /// <summary>
+    /// معرف الموظف المرتبط بهذا الحساب (ERP)
+    /// Employee ID linked to this user account
+    /// </summary>
+    int? EmployeeId { get; }
+
+    /// <summary>
+    /// كود الموظف
+    /// Employee code
+    /// </summary>
+    string? EmployeeCode { get; }
+
+    /// <summary>
+    /// اسم الموظف الكامل
+    /// Employee full name
+    /// </summary>
+    string? EmployeeName { get; }
 }

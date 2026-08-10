@@ -1,78 +1,124 @@
-<div class="report-container" dir="rtl">
-  <!-- Header Section -->
-  <div class="page-header">
-    <div class="title-wrap">
-      <div class="icon-circle"><i class="pi pi-star-fill"></i></div>
+<div class="rpt-wrap" dir="rtl">
+  <!-- ===== Compact Header ===== -->
+  <div class="rpt-header">
+    <div class="rpt-header-start">
+      <div class="rpt-icon">
+        <i class="pi pi-star-fill"></i>
+      </div>
       <div>
-        <h1>الأدوية الأكثر مبيعاً</h1>
-        <p>تحليل الأدوية الأعلى حركة ومبيعات حسب الفترة المحددة</p>
+        <h1 class="rpt-title">الأدوية الأكثر مبيعاً</h1>
+        <p class="rpt-subtitle">تحليل الأدوية الأعلى حركة ومبيعات حسب الفترة المحددة</p>
       </div>
     </div>
+  </div>
 
-    <div class="actions no-print">
-      <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
-      <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
-      <div class="filter-field" style="display: inline-flex; align-items: center; gap: 0.25rem;">
-        <span class="muted" style="font-size: 0.55rem; color: #64748b;">عدد:</span>
-        <p-inputNumber [(ngModel)]="topCount" [min]="1" [max]="100" [showButtons]="false" styleClass="compact-input"></p-inputNumber>
+  <!-- ===== Filter Row ===== -->
+  <div class="rpt-filter-panel no-print">
+    <div class="rpt-filter-grid">
+      <div class="rpt-filter-field">
+        <label>من تاريخ</label>
+        <p-calendar [(ngModel)]="fromDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="من تاريخ"></p-calendar>
       </div>
-      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="applyFilter()" [loading]="loading()"></p-button>
-      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+      <div class="rpt-filter-field">
+        <label>إلى تاريخ</label>
+        <p-calendar [(ngModel)]="toDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="إلى تاريخ"></p-calendar>
+      </div>
+      <div class="rpt-filter-field">
+        <label>أعلى عدد</label>
+        <p-inputNumber [(ngModel)]="topCount" [min]="1" [max]="100" [showButtons]="true" buttonLayout="horizontal" inputId="horizontal" spinnerMode="horizontal" [step]="1" decrementButtonClass="p-button-secondary" incrementButtonClass="p-button-secondary" incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus" styleClass="w-full"></p-inputNumber>
+      </div>
+      <div class="rpt-filter-action">
+        <button pButton icon="pi pi-sync" [rounded]="true" [outlined]="true" severity="info" pTooltip="تحديث" tooltipPosition="top" (click)="applyFilter()" [loading]="loading()" styleClass="rpt-btn-sm"></button>
+        <button pButton icon="pi pi-print" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="طباعة" tooltipPosition="top" (click)="printReport()" styleClass="rpt-btn-sm"></button>
+      </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
+  <div class="rpt-table-wrap" *ngIf="loading()" style="padding: 3rem; text-align: center;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
-  <!-- Summary Cards Section -->
-  <div class="kpi-grid" *ngIf="report() && !loading()">
-    <div class="kpi-card stock" style="grid-column: span 2;">
-      <span class="kpi-label">إجمالي الكمية المباعة</span>
-      <strong>{{ summary().totalSold }} علبة/قطع</strong>
-      <small>الكميات الكلية المصروفة للفترة</small>
+  <!-- ===== KPI Row ===== -->
+  <div class="rpt-kpi-row" *ngIf="report() && !loading()">
+    <div class="rpt-kpi-card" data-color="teal" style="grid-column: span 2;">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي الكمية المباعة</span>
+          <strong class="rpt-kpi-value">{{ summary().totalSold }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-box"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">علبة/قطع | الكميات الكلية المصروفة للفترة</small>
     </div>
-    <div class="kpi-card profit" style="grid-column: span 2;">
-      <span class="kpi-label">إجمالي الإيرادات</span>
-      <strong>{{ formatCurrency(summary().totalRevenue) }} ر.ي</strong>
-      <small>القيمة النقدية للمبيعات الكلية</small>
+    
+    <div class="rpt-kpi-card" data-color="amber" style="grid-column: span 2;">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي الإيرادات</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().totalRevenue) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-money-bill"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | القيمة النقدية للمبيعات الكلية</small>
     </div>
   </div>
 
-  <!-- Detailed Table -->
-  <section class="table-panel" *ngIf="report() && !loading()">
-    <p-table [value]="report()!.medicines" [rowHover]="true" styleClass="p-datatable-sm compact-table" [responsive]="true">
+  <!-- ===== Table ===== -->
+  <div class="rpt-table-wrap" *ngIf="report() && !loading()">
+    <p-table [value]="report()!.medicines" styleClass="rpt-table" [responsive]="true">
+      <ng-template pTemplate="caption">
+        <div class="rpt-table-caption">
+          <span><i class="pi pi-list"></i> قائمة الأدوية الأعلى حركة</span>
+        </div>
+      </ng-template>
       <ng-template pTemplate="header">
         <tr>
           <th style="width: 3.5rem">#</th>
           <th>اسم الدواء</th>
           <th>الاسم العلمي</th>
           <th>التصنيف</th>
-          <th class="text-center" style="width: 80px;">الكمية</th>
-          <th class="text-center" style="width: 110px;">الإيراد</th>
-          <th class="text-center" style="width: 110px;">الربح</th>
-          <th class="text-center" style="width: 100px;">الهامش</th>
+          <th class="text-center">الكمية</th>
+          <th class="text-center">الإيراد</th>
+          <th class="text-center">الربح</th>
+          <th class="text-center">الهامش</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item let-i="rowIndex">
         <tr>
-          <td><div class="rank-badge" [ngClass]="'rank-' + (i+1)">{{ i+1 }}</div></td>
-          <td><strong style="color: #1d4ed8; font-size: 0.65rem;">{{ item.medicineName }}</strong></td>
-          <td><span class="muted" style="font-size: 0.6rem;">{{ item.scientificName || '-' }}</span></td>
-          <td><span class="type-pill type-blue" *ngIf="item.categoryName">{{ item.categoryName }}</span></td>
-          <td class="text-center">
-             <span class="type-pill type-green">{{ item.quantitySold }}</span>
+          <td>
+            <div style="width: 24px; height: 24px; border-radius: 4px; background: #e2e8f0; color: #475569; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">
+              {{ i+1 }}
+            </div>
           </td>
-          <td class="text-center" style="font-weight: 700; color: #1e293b;">{{ formatCurrency(item.totalRevenue) }}</td>
-          <td class="text-center text-success" style="font-weight: 700;">{{ formatCurrency(item.totalProfit) }}</td>
+          <td><strong style="color: #1d4ed8; font-size: 0.75rem;">{{ item.medicineName }}</strong></td>
+          <td><span style="color: #64748b; font-size: 0.72rem;">{{ item.scientificName || '-' }}</span></td>
+          <td>
+            <span *ngIf="item.categoryName" class="rpt-chip chip-info">{{ item.categoryName }}</span>
+            <span *ngIf="!item.categoryName">-</span>
+          </td>
           <td class="text-center">
-            <span class="type-pill" [class.type-green]="item.profitMargin > 20" [class.type-amber]="item.profitMargin <= 20">
+             <span class="rpt-chip chip-success">{{ item.quantitySold }}</span>
+          </td>
+          <td class="text-center" style="font-weight: 800; color: #1e293b;">{{ formatCurrency(item.totalRevenue) }}</td>
+          <td class="text-center" style="font-weight: 800; color: #0d9488;">{{ formatCurrency(item.totalProfit) }}</td>
+          <td class="text-center">
+            <span class="rpt-chip" [ngClass]="item.profitMargin > 20 ? 'chip-success' : 'chip-warning'">
               {{ (item.profitMargin ? item.profitMargin.toFixed(1) : 0) + '%' }}
             </span>
           </td>
         </tr>
       </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="8" class="rpt-empty">
+          <i class="pi pi-box"></i>
+          <span>لا توجد مبيعات في هذه الفترة</span>
+        </td></tr>
+      </ng-template>
     </p-table>
-  </section>
+  </div>
 </div>

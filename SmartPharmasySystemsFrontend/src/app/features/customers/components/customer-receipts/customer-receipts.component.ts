@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CustomerService } from '../../services/customer.service';
@@ -8,7 +8,6 @@ import { SettingsService } from '../../../../core/services/settings.service';
 import { PharmacySettings } from '../../../../core/models/settings/pharmacy-settings.interface';
 import { environment } from '../../../../../environments/environment';
 
-// PrimeNG
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -42,9 +41,14 @@ import { TagModule } from 'primeng/tag';
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './customer-receipts.component.html',
-    styleUrls: ['./customer-receipts.component.scss']
+    styleUrls: ['../../../partners/components/supplier-payments/supplier-payments.component.scss']
 })
 export class CustomerReceiptsComponent implements OnInit {
+    @Input() dialogMode = false;
+    @Input() autoOpenCreate = false;
+    @Input() presetCustomerId: number | null = null;
+    @Output() closed = new EventEmitter<void>();
+
     receipts = signal<CustomerReceipt[]>([]);
     loading = signal(false);
     displayDialog = signal(false);
@@ -58,6 +62,7 @@ export class CustomerReceiptsComponent implements OnInit {
     receiptForm: FormGroup;
     filteredCustomers: Customer[] = [];
     selectedCustomer: Customer | null = null;
+    selectedCustomerObj!: Customer | null;
 
     pharmacySettings = signal<PharmacySettings>({
         id: 0,
@@ -109,6 +114,21 @@ export class CustomerReceiptsComponent implements OnInit {
                 }
             }
         });
+
+        if (this.presetCustomerId) {
+            this.customerService.getById(this.presetCustomerId).subscribe(c => {
+                this.filteredCustomers = [c];
+                this.onCustomerSelect(c);
+            });
+        }
+        if (this.autoOpenCreate) {
+            setTimeout(() => this.openNew(), 100);
+        }
+    }
+
+    closeModal() {
+        this.displayDialog.set(false);
+        this.closed.emit();
     }
 
     loadStats() {
@@ -132,7 +152,7 @@ export class CustomerReceiptsComponent implements OnInit {
                 this.pageSize.set(size);
 
                 // For stats, we might need a separate call or just sum existing page (simplified for now)
-                this.calculateStats(res.items); 
+                this.calculateStats(res.items);
                 this.loading.set(false);
             },
             error: () => {
@@ -156,24 +176,70 @@ export class CustomerReceiptsComponent implements OnInit {
     }
 
     unpaidInvoices = signal<any[]>([]);
+    filteredInvoices: any[] = [];
+    selectedInvoiceId: number | null = null;
+    loadingInvoices = signal(false);
 
-    onCustomerSelect(customer: Customer) {
+    onCustomerSelect(event: any) {
+        const customer: Customer = event.value || event;
         this.selectedCustomer = customer;
+        this.selectedCustomerObj = customer;
         this.receiptForm.patchValue({ customerId: customer.id });
 
+        // Reset invoice selection state
+        this.unpaidInvoices.set([]);
+        this.filteredInvoices = [];
+        this.selectedInvoiceId = null;
+        this.receiptForm.patchValue({ saleInvoiceId: null });
+
         // Load unpaid invoices (Smart Linking)
-        this.loading.set(true);
+        this.loadingInvoices.set(true);
         this.customerService.getUnpaidInvoices(customer.id).subscribe({
             next: (invoices) => {
-                this.unpaidInvoices.set(invoices);
-                this.loading.set(false);
+                const mapped = invoices.map(inv => ({
+                    ...inv,
+                    remainingAmount: inv.totalAmount - (inv.paidAmount || 0),
+                    displayText: `فاتورة #${inv.saleInvoiceNumber || inv.id} — المتبقي: ${(inv.totalAmount - (inv.paidAmount || 0)).toLocaleString()} ر.ي`
+                })).filter(inv => (inv.remainingAmount || 0) > 0)
+                    .sort((a, b) => +new Date(a.invoiceDate) - +new Date(b.invoiceDate));
+
+                this.unpaidInvoices.set(mapped);
+                this.filteredInvoices = [...mapped];
+                this.loadingInvoices.set(false);
             },
-            error: () => this.loading.set(false)
+            error: () => {
+                this.unpaidInvoices.set([]);
+                this.filteredInvoices = [];
+                this.loadingInvoices.set(false);
+            }
+        });
+    }
+
+    searchInvoices(event: any) {
+        const query = (event.query || '').toLowerCase().trim();
+        if (!query) {
+            this.filteredInvoices = [...this.unpaidInvoices()];
+        } else {
+            this.filteredInvoices = this.unpaidInvoices().filter(inv =>
+                inv.displayText?.toLowerCase().includes(query) ||
+                (inv.saleInvoiceNumber || '').toLowerCase().includes(query) ||
+                String(inv.id).includes(query)
+            );
+        }
+    }
+
+    onInvoiceSelect(event: any) {
+        const inv = event.value;
+        this.selectedInvoiceId = inv.id;
+        this.receiptForm.patchValue({
+            amount: inv.remainingAmount,
+            saleInvoiceId: inv.id
         });
     }
 
     openNew() {
         this.selectedCustomer = null;
+        this.selectedCustomerObj = null;
         this.receiptForm.reset({
             paymentDate: new Date(),
             paymentMethod: 'Cash',
@@ -191,8 +257,8 @@ export class CustomerReceiptsComponent implements OnInit {
         const amount = this.receiptForm.value.amount;
         // Optional warning, strictly validating might be annoying if they want to overpay slightly or system is out of sync
         if (this.selectedCustomer && amount > this.selectedCustomer.balance) {
-             // Just a toast warning, allow proceed? User might be paying in advance.
-             // For now, let's allow it but warn.
+            // Just a toast warning, allow proceed? User might be paying in advance.
+            // For now, let's allow it but warn.
         }
 
         this.saving.set(true);
@@ -238,7 +304,7 @@ export class CustomerReceiptsComponent implements OnInit {
         const ones = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة', 'عشرة', 'أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
         const tens = ['', 'عشرة', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
         const hundreds = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
-        
+
         const parse = (n: number): string => {
             if (n < 20) return ones[n];
             if (n < 100) {
@@ -271,7 +337,7 @@ export class CustomerReceiptsComponent implements OnInit {
             const rem = n % 1000000;
             return parse(million) + ' مليون' + (rem !== 0 ? ' و' + parse(rem) : '');
         };
-        
+
         return parse(Math.floor(num));
     }
 
@@ -279,7 +345,7 @@ export class CustomerReceiptsComponent implements OnInit {
         const dateObj = new Date(receipt.paymentDate);
         const formattedDate = dateObj.toLocaleDateString('ar-YE');
         const formattedTime = dateObj.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
-        
+
         let translatedMethod = 'نقداً (كاش)';
         if (receipt.paymentMethod === 'BankTransfer') translatedMethod = 'تحويل بنكي';
         else if (receipt.paymentMethod === 'Check') translatedMethod = 'شيك بنكي';
@@ -327,7 +393,7 @@ export class CustomerReceiptsComponent implements OnInit {
 
                     <div class="row-grid">
                         <div class="field-group">
-                            <span class="field-label">استلمنا من السيد/ة:</span>
+                            <span class="field-label">استلمنا من العميل/ة:</span>
                             <span class="field-value">${receipt.customerName}</span>
                         </div>
                         <div class="field-group">

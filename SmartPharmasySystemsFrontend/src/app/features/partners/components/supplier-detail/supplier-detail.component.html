@@ -209,17 +209,22 @@
                     </td>
                     <td class="font-mono text-secondary">{{ inv.purchaseDate | date:'yyyy/MM/dd' }}</td>
                     <td class="text-center">
-                      <span class="payment-badge" [class.cash]="inv.paymentMethod === 1" [class.credit]="inv.paymentMethod !== 1">
-                        {{ inv.paymentMethod === 1 ? 'نقدي' : 'آجل' }}
+                      <span class="payment-badge" [class.cash]="isCash(inv.paymentMethod)" [class.credit]="!isCash(inv.paymentMethod)">
+                        {{ getPaymentMethodLabel(inv.paymentMethod) }}
                       </span>
                     </td>
                     <td class="text-center font-bold font-mono price-text">
                       {{ inv.totalAmount | number }} <span style="font-size:0.65rem;color:var(--text-color-secondary);">ر.ي</span>
                     </td>
                     <td class="text-center">
-                      <span class="status-tag" [ngClass]="getInvoiceStatusSeverity(inv.status)">
-                        {{ getInvoiceStatusLabel(inv.status) }}
-                      </span>
+                      <div class="flex flex-column gap-1 align-items-center">
+                        <span class="status-tag" [ngClass]="getInvoiceStatusSeverity(inv.status)">
+                          {{ getInvoiceStatusLabel(inv.status) }}
+                        </span>
+                        <span class="status-tag" [ngClass]="getPaymentStatus(inv).severity" style="font-size: 0.7rem; margin-top: 4px;">
+                          {{ getPaymentStatus(inv).label }}
+                        </span>
+                      </div>
                     </td>
                     <td class="text-center">
                       <button pButton icon="pi pi-eye"

@@ -67,6 +67,15 @@ public class EmployeeBranchAssignmentRepository : IEmployeeBranchAssignmentRepos
             .FirstOrDefaultAsync(a => a.UserId == userId && a.IsActive && !a.IsDeleted);
     }
 
+    public async Task<IEnumerable<EmployeeBranchAssignment>> GetActiveAssignmentsByUserIdAsync(int userId)
+    {
+        return await _context.Set<EmployeeBranchAssignment>()
+            .AsNoTracking()
+            .Include(a => a.Branch)
+            .Where(a => a.UserId == userId && a.IsActive && !a.IsDeleted)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<EmployeeBranchAssignment>> GetAssignmentsByUserIdAsync(int userId)
     {
         return await _context.Set<EmployeeBranchAssignment>()

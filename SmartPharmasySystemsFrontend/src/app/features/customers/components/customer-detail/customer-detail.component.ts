@@ -15,6 +15,8 @@ import { ToastModule } from 'primeng/toast';
 import { ChartModule } from 'primeng/chart'; // Added
 import { SidebarModule } from 'primeng/sidebar';
 import { DialogModule } from 'primeng/dialog';
+import { TabViewModule } from 'primeng/tabview';
+import { TableModule } from 'primeng/table';
 import { CustomerAddEditComponent } from '../customer-add-edit/customer-add-edit.component';
 
 @Component({
@@ -29,14 +31,16 @@ import { CustomerAddEditComponent } from '../customer-add-edit/customer-add-edit
     TagModule,
     ProgressBarModule,
     ToastModule,
-    ChartModule, // Added
+    ChartModule,
     SidebarModule,
     DialogModule,
+    TabViewModule,
+    TableModule,
     CustomerAddEditComponent
   ],
-  providers: [MessageService, DatePipe], // Added DatePipe
+  providers: [MessageService, DatePipe],
   templateUrl: './customer-detail.component.html',
-  styleUrls: ['./customer-detail.component.scss']
+  styleUrls: ['../../../partners/components/supplier-detail/supplier-detail.component.scss']
 })
 export class CustomerDetailComponent implements OnInit {
   customer = signal<Customer | null>(null);
@@ -239,6 +243,14 @@ export class CustomerDetailComponent implements OnInit {
     if (p > 90) return 'danger';
     if (p > 70) return 'warning';
     return 'success';
+  }
+
+  getTotalSales(): number {
+    return this.customer()?.balance || 0; // Or calculate from transactions if you have them
+  }
+
+  getLastVisit(): string {
+    return 'اليوم'; // Mock for now, could be derived from last transaction date
   }
 
   back() {

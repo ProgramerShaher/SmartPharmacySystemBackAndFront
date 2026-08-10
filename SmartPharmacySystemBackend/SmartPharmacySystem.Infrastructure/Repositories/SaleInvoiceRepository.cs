@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartPharmacySystem.Core.Entities;
+using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
 
@@ -78,12 +79,13 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
     {
         return await _context.SaleInvoices
             .AsNoTracking()
-            .Where(s => s.CustomerId == customerId && !s.IsPaid && !s.IsDeleted)
+            .Where(s => s.CustomerId == customerId && !s.IsPaid && !s.IsDeleted && s.Status == DocumentStatus.Approved)
             .OrderBy(s => s.InvoiceDate)
             .Select(s => new SaleInvoice
             {
                 Id = s.Id,
                 InvoiceDate = s.InvoiceDate,
+                SaleInvoiceNumber = s.SaleInvoiceNumber,
                 TotalAmount = s.TotalAmount,
                 Status = s.Status
             })

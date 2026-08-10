@@ -21,6 +21,12 @@ public interface IAuthService
     Task ChangePasswordAsync(int userId, ChangePasswordDto request);
 
     /// <summary>
+    /// تبديل الفرع النشط (يرجع توكن جديد)
+    /// Switch active branch and return a new JWT token
+    /// </summary>
+    Task<LoginResponseDto> SwitchBranchAsync(int userId, int newBranchId);
+
+    /// <summary>
     /// التحقق من صحة كلمة المرور
     /// Verify password against hash
     /// </summary>

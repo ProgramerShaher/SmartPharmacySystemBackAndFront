@@ -1,3 +1,4 @@
+using SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 using SmartPharmacySystem.Application.DTOs.PurchaseInvoice;
 using SmartPharmacySystem.Application.DTOs.PurchaseReturns;
 using System.Text.Json.Serialization;
@@ -33,6 +34,6 @@ public class SupplierDto
     public DateTime ActionDate { get; set; }
 
     // Relationships
-    public ICollection<PurchaseInvoiceQueryDto> PurchaseInvoices { get; set; } = new List<PurchaseInvoiceQueryDto>();
+    public ICollection<PurchaseInvoiceDto> PurchaseInvoices { get; set; } = new List<PurchaseInvoiceDto>();
     public ICollection<PurchaseReturnDto> PurchaseReturns { get; set; } = new List<PurchaseReturnDto>();
 }

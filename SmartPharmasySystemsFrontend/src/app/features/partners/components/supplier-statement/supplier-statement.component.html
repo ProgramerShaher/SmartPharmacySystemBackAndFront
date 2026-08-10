@@ -9,42 +9,22 @@
         </div>
         <div class="search-input-wrapper">
           <label class="search-label">استعلام وتصفية كشف حساب مورد مالي</label>
-          <p-autoComplete
-            [(ngModel)]="searchQuery"
-            [suggestions]="filteredSuppliers"
-            (completeMethod)="searchSuppliers($event)"
-            field="name"
-            (onSelect)="onSupplierSelect($event)"
+          <p-autoComplete [(ngModel)]="searchQuery" [suggestions]="filteredSuppliers"
+            (completeMethod)="searchSuppliers($event)" field="name" (onSelect)="onSupplierSelect($event)"
             placeholder="اكتب اسم المورد للبحث والاستعلام..."
-            inputStyleClass="w-full p-inputtext-sm search-autocomplete-input"
-            styleClass="w-full"
-            [dropdown]="true"
+            inputStyleClass="w-full p-inputtext-sm search-autocomplete-input" styleClass="w-full" [dropdown]="true"
             appendTo="body">
           </p-autoComplete>
         </div>
       </div>
       <div class="action-buttons" *ngIf="statement()">
         <button pButton label="طباعة الكشف المالي" icon="pi pi-print" (click)="print()"
-                class="imperial-btn-primary p-button-sm px-4"></button>
+          class="imperial-btn-primary p-button-sm px-4"></button>
       </div>
     </div>
   </div>
 
-  <!-- ═══════════ Official Printable Header ═══════════ -->
-  <div class="print-only-header hidden">
-    <div class="print-header-layout">
-      <div class="print-meta-right">
-        <h1 class="print-doc-title">كشف حساب مورد مالي تفصيلي</h1>
-        <p class="print-doc-subtitle">نظام الصيدلية الذكي المتكامل - Smart Pharmacy System</p>
-      </div>
-      <div class="print-meta-left">
-        <div><strong>التاريخ:</strong> {{ today | date:'yyyy/MM/dd' }}</div>
-        <div><strong>رقم المرجع:</strong> #ST-{{ statement()?.supplierId }}</div>
-        <div><strong>المستخدم:</strong> نظام المحاسبة المركزي</div>
-      </div>
-    </div>
-    <div class="print-divider"></div>
-  </div>
+
 
   <!-- ═══════════ Loading Ring ═══════════ -->
   <div *ngIf="loading()" class="statement-loading-box">
@@ -53,7 +33,7 @@
   </div>
 
   <!-- ═══════════ Main Content (Only when loaded) ═══════════ -->
-  <div *ngIf="statement() && !loading()" class="fadein">
+  <div *ngIf="statement() && !loading()" class="fadein no-print">
 
     <!-- ── Summary Stats Grid ── -->
     <div class="summary-stats-grid mb-3">
@@ -96,9 +76,22 @@
         </div>
       </div>
 
+      <!-- Card 3.5: Total Returns -->
+      <div class="statement-stat-card card-returns-total">
+        <div class="stat-icon-wrapper">
+          <i class="pi pi-undo"></i>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">إجمالي المرتجعات (لنا)</span>
+          <span class="stat-value value-debit font-mono">
+            {{ getReturnTotal() | number }}
+            <span class="stat-unit">ر.ي</span>
+          </span>
+        </div>
+      </div>
+
       <!-- Card 4: Net Balance -->
-      <div class="statement-stat-card card-net-balance"
-           [ngClass]="{
+      <div class="statement-stat-card card-net-balance" [ngClass]="{
              'bal-debt': statement()!.totalBalance > 0,
              'bal-clear': statement()!.totalBalance <= 0
            }">
@@ -111,9 +104,8 @@
             <ng-container *ngIf="statement()!.totalBalance < 0">رصيد دائن مسبق (لنا عند المورد)</ng-container>
             <ng-container *ngIf="statement()!.totalBalance === 0">الحساب مصفر وخالص</ng-container>
           </span>
-          <span class="stat-value font-mono"
-                [class.value-credit]="statement()!.totalBalance > 0"
-                [class.value-debit]="statement()!.totalBalance < 0">
+          <span class="stat-value font-mono" [class.value-credit]="statement()!.totalBalance > 0"
+            [class.value-debit]="statement()!.totalBalance < 0">
             {{ statement()!.totalBalance | number }}
             <span class="stat-unit">ر.ي</span>
           </span>
@@ -152,10 +144,8 @@
 
     <!-- ── Ledger Table / Statement Sheet ── -->
     <div class="ledger-card-wrapper">
-      <p-table [value]="statement()?.transactions!"
-               styleClass="p-datatable-sm imperial-statement-table"
-               responsiveLayout="scroll"
-               [rowHover]="true">
+      <p-table [value]="statement()?.transactions!" styleClass="p-datatable-sm imperial-statement-table"
+        responsiveLayout="scroll" [rowHover]="true">
 
         <ng-template pTemplate="header">
           <tr>
@@ -204,14 +194,12 @@
             <!-- Type badge + notes -->
             <td>
               <div class="flex-align gap-2">
-                <span class="statement-type-pill"
-                      [ngClass]="{
+                <span class="statement-type-pill" [ngClass]="{
                         'pill-invoice': item.type === 'فاتورة شراء',
                         'pill-payment': item.type === 'سند صرف',
                         'pill-return':  item.type === 'مرتجع شراء'
                       }">
-                  <i class="pi"
-                     [ngClass]="{
+                  <i class="pi" [ngClass]="{
                        'pi-file-invoice': item.type === 'فاتورة شراء',
                        'pi-money-bill':   item.type === 'سند صرف',
                        'pi-undo':         item.type === 'مرتجع شراء'
@@ -245,15 +233,14 @@
 
             <!-- مدين (لنا) -->
             <td class="text-center">
-              <ng-container *ngif="item.type === 'مرتجع شراء' && item.debit > 0">
+              <ng-container *ngIf="item.type === 'مرتجع شراء' && item.debit > 0">
                 <span class="amount-cell text-debit font-mono">{{ item.debit | number }}</span>
               </ng-container>
-              <span class="table-dash" *ngIf="item.type !== 'مرتجع شراء'">—</span>
+              <span class="table-dash" *ngIf="item.type !== 'مرتجع شراء' || item.debit <= 0">—</span>
             </td>
 
             <!-- Running Balance -->
-            <td class="text-center running-bal-cell"
-                [ngClass]="{
+            <td class="text-center running-bal-cell" [ngClass]="{
                   'bal-red': item.runningBalance > 0,
                   'bal-green': item.runningBalance < 0,
                   'bal-zero': item.runningBalance === 0
@@ -276,8 +263,7 @@
             <td class="text-center font-mono font-bold font-sm">
               <span class="text-debit-light" *ngIf="getReturnTotal() > 0">{{ getReturnTotal() | number }}</span>
             </td>
-            <td class="text-center font-mono font-black"
-                [ngClass]="{
+            <td class="text-center font-mono font-black" [ngClass]="{
                   'text-credit-light': statement()!.totalBalance > 0,
                   'text-debit-light': statement()!.totalBalance < 0
                 }">
@@ -297,23 +283,72 @@
       </p-table>
     </div>
 
-    <!-- ── Print Signatures (print-only) ── -->
-    <div class="print-only-footer hidden">
-      <div class="print-signatures-row">
-        <div class="signature-box">
-          <span class="signature-title">المحاسب المسؤول</span>
-          <span class="signature-line">____________________</span>
-        </div>
-        <div class="signature-box">
-          <span class="signature-title">الختم والتصديق الرسمي</span>
-          <span class="signature-line">____________________</span>
-        </div>
-        <div class="signature-box">
-          <span class="signature-title">المدير المالي والتدقيق</span>
-          <span class="signature-line">____________________</span>
-        </div>
+
+  </div>
+
+  <!-- ═══════════ Print Only Plain Report ═══════════ -->
+  <div *ngIf="statement() && !loading()" class="print-only-report">
+      <div class="report-body">
+          <div class="report-header">
+              <div class="company-info">
+                  <h1>{{ pharmacySettings().pharmacyName }}</h1>
+                  <p>{{ branchName() }}</p>
+              </div>
+              <div class="report-title">
+                  <h2>كشف حساب مورد</h2>
+                  <span>تاريخ الطباعة: {{ today | date:'yyyy-MM-dd' }}</span>
+              </div>
+          </div>
+          <div class="supplier-summary">
+              <div class="summary-item"><strong>اسم المورد:</strong> <span>{{ statement()?.supplierName }}</span></div>
+              <div class="summary-item"><strong>رقم الحساب:</strong> <span>SUP-{{ statement()?.supplierId }}</span></div>
+              <div class="summary-item"><strong>الرصيد الافتتاحي:</strong> <span>0.00 ر.ي</span></div>
+          </div>
+          <div class="table-container">
+              <table>
+                  <thead>
+                      <tr>
+                          <th width="15%">التاريخ</th>
+                          <th width="15%">رقم المستند</th>
+                          <th width="25%">البيان</th>
+                          <th width="15%">مدين (ذمة)</th>
+                          <th width="15%">دائن (سداد)</th>
+                          <th width="15%">الرصيد</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <tr *ngFor="let item of statement()?.transactions">
+                          <td class="text-muted">{{ item.date | date:'yyyy-MM-dd' }}</td>
+                          <td class="font-bold">{{ item.reference }}</td>
+                          <td>{{ item.type }} <span *ngIf="item.notes">- {{ item.notes }}</span></td>
+                          <td [ngClass]="{'amount-debit': item.credit > 0}">{{ item.credit > 0 ? (item.credit | number:'1.2-2') : '-' }}</td>
+                          <td [ngClass]="{'amount-credit': item.debit > 0}">{{ item.debit > 0 ? (item.debit | number:'1.2-2') : '-' }}</td>
+                          <td class="font-bold" [ngClass]="{'amount-debit': item.runningBalance > 0, 'amount-credit': item.runningBalance < 0}">
+                              {{ item.runningBalance | number:'1.2-2' }}
+                          </td>
+                      </tr>
+                      <tr *ngIf="!statement()?.transactions?.length">
+                          <td colspan="6" style="text-align: center; padding: 20px;">لا توجد حركات مالية مسجلة</td>
+                      </tr>
+                      <tr class="total-row" *ngIf="statement()?.transactions?.length">
+                          <td colspan="3" style="text-align: left;">إجمالي الحركات</td>
+                          <td class="amount-debit">{{ getCreditTotal() | number:'1.2-2' }}</td>
+                          <td class="amount-credit">{{ getPaymentTotal() + getReturnTotal() | number:'1.2-2' }}</td>
+                          <td class="font-bold">{{ statement()!.totalBalance | number:'1.2-2' }} ر.ي</td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+          <div class="report-footer">
+              <span>تم إنشاء هذا التقرير بتاريخ: <strong>{{ today | date:'yyyy-MM-dd HH:mm' }}</strong></span>
+              <span>الرصيد النهائي للمورد: 
+                  <strong style="color:#000;">
+                      {{ Math.abs(statement()!.totalBalance) | number:'1.2-2' }} ر.ي 
+                      ({{ statement()!.totalBalance > 0 ? 'مدين/لنا' : (statement()!.totalBalance < 0 ? 'دائن/عليه' : 'خالص') }})
+                  </strong>
+              </span>
+          </div>
       </div>
-    </div>
   </div>
 
   <!-- ── Empty State Prompt ── -->

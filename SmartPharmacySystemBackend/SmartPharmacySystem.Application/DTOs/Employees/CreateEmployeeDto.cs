@@ -37,4 +37,9 @@ public class CreateEmployeeDto
     public decimal BasicSalary { get; set; }
 
     public bool IsActive { get; set; } = true;
+
+    /// <summary>
+    /// رابط حساب المستخدم بالنظام (اختياري)
+    /// </summary>
+    public int? UserId { get; set; }
 }

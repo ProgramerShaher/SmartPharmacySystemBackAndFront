@@ -25,6 +25,8 @@ export interface User {
     createdAt: string;
     createdBy?: number;
     isDeleted: boolean;
+    defaultBranchId?: number;
+    allowedBranchIds?: number[];
 }
 
 export interface UserCreateDto {
@@ -34,7 +36,8 @@ export interface UserCreateDto {
     fullName: string;
     email?: string;
     roleId: number;
-    branchId?: number;
+    defaultBranchId?: number;
+    allowedBranchIds?: number[];
     phoneNumber?: string;
     notes?: string;
 }
@@ -44,7 +47,8 @@ export interface UserUpdateDto {
     fullName?: string;
     email?: string;
     roleId?: number;
-    branchId?: number;
+    defaultBranchId?: number;
+    allowedBranchIds?: number[];
     phoneNumber?: string;
     password?: string;
     confirmPassword?: string;

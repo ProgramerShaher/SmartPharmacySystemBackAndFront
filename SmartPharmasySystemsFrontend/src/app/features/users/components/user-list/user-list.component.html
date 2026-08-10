@@ -105,9 +105,9 @@
                 <tr>
                     <th pSortableColumn="username">معلومات الحساب <p-sortIcon field="username"></p-sortIcon></th>
                     <th pSortableColumn="fullName">الاسم الكامل <p-sortIcon field="fullName"></p-sortIcon></th>
-                    <th pSortableColumn="roleName">الصلاحية <p-sortIcon field="roleName"></p-sortIcon></th>
+                    <th pSortableColumn="roleName">الدور <p-sortIcon field="roleName"></p-sortIcon></th>
                     <th pSortableColumn="phoneNumber">الهاتف <p-sortIcon field="phoneNumber"></p-sortIcon></th>
-                    <th style="width:110px;">الإجراءات</th>
+                    <th style="width:140px;">الإجراءات</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-user>
@@ -130,6 +130,8 @@
                     </td>
                     <td>
                         <div class="usr-cell-actions">
+                            <button pButton icon="pi pi-shield" class="p-button-rounded p-button-text p-button-sm p-button-warning"
+                                pTooltip="تعديل الصلاحيات" tooltipPosition="top" (click)="openPermissions(user)"></button>
                             <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
                                 pTooltip="عرض التفاصيل" tooltipPosition="top" (click)="viewUser(user)"></button>
                             <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-sm"
@@ -206,7 +208,24 @@
                 </div>
 
                 <div
-                    style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.2rem;">
+                    style="display: flex; flex-direction: column; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.4rem; padding-top: 0.4rem;">
+                    <span style="color: #64748b; font-size: 0.75rem; font-weight: 700; margin-bottom: 0.5rem;">الصلاحيات الفعالة:</span>
+                    
+                    <div *ngIf="loadingView" style="display: flex; justify-content: center; padding: 0.5rem 0;">
+                        <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem; color: var(--primary-color)"></i>
+                    </div>
+
+                    <div *ngIf="!loadingView && viewedUserPermissions.length > 0" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                        <p-tag *ngFor="let p of viewedUserPermissions" [value]="p" severity="info" [rounded]="true" styleClass="text-xs"></p-tag>
+                    </div>
+
+                    <div *ngIf="!loadingView && viewedUserPermissions.length === 0" style="color: #94a3b8; font-size: 0.75rem;">
+                        لا يوجد صلاحيات
+                    </div>
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.2rem; padding-top: 0.4rem;">
                     <span style="color: #64748b; font-size: 0.75rem; font-weight: 700;">الحالة:</span>
                     <span
                         [style.color]="(viewedUser.status === 1 || viewedUser.status === undefined || viewedUser.status === null) ? '#0d9488' : '#dc2626'"
@@ -225,6 +244,14 @@
                 (click)="editViewedUser()"></button>
         </div>
     </div>
+</p-dialog>
+
+<!-- نافذة تعيين الصلاحيات -->
+<p-dialog [(visible)]="permissionsDialog" [modal]="true" styleClass="user-dialog" [draggable]="false" [resizable]="false"
+    [closable]="false" [showHeader]="false" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
+    [style]="{width: '800px', maxWidth: '95vw'}">
+    <app-user-permissions *ngIf="permissionsDialog" [user]="permissionsUser" (cancel)="hidePermissionsDialog()" (save)="onPermissionsSaved()">
+    </app-user-permissions>
 </p-dialog>
 
 <!-- نافذة التأكيد -->

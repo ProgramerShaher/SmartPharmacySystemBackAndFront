@@ -107,4 +107,17 @@ public class User : BaseEntity
     /// Medicine batches created by this user
     /// </summary>
     public virtual ICollection<MedicineBatch> CreatedBatches { get; set; } = new List<MedicineBatch>();
+    
+    public virtual ICollection<UserPermissionOverride> UserPermissionOverrides { get; set; } = new List<UserPermissionOverride>();
+    
+    /// <summary>
+    /// الفرع الافتراضي للمستخدم (اختياري)
+    /// </summary>
+    public int? DefaultBranchId { get; set; }
+
+    /// <summary>
+    /// الموظفين المرتبطين بهذا الحساب (قد يكون نفس الحساب مرتبطاً بأكثر من موظف في فروع مختلفة)
+    /// The employees linked to this user account.
+    /// </summary>
+    public virtual ICollection<Employee> Employees { get; set; } = new List<Employee>();
 }

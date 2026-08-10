@@ -222,21 +222,45 @@ export class SupplierDetailComponent implements OnInit {
     return colors[index];
   }
 
-  getInvoiceStatusSeverity(status: DocumentStatus): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
-    switch (status) {
-      case DocumentStatus.Approved: return 'success';
-      case DocumentStatus.Draft: return 'warning';
-      case DocumentStatus.Cancelled: return 'danger';
-      default: return 'info';
-    }
+  getInvoiceStatusSeverity(status: any): "success" | "secondary" | "info" | "warning" | "danger" | "contrast" | undefined {
+    const s = String(status).toLowerCase();
+    if (s === '2' || s === 'approved') return 'success';
+    if (s === '1' || s === 'draft') return 'warning';
+    if (s === '3' || s === 'cancelled') return 'danger';
+    return 'info';
   }
 
-  getInvoiceStatusLabel(status: DocumentStatus): string {
-    switch (status) {
-      case DocumentStatus.Approved: return 'معتمدة';
-      case DocumentStatus.Draft: return 'مسودة';
-      case DocumentStatus.Cancelled: return 'ملغاة';
-      default: return 'غير معروف';
+  getInvoiceStatusLabel(status: any): string {
+    const s = String(status).toLowerCase();
+    if (s === '2' || s === 'approved') return 'معتمدة';
+    if (s === '1' || s === 'draft') return 'مسودة';
+    if (s === '3' || s === 'cancelled') return 'ملغاة';
+    return 'غير معروف';
+  }
+
+  isCash(method: any): boolean {
+    return method === 1 || String(method).toLowerCase() === 'cash';
+  }
+
+  getPaymentMethodLabel(method: any): string {
+    return this.isCash(method) ? 'نقد' : 'آجل';
+  }
+
+  getPaymentStatus(inv: any): { label: string, severity: string, percent: number } {
+    if (this.isCash(inv.paymentMethod)) {
+      return { label: 'مسددة نقداً', severity: 'success', percent: 100 };
     }
+    
+    // For Credit Invoices:
+    if (inv.isPaid || (inv.paidAmount && inv.totalAmount && inv.paidAmount >= inv.totalAmount)) {
+      return { label: 'مسددة بالكامل', severity: 'success', percent: 100 };
+    }
+    
+    if (!inv.paidAmount || inv.paidAmount === 0) {
+      return { label: 'غير مسددة', severity: 'danger', percent: 0 };
+    }
+
+    const percent = Math.round((inv.paidAmount / (inv.totalAmount || 1)) * 100);
+    return { label: `مسددة جزئياً (${percent}%)`, severity: 'warning', percent: percent };
   }
 }

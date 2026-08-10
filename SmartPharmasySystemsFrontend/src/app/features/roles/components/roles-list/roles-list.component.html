@@ -1,0 +1,110 @@
+<div class="roles-container">
+  <!-- Toolbar -->
+  <div class="flex justify-content-between align-items-center mb-2">
+    <h5 class="m-0 text-sm font-bold text-primary">إدارة الأدوار</h5>
+    <button pButton pRipple icon="pi pi-plus" label="إضافة" class="p-button-sm p-button-success py-1 px-2 text-xs" 
+            (click)="openNew()" *appHasPermission="'roles.create'"></button>
+  </div>
+
+  <!-- Table -->
+  <p-table [value]="roles" [loading]="loading" styleClass="p-datatable-sm p-datatable-gridlines compact-table" 
+           [rowHover]="true" responsiveLayout="scroll">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem">#</th>
+        <th>الاسم (EN)</th>
+        <th>الاسم (AR)</th>
+        <th>الوصف</th>
+        <th style="width: 5rem">اللون</th>
+        <th style="width: 5rem">الحالة</th>
+        <th style="width: 5rem">النظام</th>
+        <th style="width: 10rem">الإجراءات</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-role let-i="rowIndex">
+      <tr>
+        <td class="text-center">{{i + 1}}</td>
+        <td>{{role.name}}</td>
+        <td>{{role.nameAr}}</td>
+        <td>{{role.description}}</td>
+        <td class="text-center">
+          <span class="color-badge" [style.backgroundColor]="role.color || '#3b82f6'"></span>
+        </td>
+        <td class="text-center">
+          <i class="pi" [ngClass]="{'pi-check-circle text-green-500': role.isActive, 'pi-times-circle text-red-500': !role.isActive}"></i>
+        </td>
+        <td class="text-center">
+          <i *ngIf="role.isSystemRole" class="pi pi-lock text-orange-500" pTooltip="دور أساسي بالنظام"></i>
+        </td>
+        <td class="text-center">
+          <div class="flex justify-content-center gap-1">
+            <button pButton pRipple icon="pi pi-shield" class="p-button-rounded p-button-info p-button-text p-button-sm action-btn" 
+                    pTooltip="الصلاحيات" (click)="openPermissions(role)" *appHasPermission="'roles.manage_permissions'"></button>
+            <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success p-button-text p-button-sm action-btn" 
+                    pTooltip="تعديل" (click)="openEdit(role)" [disabled]="role.isSystemRole" *appHasPermission="'roles.edit'"></button>
+            <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text p-button-sm action-btn" 
+                    pTooltip="حذف" (click)="delete(role)" [disabled]="role.isSystemRole" *appHasPermission="'roles.delete'"></button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center p-2 text-xs">لا يوجد بيانات</td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Edit/Create Dialog -->
+  <p-dialog [(visible)]="displayDialog" [style]="{width: '350px'}" [header]="isEdit ? 'تعديل الدور' : 'دور جديد'" [modal]="true" class="compact-dialog">
+    <form [formGroup]="roleForm" class="flex flex-column gap-2 mt-2">
+      
+      <div class="field">
+        <label for="name" class="text-xs mb-1 block">الاسم الإنجليزي</label>
+        <input type="text" pInputText id="name" formControlName="name" class="p-inputtext-sm w-full" autofocus />
+      </div>
+
+      <div class="field">
+        <label for="nameAr" class="text-xs mb-1 block">الاسم العربي</label>
+        <input type="text" pInputText id="nameAr" formControlName="nameAr" class="p-inputtext-sm w-full" />
+      </div>
+
+      <div class="field">
+        <label for="description" class="text-xs mb-1 block">الوصف</label>
+        <input type="text" pInputText id="description" formControlName="description" class="p-inputtext-sm w-full" />
+      </div>
+
+      <div class="flex justify-content-between align-items-center">
+        <div class="flex align-items-center gap-2">
+          <label for="color" class="text-xs m-0">اللون</label>
+          <p-colorPicker formControlName="color"></p-colorPicker>
+        </div>
+        <div class="flex align-items-center gap-2">
+          <label for="isActive" class="text-xs m-0">فعال</label>
+          <p-inputSwitch formControlName="isActive"></p-inputSwitch>
+        </div>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="إلغاء" icon="pi pi-times" class="p-button-text p-button-sm py-1 px-2 text-xs" (click)="displayDialog=false"></button>
+      <button pButton label="حفظ" icon="pi pi-check" class="p-button-primary p-button-sm py-1 px-2 text-xs" (click)="save()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <!-- Permissions Dialog -->
+  <p-dialog [(visible)]="displayPermissionsDialog" [style]="{width: '400px', height: '500px'}" [header]="'صلاحيات: ' + selectedRoleForPermissions?.nameAr" [modal]="true" class="compact-dialog">
+    <div class="tree-container">
+      <p-tree [value]="permissionsTree" selectionMode="checkbox" [(selection)]="selectedPermissions" 
+              class="compact-tree w-full"></p-tree>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton label="إلغاء" icon="pi pi-times" class="p-button-text p-button-sm py-1 px-2 text-xs" (click)="displayPermissionsDialog=false"></button>
+      <button pButton label="حفظ الصلاحيات" icon="pi pi-check" class="p-button-success p-button-sm py-1 px-2 text-xs" (click)="savePermissions()"></button>
+    </ng-template>
+  </p-dialog>
+
+  <p-toast></p-toast>
+  <p-confirmDialog [style]="{width: '350px'}" acceptButtonStyleClass="p-button-danger p-button-sm py-1 px-2 text-xs" rejectButtonStyleClass="p-button-text p-button-sm py-1 px-2 text-xs"></p-confirmDialog>
+</div>

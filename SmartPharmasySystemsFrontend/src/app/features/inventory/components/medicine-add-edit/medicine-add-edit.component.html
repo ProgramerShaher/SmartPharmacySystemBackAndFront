@@ -1,6 +1,7 @@
 <p-dialog [(visible)]="visible" (onHide)="close()" [modal]="true" [draggable]="false" [resizable]="false"
-    [style]="{ width: 'min(94vw, 980px)' }" styleClass="medicine-dialog" [breakpoints]="{'960px': '94vw', '640px': '96vw'}"
-    [showHeader]="false" [closable]="true" maskStyleClass="backdrop-blur-sm bg-black-alpha-40">
+    [style]="{ width: 'min(98vw, 1280px)' }" styleClass="medicine-dialog"
+    [breakpoints]="{'1300px': '96vw', '640px': '98vw'}" [showHeader]="false" [closable]="true"
+    maskStyleClass="backdrop-blur-sm bg-black-alpha-40">
 
     <div class="modal-shell" dir="rtl">
         <div class="modal-header">
@@ -30,8 +31,8 @@
                     <label for="imageUpload" class="upload-btn">
                         <i class="pi" [ngClass]="uploading() ? 'pi-spin pi-spinner' : 'pi-camera'"></i>
                     </label>
-                    <input type="file" id="imageUpload" class="hidden" accept="image/*" (change)="onFileSelected($event)"
-                        [disabled]="uploading()" />
+                    <input type="file" id="imageUpload" class="hidden" accept="image/*"
+                        (change)="onFileSelected($event)" [disabled]="uploading()" />
                 </div>
 
                 <div class="side-note">
@@ -50,10 +51,15 @@
                 <div class="section-label">المعلومات الأساسية</div>
 
                 <div class="form-grid">
-                    <div class="form-field span-2">
+                    <div class="form-field">
                         <label class="required-star">الاسم التجاري</label>
                         <input pInputText formControlName="name"
                             [ngClass]="{'ng-invalid ng-dirty': medicineForm.get('name')?.invalid && medicineForm.get('name')?.touched}" />
+                    </div>
+
+                    <div class="form-field">
+                        <label>الاسم العلمي</label>
+                        <input pInputText formControlName="scientificName" />
                     </div>
 
                     <div class="form-field">
@@ -70,10 +76,10 @@
 
                     <div class="form-field">
                         <label>الباركود</label>
-                        <span class="p-input-icon-left w-full">
-                            <i class="pi pi-barcode"></i>
-                            <input pInputText formControlName="defaultBarcode" />
-                        </span>
+                        <div class="amount-group">
+                            <input pInputText formControlName="defaultBarcode" class="barcode-input" />
+                            <span class="currency-badge"><i class="pi pi-barcode"></i></span>
+                        </div>
                     </div>
 
                     <div class="form-field">
@@ -81,9 +87,9 @@
                         <input pInputText formControlName="manufacturer" />
                     </div>
 
-                    <div class="form-field span-2">
-                        <label>الاسم العلمي</label>
-                        <input pInputText formControlName="scientificName" />
+                    <div class="form-field">
+                        <label class="required-star">اسم الوحدة الصغرى (مثل حبة - علبة - شريط)</label>
+                        <input pInputText formControlName="baseUnitName" placeholder="حبة، أمبول..." />
                     </div>
 
                     <div class="form-field" *ngIf="medicine">
@@ -98,69 +104,88 @@
                 <div class="form-grid compact">
                     <div class="form-field">
                         <label class="required-star">سعر الشراء</label>
-                        <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal" [minFractionDigits]="0"
-                            [maxFractionDigits]="2" suffix=" ر.ي" class="w-full"></p-inputNumber>
+                        <div class="amount-group">
+                            <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal" [minFractionDigits]="0"
+                                [maxFractionDigits]="2" class="w-full" (onFocus)="selectText($event)"></p-inputNumber>
+                            <span class="currency-badge">ر.ي</span>
+                        </div>
                     </div>
 
                     <div class="form-field">
                         <label class="required-star">سعر البيع</label>
-                        <p-inputNumber formControlName="defaultSalePrice" mode="decimal" [minFractionDigits]="0"
-                            [maxFractionDigits]="2" suffix=" ر.ي" class="w-full"></p-inputNumber>
+                        <div class="amount-group">
+                            <p-inputNumber formControlName="defaultSalePrice" mode="decimal" [minFractionDigits]="0"
+                                [maxFractionDigits]="2" class="w-full" (onFocus)="selectText($event)"></p-inputNumber>
+                            <span class="currency-badge">ر.ي</span>
+                        </div>
                     </div>
 
                     <div class="form-field">
                         <label>الحد الأدنى</label>
-                        <p-inputNumber formControlName="minAlertQuantity" [min]="0" class="w-full"></p-inputNumber>
+                        <p-inputNumber formControlName="minAlertQuantity" [min]="0" class="w-full"
+                            (onFocus)="selectText($event)"></p-inputNumber>
                     </div>
 
                     <div class="form-field">
                         <label>إعادة الطلب</label>
-                        <p-inputNumber formControlName="reorderLevel" [min]="0" class="w-full"></p-inputNumber>
+                        <p-inputNumber formControlName="reorderLevel" [min]="0" class="w-full"
+                            (onFocus)="selectText($event)"></p-inputNumber>
                     </div>
 
-                    <div class="form-field span-2">
-                        <label class="required-star">اسم الوحدة الصغرى الأساسية (مثل حبة، أمبول، قارورة)</label>
-                        <input pInputText formControlName="baseUnitName" placeholder="حبة، أمبول..." />
-                    </div>
 
-                    <div class="span-4 medicine-units-section" formArrayName="medicineUnits">
+
+                    <div class="span-5 medicine-units-section" formArrayName="medicineUnits">
                         <div class="units-header flex justify-content-between align-items-center mb-3">
                             <span class="font-bold text-700">الوحدات والتعبئة المتعددة (أشرطة، علب، كراتين)</span>
-                            <button pButton type="button" label="إضافة وحدة جديدة" icon="pi pi-plus" class="p-button-sm p-button-success p-button-outlined add-unit-btn" (click)="addUnit()"></button>
+                            <button pButton type="button" label="إضافة وحدة جديدة" icon="pi pi-plus"
+                                class="p-button-sm p-button-success p-button-outlined add-unit-btn"
+                                (click)="addUnit()"></button>
                         </div>
 
-                        <div *ngIf="medicineUnits.length === 0" class="empty-units-message text-center py-4 border-round border-1 border-300 bg-white text-500">
-                            <i class="pi pi-info-circle mr-1"></i> لا توجد وحدات إضافية معرفة لهذا الدواء. يمكنك إضافتها لتبسيط البيع بالتجزئة والجرد.
-                        </div>
-
-                        <div *ngFor="let unit of medicineUnits.controls; let i=index" [formGroupName]="i" class="unit-card">
+                        <div *ngFor="let unit of medicineUnits.controls; let i=index" [formGroupName]="i"
+                            class="unit-card">
                             <div class="unit-field">
                                 <label class="required-star">اسم الوحدة</label>
                                 <input pInputText formControlName="name" placeholder="علبة، شريط..." />
                             </div>
                             <div class="unit-field">
                                 <label class="required-star">معامل التحويل (كم حبة)</label>
-                                <p-inputNumber formControlName="conversionFactor" [min]="1"></p-inputNumber>
+                                <p-inputNumber formControlName="conversionFactor" [min]="1"
+                                    (onFocus)="selectText($event)"></p-inputNumber>
                             </div>
                             <div class="unit-field">
                                 <label class="required-star">سعر الشراء</label>
-                                <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal" suffix=" ر.ي"></p-inputNumber>
+                                <div class="amount-group">
+                                    <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal"
+                                        (onFocus)="selectText($event)"></p-inputNumber>
+                                    <span class="currency-badge">ر.ي</span>
+                                </div>
                             </div>
                             <div class="unit-field">
                                 <label class="required-star">سعر البيع</label>
-                                <p-inputNumber formControlName="defaultSalePrice" mode="decimal" suffix=" ر.ي"></p-inputNumber>
+                                <div class="amount-group">
+                                    <p-inputNumber formControlName="defaultSalePrice" mode="decimal"
+                                        (onFocus)="selectText($event)"></p-inputNumber>
+                                    <span class="currency-badge">ر.ي</span>
+                                </div>
                             </div>
                             <div class="unit-field barcode-field">
-                                <div class="barcode-input-wrapper">
+                                <div class="barcode-input-wrapper" style="width: 100%;">
                                     <label>باركود الوحدة</label>
-                                    <input pInputText formControlName="barcode" placeholder="باركود خاص..." />
+                                    <div class="amount-group w-full">
+                                        <input pInputText formControlName="barcode" placeholder="باركود خاص..."
+                                            class="barcode-input" />
+                                        <span class="currency-badge"><i class="pi pi-barcode"></i></span>
+                                    </div>
                                 </div>
-                                <button pButton type="button" icon="pi pi-trash" class="p-button-danger p-button-text p-button-sm remove-unit-btn" (click)="removeUnit(i)"></button>
+                                <button pButton type="button" icon="pi pi-trash"
+                                    class="p-button-danger p-button-text p-button-sm remove-unit-btn"
+                                    (click)="removeUnit(i)"></button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-field span-2">
+                    <div class="form-field span-5">
                         <label>ملاحظات</label>
                         <textarea pInputTextarea formControlName="notes" rows="2"></textarea>
                     </div>

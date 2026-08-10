@@ -38,8 +38,8 @@
 
                 <!-- Role -->
                 <div class="field">
-                    <label for="roleId">الصلاحية <span class="text-red-500">*</span></label>
-                    <p-dropdown [options]="roles" formControlName="roleId" styleClass="w-full" placeholder="اختر الصلاحية"
+                    <label for="roleId">الدور <span class="text-red-500">*</span></label>
+                    <p-dropdown [options]="roles" formControlName="roleId" styleClass="w-full" placeholder="اختر الدور"
                         [showClear]="false" appendTo="body">
                         <ng-template let-option pTemplate="item">
                             <div class="flex align-items-center gap-2">
@@ -50,11 +50,12 @@
                     </p-dropdown>
                 </div>
 
-                <!-- Branch -->
+                <!-- Default Branch -->
                 <div class="field">
-                    <label for="branchId">فرع التعيين</label>
-                    <p-dropdown [options]="branches" formControlName="branchId" optionLabel="name" optionValue="id" styleClass="w-full"
-                        placeholder="اختر الفرع (لتعيين الموظف)" [showClear]="true" [loading]="isLoadingBranches" appendTo="body">
+                    <label for="defaultBranchId">الفرع الافتراضي</label>
+                    <p-dropdown [options]="branches" formControlName="defaultBranchId" optionLabel="name" optionValue="id"
+                        styleClass="w-full" placeholder="اختر الفرع الافتراضي للمستخدم" [showClear]="true"
+                        [loading]="isLoadingBranches" appendTo="body">
                         <ng-template let-option pTemplate="item">
                             <div class="flex align-items-center gap-2">
                                 <i class="pi pi-building"></i>
@@ -64,6 +65,21 @@
                     </p-dropdown>
                 </div>
 
+                <!-- Allowed Branches -->
+                <div class="field">
+                    <label for="allowedBranchIds">الفروع المسموحة (للدخول) <span class="text-red-500">*</span></label>
+                    <p-multiSelect [options]="branches" formControlName="allowedBranchIds" optionLabel="name" optionValue="id"
+                        styleClass="w-full" placeholder="اختر الفروع التي يمكن للمستخدم الوصول إليها"
+                        [loading]="isLoadingBranches" appendTo="body" display="chip">
+                        <ng-template let-option pTemplate="item">
+                            <div class="flex align-items-center gap-2">
+                                <i class="pi pi-check-circle text-primary"></i>
+                                <span>{{option.name}}</span>
+                            </div>
+                        </ng-template>
+                    </p-multiSelect>
+                </div>
+
                 <!-- Password -->
                 <div class="field">
                     <label for="password">كلمة المرور <span *ngIf="!user?.id" class="text-red-500">*</span></label>
@@ -71,8 +87,8 @@
                         <span class="p-inputgroup-addon"><i class="pi pi-lock text-400"></i></span>
                         <input [type]="showPassword ? 'text' : 'password'" pInputText id="password"
                             formControlName="password" placeholder="********">
-                        <button type="button" pButton class="p-button-secondary p-button-text" (click)="togglePassword()"
-                            [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></button>
+                        <button type="button" pButton class="p-button-secondary p-button-text"
+                            (click)="togglePassword()" [icon]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></button>
                     </div>
                     <!-- Password Strength Meter -->
                     <div class="strength-meter" *ngIf="password.value">
@@ -86,16 +102,19 @@
 
                 <!-- Confirm Password -->
                 <div class="field">
-                    <label for="confirmPassword">تأكيد كلمة المرور <span *ngIf="!user?.id" class="text-red-500">*</span></label>
+                    <label for="confirmPassword">تأكيد كلمة المرور <span *ngIf="!user?.id"
+                            class="text-red-500">*</span></label>
                     <div class="p-inputgroup w-full">
                         <span class="p-inputgroup-addon"><i class="pi pi-lock text-400"></i></span>
                         <input [type]="showConfirmPassword ? 'text' : 'password'" pInputText id="confirmPassword"
                             formControlName="confirmPassword" placeholder="********">
-                        <button type="button" pButton class="p-button-secondary p-button-text" (click)="toggleConfirmPassword()"
+                        <button type="button" pButton class="p-button-secondary p-button-text"
+                            (click)="toggleConfirmPassword()"
                             [icon]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></button>
                     </div>
                     <small class="text-red-500 mt-1 block"
-                        *ngIf="userForm.errors?.['passwordMismatch'] && confirmPassword.touched">كلمة المرور غير متطابقة</small>
+                        *ngIf="userForm.errors?.['passwordMismatch'] && confirmPassword.touched">كلمة المرور غير
+                        متطابقة</small>
                 </div>
 
                 <!-- Phone -->
@@ -119,72 +138,15 @@
                 </div>
             </div>
 
-            <!-- Employee Toggle -->
-            <div class="field mt-2" *ngIf="!user?.id">
-                <div class="switch-card flex align-items-center justify-content-between">
-                    <div class="switch-info">
-                        <span class="switch-title">تسجيل كموظف؟</span>
-                        <span class="switch-sub">عند التفعيل، سيتم إنشاء ملف موظف لربطه بالرواتب والحضور</span>
-                    </div>
-                    <p-inputSwitch formControlName="isEmployee"></p-inputSwitch>
-                </div>
-            </div>
-
-            <!-- Employee Specific Fields -->
-            <div class="employee-box mt-2" *ngIf="isEmployee.value && !user?.id">
-                <div class="emp-header">
-                    <i class="pi pi-id-card"></i> بيانات الموظف الأساسية
-                </div>
-                <div class="field-group-grid">
-                    <!-- National ID -->
-                    <div class="field">
-                        <label for="nationalId">رقم الهوية <span class="text-red-500">*</span></label>
-                        <span class="p-input-icon-right w-full">
-                            <i class="pi pi-id-card text-400"></i>
-                            <input type="text" pInputText id="nationalId" formControlName="nationalId" placeholder="رقم الهوية">
-                        </span>
-                    </div>
-
-                    <!-- Job Title -->
-                    <div class="field">
-                        <label for="jobTitle">المسمى الوظيفي <span class="text-red-500">*</span></label>
-                        <span class="p-input-icon-right w-full">
-                            <i class="pi pi-briefcase text-400"></i>
-                            <input type="text" pInputText id="jobTitle" formControlName="jobTitle" placeholder="مثال: صيدلي أول">
-                        </span>
-                    </div>
-
-                    <!-- Department -->
-                    <div class="field">
-                        <label for="departmentId">القسم <span class="text-red-500">*</span></label>
-                        <p-dropdown [options]="departments" formControlName="departmentId" optionLabel="name" optionValue="id" styleClass="w-full"
-                            placeholder="اختر القسم" [showClear]="true" [loading]="isLoadingDepartments" appendTo="body">
-                            <ng-template let-option pTemplate="item">
-                                <div class="flex align-items-center gap-2">
-                                    <i class="pi pi-sitemap"></i>
-                                    <span>{{option.name}}</span>
-                                </div>
-                            </ng-template>
-                        </p-dropdown>
-                    </div>
-
-                    <!-- Basic Salary -->
-                    <div class="field">
-                        <label for="basicSalary">الراتب الأساسي (ريال) <span class="text-red-500">*</span></label>
-                        <span class="p-input-icon-right w-full">
-                            <i class="pi pi-money-bill text-400"></i>
-                            <input type="number" pInputText id="basicSalary" formControlName="basicSalary" placeholder="0.00">
-                        </span>
-                    </div>
-                </div>
-            </div>
+            <!-- Employee Toggle Section Removed for ERP Style (Employees managed in HR module) -->
 
             <!-- Active Status -->
             <div class="field mt-2">
                 <div class="switch-card neutral flex align-items-center justify-content-between">
                     <div class="switch-info">
                         <span class="switch-title">حالة الحساب</span>
-                        <span class="switch-sub">{{isActive.value ? 'الحساب مفعل ويمكن للمستخدم تسجيل الدخول' : 'الحساب معطل حالياً'}}</span>
+                        <span class="switch-sub">{{isActive.value ? 'الحساب مفعل ويمكن للمستخدم تسجيل الدخول' : 'الحساب
+                            معطل حالياً'}}</span>
                     </div>
                     <p-inputSwitch formControlName="isActive"></p-inputSwitch>
                 </div>

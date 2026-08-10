@@ -1,73 +1,114 @@
-<div class="report-container" dir="rtl">
-  <!-- Header Section -->
-  <div class="page-header">
-    <div class="title-wrap">
-      <div class="icon-circle"><i class="pi pi-users"></i></div>
+<div class="rpt-wrap" dir="rtl">
+  <!-- ===== Compact Header ===== -->
+  <div class="rpt-header">
+    <div class="rpt-header-start">
+      <div class="rpt-icon">
+        <i class="pi pi-users"></i>
+      </div>
       <div>
-        <h1>تقرير ديون وتحصيلات العملاء</h1>
-        <p>متابعة مديونيات العملاء والمدفوعات والمستحقات القائمة</p>
+        <h1 class="rpt-title">تقرير ديون وتحصيلات العملاء</h1>
+        <p class="rpt-subtitle">متابعة مديونيات العملاء والمدفوعات والمستحقات القائمة</p>
       </div>
     </div>
+  </div>
 
-    <div class="actions no-print">
-      <p-button icon="pi pi-sync" [rounded]="true" severity="primary" pTooltip="تحديث" tooltipPosition="bottom" (onClick)="loadReport()" [loading]="loading()"></p-button>
-      <p-button icon="pi pi-print" [rounded]="true" [outlined]="true" severity="info" pTooltip="طباعة" tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+  <!-- ===== Filter Row ===== -->
+  <div class="rpt-filter-panel no-print">
+    <div class="rpt-filter-grid">
+      <div class="rpt-filter-action">
+        <button pButton icon="pi pi-sync" [rounded]="true" [outlined]="true" severity="info" pTooltip="تحديث البيانات" tooltipPosition="top" (click)="loadReport()" [loading]="loading()" styleClass="rpt-btn-sm"></button>
+        <button pButton icon="pi pi-print" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="طباعة" tooltipPosition="top" (click)="printReport()" styleClass="rpt-btn-sm"></button>
+      </div>
     </div>
   </div>
 
   <!-- Loading State -->
-  <div class="loading-container text-center" *ngIf="loading()" style="padding: 2rem;">
+  <div class="rpt-table-wrap" *ngIf="loading()" style="padding: 3rem; text-align: center;">
     <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
   </div>
 
-  <!-- Summary Cards Section -->
-  <div class="kpi-grid" *ngIf="report() && !loading()">
-    <div class="kpi-card receivable">
-      <span class="kpi-label">إجمالي المديونية المستحقة</span>
-      <strong>{{ formatCurrency(summary().totalReceivable) }} ر.ي</strong>
-      <small>الديون القائمة المطلوب تحصيلها</small>
+  <!-- ===== KPI Row ===== -->
+  <div class="rpt-kpi-row" *ngIf="report() && !loading()">
+    <div class="rpt-kpi-card" data-color="teal" style="grid-column: span 2;">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">إجمالي المديونية المستحقة</span>
+          <strong class="rpt-kpi-value">{{ formatCurrency(summary().totalReceivable) }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-wallet"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">ر.ي | الديون القائمة المطلوب تحصيلها</small>
     </div>
-    <div class="kpi-card debtors">
-      <span class="kpi-label">عدد العملاء المدينين</span>
-      <strong>{{ summary().debtorCount }} عميل</strong>
-      <small>عملاء مسجل عليهم مستحقات</small>
+    
+    <div class="rpt-kpi-card" data-color="amber">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">عملاء مدينين</span>
+          <strong class="rpt-kpi-value">{{ summary().debtorCount }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-amber">
+          <i class="pi pi-arrow-down-left"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">عميل مسجل عليهم مستحقات</small>
     </div>
-    <div class="kpi-card creditors">
-      <span class="kpi-label">عملاء لديهم أرصدة دائنة</span>
-      <strong>{{ summary().creditorCount }} عميل</strong>
-      <small>عملاء لهم مبالغ سابقة مدفوعة مقدمًا</small>
+
+    <div class="rpt-kpi-card" data-color="teal">
+      <div class="rpt-kpi-inner">
+        <div class="rpt-kpi-left">
+          <span class="rpt-kpi-label">عملاء دائنين</span>
+          <strong class="rpt-kpi-value">{{ summary().creditorCount }}</strong>
+        </div>
+        <div class="rpt-kpi-badge rpt-kpi-badge-teal">
+          <i class="pi pi-arrow-up-right"></i>
+        </div>
+      </div>
+      <small class="rpt-kpi-extra">عميل دفعوا مبالغ مقدمًا</small>
     </div>
   </div>
 
-  <!-- Detailed Table -->
-  <section class="table-panel" *ngIf="report() && !loading()">
-    <p-table [value]="report()!.customers" [rowHover]="true" styleClass="p-datatable-sm compact-table" [paginator]="true" [rows]="15">
+  <!-- ===== Table ===== -->
+  <div class="rpt-table-wrap" *ngIf="report() && !loading()">
+    <p-table [value]="report()!.customers" styleClass="rpt-table" [paginator]="true" [rows]="15" [responsive]="true">
+      <ng-template pTemplate="caption">
+        <div class="rpt-table-caption">
+          <span><i class="pi pi-list"></i> قائمة العملاء وأرصدتهم</span>
+        </div>
+      </ng-template>
       <ng-template pTemplate="header">
         <tr>
           <th>اسم العميل</th>
           <th>رقم الجوال</th>
-          <th class="text-center" style="width: 120px;">المشتريات الكلية</th>
-          <th class="text-center" style="width: 120px;">المدفوعات الكلية</th>
-          <th class="text-center" style="width: 120px;">الرصيد الحالي</th>
-          <th class="text-center" style="width: 110px;">الحالة القانونية</th>
+          <th class="text-center">المشتريات الكلية</th>
+          <th class="text-center">المدفوعات الكلية</th>
+          <th class="text-center">الرصيد الحالي</th>
+          <th class="text-center">الحالة القانونية</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-item>
         <tr>
           <td><strong style="color: #1e293b;">{{ item.customerName }}</strong></td>
-          <td><span class="muted" style="font-family: monospace;">{{ item.phoneNumber || '-' }}</span></td>
-          <td class="text-center" style="font-weight: 600;">{{ formatCurrency(item.totalPurchases) }}</td>
-          <td class="text-center" style="font-weight: 600;">{{ formatCurrency(item.totalPayments) }}</td>
-          <td class="text-center font-bold" [class.text-danger]="item.balance > 0" [class.text-success]="item.balance < 0">
+          <td><span style="color: #64748b; font-family: monospace; font-size: 0.72rem;">{{ item.phoneNumber || '-' }}</span></td>
+          <td class="text-center" style="font-weight: 600; color: #475569;">{{ formatCurrency(item.totalPurchases) }}</td>
+          <td class="text-center" style="font-weight: 600; color: #475569;">{{ formatCurrency(item.totalPayments) }}</td>
+          <td class="text-center" style="font-weight: 800;" [ngClass]="item.balance > 0 ? 'text-danger' : (item.balance < 0 ? 'text-success' : '')" [style.color]="item.balance > 0 ? '#dc2626' : (item.balance < 0 ? '#0d9488' : '#1e293b')">
             {{ formatCurrency(Math.abs(item.balance)) }}
           </td>
           <td class="text-center">
-            <span class="type-pill" [class.type-red]="item.balance > 0" [class.type-green]="item.balance < 0">
-              {{ item.balance > 0 ? 'مدين (عليه)' : 'دائن (له)' }}
+            <span class="rpt-chip" [ngClass]="item.balance > 0 ? 'chip-danger' : (item.balance < 0 ? 'chip-success' : 'chip-info')">
+              {{ item.balance > 0 ? 'مدين (عليه)' : (item.balance < 0 ? 'دائن (له)' : 'متوازن') }}
             </span>
           </td>
         </tr>
       </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr><td colspan="6" class="rpt-empty">
+          <i class="pi pi-users"></i>
+          <span>لا توجد بيانات للعملاء</span>
+        </td></tr>
+      </ng-template>
     </p-table>
-  </section>
+  </div>
 </div>

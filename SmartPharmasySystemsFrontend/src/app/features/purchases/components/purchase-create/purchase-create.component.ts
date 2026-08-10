@@ -23,6 +23,10 @@ import { BarcodeService } from '../../../../core/services/barcode.service';
 import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
 import { TransactionType } from '../../../../core/models/barcode.interface';
 import { HostListener } from '@angular/core';
+import { InventoryService } from '../../../inventory/services/inventory.service';
+import { Medicine } from '../../../../core/models';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 @Component({
     selector: 'app-purchase-invoice-create',
@@ -40,19 +44,20 @@ import { HostListener } from '@angular/core';
         TagModule,
         DividerModule,
         CalendarModule,
-        InvoiceItemDialogComponent,
         ConfirmationDialogComponent,
-        BarcodeSimulatorComponent
+        BarcodeSimulatorComponent,
+        AutoCompleteModule,
+        InputNumberModule
     ],
     templateUrl: './purchase-create.component.html',
     styleUrls: ['./purchase-create.component.scss'],
     providers: [ConfirmationService]
 })
 export class PurchaseInvoiceCreateComponent implements OnInit {
-    @ViewChild('itemDialog') itemDialog!: InvoiceItemDialogComponent;
     @ViewChild('confirmDialog') confirmDialog!: ConfirmationDialogComponent;
 
     purchaseForm: FormGroup;
+    inlineItemForm: FormGroup;
     saving = false;
     isEditMode = false;
     currentInvoiceId: number | null = null;
@@ -60,6 +65,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     suppliers: Supplier[] = [];
     warehouses: WarehouseDto[] = [];
     status: DocumentStatus = DocumentStatus.Draft;
+
+    // Inline Entry Properties
+    filteredMedicines: Medicine[] = [];
+    unitOptions: any[] = [];
+    selectedMedicine: Medicine | null = null;
+    baseUnitName = 'حبة';
 
     paymentMethods = [
         { label: 'نقد (Cash)', value: 1 },
@@ -75,7 +86,8 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         private router: Router,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private barcodeService: BarcodeService
+        private barcodeService: BarcodeService,
+        private inventoryService: InventoryService
     ) {
         this.purchaseForm = this.fb.group({
             supplierId: [null, Validators.required],
@@ -84,7 +96,21 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             purchaseDate: [new Date(), Validators.required],
             paymentMethod: [1, Validators.required],
             notes: [''],
+            storageLocation: [''],
             purchaseInvoiceDetails: this.fb.array([])
+        });
+
+        this.inlineItemForm = this.fb.group({
+            medicineId: [null, Validators.required],
+            medicineName: [''],
+            companyBatchNumber: [''],
+            expiryDate: [null, Validators.required],
+            quantity: [1, [Validators.required, Validators.min(1)]],
+            bonusQuantity: [0],
+            price: [0, [Validators.required, Validators.min(0)]],
+            salePrice: [0],
+            selectedUnit: ['base', Validators.required],
+            unitId: [null]
         });
     }
 
@@ -99,12 +125,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         } else {
             // Check for pre-filled medicine from query params
             const medicineId = this.route.snapshot.queryParams['medicineId'];
-            const medicineName = this.route.snapshot.queryParams['medicineName'];
             if (medicineId) {
-                // Use a slight timeout to ensure view is fully initialized before opening dialog
-                setTimeout(() => {
-                    this.itemDialog.prefillMedicineById(+medicineId);
-                }, 100);
+                this.inventoryService.getMedicineById(+medicineId).subscribe({
+                    next: (medicine) => {
+                        this.onMedicineSelect(medicine);
+                    }
+                });
             }
         }
     }
@@ -211,7 +237,8 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     }
 
     get isReadOnly() {
-        return this.status !== DocumentStatus.Draft;
+        const isDraft = (this.status as any) === 'Draft' || this.status === DocumentStatus.Draft || Number(this.status) === 1;
+        return !isDraft;
     }
 
     get details() {
@@ -220,7 +247,8 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
     loadInvoice(id: number) {
         this.purchaseService.getById(id).subscribe((data: PurchaseInvoice) => {
-            if (data.status !== DocumentStatus.Draft) {
+            const isDraft = (data.status as any) === 'Draft' || data.status === DocumentStatus.Draft || Number(data.status) === 1;
+            if (!isDraft) {
                 this.router.navigate(['/purchases', id]);
                 return;
             }
@@ -230,65 +258,182 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             });
             this.status = data.status || DocumentStatus.Draft;
             this.details.clear();
+            
+            // Extract storage location from first item if it exists
+            if (data.items && data.items.length > 0) {
+                const firstItemWithLocation = data.items.find(i => (i as any).storageLocation);
+                if (firstItemWithLocation) {
+                    this.purchaseForm.patchValue({ storageLocation: (firstItemWithLocation as any).storageLocation });
+                }
+            }
+
             data.items?.forEach((d: any) => this.addDetailToForm(d));
         });
     }
 
     addDetailToForm(detail: any) {
+        // Use QuantityInPurchaseUnit for UI display if available, otherwise fallback to quantity
+        const displayQuantity = detail.quantityInPurchaseUnit || detail.quantity;
+
         const group = this.fb.group({
             id: [detail.id || 0],
             medicineId: [detail.medicineId, Validators.required],
             medicineName: [detail.medicineName],
             companyBatchNumber: [detail.companyBatchNumber],
             expiryDate: [detail.expiryDate ? new Date(detail.expiryDate) : null],
-            quantity: [detail.quantity, [Validators.required, Validators.min(1)]],
+            quantity: [displayQuantity, [Validators.required, Validators.min(1)]],
             purchaseUnitId: [detail.purchaseUnitId || null],
             bonusQuantity: [detail.bonusQuantity || 0],
             purchasePrice: [detail.purchasePrice, Validators.required],
             salePrice: [detail.salePrice, Validators.required],
-            total: [detail.total || (detail.quantity * detail.purchasePrice)],
+            total: [detail.total || (displayQuantity * detail.purchasePrice)],
             storageLocation: [detail.storageLocation || null]
         });
         this.details.push(group);
     }
 
-    openItemDialog(item?: any, index?: number) {
-        this.editingIndex = index !== undefined ? index : null;
-        const dialogData = item ? {
-            medicineId: item.medicineId,
-            medicineName: item.medicineName,
-            companyBatchNumber: item.companyBatchNumber,
-            expiryDate: item.expiryDate,
-            quantity: item.quantity,
-            unitId: item.purchaseUnitId,
-            bonusQuantity: item.bonusQuantity,
-            price: item.purchasePrice,
-            salePrice: item.salePrice
-        } : null;
-        this.itemDialog.show(dialogData);
+    // --- Inline Entry Methods ---
+
+    searchMedicines(event: any) {
+        this.inventoryService.searchMedicines({ search: event.query }).subscribe(res => {
+            this.filteredMedicines = res.items;
+        });
     }
 
-    onItemSaved(itemData: any) {
+    onMedicineSelect(medicine: Medicine) {
+        this.selectedMedicine = medicine;
+        this.baseUnitName = medicine.baseUnitName || 'حبة';
+        this.buildUnitOptions(medicine);
+
+        // توليد رقم دفعة تلقائياً بنفس صيغة الباك إند: BAT-YYMMDD-XXXX
+        const date = new Date();
+        const yy = String(date.getFullYear()).slice(-2);
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const randomString = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const autoBatchNumber = `BAT-${yy}${mm}${dd}-${randomString}`;
+
+        this.inlineItemForm.patchValue({
+            medicineId: medicine.id,
+            medicineName: medicine.name,
+            selectedUnit: 'base',
+            companyBatchNumber: autoBatchNumber,
+            price: medicine.defaultPurchasePrice || 0,
+            salePrice: medicine.defaultSalePrice || 0,
+            unitId: null
+        });
+    }
+
+    buildUnitOptions(medicine: Medicine) {
+        this.unitOptions = [
+            {
+                label: `${this.baseUnitName} (أساسية)`,
+                value: 'base',
+                purchasePrice: medicine.defaultPurchasePrice || 0,
+                salePrice: medicine.defaultSalePrice || 0
+            }
+        ];
+        if (medicine.medicineUnits && medicine.medicineUnits.length > 0) {
+            medicine.medicineUnits.forEach(u => {
+                this.unitOptions.push({
+                    label: `${u.name} (${u.conversionFactor} ${this.baseUnitName})`,
+                    value: u.id,
+                    purchasePrice: u.defaultPurchasePrice,
+                    salePrice: u.defaultSalePrice
+                });
+            });
+        }
+    }
+
+    onUnitSelect(event: any) {
+        const unitVal = event.value;
+        const option = this.unitOptions.find(o => o.value === unitVal);
+        if (option) {
+            this.inlineItemForm.patchValue({
+                price: option.purchasePrice,
+                salePrice: option.salePrice,
+                unitId: option.value === 'base' ? null : option.value
+            });
+        }
+    }
+
+    addInlineItem() {
+        if (this.inlineItemForm.invalid) {
+            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى إكمال بيانات الصنف' });
+            return;
+        }
+
+        const val = this.inlineItemForm.getRawValue();
+        const selectedUnitVal = val.selectedUnit;
+        const option = this.unitOptions.find(o => o.value === selectedUnitVal);
+
+        if (option && selectedUnitVal !== 'base') {
+            const unitName = option.label.split(' ')[0];
+            val.medicineName = `${val.medicineName} (${unitName})`;
+        }
+
         const detail = {
-            medicineId: itemData.medicineId,
-            medicineName: itemData.medicineName,
-            companyBatchNumber: itemData.companyBatchNumber,
-            expiryDate: itemData.expiryDate,
-            quantity: itemData.quantity,
-            purchaseUnitId: itemData.unitId,
-            bonusQuantity: itemData.bonusQuantity,
-            purchasePrice: itemData.price,
-            salePrice: itemData.salePrice,
-            total: itemData.quantity * itemData.price,
-            storageLocation: itemData.storageLocation || null
+            medicineId: val.medicineId,
+            medicineName: val.medicineName,
+            companyBatchNumber: val.companyBatchNumber,
+            expiryDate: val.expiryDate,
+            quantity: val.quantity,
+            purchaseUnitId: val.unitId,
+            bonusQuantity: val.bonusQuantity,
+            purchasePrice: val.price,
+            salePrice: val.salePrice,
+            total: val.quantity * val.price,
+            storageLocation: this.purchaseForm.get('storageLocation')?.value || null
         };
 
         if (this.editingIndex !== null) {
             this.details.at(this.editingIndex).patchValue(detail);
+            this.editingIndex = null;
         } else {
             this.addDetailToForm(detail);
         }
+
+        this.resetInlineForm();
+        // Focus back to medicine input? (could use a ViewChild for this if desired)
     }
+
+    editItem(index: number) {
+        const item = this.details.at(index).value;
+        this.editingIndex = index;
+
+        // Populate the inline form to edit it
+        this.inventoryService.getMedicineById(item.medicineId).subscribe(medicine => {
+            this.selectedMedicine = medicine;
+            this.baseUnitName = medicine.baseUnitName || 'حبة';
+            this.buildUnitOptions(medicine);
+
+            this.inlineItemForm.patchValue({
+                medicineId: item.medicineId,
+                medicineName: item.medicineName,
+                companyBatchNumber: item.companyBatchNumber,
+                expiryDate: item.expiryDate ? new Date(item.expiryDate) : null,
+                quantity: item.quantity,
+                bonusQuantity: item.bonusQuantity,
+                price: item.purchasePrice,
+                salePrice: item.salePrice,
+                selectedUnit: item.purchaseUnitId || 'base',
+                unitId: item.purchaseUnitId
+            });
+        });
+    }
+
+    resetInlineForm() {
+        this.editingIndex = null;
+        this.selectedMedicine = null;
+        this.inlineItemForm.reset({
+            quantity: 1,
+            bonusQuantity: 0,
+            price: 0,
+            salePrice: 0,
+            selectedUnit: 'base'
+        });
+    }
+
 
     removeItem(index: number) {
         this.details.removeAt(index);
@@ -404,10 +549,18 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
         saveObs.subscribe({
             next: (res) => {
-                this.purchaseService.approve(res.id).subscribe({
+                const invoiceId = (this.isEditMode && this.currentInvoiceId) ? this.currentInvoiceId : res?.id;
+                
+                if (!invoiceId) {
+                    this.saving = false;
+                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'تعذر الحصول على رقم الفاتورة' });
+                    return;
+                }
+
+                this.purchaseService.approve(invoiceId).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم التوريد والترحيل للمخازن بنجاح' });
-                        this.router.navigate(['/purchases', res.id]);
+                        this.router.navigate(['/purchases', invoiceId]);
                     },
                     error: (err) => {
                         this.saving = false;

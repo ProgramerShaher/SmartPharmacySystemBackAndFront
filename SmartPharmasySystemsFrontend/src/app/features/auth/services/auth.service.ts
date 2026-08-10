@@ -12,6 +12,7 @@ import {
     CurrentUserResponse
 } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
+import { PermissionService } from '../../../core/services/permission.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -22,7 +23,8 @@ export class AuthService {
 
     constructor(
         private http: HttpClient,
-        private router: Router
+        private router: Router,
+        private permissionService: PermissionService
     ) {
         this.isBrowser = isPlatformBrowser(this.platformId);
 
@@ -53,6 +55,9 @@ export class AuthService {
                 this.setToken(loginResponse.token);
                 this.setCurrentUser(loginResponse);
                 this.currentUserSubject.next(loginResponse);
+
+                // Load permissions immediately after login
+                this.permissionService.loadMyPermissions().subscribe();
             })
         );
     }
@@ -101,6 +106,30 @@ export class AuthService {
     }
 
     /**
+     * Switch Branch
+     */
+    switchBranch(branchId: number): Observable<LoginResponse> {
+        return this.http.post<ApiResponse<LoginResponse>>(
+            `${environment.apiUrl}/Auth/switch-branch/${branchId}`,
+            {}
+        ).pipe(
+            map(response => {
+                const data = response.data;
+                if (this.isBrowser) {
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('current_user', JSON.stringify(data));
+                }
+
+                // Fetch permissions from API
+                this.permissionService.loadMyPermissions().subscribe();
+
+                this.currentUserSubject.next(data);
+                return data;
+            })
+        );
+    }
+
+    /**
      * Logout
      */
     logout(): void {
@@ -108,6 +137,8 @@ export class AuthService {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('current_user');
         }
+        // مسح الصلاحيات من الذاكرة
+        this.permissionService.clearPermissions();
         this.currentUserSubject.next(null);
         this.router.navigate(['/auth/login']);
     }

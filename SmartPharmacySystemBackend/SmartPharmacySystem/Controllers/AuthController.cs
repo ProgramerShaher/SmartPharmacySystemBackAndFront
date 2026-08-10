@@ -114,4 +114,34 @@ public class AuthController : ControllerBase
             return StatusCode(500, ApiResponse<object>.Failed("حدث خطأ أثناء جلب معلومات المستخدم"));
         }
     }
+
+    /// <summary>
+    /// تبديل الفرع النشط (للمستخدمين الذين لديهم صلاحية على أكثر من فرع)
+    /// </summary>
+    [HttpPost("switch-branch/{branchId}")]
+    [Authorize]
+    public async Task<IActionResult> SwitchBranch(int branchId)
+    {
+        try
+        {
+            var userId = _currentUserService.UserId;
+            if (!userId.HasValue)
+            {
+                return Unauthorized(ApiResponse<LoginResponseDto>.Failed("المستخدم غير مصادق عليه"));
+            }
+
+            var response = await _authService.SwitchBranchAsync(userId.Value, branchId);
+            return Ok(ApiResponse<LoginResponseDto>.Succeeded(response, "تم التبديل للفرع بنجاح"));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning("Switch branch failed: {Message}", ex.Message);
+            return Unauthorized(ApiResponse<LoginResponseDto>.Failed(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during branch switch");
+            return StatusCode(500, ApiResponse<LoginResponseDto>.Failed("حدث خطأ أثناء تبديل الفرع"));
+        }
+    }
 }

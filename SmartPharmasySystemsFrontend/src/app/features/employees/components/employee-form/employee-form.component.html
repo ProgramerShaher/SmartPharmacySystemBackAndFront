@@ -59,6 +59,21 @@
             </div>
         </div>
 
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
+            <div style="flex: 1;">
+                <label class="dialog-label">ربط بمستخدم نظام (اختياري)</label>
+                <p-dropdown [options]="users()" [(ngModel)]="model.userId" optionLabel="username" optionValue="id"
+                    placeholder="اختر مستخدم النظام" [showClear]="true" appendTo="body">
+                    <ng-template let-user pTemplate="item">
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-user"></i>
+                            <span>{{user.fullName}} ({{user.username}})</span>
+                        </div>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+
         <div style="display: flex; align-items: center; gap: 0.4rem; height: 1.8rem; margin-top: 0.25rem;">
             <p-inputSwitch [(ngModel)]="model.isActive"></p-inputSwitch>
             <label class="dialog-label" style="margin: 0;">نشط بالخدمة</label>

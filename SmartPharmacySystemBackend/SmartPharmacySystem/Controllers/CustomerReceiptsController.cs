@@ -21,6 +21,7 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> Create(CreateCustomerReceiptDto dto)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "1");
+            
             var result = await _receiptService.CreateAsync(dto, userId);
             return Ok(ApiResponse<CustomerReceiptDto>.Succeeded(result, "تم إصدار سند القبض بنجاح"));
         }

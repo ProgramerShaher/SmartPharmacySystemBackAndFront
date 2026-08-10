@@ -15,6 +15,7 @@ export interface EmployeeDto {
     totalLoans: number;
     remainingLoans: number;
     createdAt: string;
+    userId: number;
 }
 
 export interface CreateEmployeeDto {
@@ -27,6 +28,8 @@ export interface CreateEmployeeDto {
     hireDate: string;
     basicSalary: number;
     isActive: boolean;
+    userId: number;
+
 }
 
 export interface UpdateEmployeeDto {
@@ -40,6 +43,8 @@ export interface UpdateEmployeeDto {
     hireDate: string;
     basicSalary: number;
     isActive: boolean;
+    userId: number;
+
 }
 
 export interface EmployeeQueryDto {

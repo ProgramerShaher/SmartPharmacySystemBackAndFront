@@ -41,6 +41,15 @@ public class UserDto
     public string PhoneNumber { get; set; } = string.Empty;
     public string Notes { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
-
     public bool IsDeleted { get; set; }
+
+    /// <summary>
+    /// الفرع الافتراضي للمستخدم
+    /// </summary>
+    public int? DefaultBranchId { get; set; }
+
+    /// <summary>
+    /// الفروع المسموح للمستخدم بالدخول إليها
+    /// </summary>
+    public List<int> AllowedBranchIds { get; set; } = new();
 }

@@ -1,0 +1,56 @@
+<div class="modal-shell" dir="rtl">
+    <div class="modal-header">
+        <div class="modal-title">
+            <span class="modal-icon">
+                <i class="pi pi-shield"></i>
+            </span>
+            <div>
+                <h2>صلاحيات المستخدم</h2>
+                <p>إدارة الصلاحيات المخصصة لـ: <span class="font-bold text-primary">{{ user?.fullName }}</span></p>
+            </div>
+        </div>
+        <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn"
+            (click)="onCancel()"></button>
+    </div>
+
+    <div class="modal-body">
+        <div *ngIf="loadingData" class="flex justify-content-center align-items-center p-5">
+            <p-progressSpinner></p-progressSpinner>
+        </div>
+
+        <div *ngIf="!loadingData">
+            <div class="mb-4">
+                <div class="surface-ground p-3 border-round text-sm text-600 mb-3">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    قم بتحديد الصلاحيات الإضافية أو إزالة الصلاحيات التي لا ترغب بمنحها لهذا المستخدم. هذه التغييرات تعتبر (استثناءات) على دوره الأساسي ({{ user?.roleName }}).
+                </div>
+            </div>
+
+            <p-accordion [multiple]="true">
+                <p-accordionTab *ngFor="let group of permissionGroups" [header]="group.moduleAr">
+                    <div class="grid">
+                        <div class="col-12 md:col-6 lg:col-4 mb-3" *ngFor="let perm of group.permissions">
+                            <div class="flex align-items-center">
+                                <p-checkbox 
+                                    name="permissionsGroup" 
+                                    [value]="perm.id" 
+                                    [(ngModel)]="selectedPermissionIds" 
+                                    [inputId]="'perm_' + perm.id">
+                                </p-checkbox>
+                                <label [for]="'perm_' + perm.id" class="ml-2 cursor-pointer">{{ perm.actionAr || perm.action }}</label>
+                            </div>
+                            <small class="text-500 block mt-1 ml-4" *ngIf="perm.description">{{ perm.description }}</small>
+                        </div>
+                    </div>
+                </p-accordionTab>
+            </p-accordion>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button pButton label="إلغاء" icon="pi pi-times" [rounded]="true" [outlined]="true" severity="secondary"
+            (click)="onCancel()"></button>
+        <button pButton label="حفظ الصلاحيات" icon="pi pi-check" [rounded]="true" class="p-button-primary"
+            [disabled]="loading || loadingData" [loading]="loading" (click)="savePermissions()"></button>
+    </div>
+</div>

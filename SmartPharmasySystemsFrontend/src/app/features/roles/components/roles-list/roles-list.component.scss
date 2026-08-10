@@ -1,0 +1,83 @@
+.roles-container {
+    padding: 0.25rem;
+    font-size: 11px;
+}
+
+:host ::ng-deep {
+    .compact-table {
+        .p-datatable-header,
+        .p-datatable-thead > tr > th,
+        .p-datatable-tbody > tr > td,
+        .p-datatable-tfoot > tr > td {
+            padding: 0.2rem 0.25rem !important;
+            font-size: 11px !important;
+        }
+
+        .p-datatable-thead > tr > th {
+            background-color: var(--surface-ground);
+            color: var(--text-color);
+            font-weight: 600;
+        }
+    }
+
+    .action-btn {
+        width: 1.5rem !important;
+        height: 1.5rem !important;
+        .pi {
+            font-size: 0.75rem !important;
+        }
+    }
+
+    .color-badge {
+        display: inline-block;
+        width: 1.2rem;
+        height: 1.2rem;
+        border-radius: 50%;
+        border: 1px solid var(--surface-border);
+    }
+
+    .compact-dialog {
+        .p-dialog-titlebar {
+            padding: 0.5rem !important;
+        }
+        .p-dialog-title {
+            font-size: 12px !important;
+        }
+        .p-dialog-content {
+            padding: 0.5rem !important;
+        }
+        .p-dialog-footer {
+            padding: 0.5rem !important;
+        }
+        .field {
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    .tree-container {
+        max-height: 380px;
+        overflow-y: auto;
+    }
+
+    .compact-tree {
+        .p-tree-container {
+            padding: 0 !important;
+        }
+        .p-treenode-content {
+            padding: 0.1rem !important;
+        }
+        .p-tree-toggler,
+        .p-checkbox {
+            width: 1rem !important;
+            height: 1rem !important;
+        }
+        .p-checkbox-box {
+            width: 1rem !important;
+            height: 1rem !important;
+        }
+        .p-treenode-label {
+            font-size: 11px !important;
+            padding: 0 0.25rem !important;
+        }
+    }
+}

@@ -1,0 +1,48 @@
+@import '../reports-shared.scss';
+
+.analytics-grid {
+  display: flex;
+  gap: 0.6rem;
+}
+
+@media (max-width: 768px) {
+  .analytics-grid {
+    flex-direction: column;
+  }
+}
+
+.profit-details {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.profit-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+  font-size: 0.75rem;
+
+  .label {
+    color: #64748b;
+  }
+
+  .amount {
+    font-weight: 600;
+    color: #475569;
+  }
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}

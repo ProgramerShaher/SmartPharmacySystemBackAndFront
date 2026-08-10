@@ -397,14 +397,19 @@ $radius: 10px;
   color: #4338ca;
 }
 
-.role-user {
+.role-pharmacist {
   background: $teal-light;
   color: $teal-dark;
 }
 
-.role-editor {
+.role-accounting {
   background: #fdf4ff;
   color: #a21caf;
+}
+
+.role-user {
+  background: #f1f5f9;
+  color: #475569;
 }
 
 .role-other {

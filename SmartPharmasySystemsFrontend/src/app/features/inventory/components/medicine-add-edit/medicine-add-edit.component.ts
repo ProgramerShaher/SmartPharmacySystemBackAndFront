@@ -157,6 +157,7 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
                 }
             } else {
                 this.medicineForm.reset({
+                    internalCode: this.generateCode(),
                     defaultPurchasePrice: 0,
                     defaultSalePrice: 0,
                     minAlertQuantity: 5,
@@ -166,6 +167,17 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
                     baseUnitName: 'حبة'
                 });
             }
+        }
+    }
+
+    generateCode(): string {
+        return 'MED-' + Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    selectText(event: any) {
+        const target = event?.target || event?.originalEvent?.target;
+        if (target && typeof target.select === 'function') {
+            target.select();
         }
     }
 

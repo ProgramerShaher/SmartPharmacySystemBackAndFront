@@ -12,4 +12,9 @@ public class UpdateEmployeeDto
     public DateTime HireDate { get; set; }
     public decimal BasicSalary { get; set; }
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// رابط حساب المستخدم بالنظام (اختياري)
+    /// </summary>
+    public int? UserId { get; set; }
 }

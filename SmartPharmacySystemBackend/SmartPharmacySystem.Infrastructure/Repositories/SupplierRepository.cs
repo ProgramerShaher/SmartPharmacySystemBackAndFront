@@ -146,4 +146,14 @@ public class SupplierRepository : ISupplierRepository
 
         return (items, totalCount);
     }
+
+    public async Task UpdateBalanceAsync(int supplierId, decimal amount)
+    {
+        var supplier = await _context.Suppliers.FirstOrDefaultAsync(s => s.Id == supplierId && !s.IsDeleted);
+        if (supplier != null)
+        {
+            supplier.Balance += amount;
+            _context.Entry(supplier).State = EntityState.Modified;
+        }
+    }
 }

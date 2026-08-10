@@ -15,17 +15,20 @@ namespace SmartPharmacySystem.Controllers
         private readonly IUserService _userService;
         private readonly IAuthService _authService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IPermissionService _permissionService;
         private readonly ILogger<UsersController> _logger;
 
         public UsersController(
             IUserService userService,
             IAuthService authService,
             ICurrentUserService currentUserService,
+            IPermissionService permissionService,
             ILogger<UsersController> logger)
         {
             _userService = userService;
             _authService = authService;
             _currentUserService = currentUserService;
+            _permissionService = permissionService;
             _logger = logger;
         }
 
@@ -132,6 +135,57 @@ namespace SmartPharmacySystem.Controllers
 
             await _userService.DeleteUserAsync(id);
             return Ok(ApiResponse<object>.Succeeded(null, "User deleted successfully"));
+        }
+
+        [HttpGet("me/permissions")]
+        [Authorize]
+        public async Task<IActionResult> GetMyPermissions()
+        {
+            var userId = _currentUserService.UserId;
+            if (!userId.HasValue)
+                return Unauthorized(ApiResponse<object>.Failed("User not authenticated", 401));
+
+            var permissions = await _permissionService.GetUserEffectivePermissionsAsync(userId.Value);
+            
+            return Ok(ApiResponse<List<string>>.Succeeded(permissions, "Permissions retrieved successfully"));
+        }
+
+        [HttpGet("{id}/permissions")]
+        public async Task<IActionResult> GetUserPermissions(int id)
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+                return NotFound(ApiResponse<object>.Failed("المستخدم غير موجود"));
+
+            var permissionIds = await _permissionService.GetUserEffectivePermissionIdsAsync(id);
+            return Ok(ApiResponse<List<int>>.Succeeded(permissionIds, "Permissions retrieved successfully"));
+        }
+
+        [HttpPut("{id}/permissions")]
+        public async Task<IActionResult> AssignUserPermissions(int id, [FromBody] List<int> permissionIds)
+        {
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null)
+                return NotFound(ApiResponse<object>.Failed("المستخدم غير موجود"));
+
+            await _permissionService.AssignUserPermissionsAsync(id, permissionIds);
+            return Ok(ApiResponse<object>.Succeeded(null, "تم حفظ صلاحيات المستخدم بنجاح"));
+        }
+
+        [HttpPut("{id}/roles")]
+        //[RequirePermission("access.users.manage")]
+        public async Task<IActionResult> AssignRole(int id, [FromBody] AssignRoleDto dto)
+        {
+            // For now we assume updating the role via user service
+            var user = await _userService.GetUserByIdAsync(id);
+            if (user == null) return NotFound(ApiResponse<object>.Failed("المستخدم غير موجود"));
+
+            var updateDto = new UpdateUserDto { Id = id, RoleId = dto.RoleId };
+            // Copy existing necessary fields so we don't null them out, 
+            // In a real app we'd have a specific method in IUserService for AssignRole
+            await _userService.UpdateUserAsync(id, updateDto);
+            
+            return Ok(ApiResponse<object>.Succeeded(null, "تم تعيين الدور بنجاح"));
         }
     }
 }

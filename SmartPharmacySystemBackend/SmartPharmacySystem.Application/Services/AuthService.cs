@@ -21,15 +21,18 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
     private readonly ILogger<AuthService> _logger;
+    private readonly IPermissionService _permissionService;
 
     public AuthService(
         IUnitOfWork unitOfWork,
         IConfiguration configuration,
-        ILogger<AuthService> logger)
+        ILogger<AuthService> logger,
+        IPermissionService permissionService)
     {
         _unitOfWork = unitOfWork;
         _configuration = configuration;
         _logger = logger;
+        _permissionService = permissionService;
     }
 
     /// <summary>
@@ -101,7 +104,70 @@ public class AuthService : IAuthService
             RoleName = role.Name,
             Email = user.Email,
             BranchId = tokenDetails.Item2,
-            BranchName = branchName
+            BranchName = branchName,
+            // ERP: بيانات الموظف المرتبط بهذا الحساب
+            EmployeeId = tokenDetails.Item3,
+            EmployeeCode = tokenDetails.Item4,
+            EmployeeName = tokenDetails.Item5,
+            // ERP: الفروع المتاحة
+            AllowedBranchIds = tokenDetails.Item6
+        };
+    }
+
+    /// <summary>
+    /// تبديل الفرع النشط وإرجاع توكن جديد
+    /// </summary>
+    public async Task<LoginResponseDto> SwitchBranchAsync(int userId, int newBranchId)
+    {
+        // 1. الحصول على المستخدم
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null || user.IsDeleted || user.Status != Core.Enums.UserStatus.Active)
+        {
+            throw new UnauthorizedAccessException("المستخدم غير موجود أو غير نشط");
+        }
+
+        // 2. الحصول على دور المستخدم
+        var role = await _unitOfWork.Roles.GetByIdAsync(user.RoleId);
+        if (role == null)
+        {
+            throw new InvalidOperationException("دور المستخدم غير موجود");
+        }
+
+        // 3. التحقق من صلاحية وصول المستخدم لهذا الفرع
+        var assignments = await _unitOfWork.EmployeeBranchAssignments.GetActiveAssignmentsByUserIdAsync(userId);
+        var allowedBranchIds = assignments.Select(a => a.BranchId).ToList();
+
+        if (role.Name != "Admin" && !allowedBranchIds.Contains(newBranchId))
+        {
+            throw new UnauthorizedAccessException("ليس لديك صلاحية الدخول لهذا الفرع");
+        }
+
+        // 4. توليد التوكن الجديد مع الفرع المحدد
+        var tokenDetails = await GenerateJwtTokenAsync(user, role.Name, newBranchId);
+
+        _logger.LogInformation("Branch switched successfully for user: {Username} to Branch: {BranchId}", user.Username, newBranchId);
+
+        string? branchName = null;
+        if (tokenDetails.Item2.HasValue)
+        {
+            var branch = await _unitOfWork.Branches.GetByIdAsync(tokenDetails.Item2.Value);
+            branchName = branch?.Name;
+        }
+
+        return new LoginResponseDto
+        {
+            Token = tokenDetails.Item1,
+            UserId = user.Id,
+            Username = user.Username,
+            FullName = user.FullName,
+            RoleName = role.Name,
+            Email = user.Email,
+            BranchId = tokenDetails.Item2,
+            BranchName = branchName,
+            EmployeeId = tokenDetails.Item3,
+            EmployeeCode = tokenDetails.Item4,
+            EmployeeName = tokenDetails.Item5,
+            AllowedBranchIds = tokenDetails.Item6
         };
     }
 
@@ -170,7 +236,7 @@ public class AuthService : IAuthService
     /// إنشاء JWT Token
     /// Generate JWT token
     /// </summary>
-    private async Task<(string, int?)> GenerateJwtTokenAsync(Core.Entities.User user, string roleName, int? requestedBranchId = null)
+    private async Task<(string, int?, int?, string?, string?, List<int>)> GenerateJwtTokenAsync(Core.Entities.User user, string roleName, int? requestedBranchId = null)
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
@@ -188,23 +254,57 @@ public class AuthService : IAuthService
             new Claim("RoleId", user.RoleId.ToString())
         };
 
-        // الحصول على تعيين الفرع
+        // الحصول على الصلاحيات الفعلية للمستخدم
+        var permissions = await _permissionService.GetUserEffectivePermissionsAsync(user.Id);
+        if (permissions.Any())
+        {
+            claims.Add(new Claim("Permissions", string.Join(",", permissions)));
+        }
+
+        // الحصول على الفروع المتاحة للمستخدم
+        var assignments = await _unitOfWork.EmployeeBranchAssignments.GetActiveAssignmentsByUserIdAsync(user.Id);
+        var allowedBranchIds = assignments.Select(a => a.BranchId).ToList();
+
+        if (allowedBranchIds.Any())
+        {
+            claims.Add(new Claim("AllowedBranches", string.Join(",", allowedBranchIds)));
+        }
+
+        // الحصول على تعيين الفرع النهائي
         int? finalBranchId = null;
 
-        if (requestedBranchId.HasValue && roleName == "Admin")
+        if (requestedBranchId.HasValue && (roleName == "Admin" || allowedBranchIds.Contains(requestedBranchId.Value)))
         {
-            // السماح للمدير بانتحال شخصية أي فرع لاختبار النظام
             finalBranchId = requestedBranchId.Value;
         }
         else
         {
-            var assignment = await _unitOfWork.EmployeeBranchAssignments.GetActiveAssignmentByUserIdAsync(user.Id);
-            finalBranchId = assignment?.BranchId;
+            // استخدم الفرع الافتراضي، وإلا فاستخدم أول فرع متاح
+            finalBranchId = user.DefaultBranchId ?? allowedBranchIds.FirstOrDefault();
         }
 
         claims.Add(new Claim("BranchId", finalBranchId?.ToString() ?? ""));
 
-        var expirationMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "480"); // Default 8 hours
+        // ERP: ربط المستخدم بموظفه في هذا الفرع النشط
+        int? employeeId = null;
+        string? employeeCode = null;
+        string? employeeName = null;
+        
+        // جلب جميع الموظفين المرتبطين بهذا المستخدم (لو كان هناك أكثر من واحد)
+        var employees = await _unitOfWork.Employees.GetByUserIdAsync(user.Id);
+        var employee = employees.FirstOrDefault(e => e.BranchId == finalBranchId) ?? employees.FirstOrDefault();
+        
+        if (employee != null)
+        {
+            employeeId = employee.Id;
+            employeeCode = employee.EmployeeCode;
+            employeeName = employee.FullName;
+            claims.Add(new Claim("EmployeeId", employee.Id.ToString()));
+            claims.Add(new Claim("EmployeeCode", employee.EmployeeCode ?? ""));
+            claims.Add(new Claim("EmployeeName", employee.FullName ?? ""));
+        }
+
+        var expirationMinutes = int.Parse(jwtSettings["ExpirationMinutes"] ?? "480");
         var token = new JwtSecurityToken(
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
@@ -213,6 +313,6 @@ public class AuthService : IAuthService
             signingCredentials: credentials
         );
 
-        return (new JwtSecurityTokenHandler().WriteToken(token), finalBranchId);
+        return (new JwtSecurityTokenHandler().WriteToken(token), finalBranchId, employeeId, employeeCode, employeeName, allowedBranchIds);
     }
 }

@@ -54,8 +54,7 @@ interface ReturnItem {
         InputTextareaModule
     ],
     templateUrl: './sales-return-create.component.html',
-    styleUrls: ['./sales-return-create.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    styleUrls: ['../sale-invoice-create/sale-invoice-create.component.scss'],
     providers: [MessageService]
 })
 export class SalesReturnCreateComponent implements OnInit {

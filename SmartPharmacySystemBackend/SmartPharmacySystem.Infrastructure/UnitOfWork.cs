@@ -149,6 +149,16 @@ namespace SmartPharmacySystem.Infrastructure
         private IEmployeeBranchAssignmentRepository? _employeeBranchAssignments;
         public IEmployeeBranchAssignmentRepository EmployeeBranchAssignments => _employeeBranchAssignments ??= new EmployeeBranchAssignmentRepository(_context);
 
+        // ===== RBAC =====
+        private IPermissionRepository? _permissions;
+        public IPermissionRepository Permissions => _permissions ??= new PermissionRepository(_context);
+
+        private IUserPermissionOverrideRepository? _userPermissionOverrides;
+        public IUserPermissionOverrideRepository UserPermissionOverrides => _userPermissionOverrides ??= new UserPermissionOverrideRepository(_context);
+
+        private IAuditLogRepository? _auditLogs;
+        public IAuditLogRepository AuditLogs => _auditLogs ??= new AuditLogRepository(_context);
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

@@ -47,6 +47,29 @@
 </div>
 
         <!-- Vertical Divider -->
+        <div class="v-divider" *ngIf="allowedBranches.length > 1"></div>
+        
+        <!-- Branch Switcher -->
+        <div class="branch-switcher" *ngIf="allowedBranches.length > 1">
+            <p-dropdown [options]="allowedBranches" [(ngModel)]="currentBranchId" optionLabel="name" optionValue="id"
+                (onChange)="onBranchChange($event)" [disabled]="isSwitchingBranch"
+                placeholder="تغيير الفرع" styleClass="p-dropdown-sm border-none bg-transparent">
+                <ng-template let-branch pTemplate="selectedItem">
+                    <div class="flex align-items-center gap-2" style="padding: 0;">
+                        <i class="pi pi-building text-primary" [class.pi-spin]="isSwitchingBranch" [class.pi-spinner]="isSwitchingBranch"></i>
+                        <span class="font-bold text-sm">{{branch.name}}</span>
+                    </div>
+                </ng-template>
+                <ng-template let-branch pTemplate="item">
+                    <div class="flex align-items-center gap-2">
+                        <i class="pi pi-building text-500"></i>
+                        <span>{{branch.name}}</span>
+                    </div>
+                </ng-template>
+            </p-dropdown>
+        </div>
+
+        <!-- Vertical Divider -->
         <div class="v-divider"></div>
         <!-- User Profile Section -->
         <div class="user-control" (click)="userMenu.toggle($event)" pRipple>

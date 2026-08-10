@@ -1,219 +1,233 @@
-<!-- Add/Edit Dialog Modal -->
-<p-dialog [(visible)]="displayAddEditSidebar" [header]="sideBarHeader()" [modal]="true" [style]="{width: '780px', 'max-height': '92vh'}"
-    styleClass="premium-dialog border-round-2xl overflow-hidden" [draggable]="false" [resizable]="false">
+<div class="supplier-container fadein" dir="rtl">
 
-    <app-customer-add-edit *ngIf="displayAddEditSidebar()" [customerId]="selectedCustomerId" (onSave)="onAddEditSave()"
-        (onClose)="onAddEditClose()">
-    </app-customer-add-edit>
-</p-dialog>
-
-<div class="customer-container fadein" dir="rtl">
-    <!-- Header with Action Buttons -->
-    <div class="premium-header mb-3">
-        <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-3 gap-3">
-            <div class="header-title flex align-items-center gap-3">
-                <div class="icon-wrapper bg-indigo-600 shadow-lg border-round-xl w-2.8rem h-2.8rem flex align-items-center justify-content-center">
-                    <i class="pi pi-users text-white text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold m-0 text-gray-800">إدارة حسابات العملاء</h1>
-                    <p class="text-gray-500 mt-1 text-xs font-medium">لوحة تحكم تفصيلية لمتابعة الأرصدة والمديونيات الائتمانية للعملاء</p>
-                </div>
-            </div>
-            <div class="flex gap-2 w-full md:w-auto">
-                <p-button label="سندات القبض" icon="pi pi-money-bill" routerLink="/customers/receipts"
-                    styleClass="p-button-outlined p-button-secondary p-button-rounded h-2.5rem font-bold hover-scale no-print">
-                </p-button>
-                <p-button label="إضافة عميل جديد" icon="pi pi-plus" (onClick)="openAddCustomer()"
-                    styleClass="p-button-raised p-button-rounded h-2.5rem font-bold premium-btn-indigo shadow-4 hover-scale no-print">
-                </p-button>
-            </div>
+  <!-- ═══════════ Micro Header ═══════════ -->
+  <div class="imperial-header">
+    <div class="header-content">
+      <div class="title-area">
+        <div class="icon-box">
+          <i class="pi pi-users"></i>
         </div>
-
-        <!-- ═══════════ Unified Premium Stats Bar ═══════════ -->
-        <div class="grid mt-2 mb-3">
-            <!-- Total Customer Debt -->
-            <div class="col-12 md:col-4">
-                <div class="stat-card glass-morphism debt h-full">
-                    <div class="flex justify-content-between align-items-center">
-                        <div class="stat-content">
-                            <span class="stat-label">إجمالي مديونية العملاء</span>
-                            <div class="stat-value">{{ totalDebt() | number }} <span class="stat-unit">ر.ي</span></div>
-                        </div>
-                        <div class="stat-icon bg-red-50 text-red-500">
-                            <i class="pi pi-chart-line text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3">
-                        <div class="flex justify-content-between mb-1">
-                            <span class="text-xs font-semibold text-gray-500">معدل التحصيل المالي</span>
-                            <span class="text-xs font-bold text-gray-800">15%</span>
-                        </div>
-                        <p-progressBar [value]="15" [showValue]="false" styleClass="h-4px border-round-lg progress-bar-bar"></p-progressBar>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Customers Card -->
-            <div class="col-12 md:col-4">
-                <div class="stat-card glass-morphism active-customers h-full">
-                    <div class="flex justify-content-between align-items-center">
-                        <div class="stat-content">
-                            <span class="stat-label">العملاء النشطون حالياً</span>
-                            <div class="stat-value">{{ activeCustomersCount() }} <span class="stat-unit">عميل</span></div>
-                        </div>
-                        <div class="stat-icon bg-indigo-50 text-indigo-500">
-                            <i class="pi pi-user-check text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3 text-xs text-gray-500">
-                        <span class="text-green-500 font-bold"><i class="pi pi-arrow-up mr-1 text-xs"></i> 12%+</span>
-                        نشاط مبيعات وسداد مستمر هذا الشهر
-                    </div>
-                </div>
-            </div>
-
-            <!-- Risk Status Card -->
-            <div class="col-12 md:col-4">
-                <div class="stat-card glass-morphism risk h-full">
-                    <div class="flex justify-content-between align-items-center">
-                        <div class="stat-content">
-                            <span class="stat-label">ديون مرتفعة (مخاطر)</span>
-                            <div class="stat-value">{{ highDebtCustomersCount() }} <span class="stat-unit">عميل</span></div>
-                        </div>
-                        <div class="stat-icon bg-orange-50 text-orange-500">
-                            <i class="pi pi-exclamation-triangle text-lg"></i>
-                        </div>
-                    </div>
-                    <div class="mt-3 text-xs text-gray-500">
-                        عملاء تجاوزت مديونياتهم عتبة <span class="font-bold text-orange-600">5,000 ريال</span>
-                    </div>
-                </div>
-            </div>
+        <div>
+          <h1>إدارة حسابات العملاء</h1>
+          <p>لوحة تحكم تفصيلية لمتابعة الأرصدة والمديونيات الائتمانية للعملاء</p>
         </div>
+      </div>
+      <div class="actions-area">
+        <button pButton label="سندات القبض" icon="pi pi-money-bill"
+          class="imperial-btn p-button-outlined p-button-sm"
+          (click)="openReceiptDialog()"></button>
+        <button pButton label="عميل جديد" icon="pi pi-plus"
+          class="imperial-btn-primary p-button-sm"
+          (click)="openAddCustomer()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ Stat Cards ═══════════ -->
+  <div class="stats-grid">
+    <div class="stat-card jewel-blue">
+      <div class="stat-icon"><i class="pi pi-users"></i></div>
+      <div class="stat-details">
+        <span class="stat-label">إجمالي العملاء</span>
+        <span class="stat-value">{{ totalRecords() }}</span>
+      </div>
     </div>
 
-    <!-- Table Section -->
-    <div class="glass-panel p-0 overflow-hidden shadow-1 border-round-2xl mb-4">
-        <p-table [value]="customers()" [loading]="loading()" [paginator]="true" [rows]="10"
-            [lazy]="true" (onLazyLoad)="loadCustomers($event)" [totalRecords]="totalRecords()"
-            [rowsPerPageOptions]="[10, 25, 50]" [showCurrentPageReport]="true"
-            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
-            styleClass="premium-table p-datatable-sm header-offset imperial-statement-table">
-
-            <ng-template pTemplate="caption">
-                <div class="flex justify-content-between align-items-center p-3 surface-50 border-bottom-1 surface-border no-print table-search-header-row">
-                    <span class="p-input-icon-left w-full md:w-20rem">
-                        <i class="pi pi-search text-gray-400"></i>
-                        <input pInputText type="text" placeholder="بحث سريع في الاسم أو الجوال..."
-                            class="w-full border-round-2xl border-none surface-100 text-sm py-2 px-3 focus:surface-0 focus:shadow-none transition-colors" />
-                    </span>
-                    <button pButton icon="pi pi-filter"
-                        class="p-button-text p-button-secondary border-circle w-2rem h-2rem flex align-items-center justify-content-center"></button>
-                </div>
-            </ng-template>
-
-            <ng-template pTemplate="header">
-                <tr>
-                    <th class="font-bold p-3 text-right" style="width: 25%">اسم العميل وعنوانه</th>
-                    <th class="font-bold p-3 text-right" style="width: 25%">بيانات الهاتف والبريد</th>
-                    <th class="font-bold p-3 text-center th-balance" style="width: 15%" pSortableColumn="creditLimit">سقف الائتمان المسموح
-                        <p-sortIcon field="creditLimit"></p-sortIcon>
-                    </th>
-                    <th class="font-bold p-3 text-center th-credit" style="width: 15%" pSortableColumn="balance">الرصيد القائم (مدين)<p-sortIcon
-                            field="balance"></p-sortIcon></th>
-                    <th class="font-bold p-3 text-center" style="width: 10%">الحالة بالنظام</th>
-                    <th class="text-center font-bold p-3" style="width: 10%">الإجراءات</th>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="body" let-customer>
-                <tr class="hover-row transition-colors border-bottom-1 surface-border">
-                    <td class="p-3 vertical-align-middle">
-                        <div class="flex align-items-center gap-3">
-                            <div class="avatar-circle shadow-1 text-sm font-bold flex-shrink-0"
-                                [style.background]="getRandomColor(customer.name)"
-                                style="width: 36px; height: 36px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center;">
-                                {{ customer.name?.charAt(0) }}
-                            </div>
-                            <div class="flex flex-column">
-                                <span class="font-bold text-gray-800 text-sm mb-1">{{ customer.name }}</span>
-                                <small class="text-gray-500 text-xs flex align-items-center gap-1">
-                                    <i class="pi pi-map-marker text-xs"></i>
-                                    {{ customer.address || 'بدون عنوان مسجل' }}
-                                </small>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-3 vertical-align-middle">
-                        <div class="flex flex-column gap-1">
-                            <div class="flex align-items-center gap-2 text-gray-600 bg-gray-50 px-2 py-1 border-round w-fit" style="background: var(--surface-hover) !important;">
-                                <i class="pi pi-phone text-xs text-indigo-500"></i>
-                                <span class="font-mono text-sm font-medium" dir="ltr">{{ customer.phoneNumber || '—' }}</span>
-                            </div>
-                            <div *ngIf="customer.email" class="flex align-items-center gap-2 text-gray-500 px-2 mt-1">
-                                <i class="pi pi-envelope text-xs text-orange-400"></i>
-                                <span class="text-xs">{{ customer.email }}</span>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="p-3 text-center vertical-align-middle font-bold">
-                        <span class="font-mono text-sm block text-gray-600" *ngIf="customer.creditLimit > 0">
-                            {{ customer.creditLimit | number }}
-                            <small class="text-xs text-gray-400 font-normal">ر.ي</small>
-                        </span>
-                        <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 border-round" style="background: var(--surface-hover) !important;"
-                            *ngIf="!customer.creditLimit || customer.creditLimit === 0">
-                            مفتوح (دون سقف)
-                        </span>
-                    </td>
-                    <td class="p-3 text-center vertical-align-middle">
-                        <span class="font-bold font-mono text-base block"
-                            [class]="customer.balance > 0 ? 'text-red-600' : 'text-green-600'">
-                            {{ customer.balance | number }}
-                            <small class="text-xs text-gray-400 font-normal">ر.ي</small>
-                        </span>
-                    </td>
-                    <td class="p-3 text-center vertical-align-middle">
-                        <p-tag [severity]="customer.isActive ? 'success' : 'danger'"
-                            [value]="customer.isActive ? 'نشط' : 'موقف'" [rounded]="true"
-                            styleClass="text-xs px-3 py-1 font-bold">
-                        </p-tag>
-                    </td>
-                    <td class="text-center p-3 vertical-align-middle">
-                        <div class="flex justify-content-center gap-2 no-print">
-                            <button pButton icon="pi pi-eye"
-                                class="p-button-rounded p-button-text p-button-secondary w-2rem h-2rem hover:bg-gray-100 transition-colors"
-                                pTooltip="التفاصيل" tooltipPosition="top" [routerLink]="['/customers/detail', customer.id]"></button>
-                            <button pButton icon="pi pi-pencil"
-                                class="p-button-rounded p-button-text p-button-primary w-2rem h-2rem hover:bg-indigo-50 transition-colors" 
-                                pTooltip="تعديل" tooltipPosition="top" (click)="openEditCustomer(customer.id)"></button>
-                            <button pButton icon="pi pi-trash"
-                                class="p-button-rounded p-button-text p-button-danger w-2rem h-2rem hover:bg-red-50 transition-colors" 
-                                pTooltip="حذف" tooltipPosition="top" (click)="deleteCustomer($event, customer)"></button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-
-            <ng-template pTemplate="emptymessage">
-                <tr>
-                    <td colspan="6" class="text-center p-8">
-                        <div class="flex flex-column align-items-center">
-                            <div class="bg-gray-50 border-circle w-6rem h-6rem flex align-items-center justify-content-center mb-3" style="background: var(--surface-hover) !important;">
-                                <i class="pi pi-users text-4xl text-gray-300"></i>
-                            </div>
-                            <h3 class="text-gray-600 m-0 text-lg">لا يوجد عملاء</h3>
-                            <p class="text-gray-400 text-sm mt-2">ابدأ بإضافة عملاء جدد للقائمة</p>
-                            <p-button label="إضافة عميل" icon="pi pi-plus" (onClick)="openAddCustomer()"
-                                styleClass="p-button-rounded p-button-text mt-2"></p-button>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+    <div class="stat-card jewel-emerald">
+      <div class="stat-icon"><i class="pi pi-check-circle"></i></div>
+      <div class="stat-details">
+        <span class="stat-label">عملاء نشطون حالياً</span>
+        <span class="stat-value">
+          {{ activeCustomersCount() }}
+          <small>عميل</small>
+        </span>
+      </div>
     </div>
+
+    <div class="stat-card jewel-ruby">
+      <div class="stat-icon"><i class="pi pi-chart-line"></i></div>
+      <div class="stat-details">
+        <span class="stat-label">إجمالي مديونية العملاء</span>
+        <span class="stat-value">
+          {{ totalDebt() | number }}
+          <span class="currency">ر.ي</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ Table ═══════════ -->
+  <div class="table-card">
+    <p-table #dt [value]="customers()" [loading]="loading()"
+             [paginator]="true" [rows]="10" [lazy]="true"
+             (onLazyLoad)="loadCustomers($event)" [totalRecords]="totalRecords()"
+             [rowsPerPageOptions]="[10,25,50]"
+             styleClass="p-datatable-sm imperial-table" [rowHover]="true">
+
+      <!-- Caption / Search -->
+      <ng-template pTemplate="caption">
+        <div class="table-caption">
+          <span class="caption-title">
+            <i class="pi pi-list ml-2"></i>سجل العملاء
+          </span>
+          <div class="p-input-icon-left search-box">
+            <i class="pi pi-search"></i>
+            <input #searchInput pInputText type="text"
+                   (input)="dt.filterGlobal(searchInput.value, 'contains')"
+                   placeholder="بحث بالاسم أو الهاتف..." />
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- Header -->
+      <ng-template pTemplate="header">
+        <tr>
+          <th>بيانات العميل</th>
+          <th>رقم التواصل</th>
+          <th class="text-center">سقف الائتمان</th>
+          <th class="text-center">الرصيد القائم</th>
+          <th class="text-center">الحالة</th>
+          <th class="text-center" style="width: 4rem">خيارات</th>
+        </tr>
+      </ng-template>
+
+      <!-- Body -->
+      <ng-template pTemplate="body" let-customer>
+        <tr>
+          <!-- Customer Info -->
+          <td>
+            <div class="supplier-cell">
+              <div class="avatar-glass" [style.background]="getRandomColor(customer.name)">
+                {{ customer.name?.charAt(0) }}
+              </div>
+              <div class="info">
+                <div class="name">{{ customer.name }}</div>
+                <div class="address">
+                  <i class="pi pi-map-marker text-xs"></i>
+                  {{ customer.address || 'العنوان غير محدد' }}
+                </div>
+              </div>
+            </div>
+          </td>
+
+          <!-- Phone -->
+          <td class="font-mono" style="font-size: 0.78rem;">
+            {{ customer.phoneNumber || '---' }}
+          </td>
+
+          <!-- Credit Limit -->
+          <td class="text-center">
+            <span class="font-mono text-sm block text-gray-600" *ngIf="customer.creditLimit > 0">
+                {{ customer.creditLimit | number }}
+            </span>
+            <span class="text-xs text-gray-400" *ngIf="!customer.creditLimit || customer.creditLimit === 0">
+                مفتوح
+            </span>
+          </td>
+
+          <!-- Balance -->
+          <td class="text-center">
+            <div class="balance-cell" [class.is-debt]="customer.balance > 0"
+                 style="justify-content: center;">
+              <span class="amount">{{ customer.balance | number }}</span>
+              <span class="currency">ر.ي</span>
+            </div>
+          </td>
+
+          <!-- Status Tag -->
+          <td class="text-center">
+            <p-tag [value]="customer.isActive ? 'نشط' : 'موقف'"
+                   [style]="{
+                     'background-color': customer.isActive ? '#10b9811A' : '#ef44441A',
+                     'color': customer.isActive ? '#10b981' : '#ef4444',
+                     'border': '1px solid ' + (customer.isActive ? '#10b98140' : '#ef444440'),
+                     'font-weight': '700',
+                     'font-size': '0.68rem'
+                   }"
+                   [rounded]="true">
+            </p-tag>
+          </td>
+
+          <!-- Actions Menu -->
+          <td class="text-center">
+            <div class="inline-actions" style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+              <button pButton pTooltip="الملف الشخصي" tooltipPosition="top" icon="pi pi-id-card"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      [routerLink]="['/customers/detail', customer.id]"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+              
+              <button pButton pTooltip="كشف الحساب" tooltipPosition="top" icon="pi pi-file-pdf"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      [routerLink]="['/customers/statement', customer.id]"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+              
+              <button pButton pTooltip="سند قبض جديد" tooltipPosition="top" icon="pi pi-wallet"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      (click)="openReceiptDialog(customer.id)"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--primary-color);"></button>
+              
+              <div class="action-divider" style="width: 1px; height: 16px; background-color: var(--surface-border); margin: 0 4px;"></div>
+
+              <button pButton pTooltip="تعديل" tooltipPosition="top" icon="pi pi-pencil"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      (click)="openEditCustomer(customer.id)"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+              
+              <button pButton pTooltip="حذف" tooltipPosition="top" icon="pi pi-trash"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      (click)="deleteCustomer($event, customer)"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--red-500);"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Empty Message -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="text-center" style="padding: 2.5rem;">
+            <i class="pi pi-inbox" style="font-size: 2rem; color: var(--border-color); display: block; margin-bottom: 0.65rem;"></i>
+            <p style="color: var(--text-color-secondary); font-size: 0.82rem; margin: 0 0 0.75rem;">
+              لا توجد بيانات عملاء متاحة
+            </p>
+            <button pButton type="button" label="إضافة عميل جديد" icon="pi pi-plus"
+                    class="imperial-btn-primary p-button-sm" (click)="openAddCustomer()">
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </div>
+
 </div>
 
-<p-confirmDialog [style]="{width: '400px'}" styleClass="premium-confirm-dialog"></p-confirmDialog>
+<!-- ═══════════ Add/Edit Dialog ═══════════ -->
+<p-dialog [visible]="displayAddEditSidebar()" [modal]="true"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '600px', maxWidth: '95vw'}"
+          [header]="sideBarHeader()"
+          (onHide)="onAddEditClose()" styleClass="imperial-dialog">
+  <app-customer-add-edit *ngIf="displayAddEditSidebar()"
+    [customerId]="selectedCustomerId"
+    (onSave)="onAddEditSave()"
+    (onClose)="onAddEditClose()">
+  </app-customer-add-edit>
+</p-dialog>
+
+<!-- ═══════════ Receipts Dialog ═══════════ -->
+<p-dialog [visible]="receiptsDialogVisible()" [modal]="true"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '820px', maxWidth: '95vw'}"
+          header="إدارة سندات القبض للعملاء"
+          (onHide)="closeReceiptsDialog()" styleClass="imperial-dialog">
+  <app-customer-receipts *ngIf="receiptsDialogVisible()"
+    [dialogMode]="true"
+    [autoOpenCreate]="true"
+    [presetCustomerId]="selectedCustomerIdForReceipt()"
+    (closed)="closeReceiptsDialog()">
+  </app-customer-receipts>
+</p-dialog>
+
+<p-confirmDialog [rtl]="true" styleClass="imperial-confirm"></p-confirmDialog>
 <p-toast position="top-left"></p-toast>

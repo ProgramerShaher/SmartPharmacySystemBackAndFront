@@ -7,7 +7,6 @@ using SmartPharmacySystem.Application.Wrappers;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.OpenApi.Extensions;
 
 namespace SmartPharmacySystem.Controllers
 {
@@ -41,7 +40,7 @@ namespace SmartPharmacySystem.Controllers
             {
                 search = search.ToLower();
                 invoices = invoices.Where(i => i.CustomerName.ToLower().Contains(search) ||
-                                               i.PaymentMethod.GetDisplayName().Contains(search));
+                                               i.PaymentMethod.ToString().Contains(search));
             }
 
             if (invoices == null || !invoices.Any())

@@ -1,0 +1,12 @@
+@import '../reports-shared.scss';
+
+.analytics-grid {
+  display: flex;
+  gap: 0.6rem;
+}
+
+@media (max-width: 900px) {
+  .analytics-grid {
+    flex-direction: column;
+  }
+}

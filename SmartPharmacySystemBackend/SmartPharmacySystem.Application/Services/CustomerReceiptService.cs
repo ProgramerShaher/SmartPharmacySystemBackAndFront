@@ -64,9 +64,17 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
                 };
 
-                // Fetch required account IDs by code dynamically
-                var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync("11101") ?? throw new InvalidOperationException("حساب الصندوق غير موجود");
-                var receivablesAccount = await _unitOfWork.Accounts.GetByCodeAsync("112") ?? throw new InvalidOperationException("حساب الذمم المدينة غير موجود");
+                var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
+                
+                var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync("11101") 
+                                  ?? allAccounts.FirstOrDefault(a => a.Name.Contains("صندوق") || a.Name.Contains("نقد")) 
+                                  ?? allAccounts.FirstOrDefault() 
+                                  ?? throw new InvalidOperationException("حساب الصندوق غير موجود، يرجى تهيئة دليل الحسابات أولاً.");
+                                  
+                var receivablesAccount = await _unitOfWork.Accounts.GetByCodeAsync("112") 
+                                         ?? allAccounts.FirstOrDefault(a => a.Name.Contains("ذمم") || a.Name.Contains("عملاء")) 
+                                         ?? allAccounts.FirstOrDefault() 
+                                         ?? throw new InvalidOperationException("حساب الذمم المدينة غير موجود");
 
                 // 1. الطرف المدين (من حـ/ الصندوق)
                 journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto

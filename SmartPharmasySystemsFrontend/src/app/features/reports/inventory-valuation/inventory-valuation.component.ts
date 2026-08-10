@@ -34,7 +34,7 @@ import { InventoryValuation, BatchValuation } from '../../../core/models/reports
     ProgressSpinnerModule
   ],
   templateUrl: './inventory-valuation.component.html',
-  styleUrls: ['./inventory-valuation.component.css']
+  styleUrls: ['./inventory-valuation.component.scss']
 })
 export class InventoryValuationComponent implements OnInit {
   private readonly reportService = inject(ReportService);

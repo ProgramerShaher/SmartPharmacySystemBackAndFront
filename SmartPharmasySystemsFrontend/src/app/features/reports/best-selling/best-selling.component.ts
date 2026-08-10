@@ -16,7 +16,7 @@ import { BestSellingMedicinesReport } from '../../../core/models/reports.interfa
   standalone: true,
   imports: [CommonModule, FormsModule, CardModule, ButtonModule, CalendarModule, TableModule, InputNumberModule, TagModule, ProgressSpinnerModule],
   templateUrl: './best-selling.component.html',
-  styleUrls: ['./best-selling.component.css']
+  styleUrls: ['./best-selling.component.scss']
 })
 export class BestSellingComponent implements OnInit {
   private readonly reportService = inject(ReportService);

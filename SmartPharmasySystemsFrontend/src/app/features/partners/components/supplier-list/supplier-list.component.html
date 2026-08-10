@@ -139,14 +139,34 @@
 
           <!-- Actions Menu -->
           <td class="text-center">
-            <button pButton type="button" icon="pi pi-ellipsis-v"
-                    class="p-button-rounded p-button-text p-button-sm"
-                    style="width: 1.8rem; height: 1.8rem; color: var(--text-color-secondary);"
-                    (click)="showMenu(menu, $event, supplier)">
-            </button>
-            <p-menu #menu [model]="items" [popup]="true" appendTo="body"
-                    styleClass="imperial-menu">
-            </p-menu>
+            <div class="inline-actions" style="display: flex; gap: 4px; justify-content: center; align-items: center;">
+              <button pButton pTooltip="الملف الشخصي" tooltipPosition="top" icon="pi pi-id-card"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      [routerLink]="['/partners/suppliers/detail', supplier.id]"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+              
+              <button pButton pTooltip="كشف الحساب" tooltipPosition="top" icon="pi pi-file-pdf"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      [routerLink]="['/partners/suppliers/statement', supplier.id]"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+              
+              <button pButton pTooltip="سند صرف جديد" tooltipPosition="top" icon="pi pi-wallet"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      (click)="openPaymentDialog(supplier)"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--primary-color);"></button>
+              
+              <div class="action-divider" style="width: 1px; height: 16px; background-color: var(--surface-border); margin: 0 4px;"></div>
+
+              <button pButton pTooltip="تعديل" tooltipPosition="top" icon="pi pi-pencil"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      (click)="openEditSupplier(supplier)"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+              
+              <button pButton pTooltip="حذف" tooltipPosition="top" icon="pi pi-trash"
+                      class="p-button-rounded p-button-text p-button-sm action-btn"
+                      (click)="deleteSupplier($event, supplier)"
+                      style="width: 2rem; height: 2rem; padding: 0; color: var(--red-500);"></button>
+            </div>
           </td>
         </tr>
       </ng-template>

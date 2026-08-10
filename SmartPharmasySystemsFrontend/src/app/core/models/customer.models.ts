@@ -1,3 +1,5 @@
+import { Data } from "@angular/router";
+
 export interface Customer {
     id: number;
     name: string;
@@ -37,25 +39,21 @@ export interface CreateCustomerReceiptDto {
 }
 
 export interface CustomerTransaction {
-    id: number;
+    date: string;
+    type: string;
+    reference: string;
+    debit: number;
+    credit: number;
     transactionDate: string;
-    type: 'SaleInvoice' | 'Receipt' | 'Return';
-    referenceNumber: string;
-    description: string;
-    debit: number;  // Increases customer debt
-    credit: number; // Decreases customer debt (payments)
     runningBalance: number;
+    notes?: string;
 }
 
 export interface CustomerStatement {
-    customer: Customer;
-    transactions: CustomerTransaction[];
-    summary: {
-        totalSales: number;
-        totalReceipts: number;
-        totalReturns: number;
-        currentBalance: number;
-    };
+    customerId: number;
+    customerName: string;
+    currentBalance: number;
+    items: CustomerTransaction[];
 }
 
 export interface CustomerQueryDto {

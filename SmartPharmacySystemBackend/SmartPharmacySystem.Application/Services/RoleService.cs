@@ -33,11 +33,12 @@ public class RoleService : IRoleService
         var roles = await _unitOfWork.Roles.GetAllAsync();
         var roleDtos = _mapper.Map<IEnumerable<RoleDto>>(roles);
 
-        // Add user count for each role
+        // Add user and permission count for each role
         foreach (var roleDto in roleDtos)
         {
             var role = roles.FirstOrDefault(r => r.Id == roleDto.Id);
             roleDto.UserCount = role?.Users?.Count ?? 0;
+            roleDto.PermissionCount = role?.RolePermissions?.Count ?? 0;
         }
 
         return roleDtos;
@@ -97,6 +98,14 @@ public class RoleService : IRoleService
         var roleDto = _mapper.Map<RoleDto>(role);
         roleDto.UserCount = 0;
 
+        // Add permissions if provided
+        if (dto.PermissionIds != null && dto.PermissionIds.Any())
+        {
+            await _unitOfWork.Roles.UpdatePermissionsAsync(role.Id, dto.PermissionIds);
+            await _unitOfWork.SaveChangesAsync();
+            roleDto.PermissionCount = dto.PermissionIds.Count;
+        }
+
         return roleDto;
     }
 
@@ -122,6 +131,13 @@ public class RoleService : IRoleService
 
         _mapper.Map(dto, role);
         await _unitOfWork.Roles.UpdateAsync(role);
+        
+        // Update permissions if provided
+        if (dto.PermissionIds != null)
+        {
+            await _unitOfWork.Roles.UpdatePermissionsAsync(role.Id, dto.PermissionIds);
+        }
+
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Role updated successfully: {RoleId}", id);
@@ -147,5 +163,38 @@ public class RoleService : IRoleService
         await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Role deleted successfully: {RoleId}", id);
+    }
+
+    public async Task<RoleDto?> GetRoleWithPermissionsAsync(int id)
+    {
+        _logger.LogInformation("Getting role with permissions for ID: {RoleId}", id);
+        var role = await _unitOfWork.Roles.GetWithPermissionsAsync(id);
+        if (role == null) return null;
+
+        var roleDto = _mapper.Map<RoleDto>(role);
+        roleDto.UserCount = role.Users?.Count ?? 0;
+        roleDto.PermissionCount = role.RolePermissions?.Count ?? 0;
+        
+        return roleDto;
+    }
+
+    public async Task<IEnumerable<int>> GetRolePermissionIdsAsync(int id)
+    {
+        return await _unitOfWork.Roles.GetPermissionIdsAsync(id);
+    }
+
+    public async Task UpdateRolePermissionsAsync(int id, IEnumerable<int> permissionIds)
+    {
+        var role = await _unitOfWork.Roles.GetByIdAsync(id);
+        if (role == null) throw new KeyNotFoundException($"الدور برقم {id} غير موجود");
+
+        await _unitOfWork.Roles.UpdatePermissionsAsync(id, permissionIds);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<RoleDto> CloneRoleAsync(int sourceRoleId, string newName, string? newNameAr, string? newColor)
+    {
+        var clonedRole = await _unitOfWork.Roles.CloneAsync(sourceRoleId, newName, newNameAr, newColor);
+        return _mapper.Map<RoleDto>(clonedRole);
     }
 }

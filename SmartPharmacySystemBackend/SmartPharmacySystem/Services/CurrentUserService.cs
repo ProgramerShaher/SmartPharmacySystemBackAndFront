@@ -52,4 +52,17 @@ public class CurrentUserService : ICurrentUserService
         var branchIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("BranchId")?.Value;
         return int.TryParse(branchIdClaim, out var branchId) ? branchId : null;
     }
+
+    public int? EmployeeId
+    {
+        get
+        {
+            var empIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("EmployeeId")?.Value;
+            return int.TryParse(empIdClaim, out var empId) ? empId : null;
+        }
+    }
+
+    public string? EmployeeCode => _httpContextAccessor.HttpContext?.User?.FindFirst("EmployeeCode")?.Value;
+    
+    public string? EmployeeName => _httpContextAccessor.HttpContext?.User?.FindFirst("EmployeeName")?.Value;
 }

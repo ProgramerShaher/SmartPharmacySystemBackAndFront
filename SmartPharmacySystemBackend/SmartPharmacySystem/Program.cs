@@ -106,7 +106,13 @@ builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<ICurrentUserService, SmartPharmacySystem.Services.CurrentUserService>();
+
+// Authorization Infrastructure
+builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider, SmartPharmacySystem.Authorization.PermissionPolicyProvider>();
+builder.Services.AddSingleton<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, SmartPharmacySystem.Authorization.PermissionAuthorizationHandler>();
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IPurchaseInvoiceService, PurchaseInvoiceService>();
@@ -245,6 +251,11 @@ using (var scope = app.Services.CreateScope())
         logger.LogInformation("جاري التحقق من وجود الجداول وتحديث قاعدة البيانات...");
         await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
         logger.LogInformation("تم تحديث هيكل قاعدة البيانات بنجاح.");
+
+        logger.LogInformation("جاري بذر البيانات الأولية للصلاحيات والأدوار...");
+        await SmartPharmacySystem.Infrastructure.Data.Seeders.PermissionSeeder.SeedAsync(context);
+        await SmartPharmacySystem.Infrastructure.Data.Seeders.RoleSeeder.SeedAsync(context);
+        logger.LogInformation("تم بذر البيانات الأولية بنجاح.");
     }
     catch (Exception ex)
     {
@@ -280,6 +291,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapHub<NotificationHub>("/notificationHub");
+
+// Redirect root to swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseStaticFiles(); // Serve images from wwwroot/images/medicines/
 // app.UseHttpsRedirection(); // Disabled for mobile testing on local network

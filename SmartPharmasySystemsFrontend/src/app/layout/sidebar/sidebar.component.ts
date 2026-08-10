@@ -1,12 +1,15 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, HostBinding } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, HostBinding, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { AlertService } from '../../core/services/alert.service';
 import { SettingsService } from '../../core/services/settings.service';
 import { AccountingService } from '../../core/services/accounting.service';
+import { PermissionService } from '../../core/services/permission.service';
 import { Subject, takeUntil, filter } from 'rxjs';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../features/auth/services/auth.service';
+import { CurrentUserResponse } from '../../core/models/auth-response.interface';
 
 interface SidebarMenuItem {
     key?: string;
@@ -16,6 +19,8 @@ interface SidebarMenuItem {
     exact?: boolean;
     badge?: string;
     alert?: boolean;
+    permission?: string;        // كود الصلاحية المطلوبة
+    anyPermission?: string[];   // أي صلاحية من القائمة تكفي
     children?: SidebarMenuItem[];
 }
 
@@ -26,6 +31,8 @@ interface SidebarSection {
     iconClass: string;
     match?: string;
     extraMatches?: string[];
+    permission?: string;        // صلاحية لإظهار القسم كاملاً
+    anyPermission?: string[];   // القسم يظهر إذا كان أي من أبنائه مرئياً
     children: SidebarMenuItem[];
 }
 
@@ -56,50 +63,63 @@ interface SidebarSection {
   </div>
 
   <nav class="sidebar-content custom-scrollbar" aria-label="التنقل الرئيسي">
-    <div class="nav-section" *ngFor="let section of menuSections" [class.section-active]="isSectionActive(section)">
-      <button type="button" class="section-trigger" (click)="toggleMenu(section.key)"
-        [class.open]="isMenuOpen(section.key)" [title]="section.label" [attr.aria-expanded]="isMenuOpen(section.key)">
-        <span class="item-icon" [ngClass]="section.iconClass">
-          <i [class]="section.icon"></i>
-        </span>
-        <span class="section-label">{{ section.label }}</span>
-        <i class="pi pi-chevron-down section-arrow"></i>
-      </button>
+    <ng-container *ngFor="let section of menuSections">
+      <!-- أظهر القسم فقط إذا كان له على الأقل عنصر واحد مرئي -->
+      <div class="nav-section" *ngIf="hasSectionVisible(section)" [class.section-active]="isSectionActive(section)">
+        <button type="button" class="section-trigger" (click)="toggleMenu(section.key)"
+          [class.open]="isMenuOpen(section.key)" [title]="section.label" [attr.aria-expanded]="isMenuOpen(section.key)">
+          <span class="item-icon" [ngClass]="section.iconClass">
+            <i [class]="section.icon"></i>
+          </span>
+          <span class="section-label">{{ section.label }}</span>
+          <i class="pi pi-chevron-down section-arrow"></i>
+        </button>
 
-      <div class="section-panel" [class.open]="isMenuOpen(section.key)">
-        <ng-container *ngFor="let item of section.children">
-          <a *ngIf="!item.children" [routerLink]="item.route" routerLinkActive="active-route"
-            [routerLinkActiveOptions]="{ exact: item.exact || false }" class="menu-item" [title]="item.label">
-            <i [class]="item.icon"></i>
-            <span>{{ item.label }}</span>
-            <span class="new-badge" *ngIf="item.badge">{{ item.badge }}</span>
-            <span class="alert-pill" *ngIf="item.alert && unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
-          </a>
+        <div class="section-panel" [class.open]="isMenuOpen(section.key)">
+          <ng-container *ngFor="let item of section.children">
 
-          <div class="nested-menu" *ngIf="item.children">
-            <button type="button" class="menu-item nested-trigger" (click)="toggleMenu(item.key!)"
-              [class.open]="isMenuOpen(item.key!)" [title]="item.label" [attr.aria-expanded]="isMenuOpen(item.key!)">
-              <i [class]="item.icon"></i>
-              <span>{{ item.label }}</span>
-              <i class="pi pi-chevron-down nested-arrow"></i>
-            </button>
-
-            <div class="nested-panel" [class.open]="isMenuOpen(item.key!)">
-              <a *ngFor="let child of item.children" [routerLink]="child.route" routerLinkActive="active-route"
-                [routerLinkActiveOptions]="{ exact: child.exact || false }" class="submenu-item" [title]="child.label">
-                <i [class]="child.icon"></i>
-                <span>{{ child.label }}</span>
+            <!-- عنصر بدون أبناء -->
+            <ng-container *ngIf="!item.children">
+              <a *ngIf="canAccess(item)" [routerLink]="item.route" routerLinkActive="active-route"
+                [routerLinkActiveOptions]="{ exact: item.exact || false }" class="menu-item" [title]="item.label">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+                <span class="new-badge" *ngIf="item.badge">{{ item.badge }}</span>
+                <span class="alert-pill" *ngIf="item.alert && unreadAlertsCount > 0">{{ unreadAlertsCount }}</span>
               </a>
+            </ng-container>
+
+            <!-- عنصر بأبناء (Nested Menu) -->
+            <div class="nested-menu" *ngIf="item.children && hasNestedVisible(item)">
+              <button type="button" class="menu-item nested-trigger" (click)="toggleMenu(item.key!)"
+                [class.open]="isMenuOpen(item.key!)" [title]="item.label" [attr.aria-expanded]="isMenuOpen(item.key!)">
+                <i [class]="item.icon"></i>
+                <span>{{ item.label }}</span>
+                <i class="pi pi-chevron-down nested-arrow"></i>
+              </button>
+
+              <div class="nested-panel" [class.open]="isMenuOpen(item.key!)">
+                <a *ngFor="let child of item.children" [routerLink]="child.route" routerLinkActive="active-route"
+                  [routerLinkActiveOptions]="{ exact: child.exact || false }" class="submenu-item" [title]="child.label"
+                  [style.display]="canAccess(child) ? '' : 'none'">
+                  <i [class]="child.icon"></i>
+                  <span>{{ child.label }}</span>
+                </a>
+              </div>
             </div>
-          </div>
-        </ng-container>
+
+          </ng-container>
+        </div>
       </div>
-    </div>
+    </ng-container>
   </nav>
 
   <div class="sidebar-footer">
     <div class="status-dot"></div>
-    <span>متصل الآن</span>
+    <div class="user-info">
+      <span class="user-name">{{ currentUser?.employeeName || currentUser?.fullName || 'مستخدم' }}</span>
+      <span class="user-role">{{ currentUser?.roleName || 'مدير النظام' }}</span>
+    </div>
   </div>
 </div>
     `,
@@ -120,6 +140,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
     @HostBinding('class.sidebar-visible') get visible() { return this.sidebarVisible; }
     @HostBinding('class.sidebar-collapsed') get collapsed() { return this.isCollapsed; }
 
+    private permissionService = inject(PermissionService);
+
+    currentUser: CurrentUserResponse | null = null;
     unreadAlertsCount = 0;
     currentRoute = '';
     pharmacyName = 'الصيدلية الذكية';
@@ -128,15 +151,21 @@ export class SidebarComponent implements OnInit, OnDestroy {
     openMenus: Record<string, boolean> = {
         dashboard: true
     };
+
+    // ================================================================
+    // قائمة الشريط الجانبي — كل عنصر مرتبط بكود صلاحيته
+    // ================================================================
     menuSections: SidebarSection[] = [
         {
             key: 'dashboard',
             label: 'لوحات التحكم',
             icon: 'pi pi-chart-pie',
             iconClass: 'icon-dashboard',
+            // لوحة التحكم للجميع — بدون قيد صلاحية
             children: [
                 { label: 'لوحة التحكم', route: '/dashboard', icon: 'pi pi-chart-pie', exact: true },
-                { label: 'لوحة التحكم الرئيسية', route: '/dashboard/master', icon: 'pi pi-chart-line', badge: 'جديد' }
+                { label: 'لوحة التحكم الرئيسية', route: '/dashboard/master', icon: 'pi pi-chart-line', badge: 'جديد',
+                  permission: 'dashboard.master' }
             ]
         },
         {
@@ -146,11 +175,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-inventory',
             match: '/inventory',
             children: [
-                { label: 'الأدوية والمنتجات', route: '/inventory/medicines', icon: 'pi pi-box' },
-                { label: 'الجرد المخزني', route: '/inventory/stock-counts', icon: 'pi pi-check-square', badge: 'جديد' },
-                { label: 'التصنيفات', route: '/inventory/categories', icon: 'pi pi-tags' },
-                { label: 'حركات المخزون', route: '/inventory/movements', icon: 'pi pi-history' },
-                { label: 'الدفعات', route: '/inventory/batches', icon: 'pi pi-list' }
+                { label: 'الأدوية والمنتجات', route: '/inventory/medicines', icon: 'pi pi-box',
+                  permission: 'inventory.view' },
+                { label: 'الجرد المخزني', route: '/inventory/stock-counts', icon: 'pi pi-check-square', badge: 'جديد',
+                  permission: 'inventory.stock_count' },
+                { label: 'التصنيفات', route: '/inventory/categories', icon: 'pi pi-tags',
+                  permission: 'inventory.categories' },
+                { label: 'حركات المخزون', route: '/inventory/movements', icon: 'pi pi-history',
+                  permission: 'inventory.movements' },
+                { label: 'الدفعات', route: '/inventory/batches', icon: 'pi pi-list',
+                  permission: 'inventory.batches' }
             ]
         },
         {
@@ -160,9 +194,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-sales',
             match: '/sales',
             children: [
-                { label: 'فواتير المبيعات', route: '/sales', icon: 'pi pi-shopping-cart', exact: true },
-                { label: 'مرتجع المبيعات', route: '/sales/returns', icon: 'pi pi-replay' },
-                { label: 'طلبات الأونلاين', route: '/online-orders', icon: 'pi pi-globe', badge: 'جديد' }
+                { label: 'فواتير المبيعات', route: '/sales', icon: 'pi pi-shopping-cart', exact: true,
+                  permission: 'sales.view' },
+                { label: 'مرتجع المبيعات', route: '/sales/returns', icon: 'pi pi-replay',
+                  permission: 'sales.returns' },
+                { label: 'طلبات الأونلاين', route: '/online-orders', icon: 'pi pi-globe', badge: 'جديد',
+                  permission: 'online_orders.view' }
             ]
         },
         {
@@ -172,8 +209,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-purchases',
             match: '/purchases',
             children: [
-                { label: 'فواتير الشراء', route: '/purchases', icon: 'pi pi-truck' },
-                { label: 'مرتجع المشتريات', route: '/purchases/returns', icon: 'pi pi-refresh' }
+                { label: 'فواتير الشراء', route: '/purchases', icon: 'pi pi-truck',
+                  permission: 'purchases.view' },
+                { label: 'مرتجع المشتريات', route: '/purchases/returns', icon: 'pi pi-refresh',
+                  permission: 'purchases.returns' }
             ]
         },
         {
@@ -183,10 +222,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-warehouses',
             match: '/warehouses',
             children: [
-                { label: 'جميع المخازن', route: '/warehouses', icon: 'pi pi-warehouse', exact: true },
-                { label: 'التحويلات الداخلية', route: '/warehouses/transfers/internal', icon: 'pi pi-sync' },
-                { label: 'تحويلات الفروع', route: '/warehouses/transfers/external', icon: 'pi pi-globe' },
-                { label: 'الأدوية التالفة', route: '/warehouses/damaged', icon: 'pi pi-exclamation-triangle' }
+                { label: 'جميع المخازن', route: '/warehouses', icon: 'pi pi-warehouse', exact: true,
+                  permission: 'warehouses.view' },
+                { label: 'التحويلات الداخلية', route: '/warehouses/transfers/internal', icon: 'pi pi-sync',
+                  permission: 'warehouses.transfers' },
+                { label: 'تحويلات الفروع', route: '/warehouses/transfers/external', icon: 'pi pi-globe',
+                  permission: 'warehouses.external_transfers' },
+                { label: 'الأدوية التالفة', route: '/warehouses/damaged', icon: 'pi pi-exclamation-triangle',
+                  permission: 'warehouses.damaged' }
             ]
         },
         {
@@ -197,10 +240,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
             match: '/employees',
             extraMatches: ['/branches', '/departments'],
             children: [
-                { label: 'لوحة تحكم الفرع', route: '/branches/dashboard', icon: 'pi pi-chart-pie' },
-                { label: 'جميع الموظفين', route: '/employees', icon: 'pi pi-users', exact: true },
-                { label: 'إدارة الفروع', route: '/branches', icon: 'pi pi-sitemap', exact: true },
-                { label: 'الأقسام', route: '/departments', icon: 'pi pi-th-large', exact: true }
+                { label: 'لوحة تحكم الفرع', route: '/branches/dashboard', icon: 'pi pi-chart-pie',
+                  permission: 'branches.dashboard' },
+                { label: 'جميع الموظفين', route: '/employees', icon: 'pi pi-users', exact: true,
+                  permission: 'employees.view' },
+                { label: 'إدارة الفروع', route: '/branches', icon: 'pi pi-sitemap', exact: true,
+                  permission: 'branches.view' },
+                { label: 'الأقسام', route: '/departments', icon: 'pi pi-th-large', exact: true,
+                  permission: 'departments.view' }
             ]
         },
         {
@@ -211,8 +258,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
             match: '/partners',
             extraMatches: ['/customers'],
             children: [
-                { label: 'الموردين', route: '/partners', icon: 'pi pi-users', exact: true },
-                { label: 'العملاء', route: '/customers', icon: 'pi pi-user-plus' }
+                { label: 'الموردين', route: '/partners/suppliers', icon: 'pi pi-users',
+                  permission: 'partners.view' },
+                { label: 'العملاء', route: '/customers', icon: 'pi pi-user-plus',
+                  permission: 'customers.view' }
             ]
         },
         {
@@ -222,8 +271,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-financial',
             match: '/financial',
             children: [
-                { label: 'الخزينة والأرصدة', route: '/financial/dashboard', icon: 'pi pi-wallet' },
-                { label: 'دفتر الأستاذ', route: '/financial/ledger', icon: 'pi pi-book' }
+                { label: 'الخزينة والأرصدة', route: '/financial/dashboard', icon: 'pi pi-wallet',
+                  permission: 'financial.view' },
+                { label: 'دفتر الأستاذ', route: '/financial/ledger', icon: 'pi pi-book',
+                  permission: 'financial.ledger' }
             ]
         },
         {
@@ -233,9 +284,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-expenses',
             match: '/finance',
             children: [
-                { label: 'قائمة المصروفات', route: '/finance/expenses', icon: 'pi pi-list', exact: true },
-                { label: 'إضافة مصروف', route: '/finance/expenses/add', icon: 'pi pi-plus-circle' },
-                { label: 'فئات المصروفات', route: '/finance/expense-categories', icon: 'pi pi-tag' }
+                { label: 'قائمة المصروفات', route: '/finance/expenses', icon: 'pi pi-list', exact: true,
+                  permission: 'finance.view' },
+                { label: 'إضافة مصروف', route: '/finance/expenses/add', icon: 'pi pi-plus-circle',
+                  permission: 'finance.create' },
+                { label: 'فئات المصروفات', route: '/finance/expense-categories', icon: 'pi pi-tag',
+                  permission: 'finance.categories' }
             ]
         },
         {
@@ -245,11 +299,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-accounting',
             match: '/accounting',
             children: [
-                { label: 'شجرة الحسابات', route: '/accounting/chart', icon: 'pi pi-list' },
-                { label: 'أرصدة الحسابات', route: '/accounting/balances', icon: 'pi pi-credit-card', badge: 'جديد' },
-                { label: 'القيود اليومية', route: '/accounting/journal', icon: 'pi pi-pencil' },
-                { label: 'ميزان المراجعة', route: '/accounting/trial-balance', icon: 'pi pi-balance-scale' },
-                { label: 'القوائم المالية', route: '/accounting/financial-statements', icon: 'pi pi-file-pdf' }
+                { label: 'شجرة الحسابات', route: '/accounting/chart', icon: 'pi pi-list',
+                  permission: 'accounting.view' },
+                { label: 'أرصدة الحسابات', route: '/accounting/balances', icon: 'pi pi-credit-card', badge: 'جديد',
+                  permission: 'accounting.balances' },
+                { label: 'القيود اليومية', route: '/accounting/journal', icon: 'pi pi-pencil',
+                  permission: 'accounting.journal' },
+                { label: 'ميزان المراجعة', route: '/accounting/trial-balance', icon: 'pi pi-balance-scale',
+                  permission: 'accounting.trial_balance' },
+                { label: 'القوائم المالية', route: '/accounting/financial-statements', icon: 'pi pi-file-pdf',
+                  permission: 'accounting.statements' }
             ]
         },
         {
@@ -259,14 +318,22 @@ export class SidebarComponent implements OnInit, OnDestroy {
             iconClass: 'icon-reports',
             match: '/reports',
             children: [
-                { label: 'المبيعات اليومية', route: '/reports/daily-sales', icon: 'pi pi-calendar' },
-                { label: 'تقرير أداء الموظفين', route: '/reports/employee-performance', icon: 'pi pi-id-card' },
-                { label: 'تقارير الورديات', route: '/reports/shifts', icon: 'pi pi-clock', badge: 'جديد' },
-                { label: 'الأكثر مبيعاً', route: '/reports/best-selling', icon: 'pi pi-star' },
-                { label: 'ديون العملاء', route: '/reports/customer-debts', icon: 'pi pi-users' },
-                { label: 'ديون الموردين', route: '/reports/supplier-debts', icon: 'pi pi-truck' },
-                { label: 'صافي الأرباح', route: '/reports/net-profit', icon: 'pi pi-dollar' },
-                { label: 'تقييم المخزون', route: '/reports/inventory-valuation', icon: 'pi pi-box' }
+                { label: 'المبيعات اليومية', route: '/reports/daily-sales', icon: 'pi pi-calendar',
+                  permission: 'reports.view' },
+                { label: 'تقرير أداء الموظفين', route: '/reports/employee-performance', icon: 'pi pi-id-card',
+                  permission: 'reports.view' },
+                { label: 'تقارير الورديات', route: '/reports/shifts', icon: 'pi pi-clock', badge: 'جديد',
+                  permission: 'reports.view' },
+                { label: 'الأكثر مبيعاً', route: '/reports/best-selling', icon: 'pi pi-star',
+                  permission: 'reports.view' },
+                { label: 'ديون العملاء', route: '/reports/customer-debts', icon: 'pi pi-users',
+                  permission: 'reports.view' },
+                { label: 'ديون الموردين', route: '/reports/supplier-debts', icon: 'pi pi-truck',
+                  permission: 'reports.view' },
+                { label: 'صافي الأرباح', route: '/reports/net-profit', icon: 'pi pi-dollar',
+                  permission: 'reports.view' },
+                { label: 'تقييم المخزون', route: '/reports/inventory-valuation', icon: 'pi pi-box',
+                  permission: 'reports.view' }
             ]
         },
         {
@@ -275,34 +342,47 @@ export class SidebarComponent implements OnInit, OnDestroy {
             icon: 'pi pi-cog',
             iconClass: 'icon-users',
             match: '/users',
-            extraMatches: ['/system-alerts'],
+            extraMatches: ['/system-alerts', '/roles', '/settings'],
             children: [
-                { label: 'المستخدمين والصلاحيات', route: '/users', icon: 'pi pi-id-card' },
-                { label: 'التنبيهات', route: '/system-alerts', icon: 'pi pi-bell', alert: true },
-                { label: 'إعدادات الصيدلية', route: '/settings', icon: 'pi pi-cog' }
+                { label: 'المستخدمين', route: '/users', icon: 'pi pi-id-card',
+                  permission: 'users.view' },
+                { label: 'الأدوار والصلاحيات', route: '/roles', icon: 'pi pi-shield',
+                  permission: 'roles.view' },
+                { label: 'التنبيهات', route: '/system-alerts', icon: 'pi pi-bell', alert: true,
+                  permission: 'alerts.view' },
+                { label: 'إعدادات الصيدلية', route: '/settings', icon: 'pi pi-cog',
+                  permission: 'settings.view' }
             ]
         }
     ];
+
     private destroy$ = new Subject<void>();
 
     constructor(
         private alertService: AlertService,
         private settingsService: SettingsService,
         private router: Router,
+        private authService: AuthService,
         private accountingService: AccountingService
     ) { }
 
     ngOnInit() {
         this.loadPharmacySettings();
+        
+        // Load current user for sidebar footer
+        this.authService.currentUser$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(user => {
+                // @ts-ignore (since AuthResponse vs CurrentUserResponse matching)
+                this.currentUser = user;
+            });
 
-        // Subscribe to alerts
         this.alertService.unreadAlerts$
             .pipe(takeUntil(this.destroy$))
             .subscribe(alerts => {
                 this.unreadAlertsCount = alerts.length;
             });
 
-        // Track current route
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd),
             takeUntil(this.destroy$)
@@ -315,6 +395,46 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.openActiveMenus();
     }
 
+    // ================================================================
+    // منطق الصلاحيات — الجوهر
+    // ================================================================
+
+    /**
+     * هل يمكن رؤية عنصر معين؟
+     * Admin → true دائماً
+     * بدون permission → true (للجميع)
+     * وإلا → تحقق من الصلاحية
+     */
+    canAccess(item: SidebarMenuItem): boolean {
+        if (this.permissionService.isAdmin()) return true;
+        if (!item.permission && !item.anyPermission) return true;
+        if (item.anyPermission) return this.permissionService.hasAnyPermission(item.anyPermission);
+        return this.permissionService.hasPermission(item.permission!);
+    }
+
+    /**
+     * هل يوجد في القسم على الأقل عنصر واحد مرئي؟
+     * إذا لا → أخفِ القسم كاملاً
+     */
+    hasSectionVisible(section: SidebarSection): boolean {
+        if (this.permissionService.isAdmin()) return true;
+        return section.children.some(item => {
+            if (item.children) return this.hasNestedVisible(item);
+            return this.canAccess(item);
+        });
+    }
+
+    /**
+     * هل في القائمة الداخلية (Nested) عنصر واحد مرئي؟
+     */
+    hasNestedVisible(item: SidebarMenuItem): boolean {
+        if (!item.children) return this.canAccess(item);
+        return item.children.some(child => this.canAccess(child));
+    }
+
+    // ================================================================
+    // منطق التنقل
+    // ================================================================
 
     toggleCollapsed() {
         this.collapseChange.emit(!this.isCollapsed);
@@ -324,7 +444,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         if (this.isCollapsed) {
             this.collapseChange.emit(false);
         }
-
         this.openMenus[key] = !this.openMenus[key];
     }
 
@@ -340,7 +459,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         if (item.route && this.currentRoute.startsWith(item.route)) {
             return true;
         }
-
         return item.children?.some((child) => this.isItemActive(child)) || false;
     }
 
@@ -349,7 +467,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
             if (this.isSectionActive(section)) {
                 this.openMenus[section.key] = true;
             }
-
             section.children?.forEach((item) => {
                 if (item.key && this.isItemActive(item)) {
                     this.openMenus[item.key] = true;

@@ -14,6 +14,9 @@ import { AlertService } from '../../core/services/alert.service';
 import { SystemNotificationService } from '../../core/services/notifications/system-notification.service';
 import { ShiftService } from '../../core/services/shift.service';
 import { ThemeSettingsComponent } from '../theme-settings/theme-settings.component';
+import { BranchService } from '../../features/branches/services/branch.service';
+import { BranchDto } from '../../core/models';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
     selector: 'app-topbar',
@@ -25,6 +28,7 @@ import { ThemeSettingsComponent } from '../theme-settings/theme-settings.compone
         MenuModule,
         ConfirmDialogModule,
         TooltipModule,
+        DropdownModule,
         ThemeSettingsComponent
     ],
     providers: [ConfirmationService],
@@ -38,6 +42,10 @@ export class TopbarComponent {
     userRole = 'مدير النظام';
     branchName = '';
     userAvatar = 'https://ui-avatars.com/api/?name=Admin+User&background=0d9488&color=fff&rounded=true';
+
+    currentBranchId?: number;
+    allowedBranches: BranchDto[] = [];
+    isSwitchingBranch = false;
 
     @HostBinding('class.scrolled') get scrolled() {
         return this.isScrolled;
@@ -72,6 +80,7 @@ export class TopbarComponent {
         public alertService: AlertService,
         public systemNotificationService: SystemNotificationService,
         private shiftService: ShiftService,
+        private branchService: BranchService,
         @Inject(PLATFORM_ID) private platformId: Object,
         @Inject(DOCUMENT) private document: Document
     ) { }
@@ -84,6 +93,10 @@ export class TopbarComponent {
             this.userRole = user.roleName || 'مستخدم';
             this.branchName = user.branchName || (user.username === 'admin' ? 'الفرع الرئيسي' : 'الفرع ' + (user.branchId || 'الرئيسي'));
             this.userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=0d9488&color=fff&bold=true&rounded=true`;
+            this.currentBranchId = user.branchId;
+            
+            // Fetch allowed branches if applicable
+            this.loadAllowedBranches(user.allowedBranchIds || []);
             
             // Start polling for system notifications
             this.systemNotificationService.startPolling(user.userId, user.branchId);
@@ -96,6 +109,33 @@ export class TopbarComponent {
                 this.userRole = u.roleName || 'مستخدم';
                 this.branchName = u.branchName || (u.username === 'admin' ? 'الفرع الرئيسي' : 'الفرع ' + (u.branchId || 'الرئيسي'));
                 this.userAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(this.userName)}&background=0d9488&color=fff&bold=true&rounded=true`;
+                this.currentBranchId = u.branchId;
+            }
+        });
+    }
+
+    private loadAllowedBranches(allowedIds: number[]) {
+        if (!allowedIds || allowedIds.length === 0) return;
+        
+        this.branchService.getActive().subscribe({
+            next: (branches) => {
+                this.allowedBranches = branches.filter(b => allowedIds.includes(b.id));
+            }
+        });
+    }
+
+    onBranchChange(event: any) {
+        if (!event.value || event.value === this.authService.currentUserValue?.branchId) return;
+        
+        this.isSwitchingBranch = true;
+        this.authService.switchBranch(event.value).subscribe({
+            next: () => {
+                this.isSwitchingBranch = false;
+                window.location.reload(); // Reload to re-initialize services with new branch context
+            },
+            error: () => {
+                this.isSwitchingBranch = false;
+                this.currentBranchId = this.authService.currentUserValue?.branchId; // Reset
             }
         });
     }

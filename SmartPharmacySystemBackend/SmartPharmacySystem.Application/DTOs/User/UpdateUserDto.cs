@@ -53,7 +53,12 @@ public class UpdateUserDto
     public string Notes { get; set; } = string.Empty;
 
     /// <summary>
-    /// الفرع الذي سيعمل فيه المستخدم (لتعيين الموظف للفرع)
+    /// الفرع الافتراضي للمستخدم
     /// </summary>
-    public int? BranchId { get; set; }
+    public int? DefaultBranchId { get; set; }
+
+    /// <summary>
+    /// الفروع المسموح للمستخدم بالدخول إليها
+    /// </summary>
+    public List<int> AllowedBranchIds { get; set; } = new();
 }

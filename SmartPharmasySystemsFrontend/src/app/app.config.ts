@@ -11,6 +11,22 @@ import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
+import { APP_INITIALIZER } from '@angular/core';
+import { AuthService } from './features/auth/services/auth.service';
+import { PermissionService } from './core/services/permission.service';
+import { firstValueFrom, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+export function initializeApp(authService: AuthService, permissionService: PermissionService) {
+  return () => {
+    if (authService.isAuthenticated()) {
+      return firstValueFrom(permissionService.loadMyPermissions().pipe(
+        catchError(() => of([]))
+      ));
+    }
+    return Promise.resolve(true);
+  };
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -28,6 +44,12 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor, errorInterceptor])
     ),
     MessageService,
-    ConfirmationService
+    ConfirmationService,
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeApp,
+      deps: [AuthService, PermissionService],
+      multi: true
+    }
   ]
 };

@@ -84,8 +84,7 @@ namespace SmartPharmacySystem.Application.Services
                 }
 
                 // 3. Update Supplier Balance (Decrease Debt)
-                supplier.Balance -= dto.Amount;
-                await _unitOfWork.Suppliers.UpdateAsync(supplier);
+                await _unitOfWork.Suppliers.UpdateBalanceAsync(supplier.Id, -dto.Amount);
 
                 // ==================== المحرك المحاسبي الاحترافي ====================
                 var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
@@ -161,12 +160,7 @@ namespace SmartPharmacySystem.Application.Services
                 payment.DeletedBy = userId;
 
                 // 2. Reverse Supplier Balance (Increase Debt back)
-                var supplier = await _unitOfWork.Suppliers.GetByIdAsync(payment.SupplierId);
-                if (supplier != null)
-                {
-                    supplier.Balance += payment.Amount;
-                    await _unitOfWork.Suppliers.UpdateAsync(supplier);
-                }
+                await _unitOfWork.Suppliers.UpdateBalanceAsync(payment.SupplierId, payment.Amount);
 
                 // 2.5 Reverse Purchase Invoice Payment if linked
                 if (payment.PurchaseInvoiceId.HasValue)

@@ -1,163 +1,119 @@
-<div class="premium-wrap animate-fade-in" dir="rtl">
-    <!-- Premium Header (Compact) -->
-    <header class="premium-header mb-3">
-        <div class="premium-header-start">
-            <button pButton icon="pi pi-arrow-right" [rounded]="true" [text]="true" styleClass="premium-btn-icon" (click)="goBack()"></button>
-            <div class="premium-icon">
-                <i class="pi pi-replay"></i>
-            </div>
-            <div>
-                <h1 class="premium-title">تسجيل مردود مبيعات</h1>
-                <div class="flex align-items-center gap-2 mt-1">
-                    <span class="premium-chip premium-chip-gray">مسودة</span>
-                    <span class="premium-subtitle">نظام المرتجعات الذكي</span>
-                </div>
-            </div>
+<div class="card" dir="rtl">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <span class="status-badge" style="background: #fff7ed; color: #c2410c; border-color: #ffedd5;">مسودة</span>
+            <h1 class="header-title">تسجيل مردود مبيعات</h1>
         </div>
-        <div class="premium-header-end">
-            <button pButton label="إلغاء" icon="pi pi-times" [text]="true" severity="danger" (click)="goBack()"></button>
-        </div>
-    </header>
+        <button class="btn-close" (click)="goBack()" pTooltip="إغلاق">
+            <i class="pi pi-times"></i>
+        </button>
+    </div>
 
-    <div class="layout-grid">
-        <!-- Main Panel -->
-        <div class="main-panel">
-            <!-- 1. Search Section -->
-            <section class="premium-card mb-3" *ngIf="!selectedInvoice">
-                <div class="card-header mb-3">
-                    <i class="pi pi-search text-red-500"></i>
-                    <span class="font-bold">البحث عن الفاتورة الأصلية</span>
-                </div>
-                <div class="p-fluid">
-                    <span class="p-input-icon-left">
-                        <i class="pi pi-search"></i>
-                        <p-autoComplete [(ngModel)]="invoiceSearchQuery" [suggestions]="filteredInvoices"
-                            (completeMethod)="searchInvoice($event)" (onSelect)="onInvoiceSelect($event.value)"
-                            field="saleInvoiceNumber" [dropdown]="true" placeholder="ادخل رقم الفاتورة أو اسم العميل..."
-                            styleClass="compact-autocomplete" appendTo="body">
-                            <ng-template let-invoice pTemplate="item">
-                                <div class="flex justify-content-between align-items-center p-2 border-bottom-1 border-gray-100">
-                                    <div>
-                                        <div class="font-bold text-gray-800">#{{ invoice.saleInvoiceNumber }}</div>
-                                        <div class="text-xs text-gray-500">{{ invoice.customerName }}</div>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="font-bold text-green-600">{{ invoice.totalAmount | number:'1.2-2' }} ر.ي</div>
-                                        <div class="text-xs text-gray-400">{{ invoice.invoiceDate | date:'dd/MM/yyyy' }}</div>
-                                    </div>
-                                </div>
-                            </ng-template>
-                        </p-autoComplete>
-                    </span>
-                </div>
-            </section>
-
-            <!-- 2. Selected Invoice Info -->
-            <section class="premium-card mb-3" *ngIf="selectedInvoice">
-                <div class="card-header mb-3">
-                    <i class="pi pi-file text-red-500"></i>
-                    <span class="font-bold">بيانات الفاتورة المختارة</span>
-                </div>
-                <div class="grid p-fluid">
-                    <div class="col-12 md:col-6">
-                        <div class="info-item">
-                            <label>رقم الفاتورة</label>
-                            <div class="info-value">#{{ selectedInvoice.saleInvoiceNumber }}</div>
+    <!-- القسم الأول: البحث والبيانات الأساسية -->
+    <div class="grid-container p-fluid" style="margin-bottom: 20px;">
+        <div class="input-group" *ngIf="!selectedInvoice" style="grid-column: span 2;">
+            <label>البحث عن الفاتورة الأصلية <span class="text-red-500">*</span></label>
+            <p-autoComplete [(ngModel)]="invoiceSearchQuery" [suggestions]="filteredInvoices"
+                (completeMethod)="searchInvoice($event)" (onSelect)="onInvoiceSelect($event.value)"
+                field="saleInvoiceNumber" placeholder="ادخل رقم الفاتورة أو اسم العميل..."
+                styleClass="custom-p-input" appendTo="body">
+                <ng-template let-invoice pTemplate="item">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <div>
+                            <div style="font-weight: bold; color: #0f172a;">#{{ invoice.saleInvoiceNumber }}</div>
+                            <div style="font-size: 11px; color: #64748b;">{{ invoice.customerName }}</div>
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-weight: bold; color: #0d9488;">{{ invoice.totalAmount | number:'1.2-2' }} ر.ي</div>
+                            <div style="font-size: 11px; color: #94a3b8;">{{ invoice.invoiceDate | date:'dd/MM/yyyy' }}</div>
                         </div>
                     </div>
-                    <div class="col-12 md:col-6">
-                        <div class="info-item">
-                            <label>العميل</label>
-                            <div class="info-value">{{ selectedInvoice.customerName || 'عميل نقدي' }}</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. Items Table (Compact) -->
-            <section class="premium-card p-0" *ngIf="selectedInvoice">
-                <div class="p-3 border-bottom-1 border-gray-100 flex justify-content-between align-items-center">
-                    <div class="card-header">
-                        <i class="pi pi-list text-teal-600"></i>
-                        <span class="font-bold">أصناف الفاتورة المتاحة للإرجاع</span>
-                    </div>
-                </div>
-
-                <div class="premium-table-wrap">
-                <p-table [value]="returnItems()" styleClass="premium-table" responsiveLayout="scroll">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th>الصنف</th>
-                            <th class="text-center">الأصلية</th>
-                            <th class="text-center">المتاح</th>
-                            <th class="text-center" style="width: 130px">الكمية المرتجعة</th>
-                            <th class="text-right">القيمة</th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-item>
-                        <tr>
-                            <td class="premium-cell-main">
-                                <div>{{ item.medicineName }}</div>
-                                <div class="text-xs text-gray-500">{{ item.batchNumber }}</div>
-                            </td>
-                            <td class="text-center premium-cell-secondary">{{ item.originalQuantity }}</td>
-                            <td class="text-center"><span class="premium-chip premium-chip-teal">{{ item.remainingQtyToReturn }}</span></td>
-                            <td class="text-center">
-                                <p-inputNumber [(ngModel)]="item.returnQuantity" (ngModelChange)="calculateReturnAmount(item)" 
-                                    [min]="0" [max]="item.remainingQtyToReturn" [showButtons]="true"
-                                    inputStyleClass="text-center font-bold text-red-600 p-1 w-full" 
-                                    styleClass="w-full compact-numeric"
-                                    decrementButtonClass="p-button-danger p-button-text p-1" 
-                                    incrementButtonClass="p-button-danger p-button-text p-1">
-                                </p-inputNumber>
-                            </td>
-                            <td class="text-right premium-cell-main text-red-600">
-                                {{ item.totalReturnAmount | number:'1.2-2' }}
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-                </div>
-            </section>
+                </ng-template>
+            </p-autoComplete>
         </div>
 
-        <!-- Sidebar Panel -->
-        <div class="sidebar-panel" *ngIf="selectedInvoice">
-            <div class="premium-card sticky-sidebar p-3">
-                <h3 class="m-0 mb-3 text-lg font-bold text-gray-700 border-bottom-1 border-gray-100 pb-2">ملخص المردود</h3>
-                
-                <div class="p-fluid gap-3 flex flex-column">
-                    <div class="field m-0">
-                        <label class="text-xs font-bold mb-1 block text-gray-600">تاريخ الإرجاع</label>
-                        <p-calendar [(ngModel)]="returnDate" [showIcon]="true" dateFormat="dd/mm/yy" styleClass="p-inputtext-sm"></p-calendar>
-                    </div>
-                    
-                    <div class="field m-0">
-                        <label class="text-xs font-bold mb-1 block text-gray-600">سبب الإرجاع</label>
-                        <textarea pInputTextarea [(ngModel)]="reason" rows="2" class="p-inputtext-sm" placeholder="اكتب السبب هنا..."></textarea>
-                    </div>
+        <div class="input-group" *ngIf="selectedInvoice">
+            <label>رقم الفاتورة الأصلية</label>
+            <input pInputText [value]="selectedInvoice.saleInvoiceNumber" class="custom-native-input" readonly />
+        </div>
 
-                    <div class="total-box bg-red-50 border-round-lg p-3 text-center my-2">
-                        <span class="text-xs text-red-600 font-bold block mb-1">إجمالي قيمة المردود</span>
-                        <div class="text-2xl font-bold text-red-700">
-                            {{ totalReturnAmount() | number : '1.2-2' }} <small>ر.ي</small>
-                        </div>
-                    </div>
+        <div class="input-group" *ngIf="selectedInvoice">
+            <label>العميل</label>
+            <input pInputText [value]="selectedInvoice.customerName || 'عميل نقدي'" class="custom-native-input" readonly />
+        </div>
 
-                    <div class="flex flex-column gap-2 mt-2">
-                        <p-button label="اعتماد وحفظ" icon="pi pi-check-circle" severity="danger" [loading]="saving"
-                            styleClass="w-full font-bold shadow-2" (onClick)="approveReturn()"></p-button>
-                        <p-button label="حفظ مسودة" icon="pi pi-save" [text]="true" [loading]="saving" 
-                            styleClass="w-full text-sm" (onClick)="saveDraft()"></p-button>
-                    </div>
-                </div>
+        <div class="input-group">
+            <label>تاريخ الإرجاع <span class="text-red-500">*</span></label>
+            <p-calendar [(ngModel)]="returnDate" [showIcon]="false" dateFormat="dd/mm/yy" appendTo="body"
+                styleClass="custom-p-input"></p-calendar>
+        </div>
 
-                <div class="mt-3 p-2 bg-orange-50 border-round text-xs text-orange-700" *ngIf="hasExceededQuantity">
-                    <i class="pi pi-exclamation-triangle"></i> تـنبيه: الكمية المدخلة تتجاوز المتاح.
-                </div>
-            </div>
+        <div class="input-group">
+            <label>سبب الإرجاع</label>
+            <input pInputText [(ngModel)]="reason" placeholder="اكتب السبب هنا..." class="custom-native-input" />
+        </div>
+    </div>
+
+    <!-- الجدول والقائمة الفارغة -->
+    <div class="table-container" *ngIf="selectedInvoice">
+        <p-table [value]="returnItems()" responsiveLayout="scroll" styleClass="custom-p-table">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>الصنف</th>
+                    <th style="text-align: center;">الأصلية</th>
+                    <th style="text-align: center;">المتاح للإرجاع</th>
+                    <th style="text-align: center;">الكمية المرتجعة</th>
+                    <th style="text-align: left;">القيمة</th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item>
+                <tr>
+                    <td style="font-weight: 500;">
+                        <div>{{ item.medicineName }}</div>
+                        <div style="font-size: 11px; color: #64748b;">{{ item.batchNumber }}</div>
+                    </td>
+                    <td style="text-align: center;">{{ item.originalQuantity }}</td>
+                    <td style="text-align: center;">
+                        <span style="font-weight: 700; color: #0d9488; background: #ccfbf1; padding: 2px 6px; border-radius: 4px;">{{ item.remainingQtyToReturn }}</span>
+                    </td>
+                    <td style="text-align: center;" (click)="$event.stopPropagation()">
+                        <p-inputNumber [(ngModel)]="item.returnQuantity" (ngModelChange)="calculateReturnAmount(item)" 
+                            [min]="0" [max]="item.remainingQtyToReturn" [showButtons]="false"
+                            inputStyleClass="text-center font-bold text-red-600" styleClass="custom-p-input" [style]="{width: '100px', margin: '0 auto'}"></p-inputNumber>
+                    </td>
+                    <td style="text-align: left; font-weight: 700; color: #dc2626;">
+                        {{ item.totalReturnAmount | number:'1.2-2' }}
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+        <div style="padding: 12px; background: #fff5f5; border-top: 1px solid #fee2e2; color: #991b1b; font-size: 12px;" *ngIf="hasExceededQuantity">
+            <i class="pi pi-exclamation-triangle"></i> تـنبيه: بعض الكميات المدخلة تتجاوز المتاح للإرجاع.
+        </div>
+    </div>
+
+    <div class="empty-state" *ngIf="!selectedInvoice">
+        <span class="empty-icon"><i class="pi pi-search" style="font-size: 2rem;"></i></span>
+        الرجاء البحث عن الفاتورة الأصلية وتحديدها أولاً لعرض الأصناف المتاحة للإرجاع
+    </div>
+
+    <!-- التذييل والإجراءات -->
+    <div class="footer">
+        <div class="footer-stats">
+            <span class="stat-badge stat-total" style="background: #fff5f5; color: #991b1b; border-color: #fecaca;">
+                إجمالي قيمة المردود: <span class="stat-number" style="color: #7f1d1d;">{{ totalReturnAmount() | number : '1.2-2' }} ر.ي</span>
+            </span>
+        </div>
+        <div class="footer-actions">
+            <button type="button" class="btn btn-outline" (click)="saveDraft()" [disabled]="saving || !selectedInvoice">
+                <i class="pi pi-save"></i> حفظ مسودة
+            </button>
+            <button type="button" class="btn btn-primary" style="background: linear-gradient(180deg, #f87171 0%, #ef4444 100%); border-color: #dc2626; color: white;" (click)="approveReturn()"
+                [disabled]="saving || !selectedInvoice || hasExceededQuantity || totalReturnAmount() === 0">
+                <i class="pi pi-check"></i> اعتماد المرتجع
+            </button>
         </div>
     </div>
 </div>
-
 <p-toast position="top-left"></p-toast>

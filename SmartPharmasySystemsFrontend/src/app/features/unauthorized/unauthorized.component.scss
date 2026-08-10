@@ -1,0 +1,65 @@
+.unauth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--surface-ground);
+    direction: rtl;
+}
+
+.unauth-card {
+    text-align: center;
+    padding: 2rem 2.5rem;
+    background: var(--surface-card);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    max-width: 380px;
+    width: 90%;
+
+    .icon-wrap {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 50%;
+        background: rgba(239, 68, 68, 0.1);
+        margin-bottom: 1rem;
+
+        .pi {
+            font-size: 1.8rem;
+            color: #ef4444;
+        }
+    }
+
+    h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #ef4444;
+        margin: 0 0 0.25rem;
+        line-height: 1;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+        color: var(--text-color);
+        margin: 0 0 0.75rem;
+    }
+
+    p {
+        font-size: 0.85rem;
+        color: var(--text-color-secondary);
+        margin: 0 0 0.25rem;
+
+        &.sub {
+            font-size: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+}

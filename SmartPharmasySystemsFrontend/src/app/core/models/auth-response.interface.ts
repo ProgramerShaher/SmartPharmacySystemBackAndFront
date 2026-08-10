@@ -19,6 +19,12 @@ export interface LoginResponse {
     email?: string;
     branchId?: number;
     branchName?: string;
+    
+    // ERP Properties
+    employeeId?: number;
+    employeeCode?: string;
+    employeeName?: string;
+    allowedBranchIds?: number[];
 }
 
 /**
@@ -52,6 +58,11 @@ export interface CurrentUserResponse {
     isDeleted?: boolean;
     branchId?: number;
     branchName?: string;
+    
+    // ERP Properties
+    employeeId?: number;
+    employeeCode?: string;
+    employeeName?: string;
 }
 
 // Legacy - keep for backward compatibility

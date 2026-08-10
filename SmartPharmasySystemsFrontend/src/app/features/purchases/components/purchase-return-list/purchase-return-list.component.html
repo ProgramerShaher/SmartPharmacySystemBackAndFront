@@ -53,7 +53,7 @@
                 </td>
                 <td>
                     <span class="ref-number text-blue-500 font-bold underline cursor-pointer"
-                        [routerLink]="['/purchases/invoices', ret.purchaseInvoiceId]">
+                        [routerLink]="['/purchases', ret.purchaseInvoiceId]">
                         {{ret.purchaseInvoiceNumber}}
                     </span>
                 </td>
@@ -102,3 +102,10 @@
     </p-table>
   </section>
 </div>
+
+<!-- Details Modal -->
+<app-purchase-return-details 
+    [(visible)]="displayDetailsModal" 
+    [invoiceId]="selectedReturnId"
+    (onAction)="loadReturns()">
+</app-purchase-return-details>

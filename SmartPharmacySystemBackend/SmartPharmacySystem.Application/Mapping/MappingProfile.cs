@@ -76,8 +76,8 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Balance == 0 ? "خالص" : "دائن"))
                 .ForMember(dest => dest.StatusColor, opt => opt.MapFrom(src => src.Balance == 0 ? "#22c55e" : "#f97316"))
                 .ForMember(dest => dest.StatusIcon, opt => opt.MapFrom(src => src.Balance == 0 ? "pi pi-check-circle" : "pi pi-exclamation-circle"))
-                .ForMember(dest => dest.PurchaseInvoices, opt => opt.Ignore())
-                .ForMember(dest => dest.PurchaseReturns, opt => opt.Ignore());
+                .ForMember(dest => dest.PurchaseInvoices, opt => opt.MapFrom(src => src.PurchaseInvoices))
+                .ForMember(dest => dest.PurchaseReturns, opt => opt.MapFrom(src => src.PurchaseReturns));
             // Explicit reverse (SupplierDto -> Supplier) - ignore computed and nav props
             CreateMap<SupplierDto, Supplier>()
                 .ForMember(dest => dest.PurchaseInvoices, opt => opt.Ignore())
@@ -86,6 +86,8 @@ namespace SmartPharmacySystem.Application.Mapping
 
             // User Mappings
             CreateMap<CreateUserDto, User>();
+            CreateMap<UpdateUserDto, User>()
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
             CreateMap<User, UserDto>()
                 .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.RoleId))
                 .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.Role != null ? src.Role.Name : string.Empty))
@@ -477,6 +479,17 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<UpdateRoleDto, Core.Entities.Role>();
             CreateMap<Core.Entities.Role, RoleDto>();
 
+            // Permission Mappings
+            CreateMap<Permission, SmartPharmacySystem.Application.DTOs.Permission.PermissionDto>();
+
+            // User Permission Override Mappings
+            CreateMap<UserPermissionOverride, UserPermissionOverrideDto>()
+                .ForMember(dest => dest.PermissionCode, opt => opt.MapFrom(src => src.Permission != null ? src.Permission.Code : string.Empty))
+                .ForMember(dest => dest.PermissionNameAr, opt => opt.MapFrom(src => src.Permission != null ? src.Permission.ActionAr : string.Empty));
+
+            // Audit Log Mappings
+            CreateMap<AuditLog, SmartPharmacySystem.Application.DTOs.AuditLog.AuditLogDto>();
+
             // ==================== Accounting Mappings ====================
 
             // Account Mappings
@@ -693,6 +706,7 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<Employee, EmployeeDto>()
                 .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department != null ? src.Department.Name : string.Empty))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.Username : string.Empty))
                 .ForMember(dest => dest.TotalLoans, opt => opt.Ignore())
                 .ForMember(dest => dest.RemainingLoans, opt => opt.Ignore());
 

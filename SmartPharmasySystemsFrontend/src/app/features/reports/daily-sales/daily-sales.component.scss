@@ -1,0 +1,11 @@
+@import '../reports-shared.scss';
+
+.analytics-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.mt-2 {
+  margin-top: 0.25rem;
+}

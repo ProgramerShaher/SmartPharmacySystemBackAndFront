@@ -1,40 +1,367 @@
-.pos-container {
-    padding: 1.5rem;
-    max-width: 1600px;
-    margin: 0 auto;
-}
+:host ::ng-deep {
+    font-family: 'Tajawal', sans-serif;
 
-.pos-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 2rem;
+    /* النافذة الرئيسية (Card) */
+    .card {
+        background: #ffffff;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: 24px;
+        gap: 20px;
+    }
+
+    /* رأس النافذة (Header) */
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e2e8f0;
+    }
 
     .header-left {
         display: flex;
         align-items: center;
-        gap: 1.5rem;
+        gap: 12px;
+    }
+
+    .header-title {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .status-badge {
+        background: #f0fdfa;
+        color: #0f766e;
+        border: 1px solid #ccfbf1;
+        font-size: 12px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .btn-close {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    .btn-close:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    /* الشبكة (Grid System) للحقول */
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    /* إخفاء التسميات لتصغير الحجم، ودمجها داخل الحقل أو فوقه مباشرة */
+    .input-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .input-group label {
+        font-family: 'Tajawal', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: #344054;
+        margin: 0 0 6px 0;
+        display: block;
+    }
+
+    /* تنسيق الحقول لتشمل PrimeNG والمحلية */
+    .custom-native-input,
+    .custom-p-input > .p-inputtext,
+    .custom-p-input.p-dropdown,
+    .custom-p-input .p-inputtext,
+    .custom-p-input.p-calendar .p-inputtext {
+        width: 100%;
+        height: 36px !important;
+        padding: 0 12px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+        font-size: 13px !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        font-family: 'Tajawal', sans-serif !important;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02) !important;
+        align-items: center;
+    }
+
+    .custom-native-input:focus,
+    .custom-p-input.p-focus > .p-inputtext,
+    .custom-p-input.p-dropdown.p-focus,
+    .custom-p-input .p-inputtext:focus,
+    .custom-p-input.p-calendar .p-inputtext:focus,
+    .custom-p-input.p-autocomplete.p-focus .p-inputtext {
+        outline: none !important;
+        background: #ffffff !important;
+        border-color: #0d9488 !important;
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+    }
+
+    /* تنسيق خاص للـ Dropdown لحل مشكلة السهم */
+    .custom-p-input.p-dropdown .p-dropdown-label {
+        padding: 0 !important;
+        line-height: 34px !important;
+    }
+
+    .custom-p-input.p-dropdown .p-dropdown-trigger {
+        width: 32px !important;
+        color: #667085 !important;
+    }
+
+    .custom-p-input.p-calendar .p-button {
+        display: none !important;
     }
 }
 
-.pos-content-grid {
-    display: grid;
-    grid-template-columns: 1fr 380px;
-    gap: 1.5rem;
-    align-items: start;
+/* الجدول */
+.table-container {
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    margin-top: 8px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+}
 
-    @media (max-width: 1200px) {
+.custom-p-table {
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .p-datatable-thead > tr > th {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        font-weight: 700 !important;
+        padding: 10px 16px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        font-size: 11px !important;
+        letter-spacing: 0.5px;
+    }
+
+    .p-datatable-tbody > tr > td {
+        padding: 12px 16px !important;
+        color: #0f172a !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        background: #ffffff !important;
+    }
+
+    .p-datatable-tbody > tr:hover > td {
+        background: #f8fafc !important;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 0 !important;
+    color: #98a2b3;
+}
+
+.empty-icon {
+    font-size: 32px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* التذييل (Footer) */
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 1px solid #eaecf0;
+    margin-top: auto;
+}
+
+.footer-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    height: 36px;
+    padding: 0 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-outline {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #334155;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: #f8fafc;
+    border-color: #94a3b8;
+}
+
+.btn-primary {
+    background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%);
+    border: 1px solid #115e59;
+    color: white;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: linear-gradient(180deg, #0f766e 0%, #115e59 100%);
+}
+
+.btn-danger {
+    background: linear-gradient(180deg, #ffffff 0%, #fef2f2 100%);
+    border: 1px solid #fecaca;
+    color: #ef4444;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+
+.footer-stats {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.stat-items {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+}
+
+.stat-items .stat-number {
+    color: #1d4ed8;
+    font-weight: 800;
+}
+
+.stat-qty {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.stat-qty .stat-number {
+    color: #15803d;
+    font-weight: 800;
+}
+
+.stat-total {
+    background: #4f46e5;
+    color: #ffffff;
+    border: 1px solid #4338ca;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.stat-total .stat-number {
+    color: #ffffff;
+    font-weight: 800;
+    font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .grid-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .grid-container {
         grid-template-columns: 1fr;
     }
-}
 
-.item-row {
-    transition: all 0.2s ease;
-
-    &:hover {
-        background: rgba(139, 92, 246, 0.05) !important;
+    .footer {
+        flex-direction: column-reverse;
+        gap: 16px;
+        align-items: stretch;
     }
 
+    .footer-actions {
+        justify-content: space-between;
+    }
+}
+
+/* تنسيق النوافذ المنبثقة */
+::ng-deep {
+    .p-dropdown-panel,
+    .p-autocomplete-panel,
+    .p-datepicker {
+        font-family: 'Tajawal', sans-serif !important;
+        background: #ffffff !important;
+        border: 1px solid #eaecf0 !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+        border-radius: 8px !important;
+    }
+}
+
+/* Return specific styling */
+.item-row {
+    transition: all 0.2s ease;
     &.grayscale {
         filter: grayscale(1);
     }
@@ -46,61 +373,65 @@
     font-size: 0.75rem;
     font-weight: 700;
     white-space: nowrap;
-
+    
     &.indigo {
         background: rgba(99, 102, 241, 0.1);
         color: #4f46e5;
     }
 }
 
-.summary-card {
-    padding: 2rem 1.5rem;
-    border-radius: 1.25rem;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-
-    &.return-purchase {
-        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-        color: white;
-        box-shadow: 0 15px 30px rgba(139, 92, 246, 0.3);
-
-        .label {
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-
-        .value {
-            font-size: 2.2rem;
-            font-weight: 900;
-            background: rgba(255, 255, 255, 0.9);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+::ng-deep {
+    /* Style for AutoComplete Dropdown Button */
+    .return-autocomplete {
+        .p-autocomplete-dropdown {
+            width: 36px !important;
+            height: 36px !important;
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border: 1px solid #cbd5e1 !important;
+            border-right: none !important; /* For RTL */
+            border-radius: 6px 0 0 6px !important;
+            
+            &:hover {
+                background: #f1f5f9 !important;
+                color: #0f172a !important;
+            }
         }
     }
-}
 
-.mini-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-color);
-    padding: 1rem;
-    border-radius: 1rem;
-    display: flex;
-}
+    /* Style for InputNumber horizontal layout */
+    .return-input-number {
+        display: inline-flex;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        overflow: hidden;
 
-.elevation-hover {
-    transition: all 0.3s ease;
+        .p-inputnumber-input {
+            text-align: center !important;
+            font-weight: 700 !important;
+            color: #ef4444 !important;
+            height: 28px !important;
+            width: 45px !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+        }
 
-    &:hover {
-        transform: translateY(-3px);
-        box-shadow: var(--shadow-lg);
-    }
-}
+        .p-inputnumber-button {
+            width: 28px !important;
+            height: 28px !important;
+            background: #f8fafc !important;
+            color: #64748b !important;
+            border: none !important;
 
-:host ::ng-deep {
-    .p-inputnumber-buttons-horizontal .p-inputnumber-input {
-        order: 2;
+            &:hover {
+                background: #e2e8f0 !important;
+                color: #0f172a !important;
+            }
+            
+            &:focus {
+                box-shadow: none !important;
+            }
+        }
     }
 }

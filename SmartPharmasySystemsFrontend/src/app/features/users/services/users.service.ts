@@ -27,4 +27,12 @@ export class UsersService {
     getRoles(): Observable<Role[]> {
         return this.http.get<ApiResponse<Role[]>>(`${environment.apiUrl}/Roles`).pipe(map(res => res.data));
     }
+
+    getUserPermissions(userId: number): Observable<number[]> {
+        return this.http.get<ApiResponse<number[]>>(`${environment.apiUrl}/Users/${userId}/permissions`).pipe(map(res => res.data));
+    }
+
+    updateUserPermissions(userId: number, permissionIds: number[]): Observable<void> {
+        return this.http.put<ApiResponse<void>>(`${environment.apiUrl}/Users/${userId}/permissions`, permissionIds).pipe(map(res => res.data));
+    }
 }

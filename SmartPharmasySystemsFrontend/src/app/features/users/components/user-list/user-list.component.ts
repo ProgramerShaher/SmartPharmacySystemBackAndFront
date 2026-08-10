@@ -15,6 +15,10 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToolbarModule } from "primeng/toolbar";
 import { UserFormComponent } from "../user-add-edit/user-add-edit.component";
+import { UserPermissionsComponent } from "../user-permissions/user-permissions.component";
+import { PermissionService } from '../../../../core/services/permission.service';
+import { forkJoin } from 'rxjs';
+import { TagModule } from 'primeng/tag';
 
 @Component({
     selector: 'app-user-list',
@@ -31,7 +35,9 @@ import { UserFormComponent } from "../user-add-edit/user-add-edit.component";
         ProgressSpinnerModule,
         ToastModule,
         ToolbarModule,
-        UserFormComponent
+        UserFormComponent,
+        UserPermissionsComponent,
+        TagModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './user-list.component.html',
@@ -45,9 +51,14 @@ export class UserListComponent implements OnInit {
     loading: boolean = true;
     userDialog: boolean = false;
     viewDialog: boolean = false;
+    permissionsDialog: boolean = false;
     selectedUser: User | null = null;
     viewedUser: User | null = null;
+    permissionsUser: User | null = null;
     searchTerm: string = '';
+
+    viewedUserPermissions: string[] = [];
+    loadingView: boolean = false;
 
     // إحصائيات
     adminCount: number = 0;
@@ -56,7 +67,8 @@ export class UserListComponent implements OnInit {
     constructor(
         private usersService: UsersService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private permissionService: PermissionService
     ) { }
 
     ngOnInit() {
@@ -122,6 +134,55 @@ export class UserListComponent implements OnInit {
     viewUser(user: User): void {
         this.viewedUser = { ...user };
         this.viewDialog = true;
+        this.loadingView = true;
+        this.viewedUserPermissions = [];
+
+        forkJoin({
+            groups: this.permissionService.getAllPermissionsGrouped(),
+            userPerms: this.usersService.getUserPermissions(user.id)
+        }).subscribe({
+            next: (result) => {
+                const names: string[] = [];
+                result.groups.forEach(group => {
+                    group.permissions.forEach(p => {
+                        if (result.userPerms.includes(p.id)) {
+                            names.push(p.actionAr || p.action);
+                        }
+                    });
+                });
+                this.viewedUserPermissions = names;
+                this.loadingView = false;
+            },
+            error: () => {
+                this.loadingView = false;
+            }
+        });
+    }
+
+    openPermissions(user: User) {
+        this.permissionsUser = { ...user };
+        this.permissionsDialog = true;
+    }
+
+    hideDialog() {
+        this.userDialog = false;
+        this.selectedUser = null;
+    }
+
+    hidePermissionsDialog() {
+        this.permissionsDialog = false;
+        this.permissionsUser = null;
+    }
+
+    onUserSaved() {
+        this.userDialog = false;
+        this.selectedUser = null;
+        this.loadUsers();
+    }
+
+    onPermissionsSaved() {
+        this.permissionsDialog = false;
+        this.permissionsUser = null;
     }
 
     /**
@@ -206,13 +267,14 @@ export class UserListComponent implements OnInit {
      * الحصول على كلاس CSS للصلاحية
      */
     getRoleClass(role: string | undefined): string {
-        if (!role) return 'role-unknown';
+        if (!role) return 'role-other';
 
         const roleLower = role.toLowerCase();
-        if (roleLower.includes('admin') || roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'role-admin';
-        if (roleLower.includes('manager') || roleLower.includes('مدير')) return 'role-manager';
+        if (roleLower.includes('admin') || roleLower.includes('مدير النظام')) return 'role-admin';
+        if (roleLower.includes('manager') || roleLower.includes('مدير فني')) return 'role-manager';
+        if (roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'role-pharmacist';
+        if (roleLower.includes('accounting') || roleLower.includes('محاسب')) return 'role-accounting';
         if (roleLower.includes('user') || roleLower.includes('regular') || roleLower.includes('مستخدم')) return 'role-user';
-        if (roleLower.includes('editor') || roleLower.includes('محرر')) return 'role-editor';
         return 'role-other';
     }
 
@@ -223,11 +285,11 @@ export class UserListComponent implements OnInit {
         if (!role) return 'pi pi-question-circle';
 
         const roleLower = role.toLowerCase();
-        if (roleLower.includes('admin')) return 'pi pi-shield';
-        if (roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'pi pi-user';
-        if (roleLower.includes('manager') || roleLower.includes('مدير')) return 'pi pi-briefcase';
+        if (roleLower.includes('admin') || roleLower.includes('مدير النظام')) return 'pi pi-shield';
+        if (roleLower.includes('manager') || roleLower.includes('مدير فني')) return 'pi pi-users';
+        if (roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'pi pi-heart-fill';
+        if (roleLower.includes('accounting') || roleLower.includes('محاسب')) return 'pi pi-calculator';
         if (roleLower.includes('user') || roleLower.includes('regular')) return 'pi pi-user';
-        if (roleLower.includes('editor')) return 'pi pi-file-edit';
         return 'pi pi-tag';
     }
 
@@ -238,21 +300,21 @@ export class UserListComponent implements OnInit {
         if (!role) return 'غير محدد';
 
         const roleLower = role.toLowerCase();
-        if (roleLower.includes('pharmacist') || roleLower.includes('صيدلي')) return 'صيدلي النظام';
         if (roleLower.includes('admin')) return 'مدير النظام';
-        if (roleLower.includes('manager') || roleLower.includes('مدير')) return 'مدير';
+        if (roleLower.includes('pharmacist')) return 'صيدلي';
+        if (roleLower.includes('accounting')) return 'محاسب';
+        if (roleLower.includes('manager') || roleLower.includes('مدير فني')) return 'مدير فني';
         if (roleLower.includes('user') || roleLower.includes('regular') || roleLower.includes('مستخدم')) return 'مستخدم';
-        if (roleLower.includes('editor') || roleLower.includes('محرر')) return 'محرر';
         return role;
     }
 
     /**
      * إغلاق نافذة الحوار
      */
-    hideDialog(): void {
-        this.userDialog = false;
-        this.selectedUser = null;
-    }
+    // hideDialog(): void {
+    //     this.userDialog = false;
+    //     this.selectedUser = null;
+    // }
 
     /**
      * عند حفظ المستخدم

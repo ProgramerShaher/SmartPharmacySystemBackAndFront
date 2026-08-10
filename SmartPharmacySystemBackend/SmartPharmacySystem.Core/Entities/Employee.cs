@@ -46,4 +46,12 @@ public class Employee : BaseEntity
     public virtual ICollection<Attendance> Attendances { get; set; } = new List<Attendance>();
     public virtual ICollection<MonthlySalary> Salaries { get; set; } = new List<MonthlySalary>();
     public virtual ICollection<EmployeeLoan> Loans { get; set; } = new List<EmployeeLoan>();
+    
+    /// <summary>
+    /// رابط اختياري بحساب النظام (User Account)
+    /// Optional link to a system user account for this employee.
+    /// مثال: محمد = موظف وحسابه هو mohammed.ali
+    /// </summary>
+    public int? UserId { get; set; }
+    public virtual User? User { get; set; }
 }

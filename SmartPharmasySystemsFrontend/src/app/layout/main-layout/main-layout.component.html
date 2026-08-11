@@ -1,5 +1,8 @@
 <!-- main-layout.component.html -->
-<div class="layout-wrapper" dir="rtl" [class.sidebar-collapsed]="isSidebarCollapsed">
+<div class="layout-wrapper" dir="rtl" [class.sidebar-collapsed]="isSidebarCollapsed" [class.layout-mobile-active]="!isSidebarCollapsed && isMobile">
+    <!-- غطاء خلفي عند فتح القائمة الجانبية في الشاشات الصغيرة -->
+    <div class="layout-mask" (click)="setSidebarCollapsed(true)"></div>
+
     <!-- Sidebar -->
     <app-sidebar class="layout-sidebar" [isCollapsed]="isSidebarCollapsed"
         (collapseChange)="setSidebarCollapsed($event)"></app-sidebar>

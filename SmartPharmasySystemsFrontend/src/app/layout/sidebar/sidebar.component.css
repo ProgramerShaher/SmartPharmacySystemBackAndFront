@@ -545,62 +545,87 @@
 }
 
 /* ============================
-   Collapsed Sidebar Overrides
+   Collapsed Sidebar Overrides (Desktop Only)
    ============================ */
-:host.sidebar-collapsed .sidebar-header {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    gap: 0.5rem;
-    padding-inline: 0.55rem;
-}
+@media (min-width: 993px) {
+    :host.sidebar-collapsed {
+        width: var(--sidebar-collapsed-width, 76px);
+    }
 
-:host.sidebar-collapsed .brand-copy,
-:host.sidebar-collapsed .section-label,
-:host.sidebar-collapsed .section-arrow,
-:host.sidebar-collapsed .section-panel,
-:host.sidebar-collapsed .sidebar-footer span {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    padding: 0;
-    overflow: hidden;
-    pointer-events: none;
-}
+    :host.sidebar-collapsed .sidebar-header {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 0.5rem;
+        padding-inline: 0.55rem;
+    }
 
-:host.sidebar-collapsed .section-trigger {
-    justify-content: center;
-    padding: 0.42rem;
-}
+    :host.sidebar-collapsed .brand-copy,
+    :host.sidebar-collapsed .section-label,
+    :host.sidebar-collapsed .section-arrow,
+    :host.sidebar-collapsed .section-panel,
+    :host.sidebar-collapsed .sidebar-footer span {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        padding: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
 
-:host.sidebar-collapsed .sidebar-content {
-    padding-inline: 0.55rem;
-}
+    :host.sidebar-collapsed .section-trigger {
+        justify-content: center;
+        padding: 0.42rem;
+    }
 
-:host.sidebar-collapsed .collapse-btn {
-    width: 34px;
-    height: 34px;
-}
+    :host.sidebar-collapsed .sidebar-content {
+        padding-inline: 0.55rem;
+    }
 
-:host.sidebar-collapsed .sidebar-footer {
-    justify-content: center;
-    padding-inline: 0;
+    :host.sidebar-collapsed .collapse-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    :host.sidebar-collapsed .sidebar-footer {
+        justify-content: center;
+        padding-inline: 0;
+    }
 }
 
 /* ============================
-   Responsive
+   Responsive (Mobile & Tablet)
    ============================ */
 @media (max-width: 992px) {
     :host {
         transform: translateX(100%);
-        box-shadow: -8px 0 32px rgba(15, 23, 42, 0.16);
+        box-shadow: -8px 0 32px rgba(15, 23, 42, 0.25);
+        width: 280px !important;
+        position: fixed !important;
+        height: 100vh !important;
+        top: 0 !important;
+        right: 0 !important;
+        z-index: 1001 !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
 
-    :host.sidebar-visible {
-        transform: translateX(0);
+    /* عندما لا تكون منكمشة (تكون القائمة مفتوحة كـ Drawer) */
+    :host:not(.sidebar-collapsed) {
+        transform: translateX(0) !important;
     }
 
+    /* عندما تكون منكمشة (تكون القائمة مغلقة ومخفية) */
     :host.sidebar-collapsed {
-        transform: translateX(0);
+        transform: translateX(100%) !important;
+    }
+
+    /* إخفاء زر التقليص الداخلي في الجوال لأنه غير مفيد */
+    .sidebar-header .collapse-btn {
+        display: none;
+    }
+    
+    .sidebar-header {
+        grid-template-columns: 42px 1fr !important;
+        padding-inline: 1rem !important;
     }
 }
 

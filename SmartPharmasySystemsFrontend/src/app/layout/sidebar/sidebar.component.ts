@@ -465,6 +465,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
     ).subscribe((event: any) => {
       this.currentRoute = event.url;
       this.openActiveMenus();
+      
+      // إغلاق القائمة الجانبية تلقائياً في الجوال عند الانتقال لصفحة جديدة
+      if (window.innerWidth < 992) {
+        this.collapseChange.emit(true);
+      }
     });
 
     this.currentRoute = this.router.url;

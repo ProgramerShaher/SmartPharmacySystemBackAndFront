@@ -624,8 +624,80 @@
     }
     
     .sidebar-header {
-        grid-template-columns: 42px 1fr !important;
-        padding-inline: 1rem !important;
+        grid-template-columns: 32px 1fr !important;
+        padding: 0.6rem 0.6rem !important;
+        min-height: 56px !important;
+    }
+
+    .brand-mark {
+        width: 28px !important;
+        height: 28px !important;
+        border-radius: 8px !important;
+    }
+
+    .brand-mark i {
+        font-size: 0.9rem !important;
+    }
+
+    .brand-copy h2 {
+        font-size: 0.78rem !important;
+    }
+
+    .brand-copy span {
+        font-size: 0.58rem !important;
+        margin-top: 0.05rem !important;
+    }
+
+    .sidebar-content {
+        padding: 0.4rem 0.3rem !important;
+    }
+
+    .section-trigger {
+        min-height: 38px !important;
+        padding: 0.3rem 0.4rem !important;
+        border-radius: 8px !important;
+        gap: 0.5rem !important;
+    }
+
+    .item-icon {
+        width: 24px !important;
+        height: 24px !important;
+        border-radius: 6px !important;
+    }
+
+    .item-icon i {
+        font-size: 0.75rem !important;
+    }
+
+    .section-label {
+        font-size: 0.76rem !important;
+    }
+
+    .section-arrow, .nested-arrow {
+        font-size: 0.65rem !important;
+    }
+
+    .menu-item, .submenu-item {
+        font-size: 0.72rem !important;
+        min-height: 32px !important;
+        padding: 0.35rem 0.5rem !important;
+        border-radius: 6px !important;
+    }
+
+    .submenu-item {
+        margin-right: 0.8rem !important;
+        width: calc(100% - 0.8rem) !important;
+    }
+
+    .sidebar-footer {
+        min-height: 40px !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.7rem !important;
+    }
+
+    .status-dot {
+        width: 6px !important;
+        height: 6px !important;
     }
 }
 

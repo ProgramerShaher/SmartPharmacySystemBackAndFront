@@ -578,41 +578,62 @@
        ========================================= */
     @media (max-width: 992px) {
         .card {
-            padding: 10px !important;
-            gap: 10px !important;
+            padding: 12px !important;
+            gap: 12px !important;
         }
 
         .grid-container {
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 8px !important;
+            gap: 10px !important;
         }
 
         .grid-container-items {
             grid-template-columns: repeat(3, 1fr) !important;
-            gap: 8px !important;
+            gap: 10px !important;
         }
     }
 
     @media (max-width: 768px) {
-        .header {
-            flex-direction: column !important;
-            align-items: flex-start !important;
+        /* Make card borderless and fit screen */
+        .card {
+            padding: 8px !important;
             gap: 8px !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+
+        .header {
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            padding-bottom: 10px !important;
+        }
+
+        .header-title {
+            font-size: 15px !important;
+        }
+
+        .status-badge {
+            font-size: 10px !important;
+            padding: 2px 8px !important;
         }
 
         .grid-container {
             grid-template-columns: 1fr !important;
-            gap: 6px !important;
+            gap: 8px !important;
         }
 
         .grid-container-items {
             grid-template-columns: 1fr 1fr !important;
-            gap: 6px !important;
+            gap: 8px !important;
         }
 
         .btn-add {
             grid-column: span 2 !important;
             width: 100% !important;
+            height: 32px !important;
+            font-size: 12px !important;
             margin-top: 4px !important;
         }
 
@@ -621,40 +642,74 @@
         .custom-p-input.p-dropdown,
         .custom-p-input .p-inputtext,
         .custom-p-input.p-calendar .p-inputtext {
-            height: 30px !important;
-            font-size: 11px !important;
-            padding: 0 6px !important;
+            height: 32px !important;
+            font-size: 12px !important;
+            padding: 0 8px !important;
+            border-radius: 6px !important;
         }
 
-        /* تصغير حجم نصوص وجداول الشراء بالجوال */
+        .input-group label {
+            font-size: 11px !important;
+            margin-bottom: 4px !important;
+        }
+
+        /* تحويل جدول المشتريات إلى كروت للهاتف الذكي */
         .custom-p-table {
-            table {
+            table, thead, tbody, th, td, tr {
+                display: block !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            thead {
+                display: none !important;
+            }
+            tr {
+                margin-bottom: 8px !important;
+                border: 1px solid #e2e8f0 !important;
+                border-radius: 8px !important;
+                padding: 8px !important;
+                background: #ffffff !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+            }
+            td {
+                border: none !important;
+                padding: 4px 0 !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
                 font-size: 11px !important;
-            }
-            .p-datatable-thead>tr>th {
-                padding: 4px 6px !important;
-                font-size: 9px !important;
-            }
-            .p-datatable-tbody>tr>td {
-                padding: 6px 6px !important;
+                
+                &:nth-child(1):before { content: "الصنف المورد:"; font-weight: 700; color: #64748b; }
+                &:nth-child(2):before { content: "رقم الدفعة:"; font-weight: 700; color: #64748b; }
+                &:nth-child(3):before { content: "الموقع:"; font-weight: 700; color: #64748b; }
+                &:nth-child(4):before { content: "الكمية:"; font-weight: 700; color: #64748b; }
+                &:nth-child(5):before { content: "سعر الشراء:"; font-weight: 700; color: #64748b; }
+                &:nth-child(6):before { content: "الإجمالي:"; font-weight: 700; color: #64748b; }
+                &:nth-child(7) {
+                    justify-content: flex-end !important;
+                    margin-top: 6px !important;
+                    border-top: 1px dashed #e2e8f0 !important;
+                    padding-top: 6px !important;
+                }
             }
         }
 
         .footer {
             flex-direction: column-reverse !important;
             align-items: stretch !important;
-            gap: 10px !important;
+            gap: 12px !important;
+            padding-top: 12px !important;
         }
 
         .footer-actions {
             display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
             gap: 6px !important;
         }
 
         .footer-actions .btn {
             width: 100% !important;
-            height: 30px !important;
+            height: 32px !important;
             font-size: 11px !important;
             padding: 0 !important;
         }
@@ -668,12 +723,12 @@
         .stat-badge {
             width: 100% !important;
             justify-content: space-between !important;
-            padding: 4px 8px !important;
-            font-size: 10px !important;
+            padding: 6px 10px !important;
+            font-size: 11px !important;
         }
 
         .stat-total .stat-number {
-            font-size: 12px !important;
+            font-size: 13px !important;
         }
     }
-}
+}

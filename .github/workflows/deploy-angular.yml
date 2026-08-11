@@ -26,7 +26,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "SmartPharmasySystemsFrontend" # اسم مجلد الواجهة في مشروعك
-          api_location: "" 
-           output_location: "dist/smart-pharmacy-system/browser"
-          app_build_command: "npm run build" # أمر البناء النظيف بدون أي كلمات زائدة
+          app_location: "SmartPharmasySystemsFrontend"
+          api_location: ""
+          output_location: "dist/smart-pharmacy-system/browser"
+          app_build_command: "npm run build"

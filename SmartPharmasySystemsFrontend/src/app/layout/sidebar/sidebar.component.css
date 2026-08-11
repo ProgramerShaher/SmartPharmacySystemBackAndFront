@@ -138,7 +138,7 @@
 
 .section-trigger:hover,
 .section-trigger.open,
-.section-active > .section-trigger {
+.section-active>.section-trigger {
     background: rgba(var(--primary-rgb), 0.08);
     border-color: rgba(var(--primary-rgb), 0.14);
     color: var(--primary-700, var(--primary-color));
@@ -465,22 +465,30 @@
 .skel-line {
     height: 14px;
     border-radius: 6px;
-    background: linear-gradient(
-        90deg,
-        rgba(var(--primary-rgb), 0.08) 25%,
-        rgba(var(--primary-rgb), 0.16) 50%,
-        rgba(var(--primary-rgb), 0.08) 75%
-    );
+    background: linear-gradient(90deg,
+            rgba(var(--primary-rgb), 0.08) 25%,
+            rgba(var(--primary-rgb), 0.16) 50%,
+            rgba(var(--primary-rgb), 0.08) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
 }
 
-.skel-line:nth-child(2) { width: 80%; }
-.skel-line:nth-child(3) { width: 65%; }
+.skel-line:nth-child(2) {
+    width: 80%;
+}
+
+.skel-line:nth-child(3) {
+    width: 65%;
+}
 
 @keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
 }
 
 .account-balance-row {

@@ -1,8 +1,20 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 .sales-container {
   min-height: 100vh;
   padding: 0.5rem;
   background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
   color: #1e293b;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .page-header,
@@ -391,6 +403,21 @@ h1 {
   .charts-grid {
     grid-template-columns: 1fr !important;
     gap: 0.4rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  :host ::ng-deep .p-chart {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    canvas {
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: 120px !important;
+      box-sizing: border-box !important;
+    }
   }
 
   .filters-panel {

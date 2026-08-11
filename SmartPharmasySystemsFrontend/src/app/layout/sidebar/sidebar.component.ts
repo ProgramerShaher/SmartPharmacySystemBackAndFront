@@ -175,11 +175,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: 'pi pi-shopping-cart',
       iconClass: 'icon-sales',
       match: '/sales',
-      extraMatches: ['/online-orders'],
+      extraMatches: ['/online-orders', '/pos'],
+      anyPermission: ['sales.invoices.view', 'sales.invoices.create', 'sales.create', 'sales.manage'],
       children: [
         {
           label: 'شاشة الكاشير (POS)', route: '/sales/create', icon: 'pi pi-desktop',
-          permission: 'sales.invoices.create'
+          anyPermission: ['sales.invoices.create', 'sales.create', 'sales.invoices.view', 'sales.manage']
         },
         {
           label: 'فواتير المبيعات', route: '/sales', icon: 'pi pi-list', exact: true,

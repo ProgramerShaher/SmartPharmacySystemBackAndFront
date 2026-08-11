@@ -1,8 +1,20 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 .movement-container {
   min-height: 100vh;
   padding: 0.5rem;
   background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
   color: #1e293b;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .page-header,
@@ -269,15 +281,142 @@ h1 {
   }
 }
 
-@media (max-width: 980px) {
-  .kpi-grid,
-  .charts-grid,
-  .filters-panel,
-  .details-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .movement-container {
+    padding: 6px !important;
   }
 
-  .page-header { align-items: flex-start; flex-direction: column; }
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .actions {
+      display: grid !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      button, ::ng-deep .p-button {
+        width: 100% !important;
+        height: 32px !important;
+      }
+    }
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+
+    .kpi-card {
+      padding: 6px 8px !important;
+      border-radius: 8px !important;
+
+      strong { font-size: 13px !important; }
+      .kpi-label { font-size: 9px !important; }
+      small { font-size: 8px !important; }
+    }
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  :host ::ng-deep .p-chart {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    canvas {
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: 180px !important;
+      box-sizing: border-box !important;
+    }
+  }
+
+  .filters-panel {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    padding: 6px 8px !important;
+    border-radius: 8px !important;
+
+    .filter-field {
+      width: 100% !important;
+      label { font-size: 10px !important; }
+      input, .p-dropdown, .p-calendar, .p-calendar .p-inputtext {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+
+    button, ::ng-deep .p-button {
+      width: 100% !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+  }
+
+  .details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  /* تحويل جدول حركات المخزون إلى كروت للموبايل */
+  :host ::ng-deep .compact-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &.toggle-col {
+        display: none !important;
+      }
+
+      &:nth-child(2):before { content: "التاريخ:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "نوع الحركة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "الدواء:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "التشغيلة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6):before { content: "الكمية:"; font-weight: 700; color: #64748b; }
+      &:nth-child(7):before { content: "المستخدم:"; font-weight: 700; color: #64748b; }
+      &:nth-child(8):before { content: "المرجع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(9) {
+        justify-content: center !important;
+        margin-top: 4px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 4px !important;
+      }
+    }
+
+    .expansion-cell {
+      padding: 6px !important;
+    }
+  }
 }
 
 @media print {
@@ -288,3 +427,4 @@ h1 {
   .table-panel,
   .kpi-card { box-shadow: none; }
 }
+

@@ -40,8 +40,14 @@ export const routes: Routes = [
             {
                 path: 'sales',
                 canActivate: [permissionGuard],
-                data: { permission: 'sales.invoices.view' },
+                data: { anyPermission: ['sales.invoices.view', 'sales.invoices.create', 'sales.create', 'sales.manage'] },
                 loadChildren: () => import('./features/sales/sales.routes').then(m => m.SALES_ROUTES)
+            },
+            // ---- نقطة البيع / الكاشير (POS)
+            {
+                path: 'pos',
+                redirectTo: 'sales/create',
+                pathMatch: 'full'
             },
             // ---- المشتريات
             {

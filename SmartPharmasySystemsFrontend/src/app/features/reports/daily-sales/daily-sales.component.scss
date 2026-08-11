@@ -1,9 +1,21 @@
 @import '../reports-shared.scss';
 
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 .analytics-grid {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .mt-2 {
@@ -11,10 +23,25 @@
 }
 
 @media (max-width: 768px) {
-  :host ::ng-deep .rpt-table {
-    td:nth-child(1):before { content: "اسم المنتج:"; font-weight: 700; color: #64748b; }
-    td:nth-child(2):before { content: "الكمية:"; font-weight: 700; color: #64748b; }
-    td:nth-child(3):before { content: "القيمة (ر.ي):"; font-weight: 700; color: #64748b; }
+  :host ::ng-deep {
+    .p-chart {
+      width: 100% !important;
+      max-width: 100% !important;
+      overflow: hidden !important;
+      canvas {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 200px !important;
+        box-sizing: border-box !important;
+      }
+    }
+
+    .rpt-table {
+      td:nth-child(1):before { content: "اسم المنتج:"; font-weight: 700; color: #64748b; }
+      td:nth-child(2):before { content: "الكمية:"; font-weight: 700; color: #64748b; }
+      td:nth-child(3):before { content: "القيمة (ر.ي):"; font-weight: 700; color: #64748b; }
+    }
   }
 }
+
 

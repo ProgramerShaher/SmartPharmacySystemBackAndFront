@@ -15,13 +15,38 @@ $border: #e2e8f0;
 $bg: #ffffff;
 $radius: 10px;
 
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 .rpt-wrap {
+  width: 100%;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+:host ::ng-deep {
+  .p-chart {
+    position: relative;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    canvas {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+  }
 }
 
 /* ===== Header ===== */

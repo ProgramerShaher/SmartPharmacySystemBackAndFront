@@ -1,13 +1,37 @@
 @import '../reports-shared.scss';
 
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 .analytics-grid {
   display: flex;
   gap: 0.6rem;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
   .analytics-grid {
     flex-direction: column;
+  }
+
+  :host ::ng-deep .p-chart {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    canvas {
+      width: 100% !important;
+      max-width: 100% !important;
+      max-height: 200px !important;
+      box-sizing: border-box !important;
+    }
   }
 }
 

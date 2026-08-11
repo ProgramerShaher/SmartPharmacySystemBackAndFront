@@ -7,17 +7,24 @@ export const permissionGuard: CanActivateFn = (route, state) => {
     const permissionService = inject(PermissionService);
     const router = inject(Router);
 
-    const requiredPermission = route.data['permission'] as string;
+    const requiredPermission = route.data['permission'] as string | undefined;
+    const anyPermissions = route.data['anyPermission'] as string[] | undefined;
 
     // لا توجد صلاحية مطلوبة → مسموح
-    if (!requiredPermission) return true;
+    if (!requiredPermission && (!anyPermissions || anyPermissions.length === 0)) return true;
 
     // Admin يتجاوز كل الصلاحيات
     if (permissionService.isAdmin()) return true;
 
+    const checkAccess = (): boolean => {
+        if (requiredPermission && permissionService.hasPermission(requiredPermission)) return true;
+        if (anyPermissions && permissionService.hasAnyPermission(anyPermissions)) return true;
+        return false;
+    };
+
     // إذا تم تحميل الصلاحيات بالفعل → تحقق فوري
     if (permissionService.isLoaded) {
-        if (permissionService.hasPermission(requiredPermission)) {
+        if (checkAccess()) {
             return true;
         }
         return router.createUrlTree(['/unauthorized']);
@@ -28,7 +35,7 @@ export const permissionGuard: CanActivateFn = (route, state) => {
         take(1),
         map(loaded => {
             if (!loaded) return router.createUrlTree(['/unauthorized']);
-            if (permissionService.hasPermission(requiredPermission)) return true;
+            if (checkAccess()) return true;
             return router.createUrlTree(['/unauthorized']);
         })
     );

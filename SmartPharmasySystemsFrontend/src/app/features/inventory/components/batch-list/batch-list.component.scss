@@ -224,3 +224,108 @@
 }
 
 .text-xs { font-size: 0.7rem; }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .statement-container {
+    padding: 6px !important;
+  }
+
+  .imperial-search-bar {
+    .search-content {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      padding: 8px 10px !important;
+      border-radius: 8px !important;
+      gap: 6px !important;
+    }
+
+    .flex-align {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 6px !important;
+      width: 100% !important;
+    }
+
+    .search-icon-badge {
+      display: none !important;
+    }
+
+    .search-input-wrapper {
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+
+    .action-buttons {
+      width: 100% !important;
+      button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .ledger-card-wrapper {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* تحويل جدول الدفعات إلى كروت للموبايل */
+  ::ng-deep .imperial-statement-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+      text-align: right !important;
+
+      &:nth-child(1) { display: none !important; } /* Hide row number */
+      &:nth-child(2):before { content: "الدواء والموقع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "رقم الدفعة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "الباركود:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "الصلاحية:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6):before { content: "الكمية الكلية:"; font-weight: 700; color: #64748b; }
+      &:nth-child(7):before { content: "المباع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(8):before { content: "المتبقي:"; font-weight: 700; color: #64748b; }
+      &:nth-child(9):before { content: "حالة البيع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(10) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 6px !important;
+        .flex {
+          width: 100% !important;
+          justify-content: space-around !important;
+        }
+      }
+    }
+
+    .p-paginator {
+      font-size: 10px !important;
+      padding: 0.2rem !important;
+    }
+  }
+}

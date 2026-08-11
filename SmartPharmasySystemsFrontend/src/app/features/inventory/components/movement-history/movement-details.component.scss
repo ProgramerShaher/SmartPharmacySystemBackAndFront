@@ -59,3 +59,36 @@
         border-bottom: none;
     }
 }
+
+@media (max-width: 768px) {
+    .movement-details {
+        .details-section {
+            margin-bottom: 8px !important;
+            padding-bottom: 8px !important;
+
+            .section-title {
+                font-size: 11px !important;
+                margin-bottom: 6px !important;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr !important;
+                gap: 6px !important;
+            }
+
+            .detail-item {
+                label {
+                    font-size: 10px !important;
+                }
+                span {
+                    font-size: 11px !important;
+                }
+            }
+
+            .notes-text {
+                font-size: 11px !important;
+                padding: 6px !important;
+            }
+        }
+    }
+}

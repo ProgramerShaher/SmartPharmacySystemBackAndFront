@@ -124,3 +124,106 @@
         }
     }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+    .inventory-page {
+        padding: 6px !important;
+    }
+
+    .inventory-hero {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        padding: 8px 10px !important;
+        border-radius: 8px !important;
+
+        .inventory-title {
+            .inventory-icon {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 14px !important;
+            }
+            h1 {
+                font-size: 15px !important;
+            }
+            p {
+                font-size: 10px !important;
+            }
+        }
+
+        .inventory-actions {
+            button {
+                width: 100% !important;
+                height: 32px !important;
+                font-size: 11px !important;
+            }
+        }
+    }
+
+    .inventory-filter-panel {
+        padding: 6px 8px !important;
+        border-radius: 8px !important;
+        margin-bottom: 6px !important;
+
+        .inventory-filter label {
+            font-size: 10px !important;
+        }
+
+        input {
+            height: 32px !important;
+            font-size: 11px !important;
+        }
+    }
+
+    .inventory-panel {
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
+    /* تحويل جدول الفئات إلى كروت للموبايل */
+    :host ::ng-deep .inventory-table {
+        table, thead, tbody, th, td, tr {
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        thead {
+            display: none !important;
+        }
+        tr {
+            margin-bottom: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        }
+        td {
+            border-bottom: none !important;
+            padding: 4px 0 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            font-size: 11px !important;
+
+            &:nth-child(1):before { content: "رقم الفئة:"; font-weight: 700; color: #64748b; }
+            &:nth-child(2):before { content: "اسم الفئة:"; font-weight: 700; color: #64748b; }
+            &:nth-child(3):before { content: "الوصف:"; font-weight: 700; color: #64748b; }
+            &:nth-child(4) {
+                justify-content: center !important;
+                margin-top: 6px !important;
+                border-top: 1px dashed #e2e8f0 !important;
+                padding-top: 6px !important;
+            }
+        }
+
+        .p-paginator {
+            font-size: 10px !important;
+            padding: 0.2rem !important;
+        }
+    }
+}

@@ -27,10 +27,7 @@ import { CreateMedicineBatchDto, UpdateMedicineBatchDto, MedicineBatchResponseDt
     DropdownModule
   ],
   templateUrl: './batch-add-edit.component.html',
-  styles: [`
-    :host { display: block; }
-    .required::after { content: " *"; color: red; }
-  `]
+  styleUrls: ['./batch-add-edit.component.scss']
 })
 export class BatchAddEditComponent implements OnInit {
   @Input() visible = false;

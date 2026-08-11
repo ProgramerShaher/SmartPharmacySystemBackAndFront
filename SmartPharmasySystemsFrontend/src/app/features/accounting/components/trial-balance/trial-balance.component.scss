@@ -173,16 +173,110 @@ h1 {
   }
 }
 
-@media (max-width: 980px) {
-  .page-header,
-  .filters-panel {
-    grid-template-columns: 1fr !important;
-  }
-}
-
 @media print {
   .no-print { display: none !important; }
   .report-container { background: white; padding: 0; }
   .page-header,
   .table-panel { box-shadow: none; }
+}
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .report-container {
+    padding: 6px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .title-wrap {
+      .icon-circle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+      }
+      h1 { font-size: 15px !important; }
+      p { font-size: 10px !important; }
+    }
+
+    .actions {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr 1fr !important;
+      gap: 4px !important;
+      width: 100% !important;
+
+      button {
+        height: 32px !important;
+        font-size: 10px !important;
+        padding: 0 !important;
+      }
+    }
+  }
+
+  .filters-panel {
+    grid-template-columns: 1fr !important;
+    padding: 6px 8px !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
+
+    .filter-field label {
+      font-size: 10px !important;
+    }
+
+    ::ng-deep .p-calendar .p-inputtext {
+      width: 100% !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+  }
+
+  .table-panel {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* تحويل جدول ميزان المراجعة إلى كروت للموبايل */
+  :host ::ng-deep .micro-grid {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+      text-align: right !important;
+
+      &:nth-child(1):before { content: "الكود:"; font-weight: 700; color: #64748b; }
+      &:nth-child(2):before { content: "اسم الحساب:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "افتتاحي مدين:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "افتتاحي دائن:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "حركات مدين:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6):before { content: "حركات دائن:"; font-weight: 700; color: #64748b; }
+      &:nth-child(7):before { content: "ختامي مدين:"; font-weight: 700; color: #64748b; }
+      &:nth-child(8):before { content: "ختامي دائن:"; font-weight: 700; color: #64748b; }
+    }
+  }
 }

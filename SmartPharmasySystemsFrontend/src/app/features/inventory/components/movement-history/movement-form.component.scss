@@ -11,3 +11,21 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    .movement-form {
+        padding: 4px !important;
+
+        .field {
+            margin-bottom: 6px !important;
+            label {
+                font-size: 10px !important;
+                margin-bottom: 2px !important;
+            }
+            input, ::ng-deep .p-dropdown, ::ng-deep .p-inputnumber-input {
+                height: 32px !important;
+                font-size: 11px !important;
+            }
+        }
+    }
+}

@@ -157,13 +157,144 @@ h1 {
   }
 }
 
-@media (max-width: 980px) {
-  .page-header { align-items: flex-start; flex-direction: column; }
-}
-
 @media print {
   .no-print { display: none !important; }
   .report-container { background: white; padding: 0; }
   .page-header,
   .table-panel { box-shadow: none; }
+}
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .report-container {
+    padding: 6px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .title-wrap {
+      .icon-circle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+      }
+      h1 { font-size: 15px !important; }
+      p { font-size: 10px !important; }
+    }
+
+    .actions {
+      display: grid !important;
+      grid-template-columns: 1fr auto !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      button {
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .table-panel {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* تحويل جدول دفتر القيود إلى كروت للموبايل */
+  :host ::ng-deep .compact-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &:nth-child(1):before { content: "رقم القيد:"; font-weight: 700; color: #64748b; }
+      &:nth-child(2):before { content: "التاريخ:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "البيان:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "المبلغ الإجمالي:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 6px !important;
+      }
+    }
+  }
+
+  :host ::ng-deep .royal-dialog {
+    width: 96vw !important;
+    max-width: 96vw !important;
+    margin: 0 auto !important;
+
+    .row.mb-3 {
+      flex-direction: column !important;
+      gap: 6px !important;
+    }
+
+    .line-row {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      background: #f8fafc;
+      padding: 6px !important;
+      border-radius: 6px !important;
+      border: 1px solid #e2e8f0;
+      gap: 4px !important;
+
+      > div {
+        width: 100% !important;
+      }
+    }
+
+    .totals-footer {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 4px !important;
+    }
+
+    .p-dialog-footer {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+      button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+
+    .p-inputtext,
+    .p-dropdown {
+      height: 32px !important;
+      min-height: 32px !important;
+      font-size: 11px !important;
+      padding: 0 8px !important;
+    }
+  }
 }

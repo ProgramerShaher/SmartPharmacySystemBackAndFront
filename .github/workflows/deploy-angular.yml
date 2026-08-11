@@ -28,5 +28,5 @@ jobs:
           action: "upload"
           app_location: "SmartPharmasySystemsFrontend"
           api_location: ""
-          output_location: "dist/browser"
+          output_location: "dist/smart-pharmasy-systems/browser"
           app_build_command: "npm run build"

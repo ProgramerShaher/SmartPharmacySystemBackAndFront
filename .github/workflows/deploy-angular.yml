@@ -28,5 +28,5 @@ jobs:
           action: "upload"
           app_location: "SmartPharmasySystemsFrontend" # اسم مجلد الواجهة في مشروعك
           api_location: "" 
-          output_location: "dist" # قراءة المخرجات الرئيسية مباشرة
+           output_location: "dist/smart-pharmacy-system/browser"
           app_build_command: "npm run build" # أمر البناء النظيف بدون أي كلمات زائدة

@@ -187,19 +187,54 @@
 }
 
 @media (max-width: 768px) {
+    .inventory-page {
+        padding: 6px !important;
+    }
+
+    .inventory-hero {
+        padding: 8px 10px !important;
+        border-radius: 8px !important;
+    }
+
     .form-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
     }
     
     .payment-methods {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr !important;
+        gap: 4px !important;
+    }
+
+    .form-field {
+        label {
+            font-size: 10px !important;
+        }
+    }
+
+    ::ng-deep .inventory-page {
+        .p-inputtext,
+        .p-inputtextarea,
+        .p-dropdown,
+        .p-calendar .p-inputtext,
+        .p-inputnumber input {
+            height: 32px !important;
+            font-size: 11px !important;
+            padding: 0 8px !important;
+        }
     }
     
     .form-actions {
-        flex-direction: column;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+        margin-top: 8px !important;
+        padding-top: 8px !important;
         
-        button {
-            width: 100%;
+        button, .p-button {
+            width: 100% !important;
+            height: 32px !important;
+            font-size: 11px !important;
         }
     }
 }

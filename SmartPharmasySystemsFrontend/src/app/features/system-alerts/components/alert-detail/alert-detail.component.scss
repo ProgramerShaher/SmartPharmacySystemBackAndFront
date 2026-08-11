@@ -158,10 +158,45 @@
     }
 }
 
-@media screen and (max-width: 600px) {
+@media (max-width: 768px) {
     :host ::ng-deep {
+        .modal-shell {
+            border-radius: 8px !important;
+            max-height: 90vh !important;
+        }
+        .modal-header {
+            padding: 8px 10px !important;
+            .modal-title h2 { font-size: 14px !important; }
+            .modal-title p { font-size: 10px !important; }
+            .modal-icon {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 12px !important;
+            }
+        }
+        .modal-body {
+            padding: 8px 10px !important;
+        }
         .detail-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr !important;
+            gap: 6px !important;
+        }
+        .detail-card {
+            padding: 6px 8px !important;
+            border-radius: 6px !important;
+            .detail-label { font-size: 10px !important; }
+            .detail-val { font-size: 11px !important; }
+        }
+        .modal-footer {
+            padding: 8px 10px !important;
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+
+            button {
+                width: 100% !important;
+                height: 32px !important;
+                font-size: 11px !important;
+            }
         }
     }
 }

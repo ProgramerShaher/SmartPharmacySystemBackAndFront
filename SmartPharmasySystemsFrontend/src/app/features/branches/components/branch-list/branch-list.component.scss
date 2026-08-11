@@ -234,18 +234,137 @@ h1 {
   }
 }
 
-@media (max-width: 980px) {
-  .kpi-grid,
-  .filters-panel {
-    grid-template-columns: 1fr !important;
-  }
-  .page-header { align-items: flex-start; flex-direction: column; }
-}
-
 @media print {
   .no-print { display: none !important; }
   .report-container { background: white; padding: 0; }
   .page-header,
   .kpi-card,
   .table-panel { box-shadow: none; }
+}
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .report-container {
+    padding: 6px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .title-wrap {
+      .icon-circle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 14px !important;
+      }
+      h1 { font-size: 15px !important; }
+      p { font-size: 10px !important; }
+    }
+
+    .actions {
+      display: grid !important;
+      grid-template-columns: auto 1fr !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      button {
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+
+    .kpi-card {
+      padding: 6px 8px !important;
+      border-radius: 8px !important;
+
+      strong { font-size: 13px !important; }
+      .kpi-label { font-size: 9px !important; }
+      small { font-size: 8px !important; }
+    }
+  }
+
+  .filters-panel {
+    grid-template-columns: 1fr !important;
+    padding: 6px 8px !important;
+    border-radius: 8px !important;
+    gap: 6px !important;
+
+    .filter-field {
+      label { font-size: 10px !important; }
+      input, ::ng-deep .p-dropdown {
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+
+    button {
+      width: 100% !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+  }
+
+  .table-panel {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* تحويل جدول الفروع إلى كروت للموبايل */
+  :host ::ng-deep .compact-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr.inline-add-row {
+      display: none !important; /* Hide inline add row on small screens */
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &:nth-child(1) { display: none !important; } /* Hide number */
+      &:nth-child(2):before { content: "كود الفرع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "اسم الفرع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "الموقع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "نوع الفرع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6):before { content: "المخازن:"; font-weight: 700; color: #64748b; }
+      &:nth-child(7):before { content: "الموظفين:"; font-weight: 700; color: #64748b; }
+      &:nth-child(8):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(9) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 6px !important;
+      }
+    }
+  }
 }

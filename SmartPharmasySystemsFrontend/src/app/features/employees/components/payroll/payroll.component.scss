@@ -362,3 +362,115 @@ $radius: 10px;
     }
   }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .emp-wrap {
+    padding: 6px !important;
+    gap: 6px !important;
+  }
+
+  .emp-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .emp-icon {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 14px !important;
+    }
+    .emp-title { font-size: 15px !important; }
+    .emp-subtitle { font-size: 10px !important; }
+
+    .emp-header-end {
+      flex-direction: column !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      p-dropdown, p-calendar, button,
+      ::ng-deep .p-dropdown, ::ng-deep .p-calendar, ::ng-deep .p-inputtext {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .emp-kpi-row {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+
+    .emp-kpi-card {
+      padding: 6px 8px !important;
+      border-radius: 8px !important;
+
+      .emp-kpi-value { font-size: 14px !important; }
+      .emp-kpi-label { font-size: 9px !important; }
+      .emp-kpi-badge {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .emp-table-wrap {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* تحويل جدول مسير الرواتب إلى كروت للموبايل */
+  :host ::ng-deep .emp-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &:nth-child(1):before { content: "كود الموظف:"; font-weight: 700; color: #64748b; }
+      &:nth-child(2):before { content: "الاسم:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "الراتب الأساسي:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "البدلات:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "المكافآت:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6):before { content: "الاستقطاعات:"; font-weight: 700; color: #64748b; }
+      &:nth-child(7):before { content: "صافي الراتب:"; font-weight: 700; color: #64748b; }
+      &:nth-child(8):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(9) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 6px !important;
+      }
+    }
+  }
+
+  ::ng-deep .imperial-dialog {
+    width: 96vw !important;
+    max-width: 96vw !important;
+    margin: 0 auto !important;
+  }
+}

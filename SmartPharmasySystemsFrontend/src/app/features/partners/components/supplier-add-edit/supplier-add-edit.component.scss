@@ -70,3 +70,116 @@
     }
   }
 }
+
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .supplier-form {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px !important;
+    overflow-x: hidden;
+  }
+
+  .no-dialog {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  .no-dialog h2 {
+    font-size: 0.95rem !important;
+    line-height: 1.25;
+  }
+
+  .no-dialog p {
+    font-size: 11px !important;
+  }
+
+  .imperial-form {
+    margin-top: 0 !important;
+
+    .field-box {
+      width: 100% !important;
+      flex: 0 0 100% !important;
+      max-width: 100% !important;
+      margin-bottom: 8px !important;
+      padding: 0 !important;
+    }
+
+    .imperial-label {
+      font-size: 11px !important;
+      margin-bottom: 3px !important;
+    }
+
+    small {
+      font-size: 10px !important;
+      line-height: 1.25;
+    }
+
+    .col-12.flex {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px !important;
+      margin-top: 8px !important;
+      padding-top: 8px !important;
+    }
+
+    ::ng-deep {
+      .imperial-input,
+      .imperial-input-number,
+      .imperial-input-number .p-inputtext,
+      .p-inputnumber,
+      .p-inputtext,
+      textarea {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        font-size: 11px !important;
+        box-sizing: border-box !important;
+      }
+
+      .imperial-input,
+      .imperial-input-number .p-inputtext,
+      .p-inputtext {
+        height: 32px !important;
+        padding: 0 8px !important;
+        border-radius: 6px !important;
+      }
+
+      textarea.imperial-input,
+      textarea.p-inputtext {
+        min-height: 58px !important;
+        height: auto !important;
+        padding: 6px 8px !important;
+      }
+
+      .p-input-icon-right > i {
+        font-size: 11px !important;
+        margin-top: -5px !important;
+      }
+
+      .p-button {
+        width: 100% !important;
+        height: 32px !important;
+        justify-content: center !important;
+        padding: 0 8px !important;
+        font-size: 11px !important;
+      }
+
+      .p-button-label,
+      .p-button-icon {
+        font-size: 11px !important;
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .imperial-form .col-12.flex {
+    grid-template-columns: 1fr !important;
+  }
+}

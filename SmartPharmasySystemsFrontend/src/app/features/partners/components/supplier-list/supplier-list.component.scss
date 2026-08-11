@@ -452,21 +452,242 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 768px) {
+  :host {
+    display: block;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .supplier-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px !important;
+    gap: 8px !important;
+    overflow-x: hidden;
+  }
+
+  .imperial-header .header-content,
+  .table-card,
+  .stat-card {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
   .imperial-header .header-content {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.65rem;
+    align-items: stretch;
+    gap: 8px;
+    padding: 8px !important;
+  }
+
+  .imperial-header .title-area {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .imperial-header .title-area .icon-box {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .imperial-header .title-area h1 {
+    font-size: 0.95rem !important;
+    line-height: 1.25;
+  }
+
+  .imperial-header .title-area p {
+    font-size: 11px !important;
+    line-height: 1.3;
+  }
+
+  .imperial-header .actions-area {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
   }
 
   .stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .stats-grid .stat-card {
+    min-width: 0;
+    padding: 8px !important;
+    gap: 6px !important;
+  }
+
+  .stats-grid .stat-card .stat-icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .stats-grid .stat-card .stat-label {
+    font-size: 10px !important;
+  }
+
+  .stats-grid .stat-card .stat-value {
+    font-size: 0.95rem !important;
   }
 
   .table-caption {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 6px;
     align-items: stretch;
+    padding: 8px !important;
 
-    .search-box input { width: 100%; }
+    .caption-title {
+      font-size: 11px !important;
+    }
+
+    .search-box input { 
+      width: 100%;
+      height: 32px;
+      font-size: 11px;
+    }
+  }
+
+  .supplier-cell {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .supplier-cell .avatar-glass {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+  }
+
+  .supplier-cell .info {
+    min-width: 0;
+  }
+
+  .supplier-cell .info .name,
+  .supplier-cell .info .address {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  ::ng-deep {
+    .imperial-dialog {
+      width: 95vw !important;
+      max-width: 95vw !important;
+      margin: 0 !important;
+    }
+
+    .imperial-dialog .p-dialog-header {
+      padding: 10px !important;
+    }
+
+    .imperial-dialog .p-dialog-title {
+      font-size: 0.9rem !important;
+      line-height: 1.25 !important;
+    }
+
+    .imperial-dialog .p-dialog-content {
+      padding: 10px !important;
+      overflow-x: hidden !important;
+    }
+
+    .supplier-container .imperial-btn,
+    .supplier-container .imperial-btn-primary,
+    .p-button {
+      width: 100% !important;
+      height: 32px !important;
+      justify-content: center !important;
+      padding: 0 8px !important;
+      font-size: 11px !important;
+    }
+
+    .p-button-label,
+    .p-button-icon {
+      font-size: 11px !important;
+    }
+
+    .imperial-table .p-datatable-wrapper {
+      overflow: visible !important;
+    }
+
+    .imperial-table table,
+    .imperial-table .p-datatable-tbody,
+    .imperial-table .p-datatable-tbody > tr,
+    .imperial-table .p-datatable-tbody > tr > td {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .imperial-table .p-datatable-thead {
+      display: none !important;
+    }
+
+    .imperial-table .p-datatable-tbody > tr {
+      margin: 8px 0 !important;
+      padding: 6px !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 8px !important;
+      background: var(--card-bg) !important;
+    }
+
+    .imperial-table .p-datatable-tbody > tr > td {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      padding: 5px 2px !important;
+      border: 0 !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      text-align: left !important;
+      font-size: 11px !important;
+      white-space: normal !important;
+      word-break: break-word;
+    }
+
+    .imperial-table .p-datatable-tbody > tr > td:last-child {
+      border-bottom: 0 !important;
+    }
+
+    .imperial-table .p-datatable-tbody > tr > td::before {
+      flex: 0 0 35%;
+      color: var(--text-color-secondary);
+      content: "";
+      font-size: 10px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .imperial-table .p-datatable-tbody > tr > td:nth-child(1)::before { content: "المورد"; }
+    .imperial-table .p-datatable-tbody > tr > td:nth-child(2)::before { content: "التواصل"; }
+    .imperial-table .p-datatable-tbody > tr > td:nth-child(3)::before { content: "الرصيد"; }
+    .imperial-table .p-datatable-tbody > tr > td:nth-child(4)::before { content: "الحالة"; }
+    .imperial-table .p-datatable-tbody > tr > td:nth-child(5)::before { content: "خيارات"; }
+
+    .inline-actions {
+      display: grid !important;
+      grid-template-columns: repeat(5, 32px);
+      justify-content: end !important;
+      gap: 4px !important;
+    }
+
+    .inline-actions .action-divider {
+      display: none !important;
+    }
+
+    .inline-actions .action-btn {
+      width: 30px !important;
+      height: 30px !important;
+      min-width: 30px !important;
+      padding: 0 !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .imperial-header .actions-area {
+    grid-template-columns: 1fr;
   }
 }

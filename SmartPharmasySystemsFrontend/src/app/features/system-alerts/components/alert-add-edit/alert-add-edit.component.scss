@@ -151,19 +151,55 @@
     }
 }
 
-@media screen and (max-width: 600px) {
+@media (max-width: 768px) {
     :host ::ng-deep {
-        .field-group-grid {
-            grid-template-columns: 1fr;
-        }
-        .modal-body {
-            padding: 0.75rem;
+        .modal-shell {
+            border-radius: 8px !important;
+            max-height: 90vh !important;
         }
         .modal-header {
-            padding: 0.75rem 0.75rem 0.5rem;
+            padding: 8px 10px !important;
+            .modal-title h2 { font-size: 14px !important; }
+            .modal-title p { font-size: 10px !important; }
+            .modal-icon {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 12px !important;
+            }
+        }
+        .modal-body {
+            padding: 8px 10px !important;
+        }
+        .field-group-grid {
+            grid-template-columns: 1fr !important;
+            gap: 6px !important;
+        }
+        .field {
+            margin-bottom: 6px !important;
+            label {
+                font-size: 10px !important;
+            }
+        }
+        .p-inputtext,
+        .p-dropdown,
+        .p-calendar,
+        .p-calendar .p-inputtext,
+        .p-dropdown .p-dropdown-label {
+            height: 32px !important;
+            font-size: 11px !important;
+            padding: 0 8px !important;
         }
         .modal-footer {
-            padding: 0.5rem 0.75rem 0.75rem;
+            padding: 8px 10px !important;
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+
+            button {
+                width: 100% !important;
+                height: 32px !important;
+                font-size: 11px !important;
+            }
         }
     }
 }

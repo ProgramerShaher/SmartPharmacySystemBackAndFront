@@ -170,3 +170,191 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    :host {
+        display: block;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    .royal-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 8px !important;
+        font-size: 11px;
+        overflow-x: hidden;
+    }
+
+    .compact-header,
+    .filters-bar,
+    .account-section {
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .compact-header {
+        padding: 8px !important;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+    }
+
+    .compact-header > .d-flex,
+    .filters-bar > .d-flex {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .page-title-mini {
+        font-size: 12px;
+        line-height: 1.25;
+    }
+
+    .filters-bar {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        padding: 8px !important;
+    }
+
+    .filters-bar .ms-auto {
+        margin-inline-start: 0 !important;
+        font-size: 10px;
+    }
+
+    .custom-scroll {
+        max-height: none;
+        overflow: visible;
+        padding: 0 !important;
+    }
+
+    .account-section {
+        margin-bottom: 10px;
+        overflow: visible;
+    }
+
+    .account-header-ribbon {
+        padding: 6px 8px;
+        gap: 6px;
+        font-size: 11px;
+        align-items: flex-start;
+    }
+
+    .account-header-ribbon span:first-child {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .account-summary-strip {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px 8px;
+        padding: 6px 8px;
+        font-size: 10px;
+    }
+
+    .account-summary-strip .ms-auto {
+        margin-inline-start: 0 !important;
+    }
+
+    ::ng-deep {
+        .p-calendar,
+        .p-calendar .p-inputtext,
+        .p-button.p-button-sm,
+        .p-button.p-button-icon-only.p-button-sm {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            height: 32px !important;
+            font-size: 11px !important;
+        }
+
+        .p-button.p-button-sm,
+        .p-button.p-button-icon-only.p-button-sm {
+            justify-content: center !important;
+            padding: 0 8px !important;
+        }
+
+        .p-button-label,
+        .p-button-icon {
+            font-size: 11px !important;
+        }
+
+        .micro-table .p-datatable-wrapper {
+            overflow: visible !important;
+        }
+
+        .micro-table table,
+        .micro-table .p-datatable-tbody,
+        .micro-table .p-datatable-tbody > tr,
+        .micro-table .p-datatable-tbody > tr > td,
+        .micro-table .p-datatable-tfoot,
+        .micro-table .p-datatable-tfoot > tr,
+        .micro-table .p-datatable-tfoot > tr > td {
+            display: block !important;
+            width: 100% !important;
+        }
+
+        .micro-table .p-datatable-thead {
+            display: none !important;
+        }
+
+        .micro-table .p-datatable-tbody > tr,
+        .micro-table .p-datatable-tfoot > tr {
+            margin: 8px 0 !important;
+            padding: 6px !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            background: #ffffff !important;
+        }
+
+        .micro-table .p-datatable-tbody > tr > td,
+        .micro-table .p-datatable-tfoot > tr > td {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            gap: 8px !important;
+            padding: 5px 2px !important;
+            border: 0 !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            text-align: left !important;
+            font-size: 11px !important;
+            white-space: normal !important;
+            word-break: break-word;
+        }
+
+        .micro-table .p-datatable-tbody > tr > td:last-child,
+        .micro-table .p-datatable-tfoot > tr > td:last-child {
+            border-bottom: 0 !important;
+        }
+
+        .micro-table .p-datatable-tbody > tr > td::before,
+        .micro-table .p-datatable-tfoot > tr > td::before {
+            flex: 0 0 38%;
+            color: #64748b;
+            content: "";
+            font-size: 10px;
+            font-weight: 800;
+            text-align: right;
+        }
+
+        .micro-table .p-datatable-tbody > tr > td:nth-child(1)::before { content: "التاريخ"; }
+        .micro-table .p-datatable-tbody > tr > td:nth-child(2)::before { content: "القيد"; }
+        .micro-table .p-datatable-tbody > tr > td:nth-child(3)::before { content: "البيان"; }
+        .micro-table .p-datatable-tbody > tr > td:nth-child(4)::before { content: "مدين"; }
+        .micro-table .p-datatable-tbody > tr > td:nth-child(5)::before { content: "دائن"; }
+        .micro-table .p-datatable-tbody > tr > td:nth-child(6)::before { content: "الرصيد"; }
+        .micro-table .p-datatable-tfoot > tr > td:nth-child(1)::before { content: "الإجمالي"; }
+        .micro-table .p-datatable-tfoot > tr > td:nth-child(2)::before { content: "مدين"; }
+        .micro-table .p-datatable-tfoot > tr > td:nth-child(3)::before { content: "دائن"; }
+        .micro-table .p-datatable-tfoot > tr > td:nth-child(4)::before { content: "الرصيد"; }
+    }
+}
+
+@media (max-width: 480px) {
+    .account-summary-strip {
+        grid-template-columns: 1fr;
+    }
+}

@@ -679,6 +679,265 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .supplier-detail-page {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px !important;
+    overflow-x: hidden;
+  }
+
+  .imperial-header .header-content,
+  .profile-card,
+  .imperial-kpi-card,
+  .imperial-tabs-card,
+  .notes-card-interior {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .imperial-header .header-content {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px !important;
+    gap: 8px !important;
+  }
+
+  .imperial-header .flex-align {
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .imperial-header .back-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+  .imperial-header .page-title {
+    font-size: 0.95rem;
+    line-height: 1.25;
+  }
+
+  .imperial-header .page-subtitle {
+    display: block;
+    font-size: 11px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  .imperial-header .header-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .profile-card {
+    position: static;
+  }
+
+  .profile-card .profile-card-header {
+    height: 70px;
+    padding-top: 12px;
+  }
+
+  .profile-card .profile-avatar {
+    width: 54px;
+    height: 54px;
+    bottom: -27px;
+    font-size: 1.35rem;
+  }
+
+  .profile-card .profile-card-body {
+    padding: 34px 8px 8px;
+  }
+
+  .profile-card .supplier-display-name {
+    font-size: 1rem !important;
+  }
+
+  .profile-card .contact-person-label,
+  .profile-card .info-value,
+  .kpi-footer-row {
+    font-size: 11px !important;
+  }
+
+  .profile-card .info-label,
+  .kpi-title {
+    font-size: 10px !important;
+  }
+
+  .profile-card .profile-info-list {
+    gap: 6px;
+  }
+
+  .profile-card .profile-info-item {
+    padding: 6px !important;
+  }
+
+  .profile-card .info-icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+
+  .imperial-kpi-card {
+    padding: 8px !important;
+  }
+
+  .imperial-kpi-card .kpi-value {
+    font-size: 0.95rem !important;
+  }
+
+  .imperial-kpi-card .kpi-icon-box {
+    width: 30px !important;
+    height: 30px !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .tab-content-box,
+  .notes-tab-box,
+  .notes-card-interior {
+    padding: 8px !important;
+  }
+
+  .notes-card-interior .notes-header-title {
+    font-size: 11px !important;
+  }
+
+  .notes-card-interior .notes-text-body {
+    font-size: 11px !important;
+  }
+
+  ::ng-deep {
+    .p-button {
+      width: 100% !important;
+      height: 32px !important;
+      justify-content: center !important;
+      padding: 0 8px !important;
+      font-size: 11px !important;
+    }
+
+    .p-button-label,
+    .p-button-icon {
+      font-size: 11px !important;
+    }
+
+    .imperial-premium-tabview .p-tabview-nav {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding: 4px !important;
+    }
+
+    .imperial-premium-tabview .p-tabview-nav li .p-tabview-nav-link {
+      padding: 8px !important;
+      font-size: 11px !important;
+      white-space: nowrap;
+    }
+
+    .imperial-premium-tabview .p-tabview-panels {
+      padding: 0 !important;
+    }
+
+    .imperial-compact-table .p-datatable-wrapper {
+      overflow: visible !important;
+    }
+
+    .imperial-compact-table table,
+    .imperial-compact-table .p-datatable-tbody,
+    .imperial-compact-table .p-datatable-tbody > tr,
+    .imperial-compact-table .p-datatable-tbody > tr > td {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .imperial-compact-table .p-datatable-thead {
+      display: none !important;
+    }
+
+    .imperial-compact-table .p-datatable-tbody > tr {
+      margin: 8px 0 !important;
+      padding: 6px !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 8px !important;
+      background: var(--card-bg) !important;
+    }
+
+    .imperial-compact-table .p-datatable-tbody > tr > td {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      padding: 5px 2px !important;
+      border: 0 !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      text-align: left !important;
+      font-size: 11px !important;
+      white-space: normal !important;
+      word-break: break-word;
+    }
+
+    .imperial-compact-table .p-datatable-tbody > tr > td:last-child {
+      border-bottom: 0 !important;
+    }
+
+    .imperial-compact-table .p-datatable-tbody > tr > td::before {
+      flex: 0 0 38%;
+      color: var(--text-color-secondary);
+      content: "";
+      font-size: 10px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .imperial-compact-table .p-datatable-tbody > tr > td:nth-child(1)::before { content: "#"; }
+    .imperial-compact-table .p-datatable-tbody > tr > td:nth-child(2)::before { content: "المستند"; }
+    .imperial-compact-table .p-datatable-tbody > tr > td:nth-child(3)::before { content: "التاريخ"; }
+    .imperial-compact-table .p-datatable-tbody > tr > td:nth-child(4)::before { content: "طريقة الدفع"; }
+    .imperial-compact-table .p-datatable-tbody > tr > td:nth-child(5)::before { content: "القيمة"; }
+    .imperial-compact-table .p-datatable-tbody > tr > td:nth-child(6)::before { content: "الحالة"; }
+    .imperial-compact-table .p-datatable-tbody > tr > td:nth-child(7)::before { content: "إجراءات"; }
+
+    .p-paginator {
+      padding: 4px !important;
+      gap: 2px !important;
+    }
+
+    .p-paginator .p-paginator-element {
+      min-width: 28px !important;
+      height: 28px !important;
+      font-size: 11px !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .imperial-header .header-actions,
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ═══════════ Confirm Dialog overriding ═══════════ */
 ::ng-deep .imperial-confirm-dialog {
   .p-dialog-header {

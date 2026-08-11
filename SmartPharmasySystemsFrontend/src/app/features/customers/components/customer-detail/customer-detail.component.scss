@@ -575,3 +575,72 @@
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .customer-detail-page {
+    padding: 6px !important;
+  }
+
+  .imperial-header {
+    .header-content {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 8px !important;
+      padding: 8px 10px !important;
+      border-radius: 8px !important;
+    }
+
+    .header-actions {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .profile-card {
+    position: static !important;
+    border-radius: 8px !important;
+
+    .profile-card-header {
+      height: 70px !important;
+    }
+
+    .profile-avatar {
+      width: 54px !important;
+      height: 54px !important;
+      font-size: 1.4rem !important;
+      bottom: -27px !important;
+    }
+
+    .profile-card-body {
+      padding: 2rem 0.6rem 0.8rem !important;
+    }
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+  }
+
+  .financial-progress-section,
+  .imperial-chart-card,
+  .imperial-notes-card {
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+  }
+}

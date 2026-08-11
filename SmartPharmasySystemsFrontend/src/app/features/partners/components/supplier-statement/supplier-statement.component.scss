@@ -795,3 +795,232 @@
       color: #000;
   }
 }
+
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .statement-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px !important;
+    overflow-x: hidden;
+  }
+
+  .imperial-search-bar .search-content,
+  .statement-stat-card,
+  .statement-legend-bar,
+  .ledger-card-wrapper {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .imperial-search-bar .search-content {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 8px !important;
+    gap: 8px;
+  }
+
+  .imperial-search-bar .flex-align {
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .imperial-search-bar .search-icon-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+
+  .imperial-search-bar .search-input-wrapper {
+    max-width: none;
+    width: 100%;
+  }
+
+  .imperial-search-bar .search-label {
+    font-size: 10px !important;
+    line-height: 1.25;
+  }
+
+  .imperial-search-bar .action-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .summary-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+
+  .statement-stat-card {
+    min-width: 0;
+    padding: 8px !important;
+    gap: 6px;
+  }
+
+  .statement-stat-card .stat-icon-wrapper {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+
+  .statement-stat-card .stat-label {
+    font-size: 10px;
+  }
+
+  .statement-stat-card .stat-value {
+    font-size: 0.95rem;
+  }
+
+  .statement-stat-card .stat-value.supplier-title {
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .statement-legend-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 8px !important;
+    font-size: 10px;
+  }
+
+  .statement-legend-bar .legend-chips-row {
+    gap: 4px;
+  }
+
+  .statement-legend-bar .legend-divider {
+    display: none;
+  }
+
+  .statement-loading-box {
+    padding: 24px 8px;
+  }
+
+  .statement-loading-box .loading-text {
+    font-size: 11px;
+    text-align: center;
+  }
+
+  ::ng-deep {
+    .p-autocomplete,
+    .p-autocomplete .p-inputtext,
+    .p-autocomplete-input,
+    .p-button {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+
+    .p-autocomplete-input {
+      padding: 0 8px !important;
+    }
+
+    .p-button {
+      justify-content: center !important;
+      padding: 0 8px !important;
+    }
+
+    .p-button-label,
+    .p-button-icon {
+      font-size: 11px !important;
+    }
+
+    .imperial-statement-table .p-datatable-wrapper {
+      overflow: visible !important;
+    }
+
+    .imperial-statement-table table,
+    .imperial-statement-table .p-datatable-tbody,
+    .imperial-statement-table .p-datatable-tbody > tr,
+    .imperial-statement-table .p-datatable-tbody > tr > td,
+    .imperial-statement-table .p-datatable-tfoot,
+    .imperial-statement-table .p-datatable-tfoot > tr,
+    .imperial-statement-table .p-datatable-tfoot > tr > td {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .imperial-statement-table .p-datatable-thead {
+      display: none !important;
+    }
+
+    .imperial-statement-table .p-datatable-tbody > tr,
+    .imperial-statement-table .p-datatable-tfoot > tr {
+      margin: 8px 0 !important;
+      padding: 6px !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 8px !important;
+      background: var(--card-bg) !important;
+    }
+
+    .imperial-statement-table .p-datatable-tbody > tr > td,
+    .imperial-statement-table .p-datatable-tfoot > tr > td {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      padding: 5px 2px !important;
+      border: 0 !important;
+      border-bottom: 1px solid var(--border-color) !important;
+      text-align: left !important;
+      font-size: 11px !important;
+      white-space: normal !important;
+      word-break: break-word;
+    }
+
+    .imperial-statement-table .p-datatable-tbody > tr > td:last-child,
+    .imperial-statement-table .p-datatable-tfoot > tr > td:last-child {
+      border-bottom: 0 !important;
+    }
+
+    .imperial-statement-table .p-datatable-tbody > tr > td::before,
+    .imperial-statement-table .p-datatable-tfoot > tr > td::before {
+      flex: 0 0 40%;
+      color: var(--text-color-secondary);
+      content: "";
+      font-size: 10px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(1)::before { content: "#"; }
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(2)::before { content: "التاريخ"; }
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(3)::before { content: "الحركة"; }
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(4)::before { content: "المرجع"; }
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(5)::before { content: "دائن"; }
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(6)::before { content: "مسدد"; }
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(7)::before { content: "مدين"; }
+    .imperial-statement-table .p-datatable-tbody > tr > td:nth-child(8)::before { content: "الرصيد"; }
+    .imperial-statement-table .p-datatable-tfoot > tr > td:nth-child(1)::before { content: "المجاميع"; }
+    .imperial-statement-table .p-datatable-tfoot > tr > td:nth-child(2)::before { content: "دائن"; }
+    .imperial-statement-table .p-datatable-tfoot > tr > td:nth-child(3)::before { content: "مسدد"; }
+    .imperial-statement-table .p-datatable-tfoot > tr > td:nth-child(4)::before { content: "مدين"; }
+    .imperial-statement-table .p-datatable-tfoot > tr > td:nth-child(5)::before { content: "الصافي"; }
+
+    .statement-type-pill,
+    .ref-code-chip,
+    .amount-cell,
+    .transaction-detail-notes {
+      font-size: 10px !important;
+      white-space: normal !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}

@@ -215,3 +215,179 @@
     border: 1px solid #e5e7eb !important;
   }
 }
+
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .page-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px !important;
+    overflow-x: hidden;
+  }
+
+  .page-header,
+  .glass-panel {
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 8px !important;
+    box-shadow: none !important;
+  }
+
+  .header-content,
+  .title-section,
+  .action-section {
+    width: 100%;
+    gap: 8px !important;
+  }
+
+  .title-section {
+    align-items: flex-start;
+  }
+
+  .icon-wrapper,
+  .stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  .text-wrapper h1 {
+    font-size: 1rem !important;
+    line-height: 1.25;
+  }
+
+  .text-wrapper p,
+  .stat-label {
+    font-size: 11px !important;
+  }
+
+  .action-section {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .stat-card {
+    min-width: 0;
+    padding: 8px !important;
+    gap: 8px !important;
+    border-radius: 8px !important;
+  }
+
+  .stat-value {
+    font-size: 1rem !important;
+    line-height: 1.2;
+  }
+
+  .chart-container {
+    height: 230px !important;
+  }
+
+  .percentage-bar {
+    height: 22px;
+  }
+
+  :host ::ng-deep {
+    .year-dropdown,
+    .year-dropdown .p-dropdown,
+    .p-dropdown,
+    .p-button {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      height: 32px !important;
+    }
+
+    .p-dropdown-label,
+    .p-button-label {
+      font-size: 11px !important;
+      line-height: 30px !important;
+      padding-block: 0 !important;
+    }
+
+    .p-button {
+      padding: 0 6px !important;
+      justify-content: center !important;
+    }
+
+    .p-button-icon,
+    .p-dropdown-trigger-icon {
+      font-size: 11px !important;
+    }
+
+    .p-chart canvas {
+      max-height: 230px !important;
+    }
+
+    .p-datatable-wrapper {
+      overflow: visible !important;
+    }
+
+    .p-datatable table,
+    .p-datatable-tbody,
+    .p-datatable-tbody > tr,
+    .p-datatable-tbody > tr > td {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .p-datatable-thead {
+      display: none !important;
+    }
+
+    .p-datatable-tbody > tr {
+      margin: 8px 0 !important;
+      padding: 6px !important;
+      border: 1px solid var(--surface-border, #e5e7eb) !important;
+      border-radius: 8px !important;
+      background: var(--surface-card, #fff) !important;
+    }
+
+    .p-datatable-tbody > tr > td {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      padding: 5px 2px !important;
+      border: 0 !important;
+      border-bottom: 1px solid var(--surface-border, #eef2f7) !important;
+      text-align: left !important;
+      font-size: 11px !important;
+      white-space: normal !important;
+      word-break: break-word;
+    }
+
+    .p-datatable-tbody > tr > td:last-child {
+      border-bottom: 0 !important;
+    }
+
+    .p-datatable-tbody > tr > td::before {
+      color: var(--text-color-secondary, #64748b);
+      content: "";
+      flex: 0 0 42%;
+      font-size: 10px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .p-datatable-tbody > tr > td:nth-child(1)::before { content: "الفئة"; }
+    .p-datatable-tbody > tr > td:nth-child(2)::before { content: "عدد العمليات"; }
+    .p-datatable-tbody > tr > td:nth-child(3)::before { content: "الإجمالي"; }
+    .p-datatable-tbody > tr > td:nth-child(4)::before { content: "النسبة"; }
+  }
+}
+
+@media (max-width: 480px) {
+  .action-section {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .action-section > *:first-child {
+    grid-column: 1 / -1;
+  }
+}

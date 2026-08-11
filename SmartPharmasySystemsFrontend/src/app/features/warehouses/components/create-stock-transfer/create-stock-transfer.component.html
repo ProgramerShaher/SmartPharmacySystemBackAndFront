@@ -99,20 +99,20 @@
                     </ng-template>
                     <ng-template pTemplate="body" let-itemGroup let-i="rowIndex">
                         <tr [formGroupName]="i">
-                            <td>
+                            <td data-label="الدواء / التشغيلة">
                                 <p-dropdown [options]="availableMedicines" formControlName="selectedStockItem"
                                     placeholder="ابحث واختر الصنف من مخزن المصدر..." [filter]="true" filterBy="label"
                                     styleClass="w-full" appendTo="body"></p-dropdown>
                             </td>
-                            <td class="text-center font-bold text-lg opacity-80 text-primary">
+                            <td data-label="الرصيد المتاح" class="text-center font-bold text-lg opacity-80 text-primary">
                                 {{ itemGroup.get('availableQuantity')?.value || 0 }}
                             </td>
-                            <td class="text-center">
+                            <td data-label="كمية التحويل" class="text-center">
                                 <p-inputNumber formControlName="quantity" [min]="1"
                                     [max]="itemGroup.get('availableQuantity')?.value || 1"
                                     class="w-full text-center"></p-inputNumber>
                             </td>
-                            <td class="text-center">
+                            <td data-label="إجراء" class="text-center">
                                 <button pButton icon="pi pi-trash"
                                     class="p-button-rounded p-button-danger p-button-text"
                                     (click)="removeItem(i)"></button>

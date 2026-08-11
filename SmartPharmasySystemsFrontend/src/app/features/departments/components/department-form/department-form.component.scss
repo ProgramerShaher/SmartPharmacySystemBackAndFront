@@ -39,3 +39,45 @@
     }
   }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP MODAL OVERRIDES)
+   ========================================= */
+@media (max-width: 768px) {
+  ::ng-deep .dept-dialog {
+    width: 96vw !important;
+    max-width: 96vw !important;
+    margin: 0 auto !important;
+
+    .p-dialog-header {
+      padding: 10px 12px !important;
+      .p-dialog-title {
+        font-size: 14px !important;
+      }
+    }
+
+    .p-dialog-content {
+      padding: 8px 12px !important;
+    }
+
+    .p-dialog-footer {
+      padding: 8px 12px !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+
+      button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+
+    .p-inputtext {
+      height: 32px !important;
+      min-height: 32px !important;
+      font-size: 11px !important;
+      padding: 0 8px !important;
+    }
+  }
+}

@@ -194,3 +194,129 @@
   background: var(--primary-color) !important;
   border: none !important;
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .expense-categories-container {
+    padding: 6px !important;
+  }
+
+  .header-card {
+    margin-bottom: 8px !important;
+    border-radius: 8px !important;
+  }
+
+  ::ng-deep .header-card.p-card .p-card-body {
+    padding: 8px 10px !important;
+  }
+
+  .header-content {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .title-section {
+    gap: 0.6rem !important;
+
+    .header-icon {
+      font-size: 1.2rem !important;
+      padding: 0.4rem !important;
+    }
+
+    .page-title { font-size: 15px !important; }
+    .page-subtitle { font-size: 10px !important; }
+  }
+
+  .add-btn {
+    width: 100% !important;
+    height: 32px !important;
+    font-size: 11px !important;
+    padding: 0 !important;
+  }
+
+  .table-card {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* تحويل جدول فئات المصروفات إلى كروت للموبايل */
+  ::ng-deep .table-card {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &:nth-child(1) { display: none !important; } /* Hide number */
+      &:nth-child(2):before { content: "اسم الفئة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "الوصف:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "تاريخ الإنشاء:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 6px !important;
+      }
+    }
+  }
+
+  ::ng-deep .category-dialog {
+    width: 96vw !important;
+    max-width: 96vw !important;
+    margin: 0 auto !important;
+
+    .p-dialog-header {
+      padding: 10px 12px !important;
+      .p-dialog-title { font-size: 14px !important; }
+    }
+
+    .p-dialog-content {
+      padding: 10px 12px !important;
+
+      .form-field label { font-size: 10px !important; }
+      .p-inputtext, textarea {
+        height: 32px !important;
+        font-size: 11px !important;
+        padding: 0 8px !important;
+      }
+      textarea {
+        height: 60px !important;
+      }
+    }
+
+    .p-dialog-footer {
+      padding: 8px 12px !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+
+      button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+}

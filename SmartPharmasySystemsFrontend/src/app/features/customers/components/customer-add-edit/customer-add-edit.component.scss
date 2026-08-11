@@ -139,3 +139,50 @@
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP MODAL OVERRIDES)
+   ========================================= */
+@media (max-width: 768px) {
+  .edit-container {
+    padding: 8px !important;
+  }
+
+  ::ng-deep {
+    .premium-input,
+    .p-inputnumber .p-inputtext,
+    .p-dropdown {
+      height: 32px !important;
+      min-height: 32px !important;
+      font-size: 11px !important;
+      padding: 0 8px !important;
+    }
+
+    .p-inputtextarea {
+      min-height: 50px !important;
+    }
+  }
+
+  .form-actions-footer {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    padding-top: 6px !important;
+
+    button {
+      width: 100% !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+  }
+
+  .formgrid.grid {
+    .field {
+      margin-bottom: 6px !important;
+      label {
+        font-size: 10px !important;
+        margin-bottom: 2px !important;
+      }
+    }
+  }
+}

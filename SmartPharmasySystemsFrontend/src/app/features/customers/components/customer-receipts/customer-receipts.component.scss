@@ -396,3 +396,155 @@
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   ========================================= */
+@media (max-width: 768px) {
+  .receipts-container,
+  .payments-shell {
+    padding: 6px !important;
+  }
+
+  .imperial-header {
+    .header-content {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 8px !important;
+      padding: 8px 10px !important;
+      border-radius: 8px !important;
+
+      .title-area {
+        .icon-box {
+          width: 32px !important;
+          height: 32px !important;
+          font-size: 14px !important;
+        }
+        h1 { font-size: 15px !important; }
+        p { font-size: 10px !important; }
+      }
+
+      .actions-area {
+        button {
+          width: 100% !important;
+          height: 32px !important;
+          font-size: 11px !important;
+        }
+      }
+    }
+  }
+
+  .stats-grid,
+  .summary-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    margin-bottom: 6px !important;
+
+    .stat-card {
+      padding: 6px 8px !important;
+      border-radius: 8px !important;
+    }
+  }
+
+  .table-card,
+  .ledger-card-wrapper {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .table-caption {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
+
+    .search-box {
+      width: 100% !important;
+      input {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  /* تحويل جدول سندات القبض إلى كروت للموبايل */
+  ::ng-deep .imperial-table,
+  ::ng-deep .imperial-statement-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &:nth-child(1):before { content: "رقم السند:"; font-weight: 700; color: #64748b; }
+      &:nth-child(2):before { content: "العميل:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "المبلغ:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "التاريخ:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "المرجع:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 6px !important;
+      }
+    }
+  }
+
+  .voucher-form {
+    padding: 6px !important;
+
+    .vf-row {
+      flex-direction: column !important;
+      gap: 6px !important;
+    }
+
+    .vf-field {
+      margin-bottom: 6px !important;
+      label {
+        font-size: 10px !important;
+        margin-bottom: 2px !important;
+      }
+      input, ::ng-deep .p-dropdown, ::ng-deep .p-inputnumber-input, ::ng-deep .p-autocomplete-input {
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+
+    .vf-footer {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+
+      button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  ::ng-deep .imperial-dialog {
+    width: 96vw !important;
+    max-width: 96vw !important;
+    margin: 0 auto !important;
+  }
+}

@@ -538,3 +538,245 @@ $radius: 10px;
     align-items: stretch;
   }
 }
+
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .fin-wrap {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px !important;
+    gap: 8px !important;
+    overflow-x: hidden;
+  }
+
+  .fin-header,
+  .fin-table-wrap,
+  .fin-filter-panel,
+  .fin-kpi-card {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .fin-header {
+    align-items: stretch;
+  }
+
+  .fin-header-start,
+  .fin-header-end {
+    width: 100%;
+  }
+
+  .fin-header-end {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fin-icon,
+  .fin-kpi-badge {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  .fin-title {
+    font-size: 1rem;
+  }
+
+  .fin-subtitle,
+  .fin-kpi-label,
+  .fin-kpi-extra,
+  .fin-filter-panel {
+    font-size: 11px;
+  }
+
+  .fin-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+
+  .fin-kpi-card {
+    padding: 8px !important;
+  }
+
+  .fin-kpi-value {
+    font-size: 1rem;
+  }
+
+  .fin-kpi-extra {
+    align-items: flex-start;
+    gap: 4px;
+    flex-direction: column;
+  }
+
+  .fin-filter-panel {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding: 8px !important;
+    gap: 6px;
+  }
+
+  :host ::ng-deep {
+    .fin-btn-primary,
+    .fin-btn-outlined,
+    .p-button {
+      width: 100% !important;
+      height: 32px !important;
+      min-height: 32px !important;
+      justify-content: center !important;
+      padding: 0 6px !important;
+      font-size: 11px !important;
+    }
+
+    .p-button-label,
+    .p-button-icon {
+      font-size: 11px !important;
+    }
+
+    .fin-search-input,
+    .fin-search-input .p-inputtext,
+    .fin-calendar,
+    .fin-calendar .p-calendar,
+    .fin-calendar .p-inputtext,
+    .p-dropdown,
+    .p-inputtext {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+
+    .fin-tabview .p-tabview-nav {
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      padding: 4px !important;
+    }
+
+    .fin-tabview .p-tabview-nav li .p-tabview-nav-link {
+      padding: 8px !important;
+      font-size: 11px !important;
+      white-space: nowrap;
+    }
+
+    .fin-tabview .p-tabview-panels {
+      padding: 0 !important;
+    }
+
+    .p-dialog {
+      width: 95vw !important;
+      max-width: 95vw !important;
+      margin: 0 !important;
+    }
+
+    .fin-dialog .p-dialog-content,
+    .modal-body {
+      padding: 10px !important;
+    }
+
+    .modal-shell,
+    .modal-header,
+    .modal-footer {
+      border-radius: 0 !important;
+    }
+
+    .modal-header {
+      padding: 10px !important;
+    }
+
+    .modal-title h2 {
+      font-size: 0.95rem !important;
+    }
+
+    .modal-title p,
+    .modal-body label,
+    .modal-body small {
+      font-size: 10px !important;
+    }
+
+    .modal-footer {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px !important;
+      padding: 8px !important;
+    }
+
+    .modal-body .p-inputtext,
+    .modal-body textarea {
+      min-height: 32px !important;
+      font-size: 11px !important;
+      padding: 6px 8px !important;
+    }
+
+    .p-datatable-wrapper {
+      overflow: visible !important;
+    }
+
+    .fin-table table,
+    .fin-table .p-datatable-tbody,
+    .fin-table .p-datatable-tbody > tr,
+    .fin-table .p-datatable-tbody > tr > td {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .fin-table .p-datatable-thead {
+      display: none !important;
+    }
+
+    .fin-table .p-datatable-tbody > tr {
+      margin: 8px 0 !important;
+      padding: 6px !important;
+      border: 1px solid $border !important;
+      border-radius: 8px !important;
+      background: $bg !important;
+    }
+
+    .fin-table .p-datatable-tbody > tr > td {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      padding: 5px 2px !important;
+      border: 0 !important;
+      border-bottom: 1px solid $border !important;
+      font-size: 11px !important;
+      white-space: normal !important;
+      word-break: break-word;
+    }
+
+    .fin-table .p-datatable-tbody > tr > td:last-child {
+      border-bottom: 0 !important;
+    }
+
+    .fin-table .p-datatable-tbody > tr > td::before {
+      flex: 0 0 38%;
+      color: $text-secondary;
+      font-size: 10px;
+      font-weight: 800;
+      content: "";
+    }
+
+    .fin-table .p-datatable-tbody > tr > td:nth-child(1)::before { content: "التاريخ"; }
+    .fin-table .p-datatable-tbody > tr > td:nth-child(2)::before { content: "الوصف"; }
+    .fin-table .p-datatable-tbody > tr > td:nth-child(3)::before { content: "المرجع"; }
+    .fin-table .p-datatable-tbody > tr > td:nth-child(4)::before { content: "النوع"; }
+    .fin-table .p-datatable-tbody > tr > td:nth-child(5)::before { content: "المبلغ"; }
+  }
+}
+
+@media (max-width: 480px) {
+  .fin-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .fin-header-end {
+    grid-template-columns: 1fr;
+  }
+}

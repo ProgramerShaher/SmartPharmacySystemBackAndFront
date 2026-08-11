@@ -202,3 +202,179 @@ $radius: 10px;
     &:hover { background: #f1f5f9 !important; color: $text !important; }
   }
 }
+
+/* ============================================================
+   RESPONSIVE MOBILE — Ultra-Compact Native App Look (<= 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  .st-form-wrap {
+    padding: 8px !important;
+    gap: 0.5rem;
+    max-width: 100% !important;
+    overflow-x: hidden;
+  }
+
+  /* ---- Header ---- */
+  .st-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+    padding-bottom: 0.6rem;
+  }
+  .st-header-start { width: 100%; }
+  .st-header-end { width: 100%; }
+  .st-header-end .st-btn-primary {
+    width: 100% !important;
+    height: 32px !important;
+    font-size: 12px !important;
+  }
+  .st-title { font-size: 1rem !important; }
+  .st-subtitle { font-size: 0.65rem !important; }
+  .st-icon { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
+
+  /* ---- Panels become flat (no heavy borders) ---- */
+  .st-form-panel {
+    padding: 8px !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin-bottom: 0.5rem;
+  }
+  .st-form-panel.p-0 { padding: 0 !important; }
+  .st-form-panel .p-4 { padding: 0.5rem !important; }
+  .st-table-wrap { border: none !important; border-radius: 0 !important; }
+  .st-table-wrap.m-4 { margin: 0.5rem !important; }
+
+  .st-section-title {
+    margin-bottom: 0.75rem !important;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .st-section-title .st-section-left { font-size: 0.85rem !important; gap: 0.4rem; }
+  .st-section-title .st-section-left i { font-size: 0.85rem; }
+
+  /* ---- Fields & Widgets (30-32px, compact fonts) ---- */
+  .st-field { margin-bottom: 0.75rem !important; }
+  .st-field label { font-size: 10px !important; margin-bottom: 0.25rem !important; }
+
+  :host ::ng-deep {
+    .p-selectbutton.premium-select-button {
+      display: grid !important;
+      grid-template-columns: repeat(2, 1fr) !important;
+      width: 100% !important;
+
+      .p-button {
+        height: 34px !important;
+        font-size: 11px !important;
+        padding: 0.3rem 0.4rem !important;
+      }
+    }
+
+    .p-inputtext,
+    .p-inputnumber,
+    .p-dropdown,
+    .p-autocomplete,
+    .p-calendar {
+      height: 32px !important;
+      max-height: 32px !important;
+      font-size: 12px !important;
+    }
+
+    .p-inputtext {
+      padding: 0.35rem 0.6rem !important;
+    }
+
+    .p-dropdown .p-dropdown-label {
+      padding: 0.35rem 0.6rem !important;
+      font-size: 12px !important;
+    }
+
+    .st-btn-primary,
+    .st-btn-secondary {
+      height: 32px !important;
+      font-size: 12px !important;
+      padding: 0 0.75rem !important;
+      border-radius: 6px !important;
+      justify-content: center !important;
+    }
+
+    .st-section-title .p-button {
+      height: 32px !important;
+      font-size: 12px !important;
+      padding: 0 0.7rem !important;
+    }
+  }
+
+  /* ---- Items Table -> Cards (Zero horizontal overflow) ---- */
+  :host ::ng-deep .st-table {
+    .p-datatable-wrapper,
+    .p-datatable-scrollable-wrapper,
+    .p-datatable-scrollable-body {
+      overflow: visible !important;
+    }
+
+    .p-datatable-table {
+      width: 100% !important;
+      table-layout: auto !important;
+    }
+
+    .p-datatable-thead { display: none !important; }
+
+    .p-datatable-tbody {
+      display: block;
+
+      > tr {
+        display: block;
+        background: #fff !important;
+        border: 1px solid $border !important;
+        border-radius: 8px;
+        margin: 0 0 0.55rem;
+        padding: 0.4rem 0.55rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+
+        > td {
+          display: flex !important;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          padding: 0.28rem 0 !important;
+          border: none !important;
+          background: transparent !important;
+          font-size: 11px !important;
+          text-align: right !important;
+          white-space: normal !important;
+
+          &::before {
+            content: attr(data-label);
+            flex: 0 0 auto;
+            font-size: 10px;
+            font-weight: 700;
+            color: $text-secondary;
+            margin-left: 0.4rem;
+          }
+
+          > * { min-width: 0; }
+
+          .p-dropdown,
+          .p-inputnumber { flex: 1 1 0% !important; }
+          .p-dropdown { width: 100% !important; }
+          .p-inputnumber .p-inputnumber-input { width: 100% !important; }
+        }
+      }
+
+      > tr.p-datatable-emptymessage {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+
+        > td {
+          display: block !important;
+          text-align: center !important;
+          padding: 1.25rem 0.5rem !important;
+
+          &::before { content: none !important; }
+        }
+      }
+    }
+  }
+}

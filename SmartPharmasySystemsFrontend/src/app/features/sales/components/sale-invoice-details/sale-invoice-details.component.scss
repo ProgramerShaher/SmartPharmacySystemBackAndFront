@@ -518,8 +518,211 @@
 }
 
 /* 🎨 STATUS TAG OVERRIDE */
+/* 🎨 STATUS TAG OVERRIDE */
 ::ng-deep .status-tag {
     font-weight: 800 !important;
     font-size: 1rem !important;
     padding: 0.5rem 1rem !important;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET OVERRIDES)
+   ========================================= */
+@media (max-width: 768px) {
+    .slate-background {
+        padding: 8px !important;
+        background: #f8fafc !important;
+    }
+
+    .master-action-bar {
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+        margin-bottom: 12px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        box-shadow: none !important;
+        border-color: #cbd5e1 !important;
+
+        .action-bar-left {
+            .invoice-title {
+                font-size: 16px !important;
+            }
+        }
+
+        .action-bar-right {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+        }
+
+        .action-bar-right button {
+            width: 100% !important;
+            height: 32px !important;
+            font-size: 12px !important;
+        }
+    }
+
+    .paper-canvas {
+        padding: 12px !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    .status-stamp {
+        position: static !important;
+        transform: none !important;
+        margin-bottom: 12px !important;
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 6px 12px !important;
+        font-size: 13px !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+    }
+
+    .invoice-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+
+        .pharmacy-identity {
+            .pharmacy-name {
+                font-size: 18px !important;
+            }
+            .pharmacy-info, .pharmacy-contact {
+                font-size: 11px !important;
+            }
+        }
+
+        .power-center {
+            align-items: stretch !important;
+            
+            .invoice-badge {
+                min-width: 100% !important;
+                padding: 8px 12px !important;
+                border-radius: 8px !important;
+
+                .badge-value {
+                    font-size: 15px !important;
+                }
+            }
+        }
+    }
+
+    .info-hub {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        margin: 12px 0 !important;
+
+        .info-card {
+            padding: 8px 10px !important;
+            border-radius: 8px !important;
+
+            .card-icon {
+                font-size: 18px !important;
+            }
+            .card-label {
+                font-size: 10px !important;
+            }
+            .card-value {
+                font-size: 12px !important;
+            }
+        }
+    }
+
+    /* تحويل جدول عرض التفاصيل إلى كروت للهاتف المحمول */
+    ::ng-deep .striped-ledger {
+        table, thead, tbody, th, td, tr {
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        thead {
+            display: none !important;
+        }
+        tr {
+            margin-bottom: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+        }
+        td {
+            border-bottom: none !important;
+            padding: 4px 0 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            font-size: 12px !important;
+
+            &:nth-child(1):before { content: "رقم البند:"; font-weight: 700; color: #64748b; }
+            &:nth-child(2):before { content: "اسم الصنف:"; font-weight: 700; color: #64748b; }
+            &:nth-child(3):before { content: "رقم الدفعة:"; font-weight: 700; color: #64748b; }
+            &:nth-child(4):before { content: "تاريخ الانتهاء:"; font-weight: 700; color: #64748b; }
+            &:nth-child(5):before { content: "الكمية المبيعة:"; font-weight: 700; color: #64748b; }
+            &:nth-child(6):before { content: "السعر الإفرادي:"; font-weight: 700; color: #64748b; }
+            &:nth-child(7):before { content: "الإجمالي:"; font-weight: 700; color: #64748b; }
+        }
+    }
+
+    .financial-zone {
+        margin-top: 20px !important;
+        gap: 12px !important;
+
+        .summary-section {
+            padding: 10px !important;
+            border-radius: 8px !important;
+
+            .summary-row {
+                padding: 6px 0 !important;
+                
+                .summary-label {
+                    font-size: 11px !important;
+                }
+                .summary-value {
+                    font-size: 12px !important;
+                }
+            }
+        }
+
+        .grand-total-box {
+            min-width: 100% !important;
+            padding: 12px 16px !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+
+            .grand-label {
+                font-size: 11px !important;
+                margin-bottom: 4px !important;
+            }
+            .grand-value {
+                font-size: 24px !important;
+            }
+            .grand-currency {
+                font-size: 11px !important;
+                margin-bottom: 6px !important;
+            }
+            .arabic-text {
+                font-size: 10px !important;
+                padding: 4px 8px !important;
+            }
+        }
+    }
+
+    .invoice-footer {
+        margin-top: 16px !important;
+        
+        .notes-section {
+            padding: 10px !important;
+            border-radius: 8px !important;
+            font-size: 11px !important;
+
+            i {
+                font-size: 16px !important;
+            }
+        }
+    }
 }

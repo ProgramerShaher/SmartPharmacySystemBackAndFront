@@ -206,3 +206,113 @@ h1 {
   .table-panel,
   .kpi-card { box-shadow: none; border: 1px solid #e2e8f0; }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET OVERRIDES)
+   ========================================= */
+@media (max-width: 768px) {
+  .details-container {
+    padding: 8px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+
+    .title-wrap {
+      h1 {
+        font-size: 15px !important;
+      }
+      p {
+        font-size: 11px !important;
+      }
+    }
+
+    .actions {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      p-tag {
+        grid-column: span 2 !important;
+        text-align: center !important;
+      }
+
+      button, p-button {
+        width: 100% !important;
+      }
+    }
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+
+    .kpi-card {
+      padding: 8px 10px !important;
+      border-radius: 8px !important;
+
+      strong {
+        font-size: 14px !important;
+      }
+      .kpi-label {
+        font-size: 10px !important;
+      }
+    }
+  }
+
+  .table-panel {
+    border-radius: 8px !important;
+  }
+
+  .panel-head {
+    padding: 8px 12px !important;
+    h3 {
+      font-size: 12px !important;
+    }
+  }
+
+  /* تحويل جدول المشتريات إلى كروت للموبايل */
+  :host ::ng-deep {
+    .compact-table {
+      table, thead, tbody, th, td, tr {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      thead {
+        display: none !important;
+      }
+      tr {
+        margin-bottom: 8px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        padding: 8px !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+      }
+      td {
+        border-bottom: none !important;
+        padding: 4px 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        font-size: 12px !important;
+
+        &:nth-child(1) { display: none !important; } /* Hide toggler */
+        &:nth-child(2):before { content: "الصنف المورد:"; font-weight: 700; color: #64748b; }
+        &:nth-child(3):before { content: "رقم الدفعة:"; font-weight: 700; color: #64748b; }
+        &:nth-child(4):before { content: "الموقع:"; font-weight: 700; color: #64748b; }
+        &:nth-child(5):before { content: "الكمية:"; font-weight: 700; color: #64748b; }
+        &:nth-child(6):before { content: "سعر الشراء:"; font-weight: 700; color: #64748b; }
+        &:nth-child(7):before { content: "الإجمالي:"; font-weight: 700; color: #64748b; }
+      }
+    }
+  }
+}

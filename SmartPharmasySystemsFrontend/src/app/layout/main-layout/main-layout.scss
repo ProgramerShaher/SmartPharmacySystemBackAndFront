@@ -76,9 +76,26 @@
         margin-top: var(--topbar-height);
         padding: var(--content-padding);
 
+        @media (max-width: 768px) {
+            padding: 0.25rem !important;
+        }
+
         .content-wrapper {
             min-height: calc(100vh - var(--topbar-height) - 120px);
             padding-bottom: 2rem;
+            transform-origin: top right;
+            transition: transform 0.2s ease, width 0.2s ease;
+
+            @media (max-width: 768px) {
+                transform: scale(0.78);
+                width: 128.2% !important; /* 1 / 0.78 = 1.282 */
+                margin: 0 !important;
+            }
+
+            @media (max-width: 480px) {
+                transform: scale(0.68);
+                width: 147% !important; /* 1 / 0.68 = 1.47 */
+            }
         }
     }
 

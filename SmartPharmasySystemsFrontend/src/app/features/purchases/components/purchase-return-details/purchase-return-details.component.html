@@ -1,6 +1,6 @@
-<p-dialog [(visible)]="visible" (onHide)="close()" [modal]="true" [style]="{width: '60vw', maxWidth: '800px'}" 
+<p-dialog [(visible)]="visible" (onHide)="close()" [modal]="true" [style]="{width: '60vw', maxWidth: '800px'}"
     [draggable]="false" [resizable]="false" header="تفاصيل المرتجع" dir="rtl" [dismissableMask]="true">
-    
+
     <div class="loading-overlay" *ngIf="loading">
         <p-progressSpinner></p-progressSpinner>
     </div>
@@ -54,7 +54,7 @@
                     <span class="info-value text-500">{{ invoice.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
                 </div>
             </div>
-            
+
             <div class="info-row mt-3" *ngIf="invoice.reason">
                 <div class="info-item full-width">
                     <span class="info-label">سبب الإرجاع</span>

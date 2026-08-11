@@ -17,14 +17,14 @@
                 <label>بحث عن فاتورة التوريد (المعتمدة) <span class="text-red-500">*</span></label>
                 <p-autoComplete formControlName="invoice" [suggestions]="filteredInvoices"
                     (completeMethod)="searchInvoices($event)" field="purchaseInvoiceNumber"
-                    placeholder="رقم الفاتورة أو المورد..." [dropdown]="true"
-                    (onSelect)="onInvoiceSelect($event)" appendTo="body" styleClass="custom-p-input return-autocomplete"></p-autoComplete>
+                    placeholder="رقم الفاتورة أو المورد..." [dropdown]="true" (onSelect)="onInvoiceSelect($event)"
+                    appendTo="body" styleClass="custom-p-input return-autocomplete"></p-autoComplete>
             </div>
 
             <div class="input-group">
                 <label>تاريخ المرتجع <span class="text-red-500">*</span></label>
-                <p-calendar formControlName="returnDate" [showIcon]="false" appendTo="body"
-                    dateFormat="dd/mm/yy" placeholder="التاريخ" styleClass="custom-p-input"></p-calendar>
+                <p-calendar formControlName="returnDate" [showIcon]="false" appendTo="body" dateFormat="dd/mm/yy"
+                    placeholder="التاريخ" styleClass="custom-p-input"></p-calendar>
             </div>
 
             <div class="input-group" style="grid-column: span 2;">
@@ -57,7 +57,8 @@
                     <td style="text-align: center;">
                         <div class="flex flex-column align-items-center">
                             <span class="batch-tag indigo mb-1">{{item.companyBatchNumber}}</span>
-                            <small class="text-xs" [ngClass]="item.expiryStatus === 'Expired' ? 'text-red-500 font-bold' : 'text-500'">
+                            <small class="text-xs"
+                                [ngClass]="item.expiryStatus === 'Expired' ? 'text-red-500 font-bold' : 'text-500'">
                                 {{item.expiryDate | date:'MM/yy'}}
                             </small>
                         </div>
@@ -69,17 +70,17 @@
                             styleClass="shadow-sm"></p-tag>
                     </td>
                     <td style="text-align: center;">
-                        <span style="font-weight: 700;" [ngClass]="item.maxReturnQty > 0 ? 'text-teal-600' : 'text-gray-400'">
+                        <span style="font-weight: 700;"
+                            [ngClass]="item.maxReturnQty > 0 ? 'text-teal-600' : 'text-gray-400'">
                             {{item.maxReturnQty}}
                         </span>
                     </td>
                     <td style="text-align: center; padding: 6px !important;">
                         <div class="flex justify-content-center">
                             <p-inputNumber [(ngModel)]="item.returnQty" [min]="0" [max]="item.maxReturnQty"
-                                [disabled]="item.maxReturnQty === 0" [showButtons]="true"
-                                buttonLayout="horizontal" spinnerMode="horizontal"
-                                incrementButtonIcon="pi pi-plus" decrementButtonIcon="pi pi-minus"
-                                styleClass="return-input-number"
+                                [disabled]="item.maxReturnQty === 0" [showButtons]="true" buttonLayout="horizontal"
+                                spinnerMode="horizontal" incrementButtonIcon="pi pi-plus"
+                                decrementButtonIcon="pi pi-minus" styleClass="return-input-number"
                                 (onInput)="calculateTotal()"></p-inputNumber>
                         </div>
                     </td>
@@ -103,8 +104,10 @@
     <!-- التذييل والإجراءات -->
     <div class="footer">
         <div class="footer-stats">
-            <span class="stat-badge stat-items">قيمة التسوية: <span class="stat-number">{{ totalReturnAmount | number:'1.0-0' }} ر.ي</span></span>
-            <span class="stat-badge stat-qty" *ngIf="selectedInvoice">المورد: <span class="stat-number">{{ selectedInvoice.supplierName }}</span></span>
+            <span class="stat-badge stat-items">قيمة التسوية: <span class="stat-number">{{ totalReturnAmount |
+                    number:'1.0-0' }} ر.ي</span></span>
+            <span class="stat-badge stat-qty" *ngIf="selectedInvoice">المورد: <span class="stat-number">{{
+                    selectedInvoice.supplierName }}</span></span>
         </div>
         <div class="footer-actions">
             <button type="button" class="btn btn-outline" (click)="saveReturn(false)" [disabled]="saving">

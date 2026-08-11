@@ -604,10 +604,14 @@ body {
     border-color: var(--border-color) !important;
     color: var(--text-color) !important;
     padding: 0.55rem !important;
-    
-    .p-paginator-page, .p-paginator-next, .p-paginator-last, .p-paginator-first, .p-paginator-prev {
+
+    .p-paginator-page,
+    .p-paginator-next,
+    .p-paginator-last,
+    .p-paginator-first,
+    .p-paginator-prev {
         color: var(--text-color) !important;
-        
+
         &.p-highlight {
             background: rgba(var(--primary-rgb), 0.1) !important;
             color: var(--primary-color) !important;
@@ -689,6 +693,7 @@ body {
    GLOBAL PRINT STYLES - PROFESSIONAL RECEIPT & VOUCHER PRINTING
    ========================================================================== */
 @media print {
+
     /* 1. Hide all non-printable components globally */
     app-sidebar,
     .layout-sidebar,
@@ -720,7 +725,13 @@ body {
     }
 
     /* 2. Reset page and container dimensions for a perfect A4/A5 printout */
-    html, body, app-root, .layout-wrapper, .layout-main-container, .layout-content-scrollable, .content-wrapper {
+    html,
+    body,
+    app-root,
+    .layout-wrapper,
+    .layout-main-container,
+    .layout-content-scrollable,
+    .content-wrapper {
         background: #ffffff !important;
         color: #000000 !important;
         padding: 0 !important;
@@ -782,6 +793,7 @@ body {
         text-align: right !important;
         flex: 1.2 !important;
     }
+
     .pharmacy-title {
         display: block !important;
         font-size: 1.3rem !important;
@@ -789,7 +801,9 @@ body {
         margin-bottom: 0.3rem !important;
         color: #000000 !important;
     }
-    .pharmacy-sub, .pharmacy-phone {
+
+    .pharmacy-sub,
+    .pharmacy-phone {
         display: block !important;
         font-size: 0.85rem !important;
         color: #333333 !important;
@@ -801,6 +815,7 @@ body {
         text-align: center !important;
         flex: 1 !important;
     }
+
     .voucher-type-box {
         border: 2px double #000000 !important;
         padding: 0.6rem 1.2rem !important;
@@ -808,6 +823,7 @@ body {
         background: #f9f9f9 !important;
         border-radius: 8px !important;
     }
+
     .voucher-type-title {
         display: block !important;
         font-size: 1.4rem !important;
@@ -815,6 +831,7 @@ body {
         letter-spacing: 1px !important;
         color: #000000 !important;
     }
+
     .voucher-type-subtitle {
         display: block !important;
         font-size: 0.75rem !important;
@@ -830,6 +847,7 @@ body {
         gap: 0.4rem !important;
         flex: 1.2 !important;
     }
+
     .meta-row {
         display: flex !important;
         justify-content: flex-end !important;
@@ -837,11 +855,13 @@ body {
         font-size: 0.95rem !important;
         color: #000000 !important;
     }
+
     .meta-label {
         font-weight: 800 !important;
         min-width: 70px !important;
         text-align: right !important;
     }
+
     .meta-value {
         font-weight: 600 !important;
     }
@@ -853,6 +873,7 @@ body {
         margin: 0.5rem 0 !important;
         width: 100% !important;
     }
+
     .amount-box {
         border: 2px solid #000000 !important;
         border-radius: 6px !important;
@@ -862,6 +883,7 @@ body {
         font-size: 1.4rem !important;
         font-weight: 900 !important;
     }
+
     .amount-currency {
         background: #eaeaea !important;
         padding: 0.4rem 1rem !important;
@@ -872,6 +894,7 @@ body {
         align-items: center !important;
         color: #000000 !important;
     }
+
     .amount-number {
         padding: 0.4rem 1.5rem !important;
         background: #ffffff !important;
@@ -887,6 +910,7 @@ body {
         margin-top: 0.5rem !important;
         width: 100% !important;
     }
+
     .grid-row {
         display: flex !important;
         align-items: flex-end !important;
@@ -894,6 +918,7 @@ body {
         padding-bottom: 0.4rem !important;
         width: 100% !important;
     }
+
     .row-label {
         width: 180px !important;
         font-weight: 800 !important;
@@ -902,6 +927,7 @@ body {
         flex-shrink: 0 !important;
         text-align: right !important;
     }
+
     .row-content {
         flex-grow: 1 !important;
         font-size: 1.05rem !important;
@@ -909,6 +935,7 @@ body {
         color: #000000 !important;
         padding-right: 0.5rem !important;
     }
+
     .notes-content {
         font-size: 0.95rem !important;
         color: #333333 !important;
@@ -922,6 +949,7 @@ body {
         margin-top: 3.5rem !important;
         width: 100% !important;
     }
+
     .sig-col {
         display: flex !important;
         flex-direction: column !important;
@@ -929,16 +957,18 @@ body {
         gap: 3rem !important;
         width: 22% !important;
     }
+
     .sig-col span {
         font-weight: 800 !important;
         font-size: 0.95rem !important;
         color: #000000 !important;
     }
+
     .sig-line {
         width: 100% !important;
         border-bottom: 1.5px dashed #555555 !important;
     }
-    
+
     @page {
         size: A4 portrait;
         margin: 1cm !important;

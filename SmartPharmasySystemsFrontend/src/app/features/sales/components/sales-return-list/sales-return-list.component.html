@@ -57,7 +57,8 @@
                 </div>
                 <i class="pi pi-chart-pie"></i>
             </div>
-            <p-chart type="doughnut" [data]="returnsReasonData" [options]="returnsReasonOptions" height="100px"></p-chart>
+            <p-chart type="doughnut" [data]="returnsReasonData" [options]="returnsReasonOptions"
+                height="100px"></p-chart>
         </section>
     </div>
 
@@ -69,12 +70,10 @@
                     placeholder="بحث سريع برقم الفاتورة أو العميل..." class="p-inputtext-sm w-full" />
             </span>
         </div>
-        
+
         <p-table #dt [value]="returns" [rows]="15" [paginator]="true" [loading]="loading"
-            [globalFilterFields]="['id', 'customerName', 'saleInvoiceId']" 
-            styleClass="p-datatable-sm compact-table"
-            responsiveLayout="scroll" 
-            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
+            [globalFilterFields]="['id', 'customerName', 'saleInvoiceId']" styleClass="p-datatable-sm compact-table"
+            responsiveLayout="scroll" currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords}"
             [showCurrentPageReport]="true">
 
             <ng-template pTemplate="header">
@@ -109,28 +108,27 @@
                         </span>
                     </td>
                     <td class="text-center">
-                        <p-tag [value]="ret.statusName || getStatusLabel(ret.status)" 
-                            [severity]="getStatusSeverity(ret.status)" 
-                            styleClass="text-xs font-bold shadow-1"></p-tag>
+                        <p-tag [value]="ret.statusName || getStatusLabel(ret.status)"
+                            [severity]="getStatusSeverity(ret.status)" styleClass="text-xs font-bold shadow-1"></p-tag>
                     </td>
                     <td class="text-center no-print">
                         <div class="actions justify-content-center">
                             <!-- DRAFT STATUS -->
                             <ng-container *ngIf="ret.status === 'Draft' || ret.status === 1">
-                                <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success" size="small"
-                                    pTooltip="اعتماد" (onClick)="approveReturn(ret.id)"></p-button>
-                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary" size="small"
-                                    pTooltip="تعديل" (onClick)="viewDetails(ret.id)"></p-button>
-                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
-                                    pTooltip="حذف" (onClick)="deleteReturn(ret.id)"></p-button>
+                                <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
+                                    size="small" pTooltip="اعتماد" (onClick)="approveReturn(ret.id)"></p-button>
+                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
+                                    size="small" pTooltip="تعديل" (onClick)="viewDetails(ret.id)"></p-button>
+                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                    size="small" pTooltip="حذف" (onClick)="deleteReturn(ret.id)"></p-button>
                             </ng-container>
 
                             <!-- APPROVED STATUS -->
                             <ng-container *ngIf="ret.status === 'Approved' || ret.status === 2">
                                 <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
                                     pTooltip="عرض" (onClick)="viewDetails(ret.id)"></p-button>
-                                <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary" size="small"
-                                    pTooltip="طباعة"></p-button>
+                                <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary"
+                                    size="small" pTooltip="طباعة"></p-button>
                             </ng-container>
                         </div>
                     </td>

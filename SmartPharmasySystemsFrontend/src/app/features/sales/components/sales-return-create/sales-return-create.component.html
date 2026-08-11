@@ -16,8 +16,8 @@
             <label>البحث عن الفاتورة الأصلية <span class="text-red-500">*</span></label>
             <p-autoComplete [(ngModel)]="invoiceSearchQuery" [suggestions]="filteredInvoices"
                 (completeMethod)="searchInvoice($event)" (onSelect)="onInvoiceSelect($event.value)"
-                field="saleInvoiceNumber" placeholder="ادخل رقم الفاتورة أو اسم العميل..."
-                styleClass="custom-p-input" appendTo="body">
+                field="saleInvoiceNumber" placeholder="ادخل رقم الفاتورة أو اسم العميل..." styleClass="custom-p-input"
+                appendTo="body">
                 <ng-template let-invoice pTemplate="item">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                         <div>
@@ -25,8 +25,10 @@
                             <div style="font-size: 11px; color: #64748b;">{{ invoice.customerName }}</div>
                         </div>
                         <div style="text-align: left;">
-                            <div style="font-weight: bold; color: #0d9488;">{{ invoice.totalAmount | number:'1.2-2' }} ر.ي</div>
-                            <div style="font-size: 11px; color: #94a3b8;">{{ invoice.invoiceDate | date:'dd/MM/yyyy' }}</div>
+                            <div style="font-weight: bold; color: #0d9488;">{{ invoice.totalAmount | number:'1.2-2' }}
+                                ر.ي</div>
+                            <div style="font-size: 11px; color: #94a3b8;">{{ invoice.invoiceDate | date:'dd/MM/yyyy' }}
+                            </div>
                         </div>
                     </div>
                 </ng-template>
@@ -40,7 +42,8 @@
 
         <div class="input-group" *ngIf="selectedInvoice">
             <label>العميل</label>
-            <input pInputText [value]="selectedInvoice.customerName || 'عميل نقدي'" class="custom-native-input" readonly />
+            <input pInputText [value]="selectedInvoice.customerName || 'عميل نقدي'" class="custom-native-input"
+                readonly />
         </div>
 
         <div class="input-group">
@@ -75,12 +78,15 @@
                     </td>
                     <td style="text-align: center;">{{ item.originalQuantity }}</td>
                     <td style="text-align: center;">
-                        <span style="font-weight: 700; color: #0d9488; background: #ccfbf1; padding: 2px 6px; border-radius: 4px;">{{ item.remainingQtyToReturn }}</span>
+                        <span
+                            style="font-weight: 700; color: #0d9488; background: #ccfbf1; padding: 2px 6px; border-radius: 4px;">{{
+                            item.remainingQtyToReturn }}</span>
                     </td>
                     <td style="text-align: center;" (click)="$event.stopPropagation()">
-                        <p-inputNumber [(ngModel)]="item.returnQuantity" (ngModelChange)="calculateReturnAmount(item)" 
+                        <p-inputNumber [(ngModel)]="item.returnQuantity" (ngModelChange)="calculateReturnAmount(item)"
                             [min]="0" [max]="item.remainingQtyToReturn" [showButtons]="false"
-                            inputStyleClass="text-center font-bold text-red-600" styleClass="custom-p-input" [style]="{width: '100px', margin: '0 auto'}"></p-inputNumber>
+                            inputStyleClass="text-center font-bold text-red-600" styleClass="custom-p-input"
+                            [style]="{width: '100px', margin: '0 auto'}"></p-inputNumber>
                     </td>
                     <td style="text-align: left; font-weight: 700; color: #dc2626;">
                         {{ item.totalReturnAmount | number:'1.2-2' }}
@@ -88,7 +94,8 @@
                 </tr>
             </ng-template>
         </p-table>
-        <div style="padding: 12px; background: #fff5f5; border-top: 1px solid #fee2e2; color: #991b1b; font-size: 12px;" *ngIf="hasExceededQuantity">
+        <div style="padding: 12px; background: #fff5f5; border-top: 1px solid #fee2e2; color: #991b1b; font-size: 12px;"
+            *ngIf="hasExceededQuantity">
             <i class="pi pi-exclamation-triangle"></i> تـنبيه: بعض الكميات المدخلة تتجاوز المتاح للإرجاع.
         </div>
     </div>
@@ -102,14 +109,17 @@
     <div class="footer">
         <div class="footer-stats">
             <span class="stat-badge stat-total" style="background: #fff5f5; color: #991b1b; border-color: #fecaca;">
-                إجمالي قيمة المردود: <span class="stat-number" style="color: #7f1d1d;">{{ totalReturnAmount() | number : '1.2-2' }} ر.ي</span>
+                إجمالي قيمة المردود: <span class="stat-number" style="color: #7f1d1d;">{{ totalReturnAmount() | number :
+                    '1.2-2' }} ر.ي</span>
             </span>
         </div>
         <div class="footer-actions">
             <button type="button" class="btn btn-outline" (click)="saveDraft()" [disabled]="saving || !selectedInvoice">
                 <i class="pi pi-save"></i> حفظ مسودة
             </button>
-            <button type="button" class="btn btn-primary" style="background: linear-gradient(180deg, #f87171 0%, #ef4444 100%); border-color: #dc2626; color: white;" (click)="approveReturn()"
+            <button type="button" class="btn btn-primary"
+                style="background: linear-gradient(180deg, #f87171 0%, #ef4444 100%); border-color: #dc2626; color: white;"
+                (click)="approveReturn()"
                 [disabled]="saving || !selectedInvoice || hasExceededQuantity || totalReturnAmount() === 0">
                 <i class="pi pi-check"></i> اعتماد المرتجع
             </button>

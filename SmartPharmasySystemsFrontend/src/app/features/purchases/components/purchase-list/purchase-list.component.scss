@@ -43,7 +43,9 @@
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
 }
 
-.icon-circle i { font-size: 1rem; }
+.icon-circle i {
+  font-size: 1rem;
+}
 
 h1 {
   margin: 0;
@@ -59,7 +61,11 @@ h1 {
   font-size: 0.65rem;
 }
 
-.actions { display: flex; gap: 0.35rem; align-items: center; }
+.actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+}
 
 .kpi-grid {
   display: grid;
@@ -84,10 +90,21 @@ h1 {
   height: 100%;
 }
 
-.kpi-card.sales::before { background: var(--primary-color); }
-.kpi-card.profit::before { background: #10b981; }
-.kpi-card.debts::before { background: #3b82f6; }
-.kpi-card.returns::before { background: #ef4444; }
+.kpi-card.sales::before {
+  background: var(--primary-color);
+}
+
+.kpi-card.profit::before {
+  background: #10b981;
+}
+
+.kpi-card.debts::before {
+  background: #3b82f6;
+}
+
+.kpi-card.returns::before {
+  background: #ef4444;
+}
 
 .kpi-label {
   display: block;
@@ -103,12 +120,26 @@ h1 {
   line-height: 1.2;
 }
 
-.kpi-card.sales strong { color: var(--primary-600); }
-.kpi-card.profit strong { color: #10b981; }
-.kpi-card.debts strong { color: #3b82f6; }
-.kpi-card.returns strong { color: #dc2626; }
+.kpi-card.sales strong {
+  color: var(--primary-600);
+}
 
-.kpi-card small { color: #94a3b8; font-size: 0.6rem; }
+.kpi-card.profit strong {
+  color: #10b981;
+}
+
+.kpi-card.debts strong {
+  color: #3b82f6;
+}
+
+.kpi-card.returns strong {
+  color: #dc2626;
+}
+
+.kpi-card small {
+  color: #94a3b8;
+  font-size: 0.6rem;
+}
 
 .charts-grid {
   display: grid;
@@ -135,7 +166,10 @@ h1 {
   color: #0f172a;
 }
 
-.panel-head i { color: #2563eb; font-size: 1rem; }
+.panel-head i {
+  color: #2563eb;
+  font-size: 1rem;
+}
 
 .filters-panel {
   display: grid;
@@ -174,11 +208,30 @@ h1 {
   white-space: nowrap;
 }
 
-.type-green { background: #dcfce7; color: #15803d; }
-.type-blue { background: #dbeafe; color: #1d4ed8; }
-.type-amber { background: #fef3c7; color: #b45309; }
-.type-red { background: #fee2e2; color: #b91c1c; }
-.type-gray { background: #f1f5f9; color: #475569; }
+.type-green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.type-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.type-amber {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.type-red {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.type-gray {
+  background: #f1f5f9;
+  color: #475569;
+}
 
 .date-main,
 .medicine-name,
@@ -188,24 +241,61 @@ h1 {
   font-size: 0.7rem;
 }
 
-.date-main { color: #0f766e; font-weight: 800; }
-.date-time { color: #64748b; font-size: 0.68rem; }
-.medicine-name { color: #1d4ed8; }
-.user-name { color: #7c3aed; }
-.ref-number { color: #0f172a; font-family: Consolas, monospace; }
-.ref-type { color: #f97316; font-size: 0.68rem; font-weight: 700; }
-.muted { display: block; color: #94a3b8; font-size: 0.66rem; margin-top: 0.1rem; }
-.text-center { text-align: center; }
+.date-main {
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.date-time {
+  color: #64748b;
+  font-size: 0.68rem;
+}
+
+.medicine-name {
+  color: #1d4ed8;
+}
+
+.user-name {
+  color: #7c3aed;
+}
+
+.ref-number {
+  color: #0f172a;
+  font-family: Consolas, monospace;
+}
+
+.ref-type {
+  color: #f97316;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.muted {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.66rem;
+  margin-top: 0.1rem;
+}
+
+.text-center {
+  text-align: center;
+}
 
 .empty-message {
   text-align: center;
   padding: 2rem !important;
   color: #64748b;
 }
-.empty-message i { display: block; font-size: 2rem; color: #cbd5e1; margin-bottom: 0.4rem; }
+
+.empty-message i {
+  display: block;
+  font-size: 2rem;
+  color: #cbd5e1;
+  margin-bottom: 0.4rem;
+}
 
 :host ::ng-deep {
-  .compact-table .p-datatable-thead > tr > th {
+  .compact-table .p-datatable-thead>tr>th {
     background: #f8fafc;
     color: #475569;
     font-size: 0.65rem;
@@ -214,13 +304,13 @@ h1 {
     border-bottom: 1px solid #e2e8f0;
   }
 
-  .compact-table .p-datatable-tbody > tr > td {
+  .compact-table .p-datatable-tbody>tr>td {
     padding: 0.3rem 0.5rem;
     border-color: #eef2f7;
     vertical-align: middle;
   }
 
-  .compact-table .p-datatable-tbody > tr:hover {
+  .compact-table .p-datatable-tbody>tr:hover {
     background: #f8fafc !important;
   }
 
@@ -248,10 +338,19 @@ h1 {
 }
 
 @media print {
-  .no-print { display: none !important; }
-  .sales-container { background: white; padding: 0; }
+  .no-print {
+    display: none !important;
+  }
+
+  .sales-container {
+    background: white;
+    padding: 0;
+  }
+
   .page-header,
   .panel,
   .table-panel,
-  .kpi-card { box-shadow: none; }
+  .kpi-card {
+    box-shadow: none;
+  }
 }

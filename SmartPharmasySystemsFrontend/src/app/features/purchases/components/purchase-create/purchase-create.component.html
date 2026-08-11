@@ -28,8 +28,8 @@
 
             <div class="input-group">
                 <label>طريقة الدفع <span class="text-red-500">*</span></label>
-                <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" optionLabel="label" optionValue="value"
-                    placeholder="اختر طريقة الدفع..." [disabled]="isReadOnly" appendTo="body"
+                <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" optionLabel="label"
+                    optionValue="value" placeholder="اختر طريقة الدفع..." [disabled]="isReadOnly" appendTo="body"
                     styleClass="custom-p-input"></p-dropdown>
             </div>
 
@@ -81,8 +81,8 @@
             </div>
             <div class="input-group">
                 <label>تاريخ الانتهاء <span class="text-red-500">*</span></label>
-                <p-calendar formControlName="expiryDate" dateFormat="dd/mm/yy" appendTo="body"
-                    placeholder="DD/MM/YY" [showIcon]="false" styleClass="custom-p-input"></p-calendar>
+                <p-calendar formControlName="expiryDate" dateFormat="dd/mm/yy" appendTo="body" placeholder="DD/MM/YY"
+                    [showIcon]="false" styleClass="custom-p-input"></p-calendar>
             </div>
             <div class="input-group">
                 <label>الكمية <span class="text-red-500">*</span></label>

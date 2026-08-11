@@ -6,7 +6,8 @@
   <ng-container *ngIf="!loading && invoice">
     <div class="page-header">
       <div class="title-wrap">
-        <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" (onClick)="backToList()"></p-button>
+        <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary"
+          (onClick)="backToList()"></p-button>
         <div class="icon-circle bg-gradient-purchase">
           <i class="pi pi-shopping-cart"></i>
         </div>
@@ -15,14 +16,19 @@
           <p>رقم الفاتورة: {{ invoice.purchaseInvoiceNumber || '#' + invoice.id }}</p>
         </div>
       </div>
-      
+
       <div class="actions no-print">
-        <p-tag [severity]="getStatusSeverity(invoice.status)" [value]="getStatusLabel(invoice.status)" styleClass="mr-2 px-3 py-2 text-sm shadow-1"></p-tag>
+        <p-tag [severity]="getStatusSeverity(invoice.status)" [value]="getStatusLabel(invoice.status)"
+          styleClass="mr-2 px-3 py-2 text-sm shadow-1"></p-tag>
         <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" size="small"></p-button>
-        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="اعتماد" icon="pi pi-check" severity="success" size="small" (onClick)="approveInvoice()"></p-button>
-        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="تعديل" icon="pi pi-pencil" severity="warning" [outlined]="true" size="small" (onClick)="editInvoice()"></p-button>
-        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="حذف" icon="pi pi-trash" severity="danger" [outlined]="true" size="small" (onClick)="deleteInvoice()"></p-button>
-        <p-button *ngIf="invoice.status === DocumentStatus.Approved" label="إرجاع أصناف" icon="pi pi-replay" severity="warning" size="small" (onClick)="returnItems()"></p-button>
+        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="اعتماد" icon="pi pi-check" severity="success"
+          size="small" (onClick)="approveInvoice()"></p-button>
+        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="تعديل" icon="pi pi-pencil" severity="warning"
+          [outlined]="true" size="small" (onClick)="editInvoice()"></p-button>
+        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="حذف" icon="pi pi-trash" severity="danger"
+          [outlined]="true" size="small" (onClick)="deleteInvoice()"></p-button>
+        <p-button *ngIf="invoice.status === DocumentStatus.Approved" label="إرجاع أصناف" icon="pi pi-replay"
+          severity="warning" size="small" (onClick)="returnItems()"></p-button>
       </div>
     </div>
 
@@ -70,7 +76,8 @@
         <ng-template pTemplate="body" let-item let-expanded="expanded">
           <tr>
             <td>
-              <p-button [pRowToggler]="item" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-left'" [rounded]="true" [text]="true" severity="secondary"></p-button>
+              <p-button [pRowToggler]="item" [icon]="expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-left'"
+                [rounded]="true" [text]="true" severity="secondary"></p-button>
             </td>
             <td>
               <strong class="text-teal-700">{{ item.medicineName }}</strong>
@@ -84,7 +91,8 @@
               </span>
             </td>
             <td class="text-center">
-              <span class="qty-pill">{{ item.quantityInPurchaseUnit > 0 ? item.quantityInPurchaseUnit : item.quantity }}</span>
+              <span class="qty-pill">{{ item.quantityInPurchaseUnit > 0 ? item.quantityInPurchaseUnit : item.quantity
+                }}</span>
               <div class="text-xs text-500 mt-1">{{ item.unitName }}</div>
             </td>
             <td class="text-center">

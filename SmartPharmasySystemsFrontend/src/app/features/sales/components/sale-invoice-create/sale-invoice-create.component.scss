@@ -721,4 +721,115 @@
             }
         }
     }
+
+    /* =========================================
+       RESPONSIVE DESIGN (MOBILE & TABLET OVERRIDES)
+       ========================================= */
+    @media (max-width: 992px) {
+        .card {
+            padding: 10px !important;
+            gap: 10px !important;
+        }
+
+        .grid-container {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+        }
+
+        .grid-container-items {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+        }
+
+        .grid-container {
+            grid-template-columns: 1fr !important;
+            gap: 6px !important;
+        }
+
+        .grid-container-items {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+        }
+
+        .btn-add {
+            grid-column: span 2 !important;
+            width: 100% !important;
+            margin-top: 4px !important;
+        }
+
+        .custom-native-input,
+        .custom-p-input>.p-inputtext,
+        .custom-p-input.p-dropdown,
+        .custom-p-input .p-inputtext,
+        .custom-p-input.p-calendar .p-inputtext {
+            height: 30px !important;
+            font-size: 11px !important;
+            padding: 0 6px !important;
+        }
+
+        /* تصغير حجم نصوص وجداول البيع بالجوال */
+        .custom-p-table {
+            table {
+                font-size: 11px !important;
+            }
+            .p-datatable-thead>tr>th {
+                padding: 4px 6px !important;
+                font-size: 9px !important;
+            }
+            .p-datatable-tbody>tr>td {
+                padding: 6px 6px !important;
+            }
+        }
+
+        .footer {
+            flex-direction: column-reverse !important;
+            align-items: stretch !important;
+            gap: 10px !important;
+        }
+
+        .footer-actions {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+        }
+
+        .footer-actions .btn {
+            width: 100% !important;
+            height: 30px !important;
+            font-size: 11px !important;
+            padding: 0 !important;
+        }
+
+        .footer-stats {
+            flex-direction: column !important;
+            gap: 4px !important;
+            width: 100% !important;
+        }
+
+        .stat-badge {
+            width: 100% !important;
+            justify-content: space-between !important;
+            padding: 4px 8px !important;
+            font-size: 10px !important;
+        }
+
+        .stat-total .stat-number {
+            font-size: 12px !important;
+        }
+
+        .flying-toggle-container {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 6px !important;
+            padding: 6px !important;
+        }
+    }
 }

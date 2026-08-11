@@ -354,3 +354,82 @@ h1 {
     box-shadow: none;
   }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE & TABLET OVERRIDES)
+   ========================================= */
+@media (max-width: 768px) {
+  .sales-container {
+    padding: 0.3rem !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+    padding: 0.4rem 0.6rem !important;
+  }
+
+  .page-header .actions {
+    width: 100% !important;
+    justify-content: flex-end !important;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.3rem !important;
+  }
+
+  .kpi-card {
+    padding: 0.4rem !important;
+  }
+
+  .kpi-card strong {
+    font-size: 0.85rem !important;
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.4rem !important;
+  }
+
+  .filters-panel {
+    grid-template-columns: 1fr !important;
+    gap: 0.4rem !important;
+    padding: 0.4rem !important;
+  }
+
+  .filters-panel button {
+    width: 100% !important;
+  }
+
+  /* تصغير حجم نصوص الجدول لحجم شاشات الجوال */
+  :host ::ng-deep {
+    .compact-table .p-datatable-thead > tr > th {
+      font-size: 0.58rem !important;
+      padding: 0.3rem 0.4rem !important;
+    }
+    .compact-table .p-datatable-tbody > tr > td {
+      font-size: 0.58rem !important;
+      padding: 0.25rem 0.4rem !important;
+    }
+    .p-paginator {
+      font-size: 0.58rem !important;
+      padding: 0.2rem !important;
+    }
+  }
+
+  .date-main, .medicine-name, .user-name, .ref-number {
+    font-size: 0.62rem !important;
+  }
+
+  .date-time, .ref-type, .muted {
+    font-size: 0.58rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

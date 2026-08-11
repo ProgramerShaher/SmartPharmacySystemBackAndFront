@@ -976,3 +976,158 @@ body {
 }
 
 @import "styles/premium-layout";
+
+/* ==========================================================================
+   GLOBAL RESPONSIVE OVERRIDES (SALES, PURCHASES & COMMON LAYOUTS)
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* 1. Global Page Header responsiveness */
+    .page-header, .inventory-hero {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+    
+    .page-header .actions, .inventory-actions {
+        width: 100% !important;
+        justify-content: flex-end !important;
+    }
+    
+    .inventory-actions button, .inventory-actions .p-button {
+        width: 100% !important;
+    }
+
+    /* 2. KPI Grids */
+    .kpi-grid, .inventory-stats {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.35rem !important;
+    }
+
+    .kpi-card, .inventory-stat-card {
+        padding: 0.45rem !important;
+    }
+
+    .kpi-card strong, .inventory-stat-card strong {
+        font-size: 0.85rem !important;
+    }
+
+    /* 3. Charts and Filters Grids */
+    .charts-grid, .charts-row {
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem !important;
+    }
+
+    .filters-panel, .inventory-filter-panel {
+        grid-template-columns: 1fr !important;
+        gap: 0.4rem !important;
+        padding: 0.4rem !important;
+    }
+
+    .filter-field, .inventory-filter, .inventory-filter.wide, .inventory-filter.small {
+        grid-column: span 12 !important;
+    }
+
+    /* 4. Details / Create forms Grid container */
+    .grid-container {
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
+    }
+
+    .grid-container-items {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    .btn-add {
+        grid-column: span 2 !important;
+        width: 100% !important;
+    }
+
+    /* 5. Inputs and PrimeNG components */
+    .p-inputtext,
+    .p-dropdown,
+    .p-calendar .p-inputtext,
+    .custom-native-input,
+    .custom-p-input>.p-inputtext,
+    .custom-p-input.p-dropdown,
+    .custom-p-input .p-inputtext,
+    .custom-p-input.p-calendar .p-inputtext {
+        height: 32px !important;
+        min-height: 32px !important;
+        font-size: 11px !important;
+        padding: 0.3rem 0.5rem !important;
+        border-radius: 6px !important;
+    }
+
+    .p-dropdown .p-dropdown-label {
+        padding: 0.3rem 0.5rem !important;
+        line-height: 24px !important;
+    }
+
+    /* 6. Tables and Paginators compact design */
+    ::ng-deep {
+        .compact-table, .custom-p-table, .inventory-table {
+            table {
+                font-size: 11px !important;
+            }
+            .p-datatable-thead > tr > th {
+                font-size: 9px !important;
+                padding: 6px 8px !important;
+            }
+            .p-datatable-tbody > tr > td {
+                font-size: 9px !important;
+                padding: 8px 8px !important;
+            }
+        }
+        .p-paginator {
+            font-size: 10px !important;
+            padding: 0.2rem !important;
+        }
+    }
+
+    /* 7. Footer design */
+    .footer {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 12px !important;
+    }
+
+    .footer-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    .footer-actions .btn, .footer-actions button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 11px !important;
+        padding: 0 !important;
+    }
+
+    .footer-stats {
+        flex-direction: column !important;
+        gap: 6px !important;
+        width: 100% !important;
+    }
+
+    .stat-badge {
+        width: 100% !important;
+        justify-content: space-between !important;
+        padding: 4px 10px !important;
+        font-size: 11px !important;
+    }
+
+    .stat-total .stat-number {
+        font-size: 13px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .kpi-grid, .inventory-stats {
+        grid-template-columns: 1fr !important;
+    }
+}

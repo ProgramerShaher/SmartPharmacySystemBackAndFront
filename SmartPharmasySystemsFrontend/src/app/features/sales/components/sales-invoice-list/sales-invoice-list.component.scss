@@ -403,28 +403,59 @@ h1 {
     width: 100% !important;
   }
 
-  /* تصغير حجم نصوص الجدول لحجم شاشات الجوال */
+  /* تحويل جدول قائمة الفواتير إلى كروت على الهاتف الذكي */
   :host ::ng-deep {
-    .compact-table .p-datatable-thead > tr > th {
-      font-size: 0.58rem !important;
-      padding: 0.3rem 0.4rem !important;
-    }
-    .compact-table .p-datatable-tbody > tr > td {
-      font-size: 0.58rem !important;
-      padding: 0.25rem 0.4rem !important;
-    }
-    .p-paginator {
-      font-size: 0.58rem !important;
-      padding: 0.2rem !important;
+    .compact-table {
+      table, thead, tbody, th, td, tr {
+        display: block !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+      }
+      thead {
+        display: none !important;
+      }
+      tr {
+        margin-bottom: 8px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        padding: 8px !important;
+        background: #ffffff !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+      }
+      td {
+        border-bottom: none !important;
+        padding: 4px 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        font-size: 11px !important;
+
+        &:nth-child(1):before { content: "رقم الفاتورة:"; font-weight: 700; color: #64748b; }
+        &:nth-child(2):before { content: "التاريخ:"; font-weight: 700; color: #64748b; }
+        &:nth-child(3):before { content: "العميل:"; font-weight: 700; color: #64748b; }
+        &:nth-child(4):before { content: "الإجمالي:"; font-weight: 700; color: #64748b; }
+        &:nth-child(5):before { content: "الربح:"; font-weight: 700; color: #64748b; }
+        &:nth-child(6):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+        &:nth-child(7) {
+          justify-content: flex-end !important;
+          margin-top: 6px !important;
+          border-top: 1px dashed #e2e8f0 !important;
+          padding-top: 6px !important;
+        }
+      }
+      .p-paginator {
+        font-size: 10px !important;
+        padding: 0.2rem !important;
+      }
     }
   }
 
   .date-main, .medicine-name, .user-name, .ref-number {
-    font-size: 0.62rem !important;
+    font-size: 0.65rem !important;
   }
 
   .date-time, .ref-type, .muted {
-    font-size: 0.58rem !important;
+    font-size: 0.6rem !important;
   }
 }
 
@@ -433,3 +464,4 @@ h1 {
     grid-template-columns: 1fr !important;
   }
 }
+

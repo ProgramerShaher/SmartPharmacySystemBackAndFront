@@ -492,3 +492,148 @@
     }
 }
 
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP MODAL OVERRIDES)
+   ========================================= */
+@media (max-width: 768px) {
+    :host ::ng-deep {
+        .medicine-dialog {
+            width: 96vw !important;
+            max-width: 96vw !important;
+            margin: 0 auto !important;
+            border-radius: 12px !important;
+
+            .p-inputtext,
+            .p-dropdown,
+            .p-inputnumber-input,
+            .p-calendar input {
+                height: 32px !important;
+                min-height: 32px !important;
+                font-size: 11px !important;
+                padding: 0 8px !important;
+            }
+
+            .p-dropdown-label {
+                font-size: 11px !important;
+                line-height: 32px !important;
+            }
+        }
+    }
+
+    .modal-shell {
+        border-radius: 12px !important;
+    }
+
+    .modal-header {
+        padding: 8px 12px !important;
+
+        .modal-title {
+            h2 {
+                font-size: 14px !important;
+            }
+            p {
+                font-size: 10px !important;
+            }
+        }
+
+        .modal-icon {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 12px !important;
+            border-radius: 8px !important;
+        }
+    }
+
+    .modal-body {
+        padding: 8px !important;
+        gap: 8px !important;
+    }
+
+    .media-panel {
+        padding: 6px !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+
+        .image-frame {
+            width: 64px !important;
+            height: 64px !important;
+            border-radius: 8px !important;
+        }
+
+        .side-note {
+            font-size: 10px !important;
+            padding: 4px 6px !important;
+        }
+    }
+
+    .fields-panel {
+        padding: 8px !important;
+        border-radius: 8px !important;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr !important;
+        gap: 6px !important;
+    }
+
+    .form-grid.compact {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+
+    .form-field label {
+        font-size: 10px !important;
+        margin-bottom: 2px !important;
+    }
+
+    .amount-group {
+        .currency-badge {
+            height: 32px !important;
+            padding: 0 6px !important;
+            font-size: 10px !important;
+        }
+    }
+
+    .medicine-units-section {
+        padding: 8px !important;
+        border-radius: 8px !important;
+
+        .unit-card {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+            padding: 6px !important;
+            border-radius: 8px !important;
+
+            .barcode-field {
+                grid-column: span 2 !important;
+            }
+        }
+    }
+
+    .modal-footer {
+        flex-direction: column !important;
+        padding: 8px !important;
+        gap: 6px !important;
+
+        span {
+            font-size: 10px !important;
+        }
+
+        .footer-actions {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+            width: 100% !important;
+
+            button {
+                width: 100% !important;
+                height: 32px !important;
+                font-size: 11px !important;
+            }
+        }
+    }
+}
+

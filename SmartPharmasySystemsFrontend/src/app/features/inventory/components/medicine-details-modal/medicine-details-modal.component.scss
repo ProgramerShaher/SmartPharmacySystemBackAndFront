@@ -197,3 +197,112 @@
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (MOBILE APP MODAL OVERRIDES)
+   ========================================= */
+@media (max-width: 768px) {
+    :host ::ng-deep {
+        .imperial-modal {
+            width: 96vw !important;
+            max-width: 96vw !important;
+            margin: 0 auto !important;
+            border-radius: 12px !important;
+        }
+    }
+
+    .statement-container {
+        padding: 6px !important;
+    }
+
+    .imperial-header-bar {
+        padding: 8px 10px !important;
+        border-radius: 8px !important;
+        gap: 8px !important;
+        margin-bottom: 8px !important;
+
+        .header-icon-badge {
+            width: 34px !important;
+            height: 34px !important;
+            font-size: 16px !important;
+            border-radius: 8px !important;
+        }
+
+        .header-titles {
+            .main-title {
+                font-size: 14px !important;
+            }
+            .sub-title {
+                font-size: 10px !important;
+            }
+        }
+    }
+
+    .summary-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .statement-stat-card {
+        padding: 6px 8px !important;
+        border-radius: 8px !important;
+        gap: 6px !important;
+
+        .stat-icon-wrapper {
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 14px !important;
+            border-radius: 6px !important;
+        }
+
+        .stat-label {
+            font-size: 9px !important;
+        }
+
+        .stat-value {
+            font-size: 13px !important;
+        }
+    }
+
+    .section-header {
+        font-size: 12px !important;
+        margin-top: 10px !important;
+        margin-bottom: 6px !important;
+    }
+
+    .ledger-card-wrapper {
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    /* تحويل جدول تفاصيل الدواء إلى كروت للموبايل */
+    ::ng-deep .imperial-statement-table {
+        table, thead, tbody, th, td, tr {
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        thead {
+            display: none !important;
+        }
+        tr {
+            margin-bottom: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        }
+        td {
+            border-bottom: none !important;
+            padding: 4px 0 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            font-size: 11px !important;
+        }
+    }
+}

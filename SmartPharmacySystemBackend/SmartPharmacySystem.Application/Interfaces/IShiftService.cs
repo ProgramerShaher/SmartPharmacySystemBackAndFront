@@ -10,4 +10,6 @@ public interface IShiftService
     Task<ApiResponse<IEnumerable<ShiftDto>>> GetAllShiftsAsync();
     Task<ApiResponse<ShiftDto>> OpenShiftAsync(OpenShiftDto request);
     Task<ApiResponse<ShiftDto>> CloseShiftAsync(CloseShiftDto request);
+    Task<ApiResponse<ShiftSummaryDto>> GetShiftSummaryAsync(int shiftId);
+    Task<ApiResponse<ShiftDetailsDto>> GetShiftDetailsAsync(int shiftId);
 }

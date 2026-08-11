@@ -59,6 +59,34 @@
             </div>
         </div>
 
+        <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <div style="flex: 1;">
+                <label class="dialog-label">الوردية <span class="text-danger">*</span></label>
+                <p-dropdown [options]="shiftOptions" [(ngModel)]="model.shift" optionLabel="label" optionValue="value"
+                    placeholder="اختر الوردية" [class.ng-invalid]="hasError('shift')" appendTo="body"></p-dropdown>
+                <small *ngIf="hasError('shift')" class="text-danger" style="font-size: 0.55rem;">{{ errors['shift'] }}</small>
+            </div>
+            <div style="flex: 1;">
+                <label class="dialog-label">ساعات العمل <span class="text-danger">*</span></label>
+                <p-inputNumber [(ngModel)]="model.workingHours" [min]="1" [max]="24" [maxFractionDigits]="1"
+                    placeholder="8" [class.ng-invalid]="hasError('workingHours')"></p-inputNumber>
+                <small *ngIf="hasError('workingHours')" class="text-danger" style="font-size: 0.55rem;">{{ errors['workingHours'] }}</small>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: flex-end;">
+            <div style="flex: 1;">
+                <label class="dialog-label">وقت البدء (اختياري)</label>
+                <p-calendar [(ngModel)]="model.shiftStartTime" [timeOnly]="true" hourFormat="12" [showIcon]="true" 
+                    icon="pi pi-clock" placeholder="وقت البدء" appendTo="body"></p-calendar>
+            </div>
+            <div style="flex: 1;">
+                <label class="dialog-label">وقت الانتهاء (اختياري)</label>
+                <p-calendar [(ngModel)]="model.shiftEndTime" [timeOnly]="true" hourFormat="12" [showIcon]="true" 
+                    icon="pi pi-clock" placeholder="وقت الانتهاء" appendTo="body"></p-calendar>
+            </div>
+        </div>
+
         <div style="display: flex; gap: 0.5rem; margin-top: 0.25rem;">
             <div style="flex: 1;">
                 <label class="dialog-label">ربط بمستخدم نظام (اختياري)</label>

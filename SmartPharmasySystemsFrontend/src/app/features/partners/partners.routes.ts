@@ -26,8 +26,7 @@ export const PARTNERS_ROUTES: Routes = [
     },
     {
         path: 'suppliers/payments',
-        redirectTo: 'suppliers',
-        pathMatch: 'full'
+        loadComponent: () => import('./components/supplier-payments/supplier-payments.component').then(m => m.SupplierPaymentsComponent)
     },
     {
         path: 'suppliers/statement/:id',

@@ -17,4 +17,6 @@ public interface IMonthlySalaryService
     Task<decimal> GetTotalPayrollAsync(int month, int year, int? branchId = null);
     Task<PayrollSummaryDto> GetPayrollSummaryAsync(int month, int year, int? branchId = null);
     Task<bool> ExistsAsync(int employeeId, int month, int year);
+    Task<MonthlySalaryDto> PaySalaryAsync(int id);
+    Task<int> PayAllAsync(int month, int year, int? branchId = null);
 }

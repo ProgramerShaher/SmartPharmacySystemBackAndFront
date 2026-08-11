@@ -74,7 +74,11 @@ export class ShiftModalComponent implements OnInit {
         next: (res) => {
           this.loading = false;
           if (res.success) {
-            this.messageService.add({ severity: 'success', summary: 'تم بنجاح', detail: 'تم إغلاق الوردية بنجاح' });
+            let diffMsg = 'الرصيد مطابق';
+            if (res.data.difference > 0) diffMsg = `يوجد زيادة بمقدار ${res.data.difference}`;
+            else if (res.data.difference < 0) diffMsg = `يوجد عجز بمقدار ${Math.abs(res.data.difference)}`;
+
+            this.messageService.add({ severity: 'success', summary: 'تم إغلاق الوردية', detail: diffMsg });
             this.shiftProcessed.emit(res.data);
             this.visible = false;
           } else {

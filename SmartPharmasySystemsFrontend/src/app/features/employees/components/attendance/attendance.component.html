@@ -1,0 +1,126 @@
+<div class="emp-wrap animate-fade-in" dir="rtl">
+  <!-- ===== Premium Header ===== -->
+  <div class="emp-header">
+    <div class="emp-header-start">
+      <div class="emp-icon">
+        <i class="pi pi-calendar-clock"></i>
+      </div>
+      <div>
+        <h1 class="emp-title">سجل الحضور والانصراف</h1>
+        <p class="emp-subtitle">إدارة ومتابعة دوام الموظفين اليومي</p>
+      </div>
+    </div>
+    <div class="emp-header-end no-print" style="display: flex; gap: 1rem; align-items: center;">
+      <p-dropdown [options]="branches" [(ngModel)]="selectedBranch" optionLabel="name" optionValue="id" (onChange)="loadData()" placeholder="اختر الفرع"></p-dropdown>
+      <p-calendar [(ngModel)]="filterDate" [showIcon]="true" dateFormat="yy-mm-dd" (onSelect)="loadData()"></p-calendar>
+    </div>
+  </div>
+
+  <!-- ===== KPI Cards ===== -->
+  <div class="emp-kpi-row" *ngIf="!loading()">
+    <div class="emp-kpi-card" data-color="teal">
+      <div class="emp-kpi-inner">
+        <div class="emp-kpi-left">
+          <span class="emp-kpi-label">إجمالي الموظفين</span>
+          <strong class="emp-kpi-value">{{ stats().total }}</strong>
+        </div>
+        <div class="emp-kpi-badge emp-kpi-badge-teal">
+          <i class="pi pi-users"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="emp-kpi-card" data-color="emerald">
+      <div class="emp-kpi-inner">
+        <div class="emp-kpi-left">
+          <span class="emp-kpi-label">حاضرون اليوم</span>
+          <strong class="emp-kpi-value">{{ stats().present }}</strong>
+        </div>
+        <div class="emp-kpi-badge emp-kpi-badge-emerald">
+          <i class="pi pi-check-circle"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="emp-kpi-card" data-color="ruby">
+      <div class="emp-kpi-inner">
+        <div class="emp-kpi-left">
+          <span class="emp-kpi-label">غائبون اليوم</span>
+          <strong class="emp-kpi-value">{{ stats().absent }}</strong>
+        </div>
+        <div class="emp-kpi-badge emp-kpi-badge-ruby">
+          <i class="pi pi-times-circle"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="emp-table-wrap" *ngIf="loading()" style="padding: 3rem; text-align: center;">
+    <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
+    <p style="color: #64748b; margin-top: 1rem; font-size: 0.85rem; font-weight: 600;">جاري تحميل سجلات الحضور...</p>
+  </div>
+
+  <!-- ===== Table ===== -->
+  <div *ngIf="!loading()" class="emp-table-wrap">
+    <p-table [value]="records()" styleClass="emp-table" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>الكود</th>
+          <th>الاسم</th>
+          <th>القسم</th>
+          <th>الوردية</th>
+          <th>وقت الدخول</th>
+          <th>وقت الخروج</th>
+          <th class="text-center">ساعات العمل</th>
+          <th class="text-center">الحالة</th>
+          <th class="text-center">الإجراءات</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-emp>
+        <tr>
+          <td><span style="font-family: monospace; font-weight: 800; color: #0d9488;">{{ emp.employeeCode }}</span></td>
+          <td><strong style="color: #1e293b; font-size: 0.75rem;">{{ emp.fullName }}</strong></td>
+          <td><span style="color: #64748b; font-size: 0.72rem;">{{ emp.departmentName }}</span></td>
+          <td>
+            <p-tag [value]="getShiftName(emp.shift)" severity="info"></p-tag>
+          </td>
+          <td>{{ emp.checkIn ? (emp.checkIn | date:'shortTime') : '-' }}</td>
+          <td>{{ emp.checkOut ? (emp.checkOut | date:'shortTime') : '-' }}</td>
+          <td class="text-center">
+            <strong>{{ emp.workedHours ? (emp.workedHours | number:'1.0-2') : '-' }}</strong>
+          </td>
+          <td class="text-center">
+            <p-tag [value]="getStatusName(emp.attendanceStatus)" [severity]="getStatusSeverity(emp.attendanceStatus)"></p-tag>
+          </td>
+          <td class="text-center">
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+              <p-button *ngIf="emp.attendanceStatus === AttendanceStatusEnum.Absent" 
+                        icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
+                        pTooltip="تسجيل دخول" tooltipPosition="top" (onClick)="markPresent(emp)"></p-button>
+
+              <p-button *ngIf="emp.attendanceStatus === AttendanceStatusEnum.Present && !emp.checkOut" 
+                        icon="pi pi-sign-out" [rounded]="true" [text]="true" severity="warning"
+                        pTooltip="تسجيل خروج" tooltipPosition="top" (onClick)="markCheckout(emp)"></p-button>
+
+              <p-button *ngIf="emp.attendanceStatus === AttendanceStatusEnum.Present" 
+                        icon="pi pi-times" [rounded]="true" [text]="true" severity="danger"
+                        pTooltip="تسجيل غياب" tooltipPosition="top" (onClick)="markAbsent(emp)"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptydata">
+        <tr>
+          <td colspan="9" class="emp-empty">
+            <i class="pi pi-folder-open"></i>
+            <span>لا يوجد سجلات حضور</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-confirmDialog acceptLabel="نعم" rejectLabel="إلغاء" styleClass="user-dialog"></p-confirmDialog>
+<p-toast position="top-center"></p-toast>

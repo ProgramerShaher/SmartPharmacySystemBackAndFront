@@ -60,4 +60,25 @@ public class MonthlySalariesController : ControllerBase
         await _salaryService.DeleteAsync(id);
         return Ok(ApiResponse<string>.Succeeded("تم حذف الراتب بنجاح", "تم الحذف"));
     }
+
+    [HttpPost("{id}/pay")]
+    public async Task<IActionResult> PaySalary(int id)
+    {
+        var result = await _salaryService.PaySalaryAsync(id);
+        return Ok(ApiResponse<MonthlySalaryDto>.Succeeded(result, "تم اعتماد ودفع الراتب بنجاح"));
+    }
+
+    [HttpPost("pay-all")]
+    public async Task<IActionResult> PayAll([FromQuery] int month, [FromQuery] int year, [FromQuery] int? branchId)
+    {
+        var count = await _salaryService.PayAllAsync(month, year, branchId);
+        return Ok(ApiResponse<int>.Succeeded(count, $"تم اعتماد ودفع {count} رواتب بنجاح"));
+    }
+
+    [HttpGet("summary")]
+    public async Task<IActionResult> GetSummary([FromQuery] int month, [FromQuery] int year, [FromQuery] int? branchId)
+    {
+        var result = await _salaryService.GetPayrollSummaryAsync(month, year, branchId);
+        return Ok(ApiResponse<PayrollSummaryDto>.Succeeded(result, "تم جلب ملخص الرواتب"));
+    }
 }

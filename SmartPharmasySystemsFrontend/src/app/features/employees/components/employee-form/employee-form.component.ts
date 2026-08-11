@@ -40,6 +40,12 @@ export class EmployeeFormComponent implements OnInit {
 
     errors: Record<string, string> = {};
 
+    shiftOptions = [
+        { label: 'صباحي', value: 1 },
+        { label: 'مسائي', value: 2 },
+        { label: 'ليلي', value: 3 }
+    ];
+
     model: any = {
         employeeCode: '',
         fullName: '',
@@ -50,7 +56,11 @@ export class EmployeeFormComponent implements OnInit {
         hireDate: '',
         basicSalary: 0,
         isActive: true,
-        userId: null
+        userId: null,
+        shift: 1,
+        shiftStartTime: null,
+        shiftEndTime: null,
+        workingHours: 8
     };
 
     constructor(
@@ -74,7 +84,11 @@ export class EmployeeFormComponent implements OnInit {
                     : this.employee.hireDate,
                 basicSalary: this.employee.basicSalary,
                 isActive: this.employee.isActive,
-                userId: this.employee.userId
+                userId: this.employee.userId,
+                shift: this.employee.shift ?? 1,
+                shiftStartTime: this.employee.shiftStartTime ? new Date(`1970-01-01T${this.employee.shiftStartTime}`) : null,
+                shiftEndTime: this.employee.shiftEndTime ? new Date(`1970-01-01T${this.employee.shiftEndTime}`) : null,
+                workingHours: this.employee.workingHours ?? 8
             };
         }
     }
@@ -104,6 +118,8 @@ export class EmployeeFormComponent implements OnInit {
         if (!this.model.departmentId) this.errors['departmentId'] = 'القسم مطلوب';
         if (!this.model.hireDate) this.errors['hireDate'] = 'تاريخ التعيين مطلوب';
         if (this.model.basicSalary < 0) this.errors['basicSalary'] = 'الراتب لا يمكن أن يكون سالباً';
+        if (!this.model.shift) this.errors['shift'] = 'تحديد الوردية مطلوب';
+        if (this.model.workingHours <= 0 || this.model.workingHours > 24) this.errors['workingHours'] = 'ساعات العمل يجب أن تكون بين 1 و 24';
         return Object.keys(this.errors).length === 0;
     }
 
@@ -130,7 +146,11 @@ export class EmployeeFormComponent implements OnInit {
             hireDate: hireDateStr,
             basicSalary: this.model.basicSalary,
             isActive: this.model.isActive,
-            userId: this.model.userId
+            userId: this.model.userId,
+            shift: this.model.shift,
+            shiftStartTime: this.model.shiftStartTime ? (this.model.shiftStartTime as Date).toTimeString().split(' ')[0] : undefined,
+            shiftEndTime: this.model.shiftEndTime ? (this.model.shiftEndTime as Date).toTimeString().split(' ')[0] : undefined,
+            workingHours: this.model.workingHours
         };
 
         if (this.editMode && this.employee) {

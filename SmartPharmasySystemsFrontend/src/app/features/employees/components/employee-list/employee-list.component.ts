@@ -14,6 +14,7 @@ import { EmployeeService } from '../../services/employee.service';
 import { AttendanceService } from '../../services/attendance.service';
 import { MonthlySalaryService } from '../../services/monthly-salary.service';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { EmployeeFormComponent } from '../employee-form/employee-form.component';
 
 @Component({
   selector: 'app-employee-list',
@@ -28,7 +29,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     ToastModule,
     ConfirmDialogModule,
     DialogModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    EmployeeFormComponent
   ],
   templateUrl: './employee-list.component.html',
   styleUrls: ['./employee-list.component.scss'],
@@ -57,6 +59,11 @@ export class EmployeeListComponent implements OnInit {
 
   exporting = false;
   printData: any[] = [];
+
+  // Form State
+  showForm = false;
+  selectedEmployee: any = null;
+  editMode = false;
 
   constructor(
     private employeeService: EmployeeService,
@@ -135,6 +142,25 @@ export class EmployeeListComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  // --- Employee Form Logic ---
+
+  openAddForm(): void {
+    this.selectedEmployee = null;
+    this.editMode = false;
+    this.showForm = true;
+  }
+
+  openEditForm(employee: any): void {
+    this.selectedEmployee = employee;
+    this.editMode = true;
+    this.showForm = true;
+  }
+
+  onFormSaved(): void {
+    this.showForm = false;
+    this.loadData();
   }
 
   // --- Monthly Attendance Calendar Logic ---

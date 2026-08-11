@@ -40,6 +40,16 @@ public class Employee : BaseEntity
 
     public bool IsActive { get; set; } = true;
 
+    [Required]
+    public SmartPharmacySystem.Core.Enums.ShiftType Shift { get; set; } = SmartPharmacySystem.Core.Enums.ShiftType.Morning;
+
+    public TimeSpan? ShiftStartTime { get; set; }
+
+    public TimeSpan? ShiftEndTime { get; set; }
+
+    [Column(TypeName = "decimal(5,2)")]
+    public decimal WorkingHours { get; set; } = 8;
+
     // Navigation properties
     public virtual Branch Branch { get; set; } = null!;
     public virtual Department Department { get; set; } = null!;

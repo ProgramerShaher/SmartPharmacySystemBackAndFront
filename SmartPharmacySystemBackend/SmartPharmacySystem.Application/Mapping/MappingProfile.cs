@@ -707,6 +707,9 @@ namespace SmartPharmacySystem.Application.Mapping
                 .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department != null ? src.Department.Name : string.Empty))
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User != null ? src.User.Username : string.Empty))
+                .ForMember(dest => dest.ShiftName, opt => opt.MapFrom(src =>
+                    src.Shift == Core.Enums.ShiftType.Morning ? "صباحي" :
+                    src.Shift == Core.Enums.ShiftType.Evening ? "مسائي" : "ليلي"))
                 .ForMember(dest => dest.TotalLoans, opt => opt.Ignore())
                 .ForMember(dest => dest.RemainingLoans, opt => opt.Ignore());
 

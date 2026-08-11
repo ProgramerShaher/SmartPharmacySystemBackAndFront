@@ -1,22 +1,55 @@
 <div class="payments-shell fadein" dir="rtl">
 
-  <!-- ═══════════ Header ═══════════ -->
-  <div class="imperial-header mb-3" *ngIf="!dialogMode">
-    <div class="header-content"
-      style="display:flex; justify-content:space-between; align-items:center; background:var(--card-bg); padding:0.45rem 0.75rem; border-radius:10px; border:var(--card-border); box-shadow:var(--shadow-md);">
-      <div style="display:flex; align-items:center; gap:0.65rem;">
-        <div
-          style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--primary-600),var(--primary-400));display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.95rem;">
-          <i class="pi pi-wallet"></i>
+  <!-- ═══════════ Micro Header ═══════════ -->
+  <div class="imperial-header" *ngIf="!dialogMode">
+    <div class="header-content">
+      <div class="title-area">
+        <div class="icon-box">
+          <i class="pi pi-arrow-down-left"></i>
         </div>
         <div>
-          <h1 style="margin:0;font-size:0.95rem;font-weight:800;color:var(--text-color);">إدارة سندات القبض</h1>
-          <p style="margin:0;font-size:0.68rem;color:var(--text-color-secondary);font-weight:600;">إنشاء ومتابعة سندات
-            القبض من العملاء</p>
+          <h1>إدارة سندات القبض</h1>
+          <p>إنشاء ومتابعة السندات المالية المستلمة من العملاء</p>
         </div>
       </div>
-      <button pButton label="سند قبض جديد" icon="pi pi-plus" class="imperial-btn-primary p-button-sm"
-        (click)="openNew()"></button>
+      <div class="actions-area">
+        <button pButton label="سند قبض جديد" icon="pi pi-plus"
+          class="imperial-btn-primary p-button-sm"
+          (click)="openNew()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ Stat Cards ═══════════ -->
+  <div class="stats-grid" *ngIf="!dialogMode">
+    <div class="stat-card jewel-blue">
+      <div class="stat-icon"><i class="pi pi-file-invoice"></i></div>
+      <div class="stat-details">
+        <span class="stat-label">إجمالي السندات</span>
+        <span class="stat-value">{{ totalRecords() }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card jewel-emerald">
+      <div class="stat-icon"><i class="pi pi-calendar-plus"></i></div>
+      <div class="stat-details">
+        <span class="stat-label">مقبوضات اليوم</span>
+        <span class="stat-value">
+          {{ todayAmount() | number }}
+          <span class="currency">ر.ي</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="stat-card jewel-ruby">
+      <div class="stat-icon"><i class="pi pi-wallet"></i></div>
+      <div class="stat-details">
+        <span class="stat-label">إجمالي المبالغ المقبوضة</span>
+        <span class="stat-value">
+          {{ totalAmount() | number }}
+          <span class="currency">ر.ي</span>
+        </span>
+      </div>
     </div>
   </div>
 
@@ -25,6 +58,21 @@
     <p-table [value]="receipts()" [loading]="loading()" [paginator]="true" [rows]="10"
       styleClass="p-datatable-sm imperial-table" [rowHover]="true" [lazy]="true" (onLazyLoad)="loadReceipts($event)"
       [totalRecords]="totalRecords()">
+      <ng-template pTemplate="caption">
+        <div class="table-caption">
+          <span class="caption-title">
+            <i class="pi pi-list ml-2"></i>سجل سندات القبض
+          </span>
+          <div class="p-input-icon-left search-box">
+            <i class="pi pi-search"></i>
+            <input #searchInput pInputText type="text"
+                   [ngModel]="searchQuery()"
+                   (ngModelChange)="onSearchChange($event)"
+                   placeholder="بحث باسم العميل أو رقم السند..." />
+          </div>
+        </div>
+      </ng-template>
+
       <ng-template pTemplate="header">
         <tr>
           <th style="width:5rem">رقم السند</th>
@@ -39,7 +87,7 @@
         <tr>
           <td>
             <span style="font-family:monospace;font-weight:700;color:var(--primary-color);font-size:0.8rem;">
-              #{{ receipt.receiptNumber }}
+              #{{ receipt.id }}
             </span>
           </td>
           <td>
@@ -53,10 +101,10 @@
             <span style="font-size:0.65rem;color:var(--text-color-secondary);margin-right:0.2rem;">ر.ي</span>
           </td>
           <td style="font-size:0.78rem;color:var(--text-color-secondary);">
-            {{ receipt.paymentDate | date:'yyyy/MM/dd' }}
+            {{ receipt.receiptDate | date:'yyyy/MM/dd' }}
           </td>
           <td style="font-size:0.75rem;color:var(--text-color-secondary);">
-            {{ receipt.referenceNumber || '---' }}
+            {{ receipt.referenceNo || '---' }}
           </td>
           <td class="text-center">
             <button pButton icon="pi pi-print" class="p-button-text p-button-info p-button-rounded p-button-sm"
@@ -81,158 +129,96 @@
     </p-table>
   </div>
 
-  <!-- ═══════════ Payment Form Template ═══════════ -->
+  <!-- ═══════════ Receipt Form Template ═══════════ -->
   <ng-template #receiptFormTemplate>
-    <form [formGroup]="receiptForm" class="imperial-form" dir="rtl">
+    <div class="voucher-form">
+      <form [formGroup]="receiptForm">
 
-      <!-- ── Section 1: Customer Selection ── -->
-      <div class="supplier-section">
-        <div class="imperial-label"
-          style="margin-bottom:0.4rem;color:var(--primary-color);font-size:0.75rem;font-weight:800;">
-          <i class="pi pi-user ml-1"></i>العميل
-          <span style="color:#ef4444"> *</span>
-        </div>
-        <div class="supplier-row">
-          <div style="flex:1;min-width:0;">
-            <!-- Bind to an object instead of the ID so the name is displayed -->
+        <!-- Customer + balance -->
+        <div class="vf-field">
+          <label class="vf-label">العميل <span style="color:#ef4444">*</span></label>
+          <div class="entity-row">
             <p-autoComplete [ngModel]="selectedCustomerObj" [ngModelOptions]="{standalone: true}"
               [suggestions]="filteredCustomers" (completeMethod)="searchCustomers($event)" field="name"
               (onSelect)="onCustomerSelect($event)" [dropdown]="true" [forceSelection]="true"
-              placeholder="اكتب أو اختر اسم العميل..." styleClass="w-full" appendTo="body">
+              placeholder="اختر العميل..." appendTo="body" styleClass="w-full">
             </p-autoComplete>
-          </div>
-
-          <!-- Balance Badge -->
-          <div class="due-box" *ngIf="selectedCustomer">
-            <span class="due-label">المديونية الكاملة:</span>
-            <span class="due-amount">{{ selectedCustomer.balance | number }}</span>
-            <span class="due-currency">ر.ي</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Main Fields Grid ── -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:0.6rem;">
-
-        <!-- Date -->
-        <div class="field-box">
-          <label class="imperial-label">
-            <i class="pi pi-calendar ml-1"></i>تاريخ السند
-            <span style="color:#ef4444"> *</span>
-          </label>
-          <p-calendar formControlName="paymentDate" [showIcon]="true" dateFormat="yy/mm/dd" appendTo="body"
-            styleClass="w-full">
-          </p-calendar>
-        </div>
-
-        <!-- Amount -->
-        <div class="field-box">
-          <label class="imperial-label">
-            <i class="pi pi-money-bill ml-1"></i>المبلغ المقبوض
-            <span style="color:#ef4444"> *</span>
-          </label>
-          <div class="amount-group">
-            <p-inputNumber formControlName="amount" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0"
-              [min]="0" [useGrouping]="true" styleClass="w-full" placeholder="0">
-            </p-inputNumber>
-            <span class="currency-badge">ر.ي</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Invoice Reference ── -->
-      <div class="field-box" style="margin-bottom:0.6rem;">
-        <label class="imperial-label">
-          <i class="pi pi-file-invoice ml-1"></i>طريقة الدفع
-          <span style="color:#ef4444"> *</span>
-        </label>
-        <p-dropdown formControlName="paymentMethod" [options]="paymentMethods" optionLabel="label" optionValue="value"
-          styleClass="w-full" appendTo="body">
-        </p-dropdown>
-      </div>
-
-      <div class="field-box" style="margin-bottom:0.6rem;">
-        <label class="imperial-label">
-          <i class="pi pi-file-invoice ml-1"></i>المرجع / ربط بفاتورة
-          <span
-            style="font-size:0.65rem;font-weight:600;color:var(--text-color-secondary);margin-right:0.3rem;">(اختياري)</span>
-        </label>
-        <p-autoComplete
-          formControlName="saleInvoiceId"
-          [suggestions]="filteredInvoices"
-          (completeMethod)="searchInvoices($event)"
-          field="displayText"
-          (onSelect)="onInvoiceSelect($event)"
-          [dropdown]="true"
-          [placeholder]="selectedCustomer ? 'اختر فاتورة غير مسددة أو اكتب رقماً مرجعياً' : 'اختر العميل أولاً'"
-          [disabled]="!selectedCustomer"
-          styleClass="w-full"
-          appendTo="body">
-
-          <!-- Dropdown item template -->
-          <ng-template let-inv pTemplate="item">
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:0.35rem 0;width:100%;gap:0.5rem;">
-              <div style="display:flex;align-items:center;gap:0.45rem;min-width:0;">
-                <i class="pi pi-file-invoice" style="color:var(--primary-color);font-size:0.85rem;flex-shrink:0;"></i>
-                <div style="min-width:0;">
-                  <div style="font-weight:700;font-size:0.8rem;color:var(--text-color);">
-                    فاتورة #{{ inv.saleInvoiceNumber || inv.id }}
-                  </div>
-                  <div style="font-size:0.68rem;color:var(--text-color-secondary);">
-                    {{ inv.invoiceDate | date:'yyyy/MM/dd' }}
-                  </div>
-                </div>
-              </div>
-              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.15rem;flex-shrink:0;">
-                <span style="font-size:0.7rem;color:var(--text-color-secondary);">
-                  الإجمالي: {{ inv.totalAmount | number }} ر.ي
-                </span>
-                <span style="font-size:0.72rem;font-weight:800;padding:0.1rem 0.45rem;border-radius:4px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25);">
-                  المتبقي: {{ inv.remainingAmount | number }} ر.ي
-                </span>
-              </div>
+            <div class="entity-balance" *ngIf="selectedCustomer">
+              <span class="bal-label">المديونية</span>
+              <span class="bal-amount">{{ selectedCustomer.balance | number }}</span>
             </div>
-          </ng-template>
-        </p-autoComplete>
-
-        <!-- Smart notice -->
-        <div class="invoice-notice" [class.free-payment]="!receiptForm.value.saleInvoiceId"
-          [class.linked-invoice]="receiptForm.value.saleInvoiceId">
-          <i class="pi"
-            [ngClass]="{'pi-info-circle': !receiptForm.value.saleInvoiceId, 'pi-check-circle': receiptForm.value.saleInvoiceId}"></i>
-          <span>
-            <ng-container *ngIf="!receiptForm.value.saleInvoiceId">
-              <strong>سند حر:</strong>
-              سيُسجَّل كدفعة عامة تُخفِّض رصيد العميل المدين.
-            </ng-container>
-            <ng-container *ngIf="receiptForm.value.saleInvoiceId">
-              <strong>مرتبط بفاتورة:</strong>
-              سيُخصَم المبلغ من الفاتورة المختارة وتُحدَّث حالتها تلقائياً.
-            </ng-container>
-          </span>
+          </div>
         </div>
-      </div>
 
-      <!-- ── Notes ── -->
-      <div class="field-box" style="margin-bottom:0.6rem;">
-        <label class="imperial-label">
-          <i class="pi pi-pencil ml-1"></i>البيان / الملاحظات
-        </label>
-        <input pInputText formControlName="notes" placeholder="سداد كامل، دفعة جزئية، تسوية حساب..."
-          style="width:100%;" />
-      </div>
+        <!-- Date + Amount -->
+        <div class="vf-row">
+          <div class="vf-field">
+            <label class="vf-label">تاريخ السند <span style="color:#ef4444">*</span></label>
+            <p-calendar formControlName="receiptDate" [showIcon]="true" dateFormat="yy/mm/dd" appendTo="body" styleClass="w-full"></p-calendar>
+          </div>
+          <div class="vf-field">
+            <label class="vf-label">المبلغ المقبوض <span style="color:#ef4444">*</span></label>
+            <p-inputNumber formControlName="amount" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0"
+              [min]="0" [useGrouping]="true" placeholder="0" suffix=" ر.ي" styleClass="w-full">
+            </p-inputNumber>
+          </div>
+        </div>
 
-      <!-- ── Footer Actions ── -->
-      <div class="footer-actions">
-        <button pButton type="button" label="إغلاق" icon="pi pi-times" class="p-button-text p-button-secondary"
-          (click)="closeModal()">
-        </button>
-        <button pButton type="button" label="إصدار السند واعتماده" icon="pi pi-check-circle"
-          class="imperial-btn-primary px-4" (click)="saveReceipt()" [loading]="saving()">
-        </button>
-      </div>
+        <!-- Payment Method + Reference -->
+        <div class="vf-row">
+          <div class="vf-field">
+            <label class="vf-label">طريقة الدفع <span style="color:#ef4444">*</span></label>
+            <p-dropdown formControlName="paymentMethod" [options]="paymentMethods" optionLabel="label" optionValue="value"
+              appendTo="body" styleClass="w-full">
+            </p-dropdown>
+          </div>
+          <div class="vf-field">
+            <label class="vf-label">المرجع</label>
+            <input pInputText formControlName="referenceNo" placeholder="رقم الشيك / الحوالة..." />
+          </div>
+        </div>
 
-    </form>
+        <!-- Invoice link -->
+        <div class="vf-field">
+          <label class="vf-label">
+            ربط بفاتورة
+            <span *ngIf="receiptForm.get('amount')?.value > 0" class="amount-badge badge-credit" style="margin-right:0.5rem;">
+              <i class="pi pi-arrow-down" style="font-size:0.55rem;"></i>
+              {{ receiptForm.get('amount')?.value | number }} ر.ي
+            </span>
+            <span style="font-weight:400;color:var(--text-color-secondary)">(اختياري)</span>
+          </label>
+          <p-autoComplete formControlName="saleInvoiceId" [suggestions]="filteredInvoices"
+            (completeMethod)="searchInvoices($event)" field="displayText" (onSelect)="onInvoiceSelect($event)"
+            [dropdown]="true" [placeholder]="selectedCustomer ? 'اختر فاتورة...' : 'اختر العميل أولاً'"
+            [disabled]="!selectedCustomer" appendTo="body" styleClass="w-full">
+            <ng-template let-inv pTemplate="item">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;font-size:0.75rem;">
+                <span style="font-weight:700;color:var(--primary-color);">#{{ inv.saleInvoiceNumber || inv.id }}</span>
+                <span class="amount-badge badge-debt">متبقي: {{ inv.remainingAmount | number }}</span>
+              </div>
+            </ng-template>
+          </p-autoComplete>
+        </div>
+
+        <!-- Notes -->
+        <div class="vf-field">
+          <label class="vf-label">البيان / الملاحظات</label>
+          <input pInputText formControlName="notes" placeholder="سداد كامل، دفعة جزئية..." />
+        </div>
+
+        <!-- Footer -->
+        <div class="vf-footer">
+          <button pButton type="button" label="إلغاء" icon="pi pi-times"
+            class="p-button-text p-button-secondary p-button-sm" (click)="closeModal()">
+          </button>
+          <button pButton type="button" label="حفظ السند" icon="pi pi-check"
+            class="p-button-primary p-button-sm" (click)="saveReceipt()" [loading]="saving()">
+          </button>
+        </div>
+
+      </form>
+    </div>
   </ng-template>
 
   <!-- ── Render form (dialog mode = direct, standalone = inside dialog) ── -->
@@ -242,8 +228,8 @@
 
   <p-dialog *ngIf="!dialogMode"
             [visible]="displayDialog()" [modal]="true" appendTo="body"
-            [style]="{ width: '820px', maxWidth: '95vw' }"
-            [contentStyle]="{'overflow':'visible'}"
+            [style]="{ width: '420px', maxWidth: '95vw' }"
+            [contentStyle]="{'overflow':'visible'} "
             [draggable]="false" [resizable]="false"
             styleClass="imperial-dialog"
             header="إصدار سند قبض مالي من عميل"

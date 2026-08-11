@@ -62,4 +62,26 @@ public class ShiftsController : ControllerBase
         }
         return BadRequest(result);
     }
+
+    [HttpGet("{id}/Summary")]
+    public async Task<ActionResult<ApiResponse<ShiftSummaryDto>>> GetShiftSummary(int id)
+    {
+        var result = await _shiftService.GetShiftSummaryAsync(id);
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        return BadRequest(result);
+    }
+
+    [HttpGet("{id}/Details")]
+    public async Task<ActionResult<ApiResponse<ShiftDetailsDto>>> GetShiftDetails(int id)
+    {
+        var result = await _shiftService.GetShiftDetailsAsync(id);
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        return BadRequest(result);
+    }
 }

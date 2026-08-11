@@ -42,4 +42,13 @@ public class CreateEmployeeDto
     /// رابط حساب المستخدم بالنظام (اختياري)
     /// </summary>
     public int? UserId { get; set; }
+
+    [Required(ErrorMessage = "تحديد الوردية مطلوب")]
+    public SmartPharmacySystem.Core.Enums.ShiftType Shift { get; set; } = SmartPharmacySystem.Core.Enums.ShiftType.Morning;
+
+    public TimeSpan? ShiftStartTime { get; set; }
+    public TimeSpan? ShiftEndTime { get; set; }
+
+    [Range(0, 24, ErrorMessage = "ساعات العمل يجب أن تكون بين 0 و 24")]
+    public decimal WorkingHours { get; set; } = 8;
 }

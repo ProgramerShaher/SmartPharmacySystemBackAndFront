@@ -65,10 +65,19 @@ export class SupplierPaymentsComponent implements OnInit {
   saving = signal(false);
   loadingInvoices = signal(false);
 
+  // Pagination & Stats
+  totalRecords = signal(0);
+  currentPage = signal(1);
+  pageSize = signal(10);
+  searchQuery = signal('');
+  totalAmount = signal(0);
+  todayAmount = signal(0);
+
   paymentForm: FormGroup;
 
   filteredSuppliers: Supplier[] = [];
   selectedSupplier: Supplier | null = null;
+  selectedSupplierObj!: Supplier | null;
 
   pharmacySettings = signal<PharmacySettings>({
     id: 0,
@@ -119,7 +128,6 @@ export class SupplierPaymentsComponent implements OnInit {
 
     if (this.dialogMode) {
       if (this.autoOpenCreate) this.openNew();
-      // Delay prefill slightly so dialog is rendered first
       if (this.presetSupplierId) {
         setTimeout(() => this.prefillSupplier(this.presetSupplierId!), 100);
       }
@@ -137,10 +145,8 @@ export class SupplierPaymentsComponent implements OnInit {
     this.supplierService.getById(supplierId).subscribe({
       next: supplier => {
         this.filteredSuppliers = [supplier];
-        // Set the form value to the supplier object (autocomplete expects full object)
         this.paymentForm.patchValue({ supplierId: supplier });
         this.selectedSupplier = supplier;
-        // Load unpaid invoices for this supplier
         this.loadUnpaidInvoices(supplier.id);
         this.cdr.markForCheck();
       }
@@ -150,8 +156,27 @@ export class SupplierPaymentsComponent implements OnInit {
   loadPayments() {
     this.loading.set(true);
     this.supplierService.getPayments().subscribe({
-      next: (res) => {
-        this.payments.set(res);
+      next: (res: any) => {
+        let items: SupplierPayment[] = [];
+        if (Array.isArray(res)) {
+          items = res;
+          this.totalRecords.set(items.length);
+        } else if (res && res.items) {
+          items = res.items;
+          this.totalRecords.set(res.totalCount || items.length);
+        }
+
+        const query = this.searchQuery().toLowerCase();
+        if (query) {
+          items = items.filter(p =>
+            p.supplierName?.toLowerCase().includes(query) ||
+            String(p.id).includes(query)
+          );
+          this.totalRecords.set(items.length);
+        }
+
+        this.payments.set(items);
+        this.calculateStats(items);
         this.loading.set(false);
       },
       error: () => {
@@ -159,6 +184,21 @@ export class SupplierPaymentsComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  onSearchChange(val: string) {
+    this.searchQuery.set(val);
+    this.loadPayments();
+  }
+
+  calculateStats(items: SupplierPayment[]) {
+    const total = items.reduce((acc, curr) => acc + curr.amount, 0);
+    this.totalAmount.set(total);
+    const today = new Date().toDateString();
+    const todayTotal = items
+      .filter(i => new Date(i.paymentDate).toDateString() === today)
+      .reduce((acc, curr) => acc + curr.amount, 0);
+    this.todayAmount.set(todayTotal);
   }
 
   searchSuppliers(event: any) {
@@ -179,7 +219,6 @@ export class SupplierPaymentsComponent implements OnInit {
           .sort((a, b) => +new Date(a.purchaseDate) - +new Date(b.purchaseDate));
 
         this.unpaidInvoices.set(mapped);
-        // Initialize filteredInvoices so dropdown shows all on open
         this.filteredInvoices = [...mapped];
         this.loadingInvoices.set(false);
         this.cdr.markForCheck();
@@ -195,7 +234,6 @@ export class SupplierPaymentsComponent implements OnInit {
 
   searchInvoices(event: any) {
     const query = (event.query || '').toLowerCase().trim();
-    // If empty query (dropdown opened), show all
     if (!query) {
       this.filteredInvoices = [...this.unpaidInvoices()];
     } else {
@@ -220,7 +258,6 @@ export class SupplierPaymentsComponent implements OnInit {
   onSupplierSelect(event: any) {
     this.selectedSupplier = event.value;
     this.paymentForm.patchValue({ supplierId: this.selectedSupplier });
-    // Reset invoice selection state
     this.unpaidInvoices.set([]);
     this.filteredInvoices = [];
     this.allocations.set([]);
@@ -236,7 +273,6 @@ export class SupplierPaymentsComponent implements OnInit {
   selectedInvoices: PurchaseInvoice[] = [];
 
   onInvoiceSelectionChange(event: any) {
-    // Legacy support if needed
   }
 
   openNew() {
@@ -297,7 +333,6 @@ export class SupplierPaymentsComponent implements OnInit {
   }
 
   get totalUnpaidDebtFull(): number {
-    // "الرصيد المستحق كامل" = sum of unpaid invoices totals
     return this.unpaidInvoices().reduce((s, inv) => s + (inv.totalAmount || 0), 0);
   }
 
@@ -713,4 +748,3 @@ export class SupplierPaymentsComponent implements OnInit {
     }
   }
 }
-

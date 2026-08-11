@@ -44,8 +44,33 @@ export class AttendanceService {
         if (from) params.push(`from=${this.formatDate(from)}`);
         if (to) params.push(`to=${this.formatDate(to)}`);
         if (params.length > 0) url += `?${params.join('&')}`;
-        
+
         return this.http.get<ApiResponse<any[]>>(url).pipe(
+            map(response => response.data)
+        );
+    }
+
+    getByBranch(branchId: number, from?: Date, to?: Date): Observable<any[]> {
+        let url = `${this.apiUrl}/branch/${branchId}`;
+        const params: string[] = [];
+        if (from) params.push(`from=${this.formatDate(from)}`);
+        if (to) params.push(`to=${this.formatDate(to)}`);
+        if (params.length > 0) url += `?${params.join('&')}`;
+
+        return this.http.get<ApiResponse<any[]>>(url).pipe(
+            map(response => response.data)
+        );
+    }
+
+    checkIn(dto: any): Observable<any> {
+        return this.http.post<ApiResponse<any>>(`${this.apiUrl}/check-in`, dto).pipe(
+            map(response => response.data)
+        );
+    }
+
+    checkOut(id: number, checkOutTime: Date): Observable<any> {
+        let url = `${this.apiUrl}/${id}/check-out?checkOutTime=${checkOutTime.toISOString()}`;
+        return this.http.post<ApiResponse<any>>(url, {}).pipe(
             map(response => response.data)
         );
     }

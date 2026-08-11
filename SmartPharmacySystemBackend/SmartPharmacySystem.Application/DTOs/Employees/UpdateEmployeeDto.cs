@@ -17,4 +17,9 @@ public class UpdateEmployeeDto
     /// رابط حساب المستخدم بالنظام (اختياري)
     /// </summary>
     public int? UserId { get; set; }
+
+    public SmartPharmacySystem.Core.Enums.ShiftType Shift { get; set; } = SmartPharmacySystem.Core.Enums.ShiftType.Morning;
+    public TimeSpan? ShiftStartTime { get; set; }
+    public TimeSpan? ShiftEndTime { get; set; }
+    public decimal WorkingHours { get; set; } = 8;
 }

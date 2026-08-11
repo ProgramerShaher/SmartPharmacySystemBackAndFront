@@ -71,8 +71,12 @@ export class EmployeeService {
             }));
     }
 
-    getBranchDashboard(): Observable<any> {
-        return this.http.get<ApiResponse<any>>(`${this.apiUrl}/dashboard`)
+    getBranchDashboard(branchId?: number): Observable<any> {
+        let url = `${this.apiUrl}/dashboard`;
+        if (branchId) {
+            url += `/${branchId}`;
+        }
+        return this.http.get<ApiResponse<any>>(url)
             .pipe(map(response => response.data));
     }
 }

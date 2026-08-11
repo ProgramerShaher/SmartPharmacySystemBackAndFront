@@ -16,13 +16,12 @@ export interface Customer {
 
 export interface CustomerReceipt {
     id: number;
-    receiptNumber: string;
     customerId: number;
     customerName: string;
     amount: number;
-    paymentDate: string;
-    paymentMethod: 'Cash' | 'BankTransfer' | 'Check';
-    referenceNumber?: string; // Check number or transfer reference
+    receiptDate: string;
+    paymentMethod: string;
+    referenceNo?: string;
     notes?: string;
     createdBy: number;
     createdByName?: string;
@@ -32,9 +31,10 @@ export interface CustomerReceipt {
 export interface CreateCustomerReceiptDto {
     customerId: number;
     amount: number;
-    paymentDate: string;
-    paymentMethod: 'Cash' | 'BankTransfer' | 'Check';
-    referenceNumber?: string;
+    receiptDate: string;
+    paymentMethod: string;
+    referenceNo?: string;
+    saleInvoiceId?: number;
     notes?: string;
 }
 

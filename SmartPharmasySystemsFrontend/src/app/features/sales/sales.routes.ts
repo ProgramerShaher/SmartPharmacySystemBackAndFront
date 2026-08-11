@@ -10,6 +10,10 @@ export const SALES_ROUTES: Routes = [
         loadComponent: () => import('./components/sale-invoice-create/sale-invoice-create.component').then(m => m.SaleInvoiceCreateComponent)
     },
     {
+        path: 'daily-closing',
+        loadComponent: () => import('./components/daily-closing/daily-closing.component').then(m => m.DailyClosingComponent)
+    },
+    {
         path: 'edit/:id',
         loadComponent: () => import('./components/sale-invoice-create/sale-invoice-create.component').then(m => m.SaleInvoiceCreateComponent)
     },

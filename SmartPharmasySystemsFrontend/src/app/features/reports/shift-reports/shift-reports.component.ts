@@ -2,17 +2,30 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ShiftService } from '../../../core/services/shift.service';
-import { ShiftDto } from '../../../core/models';
+import { ShiftDto, ShiftDetailsDto } from '../../../core/models';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextModule } from 'primeng/inputtext';
+import { DialogModule } from 'primeng/dialog';
+import { CardModule } from 'primeng/card';
 
 @Component({
   selector: 'app-shift-reports',
   standalone: true,
-  imports: [CommonModule, FormsModule, ToastModule, DecimalPipe, DatePipe, ButtonModule, ProgressSpinnerModule, InputTextModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ToastModule,
+    DecimalPipe,
+    DatePipe,
+    ButtonModule,
+    ProgressSpinnerModule,
+    InputTextModule,
+    DialogModule,
+    CardModule
+  ],
   providers: [MessageService],
   templateUrl: './shift-reports.component.html',
   styleUrls: ['./shift-reports.component.scss']
@@ -22,6 +35,10 @@ export class ShiftReportsComponent implements OnInit {
   filteredShifts: ShiftDto[] = [];
   isLoading = true;
   searchTerm = '';
+
+  showDetailsDialog = false;
+  loadingDetails = false;
+  shiftDetails: ShiftDetailsDto | null = null;
 
   constructor(
     private shiftService: ShiftService,
@@ -78,5 +95,26 @@ export class ShiftReportsComponent implements OnInit {
 
   refresh() {
     this.loadShifts();
+  }
+
+  viewDetails(id: number) {
+    this.showDetailsDialog = true;
+    this.loadingDetails = true;
+    this.shiftService.getDetails(id).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.shiftDetails = res.data;
+        } else {
+          this.showError('تعذر جلب تفاصيل الوردية');
+          this.showDetailsDialog = false;
+        }
+        this.loadingDetails = false;
+      },
+      error: () => {
+        this.showError('حدث خطأ أثناء جلب التفاصيل');
+        this.loadingDetails = false;
+        this.showDetailsDialog = false;
+      }
+    });
   }
 }

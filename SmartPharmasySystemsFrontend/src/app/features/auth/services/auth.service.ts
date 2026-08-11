@@ -34,6 +34,8 @@ export class AuthService {
             if (storedUser) {
                 try {
                     this.currentUserSubject.next(JSON.parse(storedUser));
+                    // Load permissions since user is already logged in
+                    this.permissionService.loadMyPermissions().subscribe();
                 } catch (e) {
                     console.error('Error parsing stored user:', e);
                 }

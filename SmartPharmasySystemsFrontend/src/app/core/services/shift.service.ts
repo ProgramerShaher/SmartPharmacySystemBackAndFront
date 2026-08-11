@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
-import { ShiftDto, OpenShiftDto, CloseShiftDto, ApiResponse } from '../models';
+import { ShiftDto, OpenShiftDto, CloseShiftDto, ShiftSummaryDto, ShiftDetailsDto, ApiResponse } from '../models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -34,5 +34,13 @@ export class ShiftService {
 
   closeShift(data: CloseShiftDto): Observable<ApiResponse<ShiftDto>> {
     return this.http.post<ApiResponse<ShiftDto>>(`${this.apiUrl}/Close`, data);
+  }
+
+  getSummary(id: number): Observable<ApiResponse<ShiftSummaryDto>> {
+    return this.http.get<ApiResponse<ShiftSummaryDto>>(`${this.apiUrl}/${id}/Summary`);
+  }
+
+  getDetails(id: number): Observable<ApiResponse<ShiftDetailsDto>> {
+    return this.http.get<ApiResponse<ShiftDetailsDto>>(`${this.apiUrl}/${id}/Details`);
   }
 }

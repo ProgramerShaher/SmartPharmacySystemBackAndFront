@@ -47,6 +47,8 @@ interface InvoiceItem {
     unitName?: string;
 }
 
+import { ShiftService } from '../../../../core/services/shift.service';
+
 @Component({
     selector: 'app-sale-invoice-create',
     standalone: true,
@@ -152,11 +154,24 @@ export class SaleInvoiceCreateComponent implements OnInit {
         private medicineBatchService: MedicineBatchService,
         private customerService: CustomerService,
         private barcodeService: BarcodeService,
+        private shiftService: ShiftService,
         private router: Router,
         private route: ActivatedRoute
     ) { }
 
     ngOnInit() {
+        // Check for open shift first
+        this.shiftService.getCurrentShift().subscribe({
+            next: (res) => {
+                // If there's no shift, this will fall into error or return false if backend handles it
+            },
+            error: (err) => {
+                // If API returns 400 Bad Request ("No open shift found")
+                this.messageService.add({ severity: 'warn', summary: 'الوردية مغلقة', detail: 'يرجى فتح وردية جديدة للتمكن من البيع' });
+                this.shiftService.requestShiftModal('open');
+            }
+        });
+
         this.loadCustomers(); // Load customers on init
         this.route.params.subscribe((params: any) => {
             if (params['id']) {
@@ -426,6 +441,19 @@ export class SaleInvoiceCreateComponent implements OnInit {
             return;
         }
 
+        // Before saving, ensure shift is open
+        this.shiftService.getCurrentShift().subscribe({
+            next: () => {
+                this.executeSubmitInvoice(approve);
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'الوردية مغلقة', detail: 'لا يمكنك حفظ مبيعات بدون فتح وردية.' });
+                this.shiftService.requestShiftModal('open');
+            }
+        });
+    }
+
+    private executeSubmitInvoice(approve: boolean) {
         this.saving = true;
 
         // If Flying Customer with a name - do NOT save to database, just pass the name to the invoice

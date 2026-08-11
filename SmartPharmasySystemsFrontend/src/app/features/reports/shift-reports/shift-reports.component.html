@@ -58,6 +58,7 @@
           <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">العجز / الزيادة</th>
           <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">الحالة</th>
           <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: right;">ملاحظات</th>
+          <th style="padding: 0.5rem 0.65rem; background: #f0fdfa; color: #115e59; font-weight: 800; font-size: 0.7rem; border-bottom: 2px solid #0d9488; text-align: center;">إجراءات</th>
         </tr>
       </thead>
       <tbody class="p-datatable-tbody">
@@ -99,8 +100,122 @@
           <td style="padding: 0.65rem;">
             <span style="font-size: 0.72rem; color: #64748b;" [title]="shift.notes || 'لا يوجد'">{{ (shift.notes && shift.notes.length > 20) ? (shift.notes | slice:0:20) + '...' : (shift.notes || '-') }}</span>
           </td>
+          <td style="padding: 0.65rem; text-align: center;">
+            <button pButton icon="pi pi-eye" class="p-button-rounded p-button-info p-button-text" (click)="viewDetails(shift.id)" pTooltip="التفاصيل" tooltipPosition="top"></button>
+          </td>
         </tr>
       </tbody>
     </table>
   </div>
+  
+  <!-- Details Dialog -->
+  <p-dialog [(visible)]="showDetailsDialog" [modal]="true" [style]="{width: '65vw'}" [maximizable]="true" header="تفاصيل عمليات الوردية" styleClass="compact-dialog">
+    <div *ngIf="loadingDetails" class="text-center p-4">
+      <p-progressSpinner [style]="{width: '30px', height: '30px'}"></p-progressSpinner>
+      <p style="font-size: 0.75rem; color: #64748b;">جاري جلب التفاصيل...</p>
+    </div>
+    
+    <div *ngIf="!loadingDetails && shiftDetails" class="details-container p-fluid compact-details" dir="rtl">
+      
+      <div class="grid mb-2">
+        <div class="col-12">
+          <div class="compact-summary-card">
+            <div class="summary-item"><span class="lbl">المبيعات النقدية:</span> <span class="val">{{ shiftDetails.summary.totalSalesCash | number }}</span></div>
+            <div class="summary-item"><span class="lbl">مبيعات الشبكة:</span> <span class="val">{{ shiftDetails.summary.totalSalesNetwork | number }}</span></div>
+            <div class="summary-item"><span class="lbl">المبيعات الآجلة:</span> <span class="val">{{ shiftDetails.summary.totalSalesCredit | number }}</span></div>
+            <div class="summary-divider"></div>
+            <div class="summary-item"><span class="lbl">المرتجعات (نقداً):</span> <span class="val text-danger">{{ shiftDetails.summary.totalReturnsCash | number }}</span></div>
+            <div class="summary-item"><span class="lbl">المصروفات:</span> <span class="val text-danger">{{ shiftDetails.summary.totalExpensesCash | number }}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tables-grid">
+        <!-- Invoices Table -->
+        <div class="table-section">
+          <h4 class="section-title">فواتير المبيعات ({{ shiftDetails.invoices.length }})</h4>
+          <div class="table-scroll-container">
+            <table class="ultra-compact-table">
+              <thead>
+                <tr>
+                  <th>الفاتورة</th>
+                  <th>العميل</th>
+                  <th>الإجمالي</th>
+                  <th>الوقت</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let inv of shiftDetails.invoices">
+                  <td>{{ inv.invoiceNumber }}</td>
+                  <td>{{ inv.customerName }}</td>
+                  <td class="font-bold">{{ inv.totalAmount | number }}</td>
+                  <td class="time-col">{{ inv.createdAt }}</td>
+                </tr>
+                <tr *ngIf="shiftDetails.invoices.length === 0">
+                  <td colspan="4" class="empty-state">لا توجد فواتير</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Returns Table -->
+        <div class="table-section">
+          <h4 class="section-title">المرتجعات ({{ shiftDetails.returns.length }})</h4>
+          <div class="table-scroll-container">
+            <table class="ultra-compact-table">
+              <thead>
+                <tr>
+                  <th>العميل</th>
+                  <th>الإجمالي</th>
+                  <th>السبب</th>
+                  <th>الوقت</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let ret of shiftDetails.returns">
+                  <td>{{ ret.customerName }}</td>
+                  <td class="font-bold text-danger">{{ ret.totalAmount | number }}</td>
+                  <td>{{ ret.reason || '-' }}</td>
+                  <td class="time-col">{{ ret.createdAt }}</td>
+                </tr>
+                <tr *ngIf="shiftDetails.returns.length === 0">
+                  <td colspan="4" class="empty-state">لا توجد مرتجعات</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Expenses Table -->
+        <div class="table-section" style="grid-column: 1 / -1;">
+          <h4 class="section-title">المصروفات ({{ shiftDetails.expenses.length }})</h4>
+          <div class="table-scroll-container" style="max-height: 150px;">
+            <table class="ultra-compact-table">
+              <thead>
+                <tr>
+                  <th>المرجع</th>
+                  <th>التصنيف</th>
+                  <th>المبلغ</th>
+                  <th>الوقت</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let exp of shiftDetails.expenses">
+                  <td>{{ exp.referenceNumber }}</td>
+                  <td>{{ exp.categoryName }}</td>
+                  <td class="font-bold text-danger">{{ exp.amount | number }}</td>
+                  <td class="time-col">{{ exp.createdAt }}</td>
+                </tr>
+                <tr *ngIf="shiftDetails.expenses.length === 0">
+                  <td colspan="4" class="empty-state">لا توجد مصروفات</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </p-dialog>
 </div>

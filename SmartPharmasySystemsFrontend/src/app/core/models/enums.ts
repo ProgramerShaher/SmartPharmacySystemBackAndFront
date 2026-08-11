@@ -36,5 +36,18 @@ export enum WarehouseType {
     Damaged = 3
 }
 
+export enum ShiftType {
+    Morning = 1,
+    Evening = 2,
+    Night = 3
+}
+
+export enum AttendanceStatus {
+    Present = 1,
+    Absent = 2,
+    Late = 3,
+    OnLeave = 4
+}
+
 // Re-export from stock-movement.enums for convenience
 export { ReferenceType, DocumentStatus, StockMovementType } from './stock-movement.enums';

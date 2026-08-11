@@ -1,0 +1,238 @@
+/* ============================================================
+   ATTENDANCE — Compact Premium Design
+   ============================================================ */
+
+$teal: #0d9488;
+$teal-light: #f0fdfa;
+$teal-dark: #115e59;
+$emerald: #10b981;
+$emerald-light: #ecfdf5;
+$emerald-dark: #047857;
+$ruby: #f43f5e;
+$ruby-light: #fff1f2;
+$ruby-dark: #be123c;
+$text: #1e293b;
+$text-secondary: #64748b;
+$border: #e2e8f0;
+$bg: #ffffff;
+$radius: 10px;
+
+.emp-wrap {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ===== Header ===== */
+.emp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.emp-header-start {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.emp-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: $radius;
+  background: linear-gradient(135deg, $teal, #0f766e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 6px -1px rgba($teal, 0.3);
+}
+
+.emp-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: $text;
+  line-height: 1.2;
+}
+
+.emp-subtitle {
+  margin: 0.1rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $text-secondary;
+}
+
+/* ===== KPI Row ===== */
+.emp-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.55rem;
+}
+
+.emp-kpi-card {
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: $radius;
+  padding: 0.65rem 0.75rem;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  &[data-color="teal"] {
+    border-top: 3px solid $teal;
+    .emp-kpi-value { color: $teal; }
+    .emp-kpi-badge-teal { background: $teal-light; color: $teal; }
+  }
+
+  &[data-color="emerald"] {
+    border-top: 3px solid $emerald;
+    .emp-kpi-value { color: $emerald; }
+    .emp-kpi-badge-emerald { background: $emerald-light; color: $emerald; }
+  }
+
+  &[data-color="ruby"] {
+    border-top: 3px solid $ruby;
+    .emp-kpi-value { color: $ruby; }
+    .emp-kpi-badge-ruby { background: $ruby-light; color: $ruby; }
+  }
+}
+
+.emp-kpi-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.emp-kpi-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.emp-kpi-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.emp-kpi-value {
+  font-size: 1.35rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-top: 0.1rem;
+}
+
+.emp-kpi-badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* ===== Table ===== */
+.emp-table-wrap {
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+:host ::ng-deep .emp-table {
+  font-size: 0.78rem;
+
+  .p-datatable-header {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .p-datatable-thead > tr > th {
+    background: $teal-light !important;
+    color: $teal-dark !important;
+    font-size: 0.7rem !important;
+    font-weight: 800 !important;
+    padding: 0.5rem 0.65rem !important;
+    border-bottom: 2px solid $teal !important;
+    text-align: right !important;
+    white-space: nowrap;
+  }
+
+  .p-datatable-tbody > tr {
+    background: $bg !important;
+    color: $text !important;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #f8fafc !important;
+    }
+
+    > td {
+      padding: 0.45rem 0.65rem !important;
+      border-bottom: 1px solid $border !important;
+      vertical-align: middle;
+    }
+  }
+}
+
+.emp-empty {
+  text-align: center;
+  padding: 2rem !important;
+  color: $text-secondary;
+
+  i {
+    display: block;
+    font-size: 1.5rem;
+    color: $border;
+    margin-bottom: 0.3rem;
+  }
+
+  span {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $text;
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .emp-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .emp-wrap { padding: 0.4rem; gap: 0.4rem; }
+  .emp-kpi-row { grid-template-columns: 1fr; }
+  .emp-header { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  .emp-header-end { width: 100%; justify-content: space-between; gap: 0.5rem; }
+}
+
+:host ::ng-deep {
+    .user-dialog .p-dialog-content {
+        padding: 0;
+        border-radius: 14px;
+        overflow: hidden;
+        background: #ffffff !important;
+    }
+
+    .p-button-rounded.p-button-text {
+        width: 28px !important;
+        height: 28px !important;
+    }
+}

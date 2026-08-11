@@ -1,0 +1,261 @@
+<div class="emp-wrap animate-fade-in" dir="rtl">
+  <!-- ===== Premium Header ===== -->
+  <div class="emp-header no-print">
+    <div class="emp-header-start">
+      <div class="emp-icon">
+        <i class="pi pi-wallet"></i>
+      </div>
+      <div>
+        <h1 class="emp-title">مسير الرواتب الشهري</h1>
+        <p class="emp-subtitle">احتساب واعتماد رواتب الموظفين</p>
+      </div>
+    </div>
+    <div class="emp-header-end" style="display: flex; gap: 1rem; align-items: center;">
+      <p-dropdown [options]="branches" [(ngModel)]="selectedBranch" optionLabel="name" optionValue="id" (onChange)="loadData()" placeholder="اختر الفرع"></p-dropdown>
+      <p-calendar [(ngModel)]="filterDate" view="month" dateFormat="mm/yy" [readonlyInput]="true" (onSelect)="loadData()"></p-calendar>
+      <p-button icon="pi pi-money-bill" label="اعتماد ودفع الكل" severity="success" (onClick)="payAll()" [disabled]="records().length === 0"></p-button>
+    </div>
+  </div>
+
+  <!-- ===== KPI Cards ===== -->
+  <div class="emp-kpi-row no-print" *ngIf="!loading() && summary()">
+    <div class="emp-kpi-card" data-color="teal">
+      <div class="emp-kpi-inner">
+        <div class="emp-kpi-left">
+          <span class="emp-kpi-label">إجمالي الموظفين</span>
+          <strong class="emp-kpi-value">{{ summary().totalEmployees }}</strong>
+        </div>
+        <div class="emp-kpi-badge emp-kpi-badge-teal">
+          <i class="pi pi-users"></i>
+        </div>
+      </div>
+    </div>
+    
+    <div class="emp-kpi-card" data-color="emerald">
+      <div class="emp-kpi-inner">
+        <div class="emp-kpi-left">
+          <span class="emp-kpi-label">تم الدفع</span>
+          <strong class="emp-kpi-value">{{ summary().paidCount }}</strong>
+        </div>
+        <div class="emp-kpi-badge emp-kpi-badge-emerald">
+          <i class="pi pi-check-circle"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="emp-kpi-card" data-color="ruby">
+      <div class="emp-kpi-inner">
+        <div class="emp-kpi-left">
+          <span class="emp-kpi-label">قيد الانتظار</span>
+          <strong class="emp-kpi-value">{{ summary().pendingCount }}</strong>
+        </div>
+        <div class="emp-kpi-badge emp-kpi-badge-ruby">
+          <i class="pi pi-hourglass"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="emp-table-wrap no-print" *ngIf="loading()" style="padding: 3rem; text-align: center;">
+    <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
+    <p style="color: #64748b; margin-top: 1rem; font-size: 0.85rem; font-weight: 600;">جاري تحميل مسير الرواتب...</p>
+  </div>
+
+  <!-- ===== Table ===== -->
+  <div *ngIf="!loading()" class="emp-table-wrap no-print">
+    <div style="padding: 1rem; background: #fafafa; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;" *ngIf="summary()">
+        <span style="font-weight: 800; color: #1e293b; font-size: 0.9rem;">إجمالي صافي الرواتب المستحقة:</span>
+        <span style="font-weight: 900; color: #0d9488; font-size: 1.2rem;">{{ summary().totalNetSalary | number:'1.0-2' }} ريال</span>
+    </div>
+
+    <p-table [value]="records()" styleClass="emp-table" responsiveLayout="scroll">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>الكود</th>
+          <th>الاسم</th>
+          <th class="text-center">الراتب الأساسي</th>
+          <th class="text-center">البدلات</th>
+          <th class="text-center">المكافآت</th>
+          <th class="text-center">الاستقطاعات</th>
+          <th class="text-center">صافي الراتب</th>
+          <th class="text-center">الحالة</th>
+          <th class="text-center">الإجراءات</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-s>
+        <tr>
+          <td><span style="font-family: monospace; font-weight: 800; color: #0d9488;">{{ s.employeeCode }}</span></td>
+          <td><strong style="color: #1e293b; font-size: 0.75rem;">{{ s.employeeName }}</strong></td>
+          
+          <td class="text-center"><strong>{{ s.basicSalary | number:'1.0-2' }}</strong></td>
+          <td class="text-center"><span style="color: #10b981; font-weight: 700;">+{{ s.totalAllowances | number:'1.0-2' }}</span></td>
+          <td class="text-center"><span style="color: #3b82f6; font-weight: 700;">+{{ s.totalBonuses | number:'1.0-2' }}</span></td>
+          <td class="text-center"><span style="color: #ef4444; font-weight: 700;">-{{ s.totalDeductions | number:'1.0-2' }}</span></td>
+          
+          <td class="text-center"><strong style="font-size: 0.85rem;">{{ s.netSalary | number:'1.0-2' }}</strong></td>
+          
+          <td class="text-center">
+            <p-tag [value]="s.paymentStatusName" [severity]="s.paymentStatusColor"></p-tag>
+          </td>
+          <td class="text-center">
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
+                        pTooltip="تعديل الراتب" tooltipPosition="top" (onClick)="openEdit(s)"
+                        [disabled]="s.paymentStatus === 2"></p-button>
+
+              <p-button icon="pi pi-check-circle" [rounded]="true" [text]="true" severity="success"
+                        pTooltip="اعتماد الراتب" tooltipPosition="top" (onClick)="paySingle(s.id)"
+                        [disabled]="s.paymentStatus === 2"></p-button>
+
+              <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary"
+                        pTooltip="طباعة المسير" tooltipPosition="top" (onClick)="printSlip(s)"></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptydata">
+        <tr>
+          <td colspan="9" class="emp-empty">
+            <i class="pi pi-wallet"></i>
+            <span>لا توجد رواتب مسجلة لهذا الشهر</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- ===================== Dialogs ===================== -->
+
+<p-confirmDialog acceptLabel="تأكيد" rejectLabel="إلغاء" styleClass="user-dialog"></p-confirmDialog>
+<p-toast position="top-center"></p-toast>
+
+<!-- Edit Salary Dialog -->
+<p-dialog 
+  [(visible)]="showForm" 
+  [modal]="true" 
+  [showHeader]="false"
+  [style]="{width: '400px'}" 
+  styleClass="imperial-dialog user-dialog">
+  
+  <div class="modal-shell">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="modal-icon"><i class="pi pi-pencil"></i></div>
+        <div>
+          <h2>تعديل بيانات الراتب</h2>
+          <p>{{ selectedRecord?.employeeName }} - {{ selectedRecord?.monthName }} {{ selectedRecord?.year }}</p>
+        </div>
+      </div>
+      <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="secondary" styleClass="close-btn" (onClick)="showForm = false"></p-button>
+    </div>
+
+    <div class="modal-body p-fluid">
+      <div class="voucher-form">
+          <div class="vf-row">
+            <div class="vf-field" style="flex: 1;">
+              <label>الراتب الأساسي</label>
+              <p-inputNumber [(ngModel)]="formModel.basicSalary" mode="decimal" [minFractionDigits]="2"></p-inputNumber>
+            </div>
+          </div>
+          <div class="vf-row">
+            <div class="vf-field" style="flex: 1;">
+              <label>إجمالي البدلات</label>
+              <p-inputNumber [(ngModel)]="formModel.totalAllowances" mode="decimal" [minFractionDigits]="2"></p-inputNumber>
+            </div>
+          </div>
+          <div class="vf-row">
+            <div class="vf-field" style="flex: 1;">
+              <label>إجمالي المكافآت</label>
+              <p-inputNumber [(ngModel)]="formModel.totalBonuses" mode="decimal" [minFractionDigits]="2"></p-inputNumber>
+            </div>
+          </div>
+          <div class="vf-row">
+            <div class="vf-field" style="flex: 1;">
+              <label>إجمالي الاستقطاعات</label>
+              <p-inputNumber [(ngModel)]="formModel.totalDeductions" mode="decimal" [minFractionDigits]="2"></p-inputNumber>
+            </div>
+          </div>
+          
+          <div class="vf-row" style="margin-top: 1rem; border-top: 1px dashed #cbd5e1; padding-top: 1rem;">
+            <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                <span style="font-weight: 700; color: #475569;">صافي الراتب المستحق:</span>
+                <span style="font-weight: 900; color: #0d9488; font-size: 1.1rem;">{{ netCalculated | number:'1.0-2' }}</span>
+            </div>
+          </div>
+      </div>
+    </div>
+    
+    <div style="padding: 1rem; border-top: 1px solid #f1f5f9; display: flex; justify-content: flex-end; gap: 0.5rem; background: #fafafa;">
+        <p-button label="إلغاء" icon="pi pi-times" [outlined]="true" severity="secondary" (onClick)="showForm = false"></p-button>
+        <p-button label="حفظ التعديلات" icon="pi pi-check" (onClick)="saveEdit()" [loading]="saving"></p-button>
+    </div>
+  </div>
+</p-dialog>
+
+
+<!-- Hidden Print Slip -->
+<div class="print-only" *ngIf="printData">
+  <div style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #000; padding-bottom: 1rem;">
+    <h1>مُسير راتب موظف</h1>
+    <h3>{{ printData.branchName }}</h3>
+  </div>
+  
+  <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+    <div>
+        <p><strong>اسم الموظف:</strong> {{ printData.employeeName }}</p>
+        <p><strong>رقم الموظف:</strong> {{ printData.employeeCode }}</p>
+    </div>
+    <div>
+        <p><strong>عن شهر:</strong> {{ printData.monthName }} {{ printData.year }}</p>
+        <p><strong>تاريخ الطباعة:</strong> {{ filterDate | date:'yyyy-MM-dd' }}</p>
+    </div>
+  </div>
+
+  <table class="print-table" dir="rtl" style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+    <thead>
+      <tr>
+        <th style="border: 1px solid #000; padding: 10px; text-align: right;">البيان</th>
+        <th style="border: 1px solid #000; padding: 10px; text-align: center; width: 150px;">المبلغ (ريال)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="border: 1px solid #000; padding: 10px;">الراتب الأساسي</td>
+        <td style="border: 1px solid #000; padding: 10px; text-align: center;">{{ printData.basicSalary | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #000; padding: 10px;">بدلات أخرى</td>
+        <td style="border: 1px solid #000; padding: 10px; text-align: center;">{{ printData.totalAllowances | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #000; padding: 10px;">مكافآت</td>
+        <td style="border: 1px solid #000; padding: 10px; text-align: center;">{{ printData.totalBonuses | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #000; padding: 10px;">الاستقطاعات (غياب وسلف)</td>
+        <td style="border: 1px solid #000; padding: 10px; text-align: center; color: red;">{{ printData.totalDeductions | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #000; padding: 10px; font-weight: bold; background: #f2f2f2;">صافي الراتب المستحق</td>
+        <td style="border: 1px solid #000; padding: 10px; text-align: center; font-weight: bold; background: #f2f2f2;">{{ printData.netSalary | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <div style="margin-top: 4rem; display: flex; justify-content: space-between;">
+    <div style="text-align: center;">
+      <p><strong>توقيع الموظف</strong></p>
+      <p>_________________</p>
+    </div>
+    <div style="text-align: center;">
+      <p><strong>توقيع المحاسب</strong></p>
+      <p>_________________</p>
+    </div>
+    <div style="text-align: center;">
+      <p><strong>اعتماد المدير</strong></p>
+      <p>_________________</p>
+    </div>
+  </div>
+</div>

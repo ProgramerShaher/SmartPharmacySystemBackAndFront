@@ -110,6 +110,34 @@ public class MonthlySalaryService : IMonthlySalaryService
         return await _unitOfWork.MonthlySalaries.ExistsAsync(employeeId, month, year);
     }
 
+    public async Task<MonthlySalaryDto> PaySalaryAsync(int id)
+    {
+        var salary = await _unitOfWork.MonthlySalaries.GetByIdAsync(id)
+            ?? throw new KeyNotFoundException("الراتب غير موجود");
+
+        salary.PaymentStatus = PaymentStatus.Paid;
+        salary.PaidAt = DateTime.UtcNow;
+        await _unitOfWork.MonthlySalaries.UpdateAsync(salary);
+        await _unitOfWork.SaveChangesAsync();
+        return MapToDto(salary);
+    }
+
+    public async Task<int> PayAllAsync(int month, int year, int? branchId = null)
+    {
+        var salaries = (await _unitOfWork.MonthlySalaries.GetByMonthYearAsync(month, year, branchId))
+            .Where(s => s.PaymentStatus == PaymentStatus.Pending)
+            .ToList();
+
+        foreach (var salary in salaries)
+        {
+            salary.PaymentStatus = PaymentStatus.Paid;
+            salary.PaidAt = DateTime.UtcNow;
+            await _unitOfWork.MonthlySalaries.UpdateAsync(salary);
+        }
+        await _unitOfWork.SaveChangesAsync();
+        return salaries.Count;
+    }
+
     private MonthlySalaryDto MapToDto(MonthlySalary salary)
     {
         var dto = _mapper.Map<MonthlySalaryDto>(salary);

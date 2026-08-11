@@ -13,7 +13,7 @@
     <div class="emp-header-end no-print">
       <button pButton icon="pi pi-file-excel" label="تصدير Excel" [outlined]="true" severity="success" (click)="exportExcel()" [loading]="exporting" styleClass="emp-btn-outline"></button>
       <button pButton icon="pi pi-file-pdf" label="تصدير PDF" [outlined]="true" severity="danger" (click)="exportPdf()" [loading]="exporting" styleClass="emp-btn-outline"></button>
-      <button pButton icon="pi pi-plus" label="إضافة موظف" styleClass="emp-btn-primary"></button>
+      <button pButton icon="pi pi-plus" label="إضافة موظف" styleClass="emp-btn-primary" (click)="openAddForm()"></button>
     </div>
   </div>
 
@@ -139,6 +139,8 @@
             </td>
             <td class="text-center no-print">
               <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="success"
+                          pTooltip="تعديل الموظف" tooltipPosition="top" (onClick)="openEditForm(emp)"></p-button>
                 <p-button icon="pi pi-id-card" [rounded]="true" [text]="true" severity="secondary"
                           pTooltip="تفاصيل الراتب" tooltipPosition="top" (onClick)="openSalaryDetails(emp)"></p-button>
                 <p-button icon="pi pi-calendar" [rounded]="true" [text]="true" severity="info"
@@ -329,3 +331,11 @@
     </div>
   </div>
 </div>
+
+<app-employee-form 
+  [visible]="showForm" 
+  [employee]="selectedEmployee" 
+  [editMode]="editMode" 
+  (saved)="onFormSaved()" 
+  (cancelled)="showForm = false">
+</app-employee-form>

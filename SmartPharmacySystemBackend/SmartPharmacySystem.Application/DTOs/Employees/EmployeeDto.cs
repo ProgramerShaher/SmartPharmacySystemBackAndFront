@@ -21,7 +21,12 @@ public class EmployeeDto
     public int? UserId { get; set; }
     public string? UserName { get; set; }
 
-    public string Shift { get; set; } = "صباحي"; // Temporary shift field based on user feedback request
+    public SmartPharmacySystem.Core.Enums.ShiftType Shift { get; set; } = SmartPharmacySystem.Core.Enums.ShiftType.Morning;
+    public string ShiftName { get; set; } = string.Empty;
+    public TimeSpan? ShiftStartTime { get; set; }
+    public TimeSpan? ShiftEndTime { get; set; }
+    public decimal WorkingHours { get; set; } = 8;
+    
     public decimal TotalLoans { get; set; }
     public decimal RemainingLoans { get; set; }
 }

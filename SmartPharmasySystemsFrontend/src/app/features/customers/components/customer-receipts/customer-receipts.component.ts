@@ -90,9 +90,9 @@ export class CustomerReceiptsComponent implements OnInit {
         this.receiptForm = this.fb.group({
             customerId: [null, Validators.required],
             amount: [0, [Validators.required, Validators.min(1)]],
-            paymentDate: [new Date(), Validators.required],
+            receiptDate: [new Date(), Validators.required],
             paymentMethod: ['Cash', Validators.required],
-            referenceNumber: [''],
+            referenceNo: [''],
             saleInvoiceId: [null],
             notes: ['']
         });
@@ -160,6 +160,11 @@ export class CustomerReceiptsComponent implements OnInit {
                 this.loading.set(false);
             }
         });
+    }
+
+    onSearchChange(val: string) {
+        this.searchQuery.set(val);
+        this.loadReceipts({ first: 0, rows: this.pageSize() });
     }
 
     calculateStats(receipts: CustomerReceipt[]) {
@@ -241,7 +246,7 @@ export class CustomerReceiptsComponent implements OnInit {
         this.selectedCustomer = null;
         this.selectedCustomerObj = null;
         this.receiptForm.reset({
-            paymentDate: new Date(),
+            receiptDate: new Date(),
             paymentMethod: 'Cash',
             amount: 0
         });
@@ -249,20 +254,37 @@ export class CustomerReceiptsComponent implements OnInit {
     }
 
     saveReceipt() {
-        if (this.receiptForm.invalid) {
+        if (this.receiptForm.invalid || !this.receiptForm.value.customerId?.id) {
             this.receiptForm.markAllAsTouched();
             return;
         }
 
-        const amount = this.receiptForm.value.amount;
-        // Optional warning, strictly validating might be annoying if they want to overpay slightly or system is out of sync
-        if (this.selectedCustomer && amount > this.selectedCustomer.balance) {
-            // Just a toast warning, allow proceed? User might be paying in advance.
-            // For now, let's allow it but warn.
-        }
+        const amount = Number(this.receiptForm.value.amount || 0);
 
         this.saving.set(true);
-        this.customerService.createReceipt(this.receiptForm.value).subscribe({
+
+        const formVal = this.receiptForm.value;
+        const customerId = formVal.customerId.id;
+        
+        const invoiceObj = formVal.saleInvoiceId;
+        const invoiceId = (typeof invoiceObj === 'object' && invoiceObj !== null) ? invoiceObj.id : invoiceObj;
+        
+        let refNo = formVal.referenceNo;
+        if (!refNo && invoiceObj && typeof invoiceObj === 'object') {
+            refNo = invoiceObj.saleInvoiceNumber || String(invoiceObj.id);
+        }
+
+        const dto: CreateCustomerReceiptDto = {
+            customerId,
+            amount,
+            receiptDate: (formVal.receiptDate as Date).toISOString(),
+            paymentMethod: formVal.paymentMethod,
+            referenceNo: refNo,
+            saleInvoiceId: invoiceId,
+            notes: formVal.notes || 'سند قبض'
+        };
+
+        this.customerService.createReceipt(dto).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ سند القبض وتحديث الرصيد' });
                 this.displayDialog.set(false);
@@ -281,7 +303,7 @@ export class CustomerReceiptsComponent implements OnInit {
     deleteReceipt(event: Event, receipt: CustomerReceipt) {
         this.confirmationService.confirm({
             target: event.target as EventTarget,
-            message: `هل أنت متأكد من حذف سند القبض رقم ${receipt.receiptNumber}؟ سيتم إعادة المديونية للعميل.`,
+            message: `هل أنت متأكد من حذف سند القبض رقم ${receipt.id}؟ سيتم إعادة المديونية للعميل.`,
             header: 'تأكيد الحذف المالي',
             icon: 'pi pi-exclamation-circle',
             acceptLabel: 'نعم، حذف',
@@ -342,7 +364,7 @@ export class CustomerReceiptsComponent implements OnInit {
     }
 
     printReceipt(receipt: CustomerReceipt) {
-        const dateObj = new Date(receipt.paymentDate);
+        const dateObj = new Date(receipt.receiptDate);
         const formattedDate = dateObj.toLocaleDateString('ar-YE');
         const formattedTime = dateObj.toLocaleTimeString('ar-YE', { hour: '2-digit', minute: '2-digit' });
 
@@ -372,7 +394,7 @@ export class CustomerReceiptsComponent implements OnInit {
                         <span class="status-badge">مُرَحّل</span>
                     </div>
                     <div class="meta-data">
-                        <p><b>رقم السند:</b> RV-${receipt.receiptNumber}</p>
+                        <p><b>رقم السند:</b> RV-${receipt.id}</p>
                         <p><b>التاريخ:</b> ${formattedDate}</p>
                         <p><b>الوقت:</b> ${formattedTime}</p>
                     </div>
@@ -410,7 +432,7 @@ export class CustomerReceiptsComponent implements OnInit {
                     <div class="row-grid">
                         <div class="field-group">
                             <span class="field-label">رقم العملية/المرجع:</span>
-                            <span class="field-value">${receipt.referenceNumber || '---'}</span>
+                            <span class="field-value">${receipt.referenceNo || '---'}</span>
                         </div>
                         <div class="field-group">
                             <span class="field-label">مركز التكلفة:</span>
@@ -464,7 +486,7 @@ export class CustomerReceiptsComponent implements OnInit {
             popupWin.document.write(`
                 <html>
                     <head>
-                        <title>طباعة سند قبض #${receipt.receiptNumber}</title>
+                        <title>طباعة سند قبض #${receipt.id}</title>
                         <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
                         <style>
                             :root {

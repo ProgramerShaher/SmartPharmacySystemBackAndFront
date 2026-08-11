@@ -12,35 +12,35 @@ import { AuthService } from '../../features/auth/services/auth.service';
 import { CurrentUserResponse } from '../../core/models/auth-response.interface';
 
 interface SidebarMenuItem {
-    key?: string;
-    label: string;
-    route?: string;
-    icon: string;
-    exact?: boolean;
-    badge?: string;
-    alert?: boolean;
-    permission?: string;        // كود الصلاحية المطلوبة
-    anyPermission?: string[];   // أي صلاحية من القائمة تكفي
-    children?: SidebarMenuItem[];
+  key?: string;
+  label: string;
+  route?: string;
+  icon: string;
+  exact?: boolean;
+  badge?: string;
+  alert?: boolean;
+  permission?: string;        // كود الصلاحية المطلوبة
+  anyPermission?: string[];   // أي صلاحية من القائمة تكفي
+  children?: SidebarMenuItem[];
 }
 
 interface SidebarSection {
-    key: string;
-    label: string;
-    icon: string;
-    iconClass: string;
-    match?: string;
-    extraMatches?: string[];
-    permission?: string;        // صلاحية لإظهار القسم كاملاً
-    anyPermission?: string[];   // القسم يظهر إذا كان أي من أبنائه مرئياً
-    children: SidebarMenuItem[];
+  key: string;
+  label: string;
+  icon: string;
+  iconClass: string;
+  match?: string;
+  extraMatches?: string[];
+  permission?: string;        // صلاحية لإظهار القسم كاملاً
+  anyPermission?: string[];   // القسم يظهر إذا كان أي من أبنائه مرئياً
+  children: SidebarMenuItem[];
 }
 
 @Component({
-    selector: 'app-sidebar',
-    standalone: true,
-    imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
-    template: `
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterModule, RouterLink, RouterLinkActive],
+  template: `
 <div class="layout-sidebar" dir="rtl" [@slideIn]>
   <div class="sidebar-header">
     <div class="brand-mark" [title]="pharmacyName">
@@ -123,374 +123,450 @@ interface SidebarSection {
   </div>
 </div>
     `,
-    styleUrls: ['./sidebar.component.css'],
-    animations: [
-        trigger('slideIn', [
-            state('void', style({ transform: 'translateX(100%)', opacity: 0 })),
-            state('*', style({ transform: 'translateX(0)', opacity: 1 })),
-            transition('void => *', animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')),
-            transition('* => void', animate('250ms cubic-bezier(0.4, 0, 0.2, 1)'))
-        ])
-    ]
+  styleUrls: ['./sidebar.component.css'],
+  animations: [
+    trigger('slideIn', [
+      state('void', style({ transform: 'translateX(100%)', opacity: 0 })),
+      state('*', style({ transform: 'translateX(0)', opacity: 1 })),
+      transition('void => *', animate('300ms cubic-bezier(0.4, 0, 0.2, 1)')),
+      transition('* => void', animate('250ms cubic-bezier(0.4, 0, 0.2, 1)'))
+    ])
+  ]
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-    @Input() sidebarVisible: boolean = false;
-    @Input() isCollapsed: boolean = false;
-    @Output() collapseChange = new EventEmitter<boolean>();
-    @HostBinding('class.sidebar-visible') get visible() { return this.sidebarVisible; }
-    @HostBinding('class.sidebar-collapsed') get collapsed() { return this.isCollapsed; }
+  @Input() sidebarVisible: boolean = false;
+  @Input() isCollapsed: boolean = false;
+  @Output() collapseChange = new EventEmitter<boolean>();
+  @HostBinding('class.sidebar-visible') get visible() { return this.sidebarVisible; }
+  @HostBinding('class.sidebar-collapsed') get collapsed() { return this.isCollapsed; }
 
-    private permissionService = inject(PermissionService);
+  private permissionService = inject(PermissionService);
 
-    currentUser: CurrentUserResponse | null = null;
-    unreadAlertsCount = 0;
-    currentRoute = '';
-    pharmacyName = 'الصيدلية الذكية';
-    pharmacyLogoUrl: string | null = null;
-    readonly serverUrl = environment.apiUrl.replace('/api', '');
-    openMenus: Record<string, boolean> = {
-        dashboard: true
-    };
+  currentUser: CurrentUserResponse | null = null;
+  unreadAlertsCount = 0;
+  currentRoute = '';
+  pharmacyName = 'الصيدلية الذكية';
+  pharmacyLogoUrl: string | null = null;
+  readonly serverUrl = environment.apiUrl.replace('/api', '');
+  openMenus: Record<string, boolean> = {
+    dashboard: true
+  };
 
-    // ================================================================
-    // قائمة الشريط الجانبي — كل عنصر مرتبط بكود صلاحيته
-    // ================================================================
-    menuSections: SidebarSection[] = [
+  // ================================================================
+  // قائمة الشريط الجانبي — كل عنصر مرتبط بكود صلاحيته
+  // ================================================================
+  menuSections: SidebarSection[] = [
+    {
+      key: 'dashboard',
+      label: 'الرئيسية',
+      icon: 'pi pi-home',
+      iconClass: 'icon-dashboard',
+      children: [
+        { label: 'لوحة التحكم', route: '/dashboard', icon: 'pi pi-chart-pie', exact: true },
         {
-            key: 'dashboard',
-            label: 'لوحات التحكم',
-            icon: 'pi pi-chart-pie',
-            iconClass: 'icon-dashboard',
-            // لوحة التحكم للجميع — بدون قيد صلاحية
-            children: [
-                { label: 'لوحة التحكم', route: '/dashboard', icon: 'pi pi-chart-pie', exact: true },
-                { label: 'لوحة التحكم الرئيسية', route: '/dashboard/master', icon: 'pi pi-chart-line', badge: 'جديد',
-                  permission: 'dashboard.master' }
-            ]
-        },
-        {
-            key: 'inventory',
-            label: 'المخزون والمنتجات',
-            icon: 'pi pi-box',
-            iconClass: 'icon-inventory',
-            match: '/inventory',
-            children: [
-                { label: 'الأدوية والمنتجات', route: '/inventory/medicines', icon: 'pi pi-box',
-                  permission: 'inventory.view' },
-                { label: 'الجرد المخزني', route: '/inventory/stock-counts', icon: 'pi pi-check-square', badge: 'جديد',
-                  permission: 'inventory.stock_count' },
-                { label: 'التصنيفات', route: '/inventory/categories', icon: 'pi pi-tags',
-                  permission: 'inventory.categories' },
-                { label: 'حركات المخزون', route: '/inventory/movements', icon: 'pi pi-history',
-                  permission: 'inventory.movements' },
-                { label: 'الدفعات', route: '/inventory/batches', icon: 'pi pi-list',
-                  permission: 'inventory.batches' }
-            ]
-        },
-        {
-            key: 'sales',
-            label: 'المبيعات',
-            icon: 'pi pi-shopping-cart',
-            iconClass: 'icon-sales',
-            match: '/sales',
-            children: [
-                { label: 'فواتير المبيعات', route: '/sales', icon: 'pi pi-shopping-cart', exact: true,
-                  permission: 'sales.view' },
-                { label: 'مرتجع المبيعات', route: '/sales/returns', icon: 'pi pi-replay',
-                  permission: 'sales.returns' },
-                { label: 'طلبات الأونلاين', route: '/online-orders', icon: 'pi pi-globe', badge: 'جديد',
-                  permission: 'online_orders.view' }
-            ]
-        },
-        {
-            key: 'purchases',
-            label: 'المشتريات',
-            icon: 'pi pi-truck',
-            iconClass: 'icon-purchases',
-            match: '/purchases',
-            children: [
-                { label: 'فواتير الشراء', route: '/purchases', icon: 'pi pi-truck',
-                  permission: 'purchases.view' },
-                { label: 'مرتجع المشتريات', route: '/purchases/returns', icon: 'pi pi-refresh',
-                  permission: 'purchases.returns' }
-            ]
-        },
-        {
-            key: 'warehouses',
-            label: 'المخازن',
-            icon: 'pi pi-warehouse',
-            iconClass: 'icon-warehouses',
-            match: '/warehouses',
-            children: [
-                { label: 'جميع المخازن', route: '/warehouses', icon: 'pi pi-warehouse', exact: true,
-                  permission: 'warehouses.view' },
-                { label: 'التحويلات الداخلية', route: '/warehouses/transfers/internal', icon: 'pi pi-sync',
-                  permission: 'warehouses.transfers' },
-                { label: 'تحويلات الفروع', route: '/warehouses/transfers/external', icon: 'pi pi-globe',
-                  permission: 'warehouses.external_transfers' },
-                { label: 'الأدوية التالفة', route: '/warehouses/damaged', icon: 'pi pi-exclamation-triangle',
-                  permission: 'warehouses.damaged' }
-            ]
-        },
-        {
-            key: 'employees',
-            label: 'الموظفين',
-            icon: 'pi pi-id-card',
-            iconClass: 'icon-employees',
-            match: '/employees',
-            extraMatches: ['/branches', '/departments'],
-            children: [
-                { label: 'لوحة تحكم الفرع', route: '/branches/dashboard', icon: 'pi pi-chart-pie',
-                  permission: 'branches.dashboard' },
-                { label: 'جميع الموظفين', route: '/employees', icon: 'pi pi-users', exact: true,
-                  permission: 'employees.view' },
-                { label: 'إدارة الفروع', route: '/branches', icon: 'pi pi-sitemap', exact: true,
-                  permission: 'branches.view' },
-                { label: 'الأقسام', route: '/departments', icon: 'pi pi-th-large', exact: true,
-                  permission: 'departments.view' }
-            ]
-        },
-        {
-            key: 'partners',
-            label: 'الشركاء',
-            icon: 'pi pi-users',
-            iconClass: 'icon-partners',
-            match: '/partners',
-            extraMatches: ['/customers'],
-            children: [
-                { label: 'الموردين', route: '/partners/suppliers', icon: 'pi pi-users',
-                  permission: 'partners.view' },
-                { label: 'العملاء', route: '/customers', icon: 'pi pi-user-plus',
-                  permission: 'customers.view' }
-            ]
-        },
-        {
-            key: 'financial',
-            label: 'المالية',
-            icon: 'pi pi-wallet',
-            iconClass: 'icon-financial',
-            match: '/financial',
-            children: [
-                { label: 'الخزينة والأرصدة', route: '/financial/dashboard', icon: 'pi pi-wallet',
-                  permission: 'financial.view' },
-                { label: 'دفتر الأستاذ', route: '/financial/ledger', icon: 'pi pi-book',
-                  permission: 'financial.ledger' }
-            ]
-        },
-        {
-            key: 'expenses',
-            label: 'المصروفات',
-            icon: 'pi pi-money-bill',
-            iconClass: 'icon-expenses',
-            match: '/finance',
-            children: [
-                { label: 'قائمة المصروفات', route: '/finance/expenses', icon: 'pi pi-list', exact: true,
-                  permission: 'finance.view' },
-                { label: 'إضافة مصروف', route: '/finance/expenses/add', icon: 'pi pi-plus-circle',
-                  permission: 'finance.create' },
-                { label: 'فئات المصروفات', route: '/finance/expense-categories', icon: 'pi pi-tag',
-                  permission: 'finance.categories' }
-            ]
-        },
-        {
-            key: 'accounting',
-            label: 'المحاسبة العمومية',
-            icon: 'pi pi-sitemap',
-            iconClass: 'icon-accounting',
-            match: '/accounting',
-            children: [
-                { label: 'شجرة الحسابات', route: '/accounting/chart', icon: 'pi pi-list',
-                  permission: 'accounting.view' },
-                { label: 'أرصدة الحسابات', route: '/accounting/balances', icon: 'pi pi-credit-card', badge: 'جديد',
-                  permission: 'accounting.balances' },
-                { label: 'القيود اليومية', route: '/accounting/journal', icon: 'pi pi-pencil',
-                  permission: 'accounting.journal' },
-                { label: 'ميزان المراجعة', route: '/accounting/trial-balance', icon: 'pi pi-balance-scale',
-                  permission: 'accounting.trial_balance' },
-                { label: 'القوائم المالية', route: '/accounting/financial-statements', icon: 'pi pi-file-pdf',
-                  permission: 'accounting.statements' }
-            ]
-        },
-        {
-            key: 'reports',
-            label: 'تقارير مالية',
-            icon: 'pi pi-chart-bar',
-            iconClass: 'icon-reports',
-            match: '/reports',
-            children: [
-                { label: 'المبيعات اليومية', route: '/reports/daily-sales', icon: 'pi pi-calendar',
-                  permission: 'reports.view' },
-                { label: 'تقرير أداء الموظفين', route: '/reports/employee-performance', icon: 'pi pi-id-card',
-                  permission: 'reports.view' },
-                { label: 'تقارير الورديات', route: '/reports/shifts', icon: 'pi pi-clock', badge: 'جديد',
-                  permission: 'reports.view' },
-                { label: 'الأكثر مبيعاً', route: '/reports/best-selling', icon: 'pi pi-star',
-                  permission: 'reports.view' },
-                { label: 'ديون العملاء', route: '/reports/customer-debts', icon: 'pi pi-users',
-                  permission: 'reports.view' },
-                { label: 'ديون الموردين', route: '/reports/supplier-debts', icon: 'pi pi-truck',
-                  permission: 'reports.view' },
-                { label: 'صافي الأرباح', route: '/reports/net-profit', icon: 'pi pi-dollar',
-                  permission: 'reports.view' },
-                { label: 'تقييم المخزون', route: '/reports/inventory-valuation', icon: 'pi pi-box',
-                  permission: 'reports.view' }
-            ]
-        },
-        {
-            key: 'admin',
-            label: 'الإدارة',
-            icon: 'pi pi-cog',
-            iconClass: 'icon-users',
-            match: '/users',
-            extraMatches: ['/system-alerts', '/roles', '/settings'],
-            children: [
-                { label: 'المستخدمين', route: '/users', icon: 'pi pi-id-card',
-                  permission: 'users.view' },
-                { label: 'الأدوار والصلاحيات', route: '/roles', icon: 'pi pi-shield',
-                  permission: 'roles.view' },
-                { label: 'التنبيهات', route: '/system-alerts', icon: 'pi pi-bell', alert: true,
-                  permission: 'alerts.view' },
-                { label: 'إعدادات الصيدلية', route: '/settings', icon: 'pi pi-cog',
-                  permission: 'settings.view' }
-            ]
+          label: 'لوحة التحكم الشاملة', route: '/dashboard/master', icon: 'pi pi-chart-line',
+          permission: 'dashboard.master'
         }
-    ];
-
-    private destroy$ = new Subject<void>();
-
-    constructor(
-        private alertService: AlertService,
-        private settingsService: SettingsService,
-        private router: Router,
-        private authService: AuthService,
-        private accountingService: AccountingService
-    ) { }
-
-    ngOnInit() {
-        this.loadPharmacySettings();
-        
-        // Load current user for sidebar footer
-        this.authService.currentUser$
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(user => {
-                // @ts-ignore (since AuthResponse vs CurrentUserResponse matching)
-                this.currentUser = user;
-            });
-
-        this.alertService.unreadAlerts$
-            .pipe(takeUntil(this.destroy$))
-            .subscribe(alerts => {
-                this.unreadAlertsCount = alerts.length;
-            });
-
-        this.router.events.pipe(
-            filter(event => event instanceof NavigationEnd),
-            takeUntil(this.destroy$)
-        ).subscribe((event: any) => {
-            this.currentRoute = event.url;
-            this.openActiveMenus();
-        });
-
-        this.currentRoute = this.router.url;
-        this.openActiveMenus();
-    }
-
-    // ================================================================
-    // منطق الصلاحيات — الجوهر
-    // ================================================================
-
-    /**
-     * هل يمكن رؤية عنصر معين؟
-     * Admin → true دائماً
-     * بدون permission → true (للجميع)
-     * وإلا → تحقق من الصلاحية
-     */
-    canAccess(item: SidebarMenuItem): boolean {
-        if (this.permissionService.isAdmin()) return true;
-        if (!item.permission && !item.anyPermission) return true;
-        if (item.anyPermission) return this.permissionService.hasAnyPermission(item.anyPermission);
-        return this.permissionService.hasPermission(item.permission!);
-    }
-
-    /**
-     * هل يوجد في القسم على الأقل عنصر واحد مرئي؟
-     * إذا لا → أخفِ القسم كاملاً
-     */
-    hasSectionVisible(section: SidebarSection): boolean {
-        if (this.permissionService.isAdmin()) return true;
-        return section.children.some(item => {
-            if (item.children) return this.hasNestedVisible(item);
-            return this.canAccess(item);
-        });
-    }
-
-    /**
-     * هل في القائمة الداخلية (Nested) عنصر واحد مرئي؟
-     */
-    hasNestedVisible(item: SidebarMenuItem): boolean {
-        if (!item.children) return this.canAccess(item);
-        return item.children.some(child => this.canAccess(child));
-    }
-
-    // ================================================================
-    // منطق التنقل
-    // ================================================================
-
-    toggleCollapsed() {
-        this.collapseChange.emit(!this.isCollapsed);
-    }
-
-    toggleMenu(key: string) {
-        if (this.isCollapsed) {
-            this.collapseChange.emit(false);
+      ]
+    },
+    {
+      key: 'sales',
+      label: 'نقاط البيع والمبيعات',
+      icon: 'pi pi-shopping-cart',
+      iconClass: 'icon-sales',
+      match: '/sales',
+      extraMatches: ['/online-orders'],
+      children: [
+        {
+          label: 'شاشة الكاشير (POS)', route: '/sales/create', icon: 'pi pi-desktop',
+          permission: 'sales.invoices.create'
+        },
+        {
+          label: 'فواتير المبيعات', route: '/sales', icon: 'pi pi-list', exact: true,
+          permission: 'sales.invoices.view'
+        },
+        {
+          label: 'مرتجعات المبيعات', route: '/sales/returns', icon: 'pi pi-undo',
+          permission: 'sales.returns.view'
+        },
+        {
+          label: 'طلبات الأونلاين', route: '/online-orders', icon: 'pi pi-globe',
+          permission: 'online_orders.manage'
+        },
+        {
+          label: 'إغلاق الورديات', route: '/sales/daily-closing', icon: 'pi pi-lock',
+          permission: 'sales.daily_closing.manage'
         }
-        this.openMenus[key] = !this.openMenus[key];
-    }
-
-    isMenuOpen(key: string): boolean {
-        return !!this.openMenus[key] && !this.isCollapsed;
-    }
-
-    isSectionActive(section: SidebarSection): boolean {
-        return this.routeMatches(section) || section.children?.some((item) => this.isItemActive(item));
-    }
-
-    isItemActive(item: SidebarMenuItem): boolean {
-        if (item.route && this.currentRoute.startsWith(item.route)) {
-            return true;
+      ]
+    },
+    {
+      key: 'purchases',
+      label: 'المشتريات',
+      icon: 'pi pi-shopping-bag',
+      iconClass: 'icon-purchases',
+      match: '/purchases',
+      children: [
+        {
+          label: 'إنشاء فاتورة شراء', route: '/purchases/create', icon: 'pi pi-plus',
+          permission: 'purchases.invoices.create'
+        },
+        {
+          label: 'فواتير المشتريات', route: '/purchases', icon: 'pi pi-list', exact: true,
+          permission: 'purchases.invoices.view'
+        },
+        {
+          label: 'مرتجعات الموردين', route: '/purchases/returns', icon: 'pi pi-undo',
+          permission: 'purchases.returns.view'
         }
-        return item.children?.some((child) => this.isItemActive(child)) || false;
+      ]
+    },
+    {
+      key: 'inventory',
+      label: 'الأدوية والمخزون',
+      icon: 'pi pi-box',
+      iconClass: 'icon-inventory',
+      match: '/inventory',
+      extraMatches: ['/warehouses'],
+      children: [
+        {
+          label: 'دليل الأدوية', route: '/inventory/medicines', icon: 'pi pi-list',
+          permission: 'inventory.medicines.view'
+        },
+        {
+          label: 'تصنيفات الأدوية', route: '/inventory/categories', icon: 'pi pi-tags',
+          permission: 'inventory.categories.manage'
+        },
+        {
+          label: 'إدارة المخازن', route: '/warehouses', icon: 'pi pi-building', exact: true,
+          permission: 'inventory.warehouses.view'
+        },
+        {
+          label: 'التحويلات الداخلية', route: '/warehouses/transfers/internal', icon: 'pi pi-sync',
+          permission: 'inventory.transfers.create'
+        },
+        {
+          label: 'تحويلات الفروع', route: '/warehouses/transfers/external', icon: 'pi pi-globe',
+          permission: 'inventory.transfers.create'
+        },
+        {
+          label: 'الهوالك والتوالف', route: '/warehouses/damaged', icon: 'pi pi-exclamation-triangle',
+          permission: 'inventory.damaged.manage'
+        },
+        {
+          label: 'حركات المخزون', route: '/inventory/movements', icon: 'pi pi-history',
+          permission: 'inventory.medicines.view'
+        },
+        {
+          label: 'الدفعات والتواريخ', route: '/inventory/batches', icon: 'pi pi-calendar',
+          permission: 'inventory.medicines.view'
+        },
+        {
+          label: 'جرد المخزون', route: '/inventory/stock-counts', icon: 'pi pi-clipboard',
+          permission: 'inventory.stock_counts.create'
+        }
+      ]
+    },
+    {
+      key: 'partners',
+      label: 'العملاء والموردون',
+      icon: 'pi pi-users',
+      iconClass: 'icon-partners',
+      match: '/partners',
+      extraMatches: ['/customers', '/suppliers'],
+      children: [
+        {
+          label: 'إدارة العملاء', route: '/customers', icon: 'pi pi-user',
+          permission: 'partners.customers.view'
+        },
+        {
+          label: 'إدارة الموردين', route: '/partners/suppliers', icon: 'pi pi-truck',
+          permission: 'partners.suppliers.view'
+        }
+      ]
+    },
+    {
+      key: 'finance',
+      label: 'المالية والحسابات',
+      icon: 'pi pi-wallet',
+      iconClass: 'icon-finance',
+      match: '/finance',
+      extraMatches: ['/financial', '/accounting'],
+      children: [
+        {
+          label: 'الخزينة والأرصدة', route: '/financial/dashboard', icon: 'pi pi-money-bill', exact: true,
+          permission: 'finance.dashboard.view'
+        },
+        {
+          label: 'سندات القبض', route: '/customers/receipts', icon: 'pi pi-arrow-down-left',
+          permission: 'finance.receipts.create'
+        },
+        {
+          label: 'سندات الصرف', route: '/partners/suppliers/payments', icon: 'pi pi-arrow-up-right',
+          permission: 'finance.payments.create'
+        },
+        {
+          label: 'المصروفات النثرية', route: '/finance/expenses', icon: 'pi pi-money-bill',
+          permission: 'finance.expenses.view'
+        },
+        {
+          label: 'دفتر الأستاذ', route: '/financial/ledger', icon: 'pi pi-book',
+          permission: 'accounting.chart.view'
+        },
+        {
+          label: 'شجرة الحسابات', route: '/accounting/chart', icon: 'pi pi-sitemap',
+          permission: 'accounting.chart.view'
+        },
+        {
+          label: 'قيود اليومية', route: '/accounting/journal', icon: 'pi pi-book',
+          permission: 'accounting.journal.view'
+        },
+        {
+          label: 'ميزان المراجعة', route: '/accounting/trial-balance', icon: 'pi pi-table',
+          permission: 'accounting.statements.view'
+        },
+        {
+          label: 'القوائم المالية', route: '/accounting/financial-statements', icon: 'pi pi-chart-pie',
+          permission: 'accounting.statements.view'
+        },
+        {
+          label: 'أرصدة الحسابات', route: '/accounting/balances', icon: 'pi pi-dollar',
+          permission: 'accounting.statements.view'
+        }
+      ]
+    },
+    {
+      key: 'hr',
+      label: 'الموارد البشرية',
+      icon: 'pi pi-id-card',
+      iconClass: 'icon-hr',
+      match: '/employees',
+      children: [
+        {
+          label: 'شؤون الموظفين', route: '/employees', icon: 'pi pi-id-card', exact: true,
+          permission: 'hr.employees.view'
+        },
+        {
+          label: 'الحضور والانصراف', route: '/employees/attendance', icon: 'pi pi-calendar-clock', exact: true,
+          permission: 'hr.employees.view'
+        },
+        {
+          label: 'مسير الرواتب', route: '/employees/payroll', icon: 'pi pi-wallet', exact: true,
+          permission: 'hr.employees.view'
+        }
+      ]
+    },
+    {
+      key: 'reports',
+      label: 'التقارير الشاملة',
+      icon: 'pi pi-file',
+      iconClass: 'icon-reports',
+      match: '/reports',
+      children: [
+        {
+          label: 'تقارير المبيعات', route: '/reports/daily-sales', icon: 'pi pi-chart-line',
+          permission: 'reports.sales.view'
+        },
+        {
+          label: 'الأدوية الأكثر مبيعاً', route: '/reports/best-selling', icon: 'pi pi-star',
+          permission: 'reports.sales.view'
+        },
+        {
+          label: 'تقارير الورديات', route: '/reports/shifts', icon: 'pi pi-clock',
+          permission: 'reports.sales.view'
+        },
+        {
+          label: 'أداء الموظفين', route: '/reports/employee-performance', icon: 'pi pi-users',
+          permission: 'reports.sales.view'
+        },
+        {
+          label: 'ديون العملاء', route: '/reports/customer-debts', icon: 'pi pi-user-minus',
+          permission: 'reports.financial.view'
+        },
+        {
+          label: 'ديون الموردين', route: '/reports/supplier-debts', icon: 'pi pi-truck',
+          permission: 'reports.purchases.view'
+        },
+        {
+          label: 'تقييم المخزون', route: '/reports/inventory-valuation', icon: 'pi pi-box',
+          permission: 'reports.inventory.view'
+        },
+        {
+          label: 'صافي الأرباح', route: '/reports/net-profit', icon: 'pi pi-dollar',
+          permission: 'reports.financial.view'
+        }
+      ]
+    },
+    {
+      key: 'settings',
+      label: 'إعدادات النظام',
+      icon: 'pi pi-cog',
+      iconClass: 'icon-settings',
+      match: '/settings',
+      extraMatches: ['/users', '/roles', '/branches', '/departments', '/system-alerts'],
+      children: [
+        {
+          label: 'المستخدمون', route: '/users', icon: 'pi pi-user-edit',
+          permission: 'admin.users.view'
+        },
+        {
+          label: 'الأدوار والصلاحيات', route: '/roles', icon: 'pi pi-shield',
+          permission: 'access.roles.view'
+        },
+        {
+          label: 'فروع الصيدلية', route: '/branches', icon: 'pi pi-building',
+          permission: 'branches.manage'
+        },
+        {
+          label: 'الأقسام', route: '/departments', icon: 'pi pi-th-large',
+          permission: 'branches.manage'
+        },
+        {
+          label: 'تنبيهات النظام', route: '/system-alerts', icon: 'pi pi-bell', alert: true,
+          permission: 'admin.alerts.manage'
+        },
+        {
+          label: 'الإعدادات العامة', route: '/settings', icon: 'pi pi-cog', exact: true,
+          permission: 'settings.general.view'
+        }
+      ]
     }
+  ];
 
-    private openActiveMenus() {
-        this.menuSections.forEach((section) => {
-            if (this.isSectionActive(section)) {
-                this.openMenus[section.key] = true;
-            }
-            section.children?.forEach((item) => {
-                if (item.key && this.isItemActive(item)) {
-                    this.openMenus[item.key] = true;
-                }
-            });
-        });
-    }
+  private destroy$ = new Subject<void>();
 
-    private routeMatches(section: SidebarSection): boolean {
-        const matches = [section.match, ...(section.extraMatches || [])].filter((match): match is string => !!match);
-        return matches.some((match: string) => this.currentRoute.startsWith(match));
-    }
+  constructor(
+    private alertService: AlertService,
+    private settingsService: SettingsService,
+    private router: Router,
+    private authService: AuthService,
+    private accountingService: AccountingService
+  ) { }
 
-    private loadPharmacySettings(): void {
-        this.settingsService.getSettings().subscribe({
-            next: (settings) => {
-                this.pharmacyName = settings.pharmacyName || this.pharmacyName;
-                this.pharmacyLogoUrl = settings.logoUrl ? `${this.serverUrl}${settings.logoUrl}` : null;
-            }
-        });
-    }
+  ngOnInit() {
+    this.loadPharmacySettings();
 
-    ngOnDestroy() {
-        this.destroy$.next();
-        this.destroy$.complete();
+    // Load current user for sidebar footer
+    this.authService.currentUser$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        // @ts-ignore (since AuthResponse vs CurrentUserResponse matching)
+        this.currentUser = user;
+      });
+
+    this.alertService.unreadAlerts$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(alerts => {
+        this.unreadAlertsCount = alerts.length;
+      });
+
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      takeUntil(this.destroy$)
+    ).subscribe((event: any) => {
+      this.currentRoute = event.url;
+      this.openActiveMenus();
+    });
+
+    this.currentRoute = this.router.url;
+    this.openActiveMenus();
+  }
+
+  // ================================================================
+  // منطق الصلاحيات — الجوهر
+  // ================================================================
+
+  /**
+   * هل يمكن رؤية عنصر معين؟
+   * Admin → true دائماً
+   * بدون permission → true (للجميع)
+   * وإلا → تحقق من الصلاحية
+   */
+  canAccess(item: SidebarMenuItem): boolean {
+    if (this.permissionService.isAdmin()) return true;
+    if (!item.permission && !item.anyPermission) return true;
+    if (item.anyPermission) return this.permissionService.hasAnyPermission(item.anyPermission);
+    return this.permissionService.hasPermission(item.permission!);
+  }
+
+  /**
+   * هل يوجد في القسم على الأقل عنصر واحد مرئي؟
+   * إذا لا → أخفِ القسم كاملاً
+   */
+  hasSectionVisible(section: SidebarSection): boolean {
+    if (this.permissionService.isAdmin()) return true;
+    return section.children.some(item => {
+      if (item.children) return this.hasNestedVisible(item);
+      return this.canAccess(item);
+    });
+  }
+
+  /**
+   * هل في القائمة الداخلية (Nested) عنصر واحد مرئي؟
+   */
+  hasNestedVisible(item: SidebarMenuItem): boolean {
+    if (!item.children) return this.canAccess(item);
+    return item.children.some(child => this.canAccess(child));
+  }
+
+  // ================================================================
+  // منطق التنقل
+  // ================================================================
+
+  toggleCollapsed() {
+    this.collapseChange.emit(!this.isCollapsed);
+  }
+
+  toggleMenu(key: string) {
+    if (this.isCollapsed) {
+      this.collapseChange.emit(false);
     }
+    this.openMenus[key] = !this.openMenus[key];
+  }
+
+  isMenuOpen(key: string): boolean {
+    return !!this.openMenus[key] && !this.isCollapsed;
+  }
+
+  isSectionActive(section: SidebarSection): boolean {
+    return this.routeMatches(section) || section.children?.some((item) => this.isItemActive(item));
+  }
+
+  isItemActive(item: SidebarMenuItem): boolean {
+    if (item.route && this.currentRoute.startsWith(item.route)) {
+      return true;
+    }
+    return item.children?.some((child) => this.isItemActive(child)) || false;
+  }
+
+  private openActiveMenus() {
+    this.menuSections.forEach((section) => {
+      if (this.isSectionActive(section)) {
+        this.openMenus[section.key] = true;
+      }
+      section.children?.forEach((item) => {
+        if (item.key && this.isItemActive(item)) {
+          this.openMenus[item.key] = true;
+        }
+      });
+    });
+  }
+
+  private routeMatches(section: SidebarSection): boolean {
+    const matches = [section.match, ...(section.extraMatches || [])].filter((match): match is string => !!match);
+    return matches.some((match: string) => this.currentRoute.startsWith(match));
+  }
+
+  private loadPharmacySettings(): void {
+    this.settingsService.getSettings().subscribe({
+      next: (settings) => {
+        this.pharmacyName = settings.pharmacyName || this.pharmacyName;
+        this.pharmacyLogoUrl = settings.logoUrl ? `${this.serverUrl}${settings.logoUrl}` : null;
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 }

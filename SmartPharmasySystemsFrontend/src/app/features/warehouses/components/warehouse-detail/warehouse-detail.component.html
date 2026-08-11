@@ -130,7 +130,7 @@
                     [class.wd-row-warning]="stock.daysUntilExpiry > 0 && stock.daysUntilExpiry <= 30">
 
                     <!-- الدواء -->
-                    <td class="wd-cell-medicine">
+                    <td data-label="الدواء" class="wd-cell-medicine">
                         <div class="wd-medicine-name">{{ stock.medicineName }}</div>
                         <div class="wd-medicine-barcode" *ngIf="stock.medicineBarcode">
                             <i class="pi pi-qrcode"></i> {{ stock.medicineBarcode }}
@@ -138,18 +138,18 @@
                     </td>
 
                     <!-- رقم الدفعة -->
-                    <td>
+                    <td data-label="رقم الدفعة">
                         <span class="wd-batch-chip">{{ stock.batchNumber }}</span>
                     </td>
 
                     <!-- الكمية -->
-                    <td>
+                    <td data-label="الكمية">
                         <strong class="wd-qty">{{ stock.quantity | number }}</strong>
                         <small> وحدة</small>
                     </td>
 
                     <!-- الصلاحية -->
-                    <td>
+                    <td data-label="الصلاحية">
                         <div class="wd-expiry-cell">
                             <p-tag [severity]="getExpiryBadge(stock)" [value]="getExpiryLabel(stock)"
                                 [pTooltip]="(stock.expiryDate | date:'yyyy/MM/dd') || ''">
@@ -159,7 +159,7 @@
                     </td>
 
                     <!-- موقع التخزين -->
-                    <td>
+                    <td data-label="موقع التخزين">
                         <span *ngIf="stock.storageLocation; else noLocation" class="wd-location-chip">
                             <i class="pi pi-map-marker"></i> {{ stock.storageLocation }}
                         </span>
@@ -169,7 +169,7 @@
                     </td>
 
                     <!-- FEFO Indicator -->
-                    <td class="wd-fefo-col">
+                    <td data-label="FEFO" class="wd-fefo-col">
                         <span *ngIf="fefoSet().has(stock.id)" class="wd-fefo-badge"
                             pTooltip="هذه الدفعة الأقرب للانتهاء — يُوصى بالبيع منها أولاً" tooltipPosition="top">
                             <i class="pi pi-star-fill"></i> FEFO

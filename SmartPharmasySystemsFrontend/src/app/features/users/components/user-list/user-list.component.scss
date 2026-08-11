@@ -651,3 +651,366 @@ $radius: 10px;
         background: #fafafa;
     }
 }
+
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  .user-wrap,
+  .user-wrap * {
+    box-sizing: border-box;
+  }
+
+  .user-wrap {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px !important;
+    gap: 8px !important;
+    overflow-x: hidden;
+  }
+
+  .usr-header,
+  .usr-filter-panel,
+  .usr-table-wrap,
+  .usr-kpi-card {
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .usr-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px !important;
+  }
+
+  .usr-header-start,
+  .usr-header-end {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .usr-header-end {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 6px !important;
+  }
+
+  .usr-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+
+  .usr-title {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .usr-subtitle {
+    font-size: 11px;
+    line-height: 1.25;
+  }
+
+  .usr-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px !important;
+  }
+
+  .usr-kpi-card {
+    min-width: 0;
+    padding: 7px !important;
+  }
+
+  .usr-kpi-label {
+    font-size: 10px !important;
+    line-height: 1.2;
+  }
+
+  .usr-kpi-value {
+    font-size: 1rem !important;
+  }
+
+  .usr-kpi-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    font-size: 0.78rem;
+  }
+
+  .usr-kpi-extra {
+    font-size: 10px !important;
+    line-height: 1.2;
+  }
+
+  .usr-filter-panel {
+    padding: 8px !important;
+  }
+
+  .usr-filter-grid {
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 6px !important;
+    align-items: stretch !important;
+  }
+
+  .usr-filter-field,
+  .usr-filter-action {
+    width: 100%;
+  }
+
+  .usr-filter-field label {
+    font-size: 10px !important;
+    margin-bottom: 3px;
+  }
+
+  .usr-filter-action {
+    justify-content: stretch;
+  }
+
+  .usr-table-caption {
+    padding: 6px 0;
+    gap: 6px;
+  }
+
+  .usr-table-caption span,
+  .usr-table-count {
+    font-size: 10px !important;
+  }
+
+  .usr-cell-actions {
+    display: grid !important;
+    grid-template-columns: repeat(4, 30px);
+    gap: 4px !important;
+    justify-content: end;
+  }
+
+  .usr-cell-name,
+  .usr-cell-fullname,
+  .usr-cell-phone {
+    font-size: 11px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .usr-chip {
+    max-width: 100%;
+    white-space: normal;
+    font-size: 10px !important;
+    padding: 2px 6px;
+  }
+
+  :host ::ng-deep {
+    .usr-btn-primary,
+    .usr-btn-icon,
+    .usr-btn-sm,
+    .p-button {
+      width: 100% !important;
+      height: 32px !important;
+      min-height: 32px !important;
+      justify-content: center !important;
+      padding: 0 6px !important;
+      font-size: 11px !important;
+      border-radius: 6px !important;
+    }
+
+    .usr-btn-icon,
+    .usr-btn-sm {
+      min-width: 32px !important;
+    }
+
+    .p-button-label,
+    .p-button-icon {
+      font-size: 11px !important;
+    }
+
+    .usr-filter-field .p-input-icon-right,
+    .usr-filter-field .p-inputtext,
+    .p-inputtext,
+    .p-dropdown {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+
+    .p-inputtext,
+    .p-dropdown-label {
+      padding: 0 8px !important;
+      line-height: 30px !important;
+    }
+
+    .p-input-icon-right > i {
+      font-size: 11px !important;
+      margin-top: -5px !important;
+    }
+
+    .user-dialog {
+      width: 95vw !important;
+      max-width: 95vw !important;
+      margin: 0 !important;
+    }
+
+    .user-dialog .p-dialog-content {
+      border-radius: 0 !important;
+      overflow-x: hidden !important;
+    }
+
+    .modal-shell {
+      max-width: 100% !important;
+      border-radius: 0 !important;
+      overflow-x: hidden !important;
+    }
+
+    .modal-header {
+      padding: 8px !important;
+      gap: 6px !important;
+    }
+
+    .modal-title {
+      min-width: 0;
+      gap: 6px !important;
+    }
+
+    .modal-title h2 {
+      font-size: 0.9rem !important;
+      line-height: 1.2 !important;
+      overflow-wrap: anywhere;
+    }
+
+    .modal-title p {
+      font-size: 10px !important;
+      line-height: 1.25 !important;
+      overflow-wrap: anywhere;
+    }
+
+    .modal-icon {
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 7px !important;
+    }
+
+    .modal-icon i {
+      font-size: 0.85rem !important;
+    }
+
+    .close-btn {
+      width: 28px !important;
+      height: 28px !important;
+      min-width: 28px !important;
+    }
+
+    .modal-body {
+      padding: 8px !important;
+      overflow-x: hidden !important;
+    }
+
+    .modal-body [style*="display: flex"] {
+      gap: 6px !important;
+    }
+
+    .modal-body span,
+    .modal-body small,
+    .modal-body div {
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .modal-footer {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px !important;
+      padding: 8px !important;
+    }
+
+    .usr-table .p-datatable-wrapper {
+      overflow: visible !important;
+    }
+
+    .usr-table table,
+    .usr-table .p-datatable-tbody,
+    .usr-table .p-datatable-tbody > tr,
+    .usr-table .p-datatable-tbody > tr > td {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .usr-table .p-datatable-thead {
+      display: none !important;
+    }
+
+    .usr-table .p-datatable-tbody > tr {
+      margin: 8px 0 !important;
+      padding: 6px !important;
+      border: 1px solid $border !important;
+      border-radius: 8px !important;
+      background: $bg !important;
+    }
+
+    .usr-table .p-datatable-tbody > tr > td {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      padding: 5px 2px !important;
+      border: 0 !important;
+      border-bottom: 1px solid $border !important;
+      text-align: left !important;
+      font-size: 11px !important;
+      white-space: normal !important;
+      word-break: break-word;
+    }
+
+    .usr-table .p-datatable-tbody > tr > td:last-child {
+      border-bottom: 0 !important;
+    }
+
+    .usr-table .p-datatable-tbody > tr > td::before {
+      flex: 0 0 36%;
+      color: $text-secondary;
+      content: "";
+      font-size: 10px;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .usr-table .p-datatable-tbody > tr > td:nth-child(1)::before { content: "الحساب"; }
+    .usr-table .p-datatable-tbody > tr > td:nth-child(2)::before { content: "الاسم"; }
+    .usr-table .p-datatable-tbody > tr > td:nth-child(3)::before { content: "الدور"; }
+    .usr-table .p-datatable-tbody > tr > td:nth-child(4)::before { content: "الهاتف"; }
+    .usr-table .p-datatable-tbody > tr > td:nth-child(5)::before { content: "الإجراءات"; }
+
+    .usr-table .p-paginator {
+      flex-wrap: wrap !important;
+      justify-content: center !important;
+      padding: 4px !important;
+      gap: 2px !important;
+    }
+
+    .usr-table .p-paginator .p-paginator-element {
+      min-width: 26px !important;
+      height: 26px !important;
+      font-size: 10px !important;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .usr-header-end {
+    grid-template-columns: 32px 1fr;
+  }
+
+  .usr-kpi-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  :host ::ng-deep {
+    .modal-footer {
+      grid-template-columns: 1fr !important;
+    }
+  }
+}

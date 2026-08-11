@@ -1,1 +1,26 @@
 @import '../reports-shared.scss';
+
+@media (max-width: 768px) {
+  :host ::ng-deep {
+    /* جدول ملخص أداء الكادر */
+    .rpt-table:first-of-type {
+      td:nth-child(1):before { content: "الموظف:"; font-weight: 700; color: #64748b; }
+      td:nth-child(2):before { content: "الدور:"; font-weight: 700; color: #64748b; }
+      td:nth-child(3):before { content: "فواتير البيع:"; font-weight: 700; color: #64748b; }
+      td:nth-child(4):before { content: "قيمة المبيعات:"; font-weight: 700; color: #64748b; }
+      td:nth-child(5):before { content: "فواتير المردود:"; font-weight: 700; color: #64748b; }
+      td:nth-child(6):before { content: "قيمة المردودات:"; font-weight: 700; color: #64748b; }
+      td:nth-child(7):before { content: "الصافي النهائي:"; font-weight: 700; color: #64748b; }
+    }
+
+    /* جدول تفاصيل فواتير المبيعات */
+    .rpt-table:nth-of-type(2) {
+      td:nth-child(1):before { content: "رقم الفاتورة:"; font-weight: 700; color: #64748b; }
+      td:nth-child(2):before { content: "الوقت والتاريخ:"; font-weight: 700; color: #64748b; }
+      td:nth-child(3):before { content: "الموظف:"; font-weight: 700; color: #64748b; }
+      td:nth-child(4):before { content: "العميل:"; font-weight: 700; color: #64748b; }
+      td:nth-child(5):before { content: "الأصناف:"; font-weight: 700; color: #64748b; }
+      td:nth-child(6):before { content: "الإجمالي:"; font-weight: 700; color: #64748b; }
+    }
+  }
+}

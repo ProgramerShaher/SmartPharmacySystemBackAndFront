@@ -9,3 +9,12 @@
 .mt-2 {
   margin-top: 0.25rem;
 }
+
+@media (max-width: 768px) {
+  :host ::ng-deep .rpt-table {
+    td:nth-child(1):before { content: "اسم المنتج:"; font-weight: 700; color: #64748b; }
+    td:nth-child(2):before { content: "الكمية:"; font-weight: 700; color: #64748b; }
+    td:nth-child(3):before { content: "القيمة (ر.ي):"; font-weight: 700; color: #64748b; }
+  }
+}
+

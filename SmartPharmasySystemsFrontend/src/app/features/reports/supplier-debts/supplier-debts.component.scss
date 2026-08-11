@@ -1,1 +1,12 @@
 @import '../reports-shared.scss';
+
+@media (max-width: 768px) {
+  :host ::ng-deep .rpt-table {
+    td:nth-child(1):before { content: "اسم المورد:"; font-weight: 700; color: #64748b; }
+    td:nth-child(2):before { content: "رقم الجوال:"; font-weight: 700; color: #64748b; }
+    td:nth-child(3):before { content: "إجمالي المشتريات:"; font-weight: 700; color: #64748b; }
+    td:nth-child(4):before { content: "إجمالي المدفوعات:"; font-weight: 700; color: #64748b; }
+    td:nth-child(5):before { content: "الرصيد المتبقي:"; font-weight: 700; color: #64748b; }
+    td:nth-child(6):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+  }
+}

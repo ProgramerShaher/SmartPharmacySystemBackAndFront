@@ -314,3 +314,161 @@ $radius: 10px;
     &.indigo { background-color: #e0e7ff; color: #3730a3; }
   }
 }
+
+/* ============================================================
+   RESPONSIVE MOBILE — Ultra-Compact Native App Look (<= 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  .dg-wrap {
+    padding: 8px !important;
+    gap: 0.5rem;
+    max-width: 100% !important;
+    overflow-x: hidden;
+  }
+
+  /* ---- Header ---- */
+  .dg-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .dg-header-start { width: 100%; }
+  .dg-header-end { width: 100%; }
+  .dg-title { font-size: 1rem !important; }
+  .dg-subtitle { font-size: 0.65rem !important; }
+  .dg-icon { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
+
+  :host ::ng-deep .dg-btn-primary {
+    width: 100% !important;
+    height: 32px !important;
+    font-size: 12px !important;
+    justify-content: center !important;
+  }
+
+  /* ---- KPI -> 2 columns ---- */
+  .dg-kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.4rem;
+  }
+  .dg-kpi-card {
+    padding: 0.45rem 0.5rem !important;
+    border-radius: 8px;
+  }
+  .dg-kpi-label { font-size: 9px !important; letter-spacing: 0; }
+  .dg-kpi-value { font-size: 1rem !important; }
+  .dg-kpi-badge { width: 24px !important; height: 24px !important; font-size: 0.7rem !important; border-radius: 6px; }
+
+  /* ---- Filter panel -> vertical ---- */
+  .dg-filter-panel {
+    padding: 0.5rem !important;
+    border-radius: 8px;
+  }
+  .dg-filter-grid {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .dg-filter-field label { font-size: 10px !important; }
+  :host ::ng-deep .dg-filter-field .p-dropdown {
+    width: 100% !important;
+    display: flex !important;
+    height: 32px !important;
+
+    .p-dropdown-label {
+      padding: 0.35rem 0.6rem !important;
+      font-size: 12px !important;
+    }
+  }
+  .dg-filter-action { width: 100%; }
+  :host ::ng-deep .dg-filter-action .p-button {
+    width: 100% !important;
+    height: 32px !important;
+    font-size: 12px !important;
+    justify-content: center !important;
+  }
+
+  /* ---- Table -> Cards ---- */
+  .dg-table-wrap {
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  :host ::ng-deep .dg-table {
+    .p-datatable-wrapper,
+    .p-datatable-scrollable-wrapper,
+    .p-datatable-scrollable-body {
+      overflow: visible !important;
+    }
+
+    .p-datatable-table {
+      width: 100% !important;
+      table-layout: auto !important;
+    }
+
+    .p-datatable-thead { display: none !important; }
+
+    .p-datatable-tbody {
+      display: block;
+
+      > tr {
+        display: block;
+        background: #fff !important;
+        border: 1px solid $border !important;
+        border-radius: 8px;
+        margin: 0 0 0.55rem;
+        padding: 0.4rem 0.55rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+
+        > td {
+          display: flex !important;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          padding: 0.28rem 0 !important;
+          border: none !important;
+          background: transparent !important;
+          font-size: 11px !important;
+          text-align: right !important;
+          white-space: normal !important;
+
+          &::before {
+            content: attr(data-label);
+            flex: 0 0 auto;
+            font-size: 10px;
+            font-weight: 700;
+            color: $text-secondary;
+            margin-left: 0.4rem;
+          }
+
+          > * { min-width: 0; word-break: break-word; }
+        }
+      }
+
+      > tr.p-datatable-emptymessage {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+
+        > td {
+          display: block !important;
+          text-align: center !important;
+          padding: 1.25rem 0.5rem !important;
+
+          &::before { content: none !important; }
+        }
+      }
+    }
+
+    .p-paginator {
+      padding: 0.35rem 0.4rem !important;
+
+      .p-paginator-page,
+      .p-paginator-next, .p-paginator-last,
+      .p-paginator-first, .p-paginator-prev {
+        min-width: 1.8rem !important;
+        height: 1.8rem !important;
+        font-size: 0.7rem !important;
+      }
+    }
+  }
+}

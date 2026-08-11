@@ -95,18 +95,18 @@
 
             <ng-template pTemplate="body" let-transfer>
                 <tr>
-                    <td class="wh-cell-name">
+                    <td data-label="رقم الطلب" class="wh-cell-name">
                         <i class="pi pi-hashtag wh-cell-icon"></i>
                         {{ transfer.transferCode }}
                     </td>
-                    <td class="wh-cell-strong">{{ transfer.sourceWarehouseName }}</td>
-                    <td class="wh-cell-strong">{{ transfer.destinationWarehouseName }}</td>
-                    <td class="wh-cell-date">{{ transfer.requestedAt | date:'yyyy/MM/dd HH:mm' }}</td>
-                    <td>
+                    <td data-label="من مستودع" class="wh-cell-strong">{{ transfer.sourceWarehouseName }}</td>
+                    <td data-label="إلى مستودع" class="wh-cell-strong">{{ transfer.destinationWarehouseName }}</td>
+                    <td data-label="تاريخ الطلب" class="wh-cell-date">{{ transfer.requestedAt | date:'yyyy/MM/dd HH:mm' }}</td>
+                    <td data-label="الحالة">
                         <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
                     </td>
-                    <td class="wh-cell-branch">{{ transfer.requestedByName }}</td>
-                    <td>
+                    <td data-label="المسؤول" class="wh-cell-branch">{{ transfer.requestedByName }}</td>
+                    <td data-label="الإجراءات">
                         <div class="wh-cell-actions">
                             <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
                                 pTooltip="تفاصيل المستند" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
@@ -172,11 +172,11 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr>
-                        <td class="wh-cell-strong">{{ item.medicineName }}</td>
-                        <td>{{ item.batchNumber }}</td>
-                        <td><span class="wh-chip wh-chip-teal">{{ item.quantityRequested }}</span></td>
-                        <td><span class="wh-chip wh-chip-amber">{{ item.quantityDispatched || '-' }}</span></td>
-                        <td><span class="wh-chip wh-chip-green">{{ item.quantityReceived || '-' }}</span></td>
+                        <td data-label="الصنف" class="wh-cell-strong">{{ item.medicineName }}</td>
+                        <td data-label="رقم التشغيلة">{{ item.batchNumber }}</td>
+                        <td data-label="المطلوبة"><span class="wh-chip wh-chip-teal">{{ item.quantityRequested }}</span></td>
+                        <td data-label="المشحونة"><span class="wh-chip wh-chip-amber">{{ item.quantityDispatched || '-' }}</span></td>
+                        <td data-label="المستلمة"><span class="wh-chip wh-chip-green">{{ item.quantityReceived || '-' }}</span></td>
                     </tr>
                 </ng-template>
             </p-table>

@@ -265,3 +265,202 @@
         }
     }
 }
+
+@media (max-width: 768px) {
+    :host {
+        display: block;
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    :host ::ng-deep {
+        .modal-shell,
+        .modal-shell * {
+            box-sizing: border-box;
+        }
+
+        .modal-shell {
+            width: 100% !important;
+            max-width: 100% !important;
+            max-height: 88vh !important;
+            border: none !important;
+            border-radius: 0 !important;
+            overflow-x: hidden !important;
+        }
+
+        .modal-header {
+            padding: 8px !important;
+            gap: 6px !important;
+        }
+
+        .modal-title {
+            min-width: 0 !important;
+            gap: 6px !important;
+        }
+
+        .modal-title h2 {
+            font-size: 0.9rem !important;
+            line-height: 1.2 !important;
+        }
+
+        .modal-title p {
+            font-size: 10px !important;
+            line-height: 1.25 !important;
+            overflow-wrap: anywhere;
+        }
+
+        .modal-icon {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 7px !important;
+
+            i {
+                font-size: 0.85rem !important;
+            }
+        }
+
+        .close-btn {
+            width: 28px !important;
+            height: 28px !important;
+            min-width: 28px !important;
+        }
+
+        .modal-body {
+            padding: 8px !important;
+            overflow-x: hidden !important;
+        }
+
+        .field-group-grid {
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+        }
+
+        .field {
+            margin-bottom: 0 !important;
+
+            label {
+                font-size: 10px !important;
+                margin-bottom: 3px !important;
+                line-height: 1.2 !important;
+            }
+        }
+
+        .p-input-icon-right,
+        .p-inputgroup,
+        .p-dropdown,
+        .p-multiselect,
+        .p-inputtext {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+        }
+
+        .p-inputtext,
+        .p-dropdown,
+        .p-multiselect,
+        .p-inputgroup {
+            height: 32px !important;
+            min-height: 32px !important;
+            font-size: 11px !important;
+        }
+
+        .p-inputtext,
+        .p-dropdown-label,
+        .p-multiselect-label {
+            padding: 0 8px !important;
+            font-size: 11px !important;
+            line-height: 30px !important;
+        }
+
+        .p-dropdown-trigger,
+        .p-multiselect-trigger {
+            width: 30px !important;
+        }
+
+        .p-inputgroup-addon {
+            width: 30px !important;
+            padding: 0 !important;
+            justify-content: center !important;
+            font-size: 11px !important;
+        }
+
+        .p-inputgroup .p-button {
+            width: 30px !important;
+            min-width: 30px !important;
+            height: 32px !important;
+        }
+
+        .p-input-icon-right > i {
+            right: 8px !important;
+            font-size: 11px !important;
+            margin-top: -5px !important;
+        }
+
+        .p-input-icon-right > .p-inputtext {
+            padding-right: 28px !important;
+        }
+
+        .p-multiselect-token {
+            padding: 1px 5px !important;
+            margin: 1px !important;
+            font-size: 10px !important;
+        }
+
+        .strength-meter {
+            margin-top: 3px !important;
+        }
+
+        .strength-label,
+        small {
+            font-size: 10px !important;
+            line-height: 1.2 !important;
+        }
+
+        .switch-card {
+            padding: 6px !important;
+            border-radius: 6px !important;
+            gap: 8px !important;
+        }
+
+        .switch-title {
+            font-size: 11px !important;
+        }
+
+        .switch-sub {
+            font-size: 10px !important;
+            line-height: 1.25 !important;
+        }
+
+        .modal-footer {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px !important;
+            padding: 8px !important;
+        }
+
+        .modal-footer .p-button,
+        .p-button.p-button-rounded {
+            width: 100% !important;
+            height: 32px !important;
+            min-height: 32px !important;
+            justify-content: center !important;
+            padding: 0 6px !important;
+            font-size: 11px !important;
+            border-radius: 6px !important;
+        }
+
+        .p-button-label,
+        .p-button-icon {
+            font-size: 11px !important;
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    :host ::ng-deep {
+        .modal-footer {
+            grid-template-columns: 1fr !important;
+        }
+    }
+}

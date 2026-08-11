@@ -128,3 +128,81 @@
     }
   }
 }
+
+@media (max-width: 768px) {
+  :host ::ng-deep {
+    .compact-dialog .p-dialog {
+      width: 96vw !important;
+      max-width: 96vw !important;
+      margin: 0 auto !important;
+      
+      .p-dialog-header {
+        padding: 8px 10px !important;
+        .p-dialog-title { font-size: 14px !important; }
+      }
+      .p-dialog-content {
+        padding: 8px !important;
+      }
+    }
+
+    /* جدول الورديات الرئيسي */
+    .rpt-table {
+      td:nth-child(1):before { content: "الموظف:"; font-weight: 700; color: #64748b; }
+      td:nth-child(2):before { content: "تاريخ الوردية:"; font-weight: 700; color: #64748b; }
+      td:nth-child(3):before { content: "رصيد الافتتاح:"; font-weight: 700; color: #64748b; }
+      td:nth-child(4):before { content: "الإغلاق المتوقع:"; font-weight: 700; color: #64748b; }
+      td:nth-child(5):before { content: "الإغلاق الفعلي:"; font-weight: 700; color: #64748b; }
+      td:nth-child(6):before { content: "العجز / الزيادة:"; font-weight: 700; color: #64748b; }
+      td:nth-child(7):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+      td:nth-child(8):before { content: "ملاحظات:"; font-weight: 700; color: #64748b; }
+      td:nth-child(9) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 6px !important;
+      }
+    }
+  }
+
+  .compact-details {
+    .compact-summary-card {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 4px !important;
+      padding: 6px 8px !important;
+      
+      .summary-divider {
+        display: none !important;
+      }
+      .summary-item {
+        justify-content: space-between !important;
+        font-size: 11px !important;
+      }
+    }
+
+    .tables-grid {
+      grid-template-columns: 1fr !important;
+      gap: 6px !important;
+    }
+
+    .ultra-compact-table {
+      thead { display: none !important; }
+      tbody, tr, td { display: block !important; width: 100% !important; }
+      tr {
+        margin-bottom: 6px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 6px !important;
+        padding: 6px !important;
+      }
+      td {
+        border-bottom: none !important;
+        padding: 3px 0 !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+}
+
+

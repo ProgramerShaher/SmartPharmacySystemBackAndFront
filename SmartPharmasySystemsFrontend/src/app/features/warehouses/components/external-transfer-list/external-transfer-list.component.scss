@@ -470,3 +470,211 @@ $radius: 10px;
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   RESPONSIVE MOBILE — Ultra-Compact Native App Look (<= 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+  .warehouse-wrap {
+    padding: 8px !important;
+    gap: 0.5rem;
+    max-width: 100% !important;
+    overflow-x: hidden;
+  }
+
+  /* ---- Header ---- */
+  .wh-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+  }
+  .wh-header-start { width: 100%; }
+  .wh-header-end { width: 100%; }
+  .wh-title { font-size: 1rem !important; }
+  .wh-subtitle { font-size: 0.65rem !important; }
+  .wh-icon { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
+
+  :host ::ng-deep .wh-btn-primary {
+    width: 100% !important;
+    height: 32px !important;
+    font-size: 12px !important;
+    justify-content: center !important;
+  }
+
+  /* ---- KPI -> 2 columns ---- */
+  .wh-kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.4rem;
+  }
+  .wh-kpi-card {
+    padding: 0.45rem 0.5rem !important;
+    border-radius: 8px;
+  }
+  .wh-kpi-label { font-size: 9px !important; letter-spacing: 0; }
+  .wh-kpi-value { font-size: 1rem !important; }
+  .wh-kpi-badge { width: 24px !important; height: 24px !important; font-size: 0.7rem !important; border-radius: 6px; }
+  .wh-kpi-extra { font-size: 0.55rem !important; }
+
+  /* ---- Tabs ---- */
+  :host ::ng-deep .wh-tabs {
+    .p-tabview-nav {
+      display: flex !important;
+      padding: 0 !important;
+
+      li {
+        flex: 1 1 0% !important;
+
+        .p-tabview-nav-link {
+          width: 100% !important;
+          justify-content: center !important;
+          text-align: center !important;
+          font-size: 0.68rem !important;
+          padding: 0.6rem 0.3rem !important;
+          gap: 0.3rem !important;
+        }
+      }
+    }
+
+    .p-tabview-panels {
+      padding: 0.4rem 0.4rem 0.6rem !important;
+    }
+  }
+
+  /* ---- Tables -> Cards (main + dialogs) ---- */
+  .wh-table-wrap {
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  :host ::ng-deep .wh-table {
+    .p-datatable-wrapper,
+    .p-datatable-scrollable-wrapper,
+    .p-datatable-scrollable-body {
+      overflow: visible !important;
+    }
+
+    .p-datatable-table {
+      width: 100% !important;
+      table-layout: auto !important;
+    }
+
+    .p-datatable-thead { display: none !important; }
+
+    .p-datatable-tbody {
+      display: block;
+
+      > tr {
+        display: block;
+        background: #fff !important;
+        border: 1px solid $border !important;
+        border-radius: 8px;
+        margin: 0 0 0.55rem;
+        padding: 0.4rem 0.55rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+
+        > td {
+          display: flex !important;
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.5rem;
+          padding: 0.28rem 0 !important;
+          border: none !important;
+          background: transparent !important;
+          font-size: 11px !important;
+          text-align: right !important;
+          white-space: normal !important;
+
+          &::before {
+            content: attr(data-label);
+            flex: 0 0 auto;
+            font-size: 10px;
+            font-weight: 700;
+            color: $text-secondary;
+            margin-left: 0.4rem;
+          }
+
+          > * { min-width: 0; word-break: break-word; }
+        }
+      }
+
+      > tr.p-datatable-emptymessage {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+
+        > td {
+          display: block !important;
+          text-align: center !important;
+          padding: 1.25rem 0.5rem !important;
+
+          &::before { content: none !important; }
+        }
+      }
+    }
+
+    .p-paginator {
+      padding: 0.35rem 0.4rem !important;
+
+      .p-paginator-page,
+      .p-paginator-next, .p-paginator-last,
+      .p-paginator-first, .p-paginator-prev {
+        min-width: 1.8rem !important;
+        height: 1.8rem !important;
+        font-size: 0.7rem !important;
+      }
+    }
+  }
+
+  :host ::ng-deep .wh-cell-actions {
+    flex-wrap: wrap;
+  }
+
+  /* ---- Dialog: 95-96vw + compact ---- */
+  :host ::ng-deep .wh-dialog {
+    .p-dialog-content {
+      padding: 10px !important;
+    }
+
+    .p-dialog-header {
+      padding: 0.7rem 0.9rem !important;
+
+      .p-dialog-title { font-size: 0.95rem !important; }
+    }
+
+    .p-dialog-footer {
+      padding: 0.6rem 0.9rem 0.9rem !important;
+
+      .p-button {
+        height: 32px !important;
+        font-size: 12px !important;
+        justify-content: center !important;
+      }
+    }
+  }
+
+  .wh-detail-head .wh-detail-code { font-size: 1rem !important; }
+  .wh-dialog-note { font-size: 0.72rem !important; }
+  .wh-dialog-field label { font-size: 10px !important; }
+  .wh-detail-item span, .wh-detail-item small { font-size: 0.6rem !important; }
+  .wh-detail-item strong { font-size: 0.8rem !important; }
+
+  :host ::ng-deep {
+    .wh-dialog-field .p-dropdown {
+      width: 100% !important;
+      display: flex !important;
+      height: 32px !important;
+
+      .p-dropdown-label {
+        padding: 0.35rem 0.6rem !important;
+        font-size: 12px !important;
+      }
+    }
+
+    .p-inputnumber,
+    .p-inputnumber .p-inputnumber-input {
+      height: 32px !important;
+      max-height: 32px !important;
+      font-size: 12px !important;
+    }
+  }
+}

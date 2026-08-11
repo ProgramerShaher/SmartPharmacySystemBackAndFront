@@ -404,34 +404,165 @@ $radius: 10px;
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 900px) {
-  .rpt-kpi-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .rpt-wrap {
-    padding: 0.4rem;
-    gap: 0.4rem;
+    padding: 6px !important;
+    gap: 6px !important;
+  }
+
+  .rpt-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .rpt-icon {
+      width: 32px !important;
+      height: 32px !important;
+      font-size: 14px !important;
+    }
+    .rpt-title { font-size: 15px !important; }
+    .rpt-subtitle { font-size: 10px !important; }
+
+    .rpt-header-end {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      button {
+        width: 100% !important;
+        height: 32px !important;
+        font-size: 10px !important;
+        padding: 0 !important;
+      }
+    }
   }
 
   .rpt-kpi-row {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+
+    .rpt-kpi-card {
+      padding: 6px 8px !important;
+      border-radius: 8px !important;
+      grid-column: auto !important;
+
+      .rpt-kpi-value { font-size: 14px !important; }
+      .rpt-kpi-label { font-size: 9px !important; }
+      .rpt-kpi-badge {
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 11px !important;
+      }
+    }
+  }
+
+  .rpt-filter-panel {
+    padding: 6px 8px !important;
+    border-radius: 8px !important;
   }
 
   .rpt-filter-grid {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 6px !important;
   }
 
   .rpt-filter-field {
-    width: 100%;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+
+    label { font-size: 10px !important; }
+
+    :host ::ng-deep {
+      .p-inputtext,
+      .p-calendar,
+      .p-calendar .p-inputtext,
+      .p-dropdown,
+      .p-inputnumber,
+      .p-inputnumber input {
+        width: 100% !important;
+        height: 32px !important;
+        min-height: 32px !important;
+        font-size: 11px !important;
+        padding: 0 8px !important;
+      }
+      
+      .p-dropdown .p-dropdown-label {
+        line-height: 30px !important;
+        padding: 0 !important;
+      }
+    }
   }
 
   .rpt-filter-action {
-    width: 100%;
-    justify-content: flex-end;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+
+    button, ::ng-deep .p-button {
+      width: 100% !important;
+      height: 32px !important;
+      font-size: 11px !important;
+    }
+  }
+
+  .rpt-table-wrap {
+    border-radius: 8px !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* تحويل جداول التقارير إلى كروت للموبايل */
+  :host ::ng-deep .rpt-table,
+  .rpt-table {
+    table, thead, tbody, th, td, tr,
+    .p-datatable-table, .p-datatable-thead, .p-datatable-tbody {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead, .p-datatable-thead {
+      display: none !important;
+    }
+    tr, .p-datatable-tbody > tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    }
+    td, .p-datatable-tbody > tr > td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+      text-align: right !important;
+    }
+  }
+
+  .analytics-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+  }
+
+  .profit-details {
+    padding: 8px !important;
+    .profit-item {
+      font-size: 11px !important;
+      padding: 4px 0 !important;
+    }
+    .total-row {
+      font-size: 13px !important;
+      padding: 6px 0 !important;
+    }
   }
 }

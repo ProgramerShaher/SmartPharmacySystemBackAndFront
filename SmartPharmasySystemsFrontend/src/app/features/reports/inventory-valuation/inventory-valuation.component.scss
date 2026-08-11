@@ -10,3 +10,16 @@
     flex-direction: column;
   }
 }
+
+@media (max-width: 768px) {
+  :host ::ng-deep .rpt-table {
+    td:nth-child(1):before { content: "الصنف:"; font-weight: 700; color: #64748b; }
+    td:nth-child(2):before { content: "رقم التشغيلة:"; font-weight: 700; color: #64748b; }
+    td:nth-child(3):before { content: "تاريخ الانتهاء:"; font-weight: 700; color: #64748b; }
+    td:nth-child(4):before { content: "الكمية المتوفرة:"; font-weight: 700; color: #64748b; }
+    td:nth-child(5):before { content: "تكلفة الوحدة:"; font-weight: 700; color: #64748b; }
+    td:nth-child(6):before { content: "سعر البيع:"; font-weight: 700; color: #64748b; }
+    td:nth-child(7):before { content: "إجمالي التكلفة:"; font-weight: 700; color: #64748b; }
+    td:nth-child(8):before { content: "إجمالي البيع:"; font-weight: 700; color: #64748b; }
+  }
+}

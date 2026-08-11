@@ -134,12 +134,12 @@
             </ng-template>
             <ng-template pTemplate="body" let-warehouse>
                 <tr>
-                    <td class="wh-cell-name">
+                    <td data-label="الاسم" class="wh-cell-name">
                         <i class="pi pi-warehouse wh-cell-icon"></i>
                         {{ warehouse.name }}
                     </td>
-                    <td class="wh-cell-branch">{{ warehouse.branchName }}</td>
-                    <td>
+                    <td data-label="الفرع" class="wh-cell-branch">{{ warehouse.branchName }}</td>
+                    <td data-label="النوع">
                         <span class="wh-chip" [class.wh-chip-teal]="warehouse.type === WarehouseType.Main"
                             [class.wh-chip-amber]="warehouse.type === WarehouseType.Branch"
                             [class.wh-chip-red]="warehouse.type === WarehouseType.Damaged">
@@ -147,8 +147,8 @@
                             {{ warehouse.typeName }}
                         </span>
                     </td>
-                    <td class="wh-cell-date">{{ warehouse.createdAt | date:'yyyy/MM/dd' }}</td>
-                    <td>
+                    <td data-label="التاريخ" class="wh-cell-date">{{ warehouse.createdAt | date:'yyyy/MM/dd' }}</td>
+                    <td data-label="الإجراءات">
                         <div class="wh-cell-actions">
                             <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
                                 pTooltip="عرض المخزون" tooltipPosition="top"

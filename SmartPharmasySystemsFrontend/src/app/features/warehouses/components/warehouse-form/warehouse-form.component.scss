@@ -113,3 +113,106 @@
         border-radius: 10px;
     }
 }
+
+/* ============================================================
+   RESPONSIVE MOBILE — Ultra-Compact Native App Look (<= 768px)
+   ============================================================ */
+@media (max-width: 768px) {
+    :host ::ng-deep {
+        .warehouse-dialog {
+            width: 96vw !important;
+            margin: 0 auto;
+        }
+
+        .warehouse-dialog .p-dialog-content {
+            padding: 0 !important;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .modal-shell {
+            border-radius: 14px;
+        }
+
+        .modal-header {
+            padding: 0.9rem 1rem 0.7rem !important;
+        }
+
+        .modal-title {
+            gap: 0.6rem !important;
+
+            h2 {
+                font-size: 1rem !important;
+            }
+
+            p {
+                font-size: 0.75rem !important;
+            }
+        }
+
+        .modal-icon {
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 11px !important;
+
+            i {
+                font-size: 1.05rem !important;
+            }
+        }
+
+        .close-btn {
+            width: 32px !important;
+            height: 32px !important;
+        }
+
+        .modal-body {
+            padding: 0.9rem 1rem !important;
+        }
+
+        .field-group {
+            gap: 0.75rem !important;
+        }
+
+        .field {
+            margin-bottom: 0 !important;
+
+            label {
+                font-size: 10px !important;
+                margin-bottom: 0.25rem !important;
+            }
+
+            .p-dropdown,
+            .p-dropdown .p-dropdown-label {
+                height: 32px !important;
+                max-height: 32px !important;
+                font-size: 12px !important;
+            }
+
+            .p-dropdown .p-dropdown-label {
+                padding: 0.35rem 0.6rem !important;
+            }
+
+            .p-inputtext {
+                height: 32px !important;
+                max-height: 32px !important;
+                font-size: 12px !important;
+                padding: 0.35rem 0.6rem !important;
+            }
+        }
+
+        .modal-footer {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.5rem !important;
+            padding: 0.7rem 1rem 1rem !important;
+        }
+
+        .modal-footer .p-button {
+            width: 100% !important;
+            height: 32px !important;
+            font-size: 12px !important;
+            justify-content: center !important;
+            border-radius: 6px !important;
+        }
+    }
+}

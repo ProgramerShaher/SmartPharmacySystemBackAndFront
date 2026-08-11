@@ -1,1 +1,14 @@
 @import '../reports-shared.scss';
+
+@media (max-width: 768px) {
+  :host ::ng-deep .rpt-table {
+    td:nth-child(1) { display: none !important; }
+    td:nth-child(2):before { content: "اسم الدواء:"; font-weight: 700; color: #64748b; }
+    td:nth-child(3):before { content: "الاسم العلمي:"; font-weight: 700; color: #64748b; }
+    td:nth-child(4):before { content: "التصنيف:"; font-weight: 700; color: #64748b; }
+    td:nth-child(5):before { content: "الكمية المباعة:"; font-weight: 700; color: #64748b; }
+    td:nth-child(6):before { content: "الإيراد:"; font-weight: 700; color: #64748b; }
+    td:nth-child(7):before { content: "الربح:"; font-weight: 700; color: #64748b; }
+    td:nth-child(8):before { content: "هامش الربح:"; font-weight: 700; color: #64748b; }
+  }
+}

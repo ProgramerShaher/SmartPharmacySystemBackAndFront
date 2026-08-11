@@ -128,15 +128,15 @@
             </ng-template>
             <ng-template pTemplate="body" let-transfer>
                 <tr>
-                    <td class="st-cell-code">{{ transfer.transferCode }}</td>
-                    <td class="font-bold">{{ transfer.sourceWarehouseName }}</td>
-                    <td class="font-bold">{{ transfer.destinationWarehouseName || transfer.destinationBranchName }}</td>
-                    <td class="text-center st-cell-date">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                    <td class="text-center">
+                    <td data-label="رقم التحويل" class="st-cell-code">{{ transfer.transferCode }}</td>
+                    <td data-label="مخزن المصدر" class="font-bold">{{ transfer.sourceWarehouseName }}</td>
+                    <td data-label="مخزن الوجهة" class="font-bold">{{ transfer.destinationWarehouseName || transfer.destinationBranchName }}</td>
+                    <td data-label="تاريخ الطلب" class="text-center st-cell-date">{{ transfer.requestedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td data-label="حالة التحويل" class="text-center">
                         <p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag>
                     </td>
-                    <td class="text-center">{{ transfer.requestedByName }}</td>
-                    <td class="text-center flex justify-content-center gap-1">
+                    <td data-label="طالب التحويل" class="text-center">{{ transfer.requestedByName }}</td>
+                    <td data-label="الإجراءات" class="text-center flex justify-content-center gap-1">
                         <button pButton icon="pi pi-eye" class="p-button-rounded p-button-info p-button-text" 
                             pTooltip="تفاصيل المستند" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
                         
@@ -208,17 +208,17 @@
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr>
-                    <td class="font-bold">{{ item.medicineName }}</td>
-                    <td class="text-center">
+                    <td data-label="اسم الدواء / الصنف" class="font-bold">{{ item.medicineName }}</td>
+                    <td data-label="التشغيلة" class="text-center">
                         <span class="batch-tag indigo">{{ item.batchNumber }}</span>
                     </td>
-                    <td class="text-center">
+                    <td data-label="تاريخ الانتهاء" class="text-center">
                         <span [ngClass]="{'text-red-600 font-bold': isExpiringSoon(item.expiryDate), 'text-orange-500': isNearExpiry(item.expiryDate)}">
                             {{ item.expiryDate ? (item.expiryDate | date:'MM/yyyy') : '—' }}
                         </span>
                     </td>
-                    <td class="text-center font-bold">{{ item.quantityRequested }}</td>
-                    <td class="text-center font-bold text-green-600" *ngIf="selectedTransfer.status === 'Received' || selectedTransfer.status === 'Dispatched'">
+                    <td data-label="الكمية المطلوبة" class="text-center font-bold">{{ item.quantityRequested }}</td>
+                    <td data-label="الكمية المستلمة" class="text-center font-bold text-green-600" *ngIf="selectedTransfer.status === 'Received' || selectedTransfer.status === 'Dispatched'">
                         {{ item.quantityReceived !== null ? item.quantityReceived : '-' }}
                     </td>
                 </tr>
@@ -258,15 +258,15 @@
             </ng-template>
             <ng-template pTemplate="body" let-item>
                 <tr>
-                    <td class="font-bold">{{ item.medicineName }}</td>
-                    <td class="text-center">
+                    <td data-label="الصنف" class="font-bold">{{ item.medicineName }}</td>
+                    <td data-label="رقم التشغيلة" class="text-center">
                         <span class="batch-tag indigo">{{ item.batchNumber }}</span>
                     </td>
-                    <td class="text-center font-bold">{{ item.quantityRequested }}</td>
-                    <td class="text-center">
+                    <td data-label="الكمية المرسلة" class="text-center font-bold">{{ item.quantityRequested }}</td>
+                    <td data-label="الكمية المستلمة" class="text-center">
                         <p-inputNumber [(ngModel)]="item.quantityReceived" [min]="0" [max]="item.quantityRequested" class="p-inputtext-sm w-full"></p-inputNumber>
                     </td>
-                    <td>
+                    <td data-label="سبب الرفض / العجز">
                         <input pInputText [(ngModel)]="item.rejectionReason" placeholder="اذكر سبب النقص أو التلف هنا..." class="p-inputtext-sm w-full" />
                     </td>
                 </tr>

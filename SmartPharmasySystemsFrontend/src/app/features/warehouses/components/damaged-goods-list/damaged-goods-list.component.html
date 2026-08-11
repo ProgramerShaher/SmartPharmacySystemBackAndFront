@@ -98,19 +98,19 @@
             </ng-template>
             <ng-template pTemplate="body" let-record>
                 <tr>
-                    <td class="dg-cell-code">{{ record.damageCode }}</td>
-                    <td class="font-bold">{{ record.warehouseName || record.sourceWarehouseName }}</td>
-                    <td class="font-bold">{{ record.medicineName }}</td>
-                    <td class="text-center">
+                    <td data-label="رمز المستند" class="dg-cell-code">{{ record.damageCode }}</td>
+                    <td data-label="المخزن الأصلي" class="font-bold">{{ record.warehouseName || record.sourceWarehouseName }}</td>
+                    <td data-label="اسم الدواء" class="font-bold">{{ record.medicineName }}</td>
+                    <td data-label="رقم التشغيلة" class="text-center">
                         <span class="batch-tag indigo">{{ record.batchNumber }}</span>
                     </td>
-                    <td class="text-center font-bold">{{ record.quantity }}</td>
-                    <td class="text-center font-bold text-red-600">{{ record.damageValue | number:'1.0-0' }} ر.ي</td>
-                    <td class="text-center">{{ getDamageTypeLabel(record.damageType) }}</td>
-                    <td class="text-center">
+                    <td data-label="الكمية" class="text-center font-bold">{{ record.quantity }}</td>
+                    <td data-label="قيمة التالف" class="text-center font-bold text-red-600">{{ record.damageValue | number:'1.0-0' }} ر.ي</td>
+                    <td data-label="سبب التلف" class="text-center">{{ getDamageTypeLabel(record.damageType) }}</td>
+                    <td data-label="الحالة" class="text-center">
                         <p-tag [severity]="getStatusSeverity(record.status)" [value]="getStatusLabel(record.status)" [rounded]="true"></p-tag>
                     </td>
-                    <td class="text-center flex justify-content-center gap-1">
+                    <td data-label="الإجراءات" class="text-center flex justify-content-center gap-1">
                         <button *ngIf="record.status === 'PendingApproval' || record.status === 1" pButton icon="pi pi-check" 
                             class="p-button-rounded p-button-success p-button-text" 
                             pTooltip="اعتماد وترحيل محاسبي" tooltipPosition="top" (click)="approveRecord(record)"></button>

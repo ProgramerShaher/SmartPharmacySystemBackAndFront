@@ -97,16 +97,16 @@
 
                     <ng-template pTemplate="body" let-transfer>
                         <tr>
-                            <td class="wh-cell-name"><i class="pi pi-hashtag wh-cell-icon"></i>{{ transfer.transferCode }}</td>
-                            <td class="wh-cell-strong">{{ transfer.sourceWarehouseName }}</td>
-                            <td>
+                            <td data-label="رقم الطلب" class="wh-cell-name"><i class="pi pi-hashtag wh-cell-icon"></i>{{ transfer.transferCode }}</td>
+                            <td data-label="المصدر" class="wh-cell-strong">{{ transfer.sourceWarehouseName }}</td>
+                            <td data-label="الفرع الطالب/الوجهة">
                                 <div class="wh-cell-strong wh-cell-accent">{{ transfer.destinationBranchName || 'فرع آخر' }}</div>
                                 <small class="wh-cell-branch" *ngIf="transfer.requestedByName">بواسطة: {{ transfer.requestedByName }}</small>
                             </td>
-                            <td><span class="wh-chip wh-chip-teal">{{ getTransferDirectionLabel(transfer) }}</span></td>
-                            <td class="wh-cell-date">{{ transfer.requestedAt | date:'yyyy/MM/dd HH:mm' }}</td>
-                            <td><p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag></td>
-                            <td>
+                            <td data-label="النوع"><span class="wh-chip wh-chip-teal">{{ getTransferDirectionLabel(transfer) }}</span></td>
+                            <td data-label="تاريخ الطلب" class="wh-cell-date">{{ transfer.requestedAt | date:'yyyy/MM/dd HH:mm' }}</td>
+                            <td data-label="الحالة"><p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag></td>
+                            <td data-label="الإجراءات">
                                 <div class="wh-cell-actions">
                                     <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
                                         pTooltip="التفاصيل" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
@@ -164,12 +164,12 @@
 
                     <ng-template pTemplate="body" let-transfer>
                         <tr>
-                            <td class="wh-cell-name"><i class="pi pi-hashtag wh-cell-icon"></i>{{ transfer.transferCode }}</td>
-                            <td class="wh-cell-strong wh-cell-accent">{{ transfer.sourceBranchName || 'فرع آخر' }}</td>
-                            <td class="wh-cell-strong">{{ transfer.destinationWarehouseName || 'بانتظار الاستلام' }}</td>
-                            <td class="wh-cell-date">{{ transfer.requestedAt | date:'yyyy/MM/dd HH:mm' }}</td>
-                            <td><p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag></td>
-                            <td>
+                            <td data-label="رقم الطلب" class="wh-cell-name"><i class="pi pi-hashtag wh-cell-icon"></i>{{ transfer.transferCode }}</td>
+                            <td data-label="من فرع" class="wh-cell-strong wh-cell-accent">{{ transfer.sourceBranchName || 'فرع آخر' }}</td>
+                            <td data-label="مستودع الاستلام" class="wh-cell-strong">{{ transfer.destinationWarehouseName || 'بانتظار الاستلام' }}</td>
+                            <td data-label="تاريخ الطلب" class="wh-cell-date">{{ transfer.requestedAt | date:'yyyy/MM/dd HH:mm' }}</td>
+                            <td data-label="الحالة"><p-tag [severity]="getStatusSeverity(transfer.status)" [value]="getStatusLabel(transfer.status)" [rounded]="true"></p-tag></td>
+                            <td data-label="الإجراءات">
                                 <div class="wh-cell-actions">
                                     <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm"
                                         pTooltip="التفاصيل" tooltipPosition="top" (click)="viewDetails(transfer)"></button>
@@ -224,10 +224,10 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr>
-                        <td class="wh-cell-strong">{{ item.medicineName }}</td>
-                        <td>{{ item.batchNumber }}</td>
-                        <td><span class="wh-chip wh-chip-amber">{{ item.quantityDispatched }}</span></td>
-                        <td>
+                        <td data-label="الصنف" class="wh-cell-strong">{{ item.medicineName }}</td>
+                        <td data-label="رقم التشغيلة">{{ item.batchNumber }}</td>
+                        <td data-label="المشحون"><span class="wh-chip wh-chip-amber">{{ item.quantityDispatched }}</span></td>
+                        <td data-label="المستلم فعلياً">
                             <p-inputNumber [(ngModel)]="item.quantityReceived" [min]="0" [showButtons]="true"
                                 mode="decimal" styleClass="w-full"></p-inputNumber>
                         </td>
@@ -281,12 +281,12 @@
                 </ng-template>
                 <ng-template pTemplate="body" let-item>
                     <tr>
-                        <td class="wh-cell-strong">{{ item.medicineName }}</td>
-                        <td>{{ item.batchNumber }}</td>
-                        <td>{{ item.quantityRequested }}</td>
-                        <td>{{ item.quantityDispatched }}</td>
-                        <td>{{ item.quantityReceived ?? '-' }}</td>
-                        <td>
+                        <td data-label="الصنف" class="wh-cell-strong">{{ item.medicineName }}</td>
+                        <td data-label="رقم التشغيلة">{{ item.batchNumber }}</td>
+                        <td data-label="المطلوب">{{ item.quantityRequested }}</td>
+                        <td data-label="المشحون">{{ item.quantityDispatched }}</td>
+                        <td data-label="المستلم">{{ item.quantityReceived ?? '-' }}</td>
+                        <td data-label="الفارق">
                             <span class="wh-chip" [ngClass]="getVarianceClass(item)">
                                 {{ item.quantityReceived === null || item.quantityReceived === undefined ? '-' : getVariance(item) }}
                             </span>

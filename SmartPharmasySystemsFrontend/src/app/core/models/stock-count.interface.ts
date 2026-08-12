@@ -59,3 +59,40 @@ export interface UpdateStockCountItemDto {
     physicalQuantity: number;
     varianceReason?: string;
 }
+
+export enum StockCountFrequency {
+    Daily = 1,
+    Weekly = 2,
+    Monthly = 3,
+    Quarterly = 4,
+    SemiAnnually = 5,
+    Annually = 6
+}
+
+export interface StockCountScheduleDto {
+    id: number;
+    warehouseId: number;
+    warehouseName: string;
+    branchId: number;
+    branchName: string;
+    frequency: StockCountFrequency;
+    frequencyLabel: string;
+    nextRunDate: string;
+    lastRunDate?: string | null;
+    isActive: boolean;
+    notes?: string;
+}
+
+export interface CreateStockCountScheduleDto {
+    warehouseId: number;
+    frequency: StockCountFrequency;
+    nextRunDate: string;
+    notes?: string;
+}
+
+export interface UpdateStockCountScheduleDto {
+    frequency: StockCountFrequency;
+    nextRunDate: string;
+    isActive: boolean;
+    notes?: string;
+}

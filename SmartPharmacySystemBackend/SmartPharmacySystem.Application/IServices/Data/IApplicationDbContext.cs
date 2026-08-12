@@ -48,6 +48,9 @@ public interface IApplicationDbContext
     DbSet<DamagedGoodsRecord> DamagedGoodsRecords { get; }
     DbSet<StockCountHeader> StockCountHeaders { get; }
     DbSet<StockCountItem> StockCountItems { get; }
+    DbSet<StockCountSchedule> StockCountSchedules { get; }
+    DbSet<AutomatedAuditHeader> AutomatedAuditHeaders { get; }
+    DbSet<AutomatedAuditItem> AutomatedAuditItems { get; }
 
     // ===== HR & Payroll =====
     DbSet<Department> Departments { get; }

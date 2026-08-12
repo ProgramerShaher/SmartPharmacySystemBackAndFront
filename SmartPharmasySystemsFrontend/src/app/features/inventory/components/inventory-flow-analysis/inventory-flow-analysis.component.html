@@ -1,0 +1,129 @@
+<div class="inventory-page" dir="rtl">
+  <p-toast></p-toast>
+
+  <div class="page-header">
+    <div class="title-wrap">
+      <button type="button" pButton icon="pi pi-arrow-right" class="p-button-text p-button-rounded" routerLink=".."></button>
+      <div class="icon-circle"><i class="pi pi-chart-line"></i></div>
+      <div>
+        <h1>تحليل التدفق المخزني</h1>
+        <p>تحليل وارد وصادر الصنف ومطابقة الرصيد المحسوب مع رصيد النظام</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="filters-panel">
+    <form [formGroup]="searchForm" class="filters-form">
+      <div class="filter-field">
+        <label>الصنف</label>
+        <p-dropdown [options]="medicines" formControlName="medicineId" optionLabel="name" optionValue="id"
+          [filter]="true" placeholder="اختر الصنف"></p-dropdown>
+      </div>
+      <div class="filter-field">
+        <label>رقم التشغيلة</label>
+        <input type="text" pInputText formControlName="batchNumber" placeholder="اختياري">
+      </div>
+      <p-button icon="pi pi-chart-bar" label="تحليل" (onClick)="generateReport()"
+        [disabled]="searchForm.invalid || loading" [loading]="loading"></p-button>
+    </form>
+  </section>
+
+  <div class="loading-box" *ngIf="loading">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <ng-container *ngIf="reportData && !loading">
+    <div class="kpi-grid">
+      <div class="kpi-card stock">
+        <span class="kpi-label">الرصيد الافتتاحي</span>
+        <strong>{{ reportData.openingBalance }}</strong>
+        <small>بداية الفترة</small>
+      </div>
+      <div class="kpi-card expiry">
+        <span class="kpi-label">الرصيد المحسوب</span>
+        <strong>{{ reportData.expectedClosingBalance }}</strong>
+        <small>حسب الحركات</small>
+      </div>
+      <div class="kpi-card low">
+        <span class="kpi-label">رصيد النظام</span>
+        <strong>{{ reportData.actualSystemBalance }}</strong>
+        <small>الرصيد الحالي</small>
+      </div>
+      <div class="kpi-card today" [ngClass]="reportData.isBalanced ? 'balanced' : 'unbalanced'">
+        <span class="kpi-label">الحالة</span>
+        <strong>{{ reportData.isBalanced ? 'متطابق' : 'يوجد فارق' }}</strong>
+        <small>{{ reportData.medicineName }}</small>
+      </div>
+    </div>
+
+    <div class="charts-grid">
+      <section class="panel trend-panel">
+        <div class="panel-head">
+          <div>
+            <h3>ملخص الحركات</h3>
+            <p>{{ reportData.medicineName }} - التشغيلة: {{ reportData.batchNumber || 'كل التشغيلات' }}</p>
+          </div>
+          <i class="pi pi-chart-bar"></i>
+        </div>
+        <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="220px"></p-chart>
+      </section>
+
+      <section class="panel flow-panel">
+        <div class="panel-head">
+          <div>
+            <h3>تفصيل التدفق</h3>
+            <p>وارد وصادر حسب مصدر الحركة</p>
+          </div>
+          <i class="pi pi-sitemap"></i>
+        </div>
+        <div class="flow-grid">
+          <div class="flow-card in">
+            <span class="label">وارد (+)</span>
+            <div><span>مشتريات</span><strong>{{ reportData.totalPurchases }}</strong></div>
+            <div><span>تحويل وارد</span><strong>{{ reportData.totalTransfersIn }}</strong></div>
+            <div><span>مردود بيع</span><strong>{{ reportData.totalSalesReturns }}</strong></div>
+          </div>
+          <div class="flow-card out">
+            <span class="label">صادر (-)</span>
+            <div><span>مبيعات</span><strong>{{ reportData.totalSales }}</strong></div>
+            <div><span>تحويل صادر</span><strong>{{ reportData.totalTransfersOut }}</strong></div>
+            <div><span>مردود شراء</span><strong>{{ reportData.totalPurchaseReturns }}</strong></div>
+            <div><span>تالف</span><strong>{{ reportData.totalDamages }}</strong></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="table-panel">
+      <p-table [value]="reportData.recentMovements" styleClass="p-datatable-sm compact-table"
+        responsiveLayout="scroll">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>نوع الحركة</th>
+            <th class="text-center">الكمية</th>
+            <th>التاريخ</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-mov>
+          <tr>
+            <td><span class="type-pill" [ngClass]="mov.quantity > 0 ? 'type-green' : 'type-red'">{{ mov.movementType }}</span></td>
+            <td class="text-center">
+              <span class="value-pill" [ngClass]="mov.quantity > 0 ? 'success' : 'danger'">
+                <span *ngIf="mov.quantity > 0">+</span>{{ mov.quantity }}
+              </span>
+            </td>
+            <td><span class="date-main">{{ mov.date | date:'dd/MM/yyyy HH:mm' }}</span></td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="3" class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <span>لا توجد حركات حديثة لهذا الصنف</span>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+  </ng-container>
+</div>

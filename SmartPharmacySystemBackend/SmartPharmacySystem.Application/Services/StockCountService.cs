@@ -183,4 +183,127 @@ public class StockCountService : IStockCountService
     {
         return await _unitOfWork.StockCounts.CodeExistsAsync(countCode, excludeId);
     }
+
+    // =========================================================================
+    // Automation & Scheduling
+    // =========================================================================
+
+    public async Task ProcessScheduledCountsAsync()
+    {
+        var dueSchedules = await _unitOfWork.StockCounts.GetDueSchedulesAsync();
+
+        foreach (var schedule in dueSchedules)
+        {
+            // Auto-generate the stock count
+            var headerDto = new CreateStockCountHeaderDto
+            {
+                WarehouseId = schedule.WarehouseId,
+                CountType = schedule.Frequency switch
+                {
+                    StockCountFrequency.Daily => StockCountType.Daily,
+                    StockCountFrequency.Weekly => StockCountType.Weekly,
+                    StockCountFrequency.Monthly => StockCountType.Monthly,
+                    StockCountFrequency.Quarterly => StockCountType.Quarterly,
+                    StockCountFrequency.SemiAnnually => StockCountType.SemiAnnual,
+                    StockCountFrequency.Annually => StockCountType.Annual,
+                    _ => StockCountType.Monthly
+                },
+                Notes = $"جرد آلي مجدول ({schedule.Frequency})"
+            };
+
+            await CreateHeaderAsync(headerDto);
+
+            // Update next run date
+            schedule.LastRunDate = DateTime.UtcNow;
+            schedule.NextRunDate = schedule.Frequency switch
+            {
+                StockCountFrequency.Daily => schedule.NextRunDate.AddDays(1),
+                StockCountFrequency.Weekly => schedule.NextRunDate.AddDays(7),
+                StockCountFrequency.Monthly => schedule.NextRunDate.AddMonths(1),
+                StockCountFrequency.Quarterly => schedule.NextRunDate.AddMonths(3),
+                StockCountFrequency.SemiAnnually => schedule.NextRunDate.AddMonths(6),
+                StockCountFrequency.Annually => schedule.NextRunDate.AddYears(1),
+                _ => schedule.NextRunDate.AddMonths(1)
+            };
+
+            await _unitOfWork.StockCounts.UpdateScheduleAsync(schedule);
+        }
+
+        if (dueSchedules.Any())
+        {
+            await _unitOfWork.SaveChangesAsync();
+        }
+    }
+
+    public async Task<IEnumerable<StockCountScheduleDto>> GetAllSchedulesAsync(int? warehouseId = null)
+    {
+        var schedules = await _unitOfWork.StockCounts.GetAllSchedulesAsync(warehouseId);
+        
+        return schedules.Select(s => new StockCountScheduleDto
+        {
+            Id = s.Id,
+            WarehouseId = s.WarehouseId,
+            WarehouseName = s.Warehouse?.Name ?? "",
+            BranchId = s.BranchId,
+            BranchName = s.Branch?.Name ?? "",
+            Frequency = s.Frequency,
+            FrequencyLabel = GetFrequencyLabel(s.Frequency),
+            NextRunDate = s.NextRunDate,
+            LastRunDate = s.LastRunDate,
+            IsActive = s.IsActive,
+            Notes = s.Notes
+        });
+    }
+
+    public async Task<StockCountScheduleDto> CreateScheduleAsync(CreateStockCountScheduleDto dto)
+    {
+        var warehouse = await _unitOfWork.Warehouses.GetByIdAsync(dto.WarehouseId)
+            ?? throw new KeyNotFoundException("المستودع غير موجود");
+
+        var schedule = new StockCountSchedule
+        {
+            WarehouseId = dto.WarehouseId,
+            BranchId = warehouse.BranchId, // Derived safely from the warehouse
+            Frequency = dto.Frequency,
+            NextRunDate = dto.NextRunDate,
+            IsActive = true,
+            Notes = dto.Notes
+        };
+
+        await _unitOfWork.StockCounts.AddScheduleAsync(schedule);
+        await _unitOfWork.SaveChangesAsync();
+
+        return (await GetAllSchedulesAsync(warehouse.Id)).FirstOrDefault(s => s.Id == schedule.Id)!;
+    }
+
+    public async Task UpdateScheduleAsync(int id, UpdateStockCountScheduleDto dto)
+    {
+        var schedule = await _unitOfWork.StockCounts.GetScheduleByIdAsync(id)
+            ?? throw new KeyNotFoundException("الجدولة غير موجودة");
+
+        schedule.Frequency = dto.Frequency;
+        schedule.NextRunDate = dto.NextRunDate;
+        schedule.IsActive = dto.IsActive;
+        schedule.Notes = dto.Notes;
+
+        await _unitOfWork.StockCounts.UpdateScheduleAsync(schedule);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteScheduleAsync(int id)
+    {
+        await _unitOfWork.StockCounts.DeleteScheduleAsync(id);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    private string GetFrequencyLabel(StockCountFrequency freq) => freq switch
+    {
+        StockCountFrequency.Daily => "يومي",
+        StockCountFrequency.Weekly => "أسبوعي",
+        StockCountFrequency.Monthly => "شهري",
+        StockCountFrequency.Quarterly => "ربع سنوي",
+        StockCountFrequency.SemiAnnually => "نصف سنوي",
+        StockCountFrequency.Annually => "سنوي",
+        _ => "غير معروف"
+    };
 }

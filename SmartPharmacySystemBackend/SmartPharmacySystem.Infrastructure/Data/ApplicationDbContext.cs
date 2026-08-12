@@ -73,6 +73,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<DamagedGoodsRecord> DamagedGoodsRecords { get; set; } = null!;
     public DbSet<StockCountHeader> StockCountHeaders { get; set; } = null!;
     public DbSet<StockCountItem> StockCountItems { get; set; } = null!;
+    public DbSet<StockCountSchedule> StockCountSchedules { get; set; } = null!;
+    public DbSet<AutomatedAuditHeader> AutomatedAuditHeaders { get; set; } = null!;
+    public DbSet<AutomatedAuditItem> AutomatedAuditItems { get; set; } = null!;
 
     // ===== HR & Payroll =====
     public DbSet<Department> Departments { get; set; } = null!;
@@ -776,6 +779,64 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .WithOne(i => i.StockTransfer)
                   .HasForeignKey(i => i.StockTransferId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StockCountSchedule>(entity =>
+        {
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AutomatedAuditHeader>(entity =>
+        {
+            entity.HasQueryFilter(e => CurrentBranchId == null || e.BranchId == CurrentBranchId);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+                  
+            entity.HasOne(e => e.CreatedByUser)
+                  .WithMany()
+                  .HasForeignKey(e => e.CreatedByUserId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<AutomatedAuditItem>(entity =>
+        {
+            entity.HasOne(e => e.Header)
+                  .WithMany(h => h.Items)
+                  .HasForeignKey(e => e.AutomatedAuditHeaderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+                  
+            entity.HasOne(e => e.Warehouse)
+                  .WithMany()
+                  .HasForeignKey(e => e.WarehouseId)
+                  .OnDelete(DeleteBehavior.Restrict);
+                  
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+                  
+            entity.HasOne(e => e.Batch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BatchId)
+                  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<StockTransferItem>(entity =>

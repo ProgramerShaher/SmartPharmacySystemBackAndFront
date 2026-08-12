@@ -92,4 +92,35 @@ export class StockCountService {
             map(() => undefined)
         );
     }
+
+    // ==========================================
+    // Schedules
+    // ==========================================
+
+    getAllSchedules(warehouseId?: number): Observable<import('../../../core/models/stock-count.interface').StockCountScheduleDto[]> {
+        let params = new HttpParams();
+        if (warehouseId) params = params.set('warehouseId', warehouseId);
+
+        return this.http.get<ApiResponse<import('../../../core/models/stock-count.interface').StockCountScheduleDto[]>>(`${this.apiUrl}/schedules`, { params }).pipe(
+            map(response => response.data || [])
+        );
+    }
+
+    createSchedule(dto: import('../../../core/models/stock-count.interface').CreateStockCountScheduleDto): Observable<import('../../../core/models/stock-count.interface').StockCountScheduleDto> {
+        return this.http.post<ApiResponse<import('../../../core/models/stock-count.interface').StockCountScheduleDto>>(`${this.apiUrl}/schedules`, dto).pipe(
+            map(response => response.data!)
+        );
+    }
+
+    updateSchedule(id: number, dto: import('../../../core/models/stock-count.interface').UpdateStockCountScheduleDto): Observable<void> {
+        return this.http.put<ApiResponse<void>>(`${this.apiUrl}/schedules/${id}`, dto).pipe(
+            map(() => undefined)
+        );
+    }
+
+    deleteSchedule(id: number): Observable<void> {
+        return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/schedules/${id}`).pipe(
+            map(() => undefined)
+        );
+    }
 }

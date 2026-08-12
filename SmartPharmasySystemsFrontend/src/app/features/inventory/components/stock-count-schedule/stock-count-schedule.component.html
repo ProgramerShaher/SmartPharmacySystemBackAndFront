@@ -1,0 +1,127 @@
+<div class="inventory-page" dir="rtl">
+  <p-toast></p-toast>
+
+  <div class="page-header">
+    <div class="title-wrap">
+      <button type="button" pButton icon="pi pi-arrow-right" class="p-button-text p-button-rounded" routerLink=".."></button>
+      <div class="icon-circle"><i class="pi pi-calendar-clock"></i></div>
+      <div>
+        <h1>الجدولة الآلية للجرد</h1>
+        <p>إدارة مواعيد الجرد المتكرر لكل مستودع وتفعيلها أو إيقافها</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تحديث"
+        tooltipPosition="bottom" (onClick)="loadSchedules()" [loading]="loading"></p-button>
+      <p-button icon="pi pi-plus" [rounded]="true" severity="primary" pTooltip="جدولة جديدة"
+        tooltipPosition="bottom" (onClick)="showAddDialog()"></p-button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card stock">
+      <span class="kpi-label">إجمالي الجداول</span>
+      <strong>{{ schedules.length }}</strong>
+      <small>جدولة محفوظة</small>
+    </div>
+    <div class="kpi-card expiry">
+      <span class="kpi-label">نشطة</span>
+      <strong>{{ getActiveCount() }}</strong>
+      <small>تعمل تلقائيًا</small>
+    </div>
+    <div class="kpi-card low">
+      <span class="kpi-label">متوقفة</span>
+      <strong>{{ getInactiveCount() }}</strong>
+      <small>غير مفعلة حاليًا</small>
+    </div>
+    <div class="kpi-card today">
+      <span class="kpi-label">أقرب جرد</span>
+      <strong>{{ getNextRunDate() || '-' }}</strong>
+      <small>حسب الجداول النشطة</small>
+    </div>
+  </div>
+
+  <div class="loading-box" *ngIf="loading">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <section class="table-panel" *ngIf="!loading">
+    <p-table [value]="schedules" styleClass="p-datatable-sm compact-table" responsiveLayout="scroll" dataKey="id">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>المستودع</th>
+          <th>التكرار</th>
+          <th>الجرد القادم</th>
+          <th>آخر جرد</th>
+          <th class="text-center">الحالة</th>
+          <th class="text-center">إجراءات</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <strong class="name-text">{{ item.warehouseName }}</strong>
+            <small class="muted">{{ item.notes || 'لا توجد ملاحظات' }}</small>
+          </td>
+          <td><span class="type-pill type-blue">{{ item.frequencyLabel }}</span></td>
+          <td><span class="date-main">{{ item.nextRunDate | date:'dd/MM/yyyy' }}</span></td>
+          <td><span class="date-time">{{ item.lastRunDate ? (item.lastRunDate | date:'dd/MM/yyyy') : '-' }}</span></td>
+          <td class="text-center">
+            <p-inputSwitch [(ngModel)]="item.isActive" (onChange)="toggleActive(item)"
+              styleClass="compact-switch"></p-inputSwitch>
+          </td>
+          <td class="text-center">
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+              pTooltip="حذف" tooltipPosition="top" (onClick)="deleteSchedule(item.id)"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="empty-message">
+            <i class="pi pi-calendar-plus"></i>
+            <span>لا توجد جداول جرد آلية مضافة</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+
+  <p-dialog header="جدولة جرد جديدة" [(visible)]="displayDialog" [modal]="true"
+    [style]="{width: '92vw', maxWidth: '460px'}" [draggable]="false" [resizable]="false"
+    styleClass="inventory-dialog">
+    <form [formGroup]="scheduleForm" class="dialog-form">
+      <div class="filter-field">
+        <label>المستودع <span class="required">*</span></label>
+        <p-dropdown [options]="warehouses" formControlName="warehouseId" optionLabel="name" optionValue="id"
+          placeholder="اختر المستودع" [filter]="true"></p-dropdown>
+      </div>
+
+      <div class="filter-field">
+        <label>تكرار الجرد <span class="required">*</span></label>
+        <p-dropdown [options]="frequencyOptions" formControlName="frequency" placeholder="اختر التكرار"></p-dropdown>
+      </div>
+
+      <div class="filter-field">
+        <label>تاريخ أول جرد <span class="required">*</span></label>
+        <p-calendar formControlName="nextRunDate" dateFormat="yy-mm-dd" [minDate]="minDate" appendTo="body"
+          [showIcon]="true"></p-calendar>
+      </div>
+
+      <div class="filter-field">
+        <label>ملاحظات (اختياري)</label>
+        <textarea pInputTextarea formControlName="notes" rows="3"></textarea>
+      </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-actions">
+        <p-button label="إلغاء" severity="secondary" [outlined]="true" (onClick)="hideDialog()"></p-button>
+        <p-button label="حفظ" icon="pi pi-save" [disabled]="scheduleForm.invalid" (onClick)="saveSchedule()"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

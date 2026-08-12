@@ -66,7 +66,7 @@ export class BatchDetailsComponent implements OnInit, OnChanges {
     loadBatch(id: number) {
         this.loading = true;
         this.inventoryService.getBatchById(id).subscribe({
-            next: (data) => {
+            next: (data: any) => {
                 console.log('📦 Batch data from backend:', data);
                 console.log('🔍 medicineId present?', data.medicineId);
 
@@ -87,14 +87,14 @@ export class BatchDetailsComponent implements OnInit, OnChanges {
                 }
 
                 this.batch = data;
-                if (this.batch.medicineId) {
+                if (this.batch?.medicineId) {
                     this.loadMedicineDetails(this.batch.medicineId);
                     this.loadStockCard(this.batch.medicineId, id);
                 } else {
                     this.loading = false;
                 }
             },
-            error: (err) => {
+            error: (err: any) => {
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل تفاصيل الدفعة' });
                 this.loading = false;
             }
@@ -103,11 +103,11 @@ export class BatchDetailsComponent implements OnInit, OnChanges {
 
     loadStockCard(medicineId: number, batchId: number) {
         this.inventoryService.getStockCard(medicineId, batchId).subscribe({
-            next: (data) => {
+            next: (data: any) => {
                 this.stockCard = data;
                 this.loading = false;
             },
-            error: (err) => {
+            error: (err: any) => {
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل سجل الحركات' });
                 this.loading = false;
             }
@@ -118,12 +118,12 @@ export class BatchDetailsComponent implements OnInit, OnChanges {
         // Reload batch to ensure we have all data including medicineId
         if (this.batch?.id) {
             this.inventoryService.getBatchById(this.batch.id).subscribe({
-                next: (refreshedBatch) => {
+                next: (refreshedBatch: any) => {
                     console.log('🔄 Refreshed batch for dialog:', refreshedBatch);
                     this.batch = refreshedBatch;
                     this.displayActionDialog = true;
                 },
-                error: (err) => {
+                error: (err: any) => {
                     this.messageService.add({
                         severity: 'error',
                         summary: 'خطأ',
@@ -181,11 +181,11 @@ export class BatchDetailsComponent implements OnInit, OnChanges {
 
     loadMedicineDetails(medicineId: number) {
         this.inventoryService.getMedicineById(medicineId).subscribe({
-            next: (data) => {
+            next: (data: any) => {
                 this.medicine = data;
                 this.calculateUnitsBreakdown();
             },
-            error: (err) => {
+            error: (err: any) => {
                 console.error('Failed to load medicine details for batch units calculation');
             }
         });

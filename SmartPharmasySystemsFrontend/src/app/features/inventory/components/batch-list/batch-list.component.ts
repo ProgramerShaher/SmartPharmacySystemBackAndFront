@@ -76,13 +76,13 @@ export class BatchListComponent implements OnInit {
     loadBatches() {
         this.loading = true;
         this.inventoryService.getAllBatches().subscribe({
-            next: (data) => {
+            next: (data: any) => {
                 // استخدام البيانات من Backend مباشرة (Backend يحسب كل شيء)
                 this.batches = data;
                 this.applyFilters();
                 this.loading = false;
             },
-            error: (err) => {
+            error: (err: any) => {
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل قائمة الدفعات' });
                 this.loading = false;
             }
@@ -140,7 +140,7 @@ export class BatchListComponent implements OnInit {
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تحديث حالة الدفعة بنجاح' });
             },
-            error: (err) => {
+            error: (err: any) => {
                 // Revert on error
                 batch.isSellable = originalStatus;
                 this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحديث حالة الدفعة' });

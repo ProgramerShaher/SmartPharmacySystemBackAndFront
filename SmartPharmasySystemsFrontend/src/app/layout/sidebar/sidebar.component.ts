@@ -264,6 +264,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
         {
           label: 'جرد المخزون', route: '/inventory/stock-counts', icon: 'pi pi-clipboard',
           permission: 'inventory.stock_counts.create'
+        },
+        {
+          label: 'الجدولة الآلية للجرد', route: '/inventory/stock-counts-schedules', icon: 'pi pi-calendar-plus',
+          permission: 'inventory.stock_counts.create'
+        },
+        {
+          label: 'تحليل التدفق المخزني', route: '/inventory/flow-analysis', icon: 'pi pi-chart-bar',
+          permission: 'inventory.medicines.view'
+        },
+        {
+          label: 'الجرد الآلي الشامل', route: '/inventory/automated-audits', icon: 'pi pi-bolt',
+          permission: 'inventory.stock_counts.create'
         }
       ]
     },

@@ -96,4 +96,36 @@ public class StockCountsController : ControllerBase
         await _countService.DeleteItemAsync(headerId, medicineId, batchNumber);
         return Ok(ApiResponse<string>.Succeeded("تم حذف عنصر الجرد", "تم الحذف"));
     }
+
+    // ==========================================
+    // Schedules
+    // ==========================================
+
+    [HttpGet("schedules")]
+    public async Task<IActionResult> GetAllSchedules([FromQuery] int? warehouseId)
+    {
+        var result = await _countService.GetAllSchedulesAsync(warehouseId);
+        return Ok(ApiResponse<IEnumerable<StockCountScheduleDto>>.Succeeded(result, "تم جلب الجداول بنجاح"));
+    }
+
+    [HttpPost("schedules")]
+    public async Task<IActionResult> CreateSchedule(CreateStockCountScheduleDto dto)
+    {
+        var result = await _countService.CreateScheduleAsync(dto);
+        return Ok(ApiResponse<StockCountScheduleDto>.Succeeded(result, "تم إنشاء الجدولة بنجاح"));
+    }
+
+    [HttpPut("schedules/{id}")]
+    public async Task<IActionResult> UpdateSchedule(int id, UpdateStockCountScheduleDto dto)
+    {
+        await _countService.UpdateScheduleAsync(id, dto);
+        return Ok(ApiResponse<string>.Succeeded(null,"تم تحديث الجدولة بنجاح"));
+    }
+
+    [HttpDelete("schedules/{id}")]
+    public async Task<IActionResult> DeleteSchedule(int id)
+    {
+        await _countService.DeleteScheduleAsync(id);
+        return Ok(ApiResponse<string>.Succeeded( null, "تم حذف الجدولة بنجاح"));
+    }
 }

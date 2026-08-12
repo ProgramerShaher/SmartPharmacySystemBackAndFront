@@ -314,6 +314,66 @@ namespace SmartPharmacySystem.Application.Services
             return result.OrderByDescending(x => x.Date);
         }
 
+        public async Task<SmartPharmacySystem.Application.DTOs.Inventory.InventoryFlowReportDto> GetInventoryFlowReportAsync(int medicineId, string batchNumber)
+        {
+            var movementsQuery = _context.InventoryMovements
+                .AsNoTracking()
+                .Include(m => m.Medicine)
+                .Include(m => m.Batch)
+                .Where(m => m.MedicineId == medicineId);
+
+            if (!string.IsNullOrEmpty(batchNumber))
+            {
+                movementsQuery = movementsQuery.Where(m => m.Batch != null && m.Batch.CompanyBatchNumber == batchNumber);
+            }
+
+            var movements = await movementsQuery.OrderBy(m => m.Date).ToListAsync();
+
+            var report = new SmartPharmacySystem.Application.DTOs.Inventory.InventoryFlowReportDto
+            {
+                MedicineId = medicineId,
+                MedicineName = movements.FirstOrDefault()?.Medicine?.Name ?? "غير معروف",
+                BatchNumber = batchNumber ?? "الكل",
+                OpeningBalance = movements.Where(m => m.ReferenceType == ReferenceType.OpeningBalance).Sum(m => m.Quantity),
+                TotalPurchases = movements.Where(m => m.MovementType == StockMovementType.Purchase).Sum(m => m.Quantity),
+                TotalSales = Math.Abs(movements.Where(m => m.MovementType == StockMovementType.Sale).Sum(m => m.Quantity)),
+                TotalTransfersIn = movements.Where(m => m.MovementType == StockMovementType.TransferIn).Sum(m => m.Quantity),
+                TotalTransfersOut = Math.Abs(movements.Where(m => m.MovementType == StockMovementType.TransferOut).Sum(m => m.Quantity)),
+                TotalDamages = Math.Abs(movements.Where(m => m.MovementType == StockMovementType.Damage || m.MovementType == StockMovementType.Expiry).Sum(m => m.Quantity)),
+                TotalAdjustments = movements.Where(m => m.MovementType == StockMovementType.Adjustment).Sum(m => m.Quantity),
+                TotalSalesReturns = movements.Where(m => m.MovementType == StockMovementType.SalesReturn).Sum(m => m.Quantity),
+                TotalPurchaseReturns = Math.Abs(movements.Where(m => m.MovementType == StockMovementType.PurchaseReturn).Sum(m => m.Quantity))
+            };
+
+            // Calculate expected
+            report.ExpectedClosingBalance = 
+                (report.OpeningBalance + report.TotalPurchases + report.TotalTransfersIn + report.TotalSalesReturns) - 
+                (report.TotalSales + report.TotalTransfersOut + report.TotalDamages + report.TotalPurchaseReturns) + 
+                report.TotalAdjustments;
+
+            // Calculate actual from the current state
+            if (!string.IsNullOrEmpty(batchNumber))
+            {
+                var batch = await _context.MedicineBatches.FirstOrDefaultAsync(b => b.MedicineId == medicineId && b.CompanyBatchNumber == batchNumber);
+                report.ActualSystemBalance = batch?.RemainingQuantity ?? 0;
+            }
+            else
+            {
+                report.ActualSystemBalance = await _context.MedicineBatches.Where(b => b.MedicineId == medicineId && !b.IsDeleted).SumAsync(b => b.RemainingQuantity);
+            }
+
+            // Top 10 recent movements
+            report.RecentMovements = movements.OrderByDescending(m => m.Date).Take(10).Select(m => new SmartPharmacySystem.Application.DTOs.Inventory.MovementSummaryDto
+            {
+                MovementType = GetMovementTypeLabel(m.MovementType),
+                Quantity = m.Quantity,
+                ReferenceNumber = m.ReferenceNumber,
+                Date = (m.Date == default ? m.CreatedAt : m.Date).ToString("yyyy-MM-dd HH:mm")
+            }).ToList();
+
+            return report;
+        }
+
         #region Private Helpers
 
         private async Task ProcessPurchaseInvoice(int id)
@@ -458,6 +518,8 @@ namespace SmartPharmacySystem.Application.Services
             StockMovementType.Adjustment => "تعديل مخزون",
             StockMovementType.Damage => "تالف",
             StockMovementType.Expiry => "منتهي الصلاحية",
+            StockMovementType.TransferOut => "صادر تحويل",
+            StockMovementType.TransferIn => "وارد تحويل",
             _ => "غير معروف"
         };
 
@@ -472,6 +534,7 @@ namespace SmartPharmacySystem.Application.Services
             ReferenceType.ManualAdjustment => "تعديل يدوي",
             ReferenceType.SupplierPayment => "سند صرف مورد",
             ReferenceType.CustomerReceipt => "سند قبض عميل",
+            ReferenceType.BranchTransfer => "تحويل بين الفروع",
             _ => "غير معروف"
         };
 

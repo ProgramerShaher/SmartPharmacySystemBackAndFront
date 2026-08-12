@@ -142,4 +142,59 @@ public class StockCountRepository : IStockCountRepository
             _context.StockCountItems.Update(item);
         }
     }
+
+    // ==========================================
+    // Schedules
+    // ==========================================
+
+    public async Task<StockCountSchedule?> GetScheduleByIdAsync(int id)
+    {
+        return await _context.StockCountSchedules
+            .AsNoTracking()
+            .Include(s => s.Warehouse).ThenInclude(w => w.Branch)
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+    }
+
+    public async Task<IEnumerable<StockCountSchedule>> GetAllSchedulesAsync(int? warehouseId = null)
+    {
+        var query = _context.StockCountSchedules.AsNoTracking().Where(s => !s.IsDeleted);
+        if (warehouseId.HasValue)
+            query = query.Where(s => s.WarehouseId == warehouseId.Value);
+
+        return await query
+            .Include(s => s.Warehouse).ThenInclude(w => w.Branch)
+            .OrderBy(s => s.NextRunDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<StockCountSchedule>> GetDueSchedulesAsync()
+    {
+        var today = DateTime.Today;
+        return await _context.StockCountSchedules
+            .AsNoTracking()
+            .Where(s => s.IsActive && !s.IsDeleted && s.NextRunDate.Date <= today)
+            .ToListAsync();
+    }
+
+    public async Task<StockCountSchedule> AddScheduleAsync(StockCountSchedule schedule)
+    {
+        await _context.StockCountSchedules.AddAsync(schedule);
+        return schedule;
+    }
+
+    public async Task UpdateScheduleAsync(StockCountSchedule schedule)
+    {
+        _context.Entry(schedule).State = Microsoft.EntityFrameworkCore.EntityState.Modified;
+        await Task.CompletedTask;
+    }
+
+    public async Task DeleteScheduleAsync(int id)
+    {
+        var schedule = await _context.StockCountSchedules.FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
+        if (schedule != null)
+        {
+            schedule.IsDeleted = true;
+            _context.StockCountSchedules.Update(schedule);
+        }
+    }
 }

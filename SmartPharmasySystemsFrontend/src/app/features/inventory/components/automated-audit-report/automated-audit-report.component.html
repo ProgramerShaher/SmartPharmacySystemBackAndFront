@@ -1,0 +1,142 @@
+<div class="inventory-page print-container" dir="rtl">
+  <p-toast></p-toast>
+
+  <div class="page-header no-print">
+    <div class="title-wrap">
+      <button type="button" pButton icon="pi pi-arrow-right" class="p-button-text p-button-rounded"
+        (click)="goBack()"></button>
+      <div class="icon-circle"><i class="pi pi-file-check"></i></div>
+      <div>
+        <h1>تقرير الجرد الشامل</h1>
+        <p>تفاصيل الجرد الآلي مع تحليل القيم والفروقات حسب الأصناف والتشغيلات</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <p-button icon="pi pi-print" [rounded]="true" severity="primary" pTooltip="طباعة التقرير"
+        tooltipPosition="bottom" (onClick)="printReport()"></p-button>
+    </div>
+  </div>
+
+  <div class="loading-box" *ngIf="loading">
+    <p-progressSpinner></p-progressSpinner>
+  </div>
+
+  <ng-container *ngIf="!loading && auditData">
+    <div class="print-title">
+      <h1>تقرير الجرد الشامل</h1>
+      <p>{{ auditData.auditCode }} - {{ auditData.auditDate | date:'dd/MM/yyyy HH:mm' }}</p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card stock">
+        <span class="kpi-label">رقم الجرد</span>
+        <strong>{{ auditData.auditCode }}</strong>
+        <small>{{ auditData.countTypeName || 'جرد آلي' }}</small>
+      </div>
+      <div class="kpi-card expiry">
+        <span class="kpi-label">المستودع</span>
+        <strong>{{ auditData.warehouseName || 'كل المستودعات' }}</strong>
+        <small>{{ auditData.warehouseId ? 'مستودع محدد' : 'جرد شامل' }}</small>
+      </div>
+      <div class="kpi-card low">
+        <span class="kpi-label">تاريخ الجرد</span>
+        <strong>{{ auditData.auditDate | date:'dd/MM/yyyy' }}</strong>
+        <small>{{ auditData.auditDate | date:'HH:mm' }}</small>
+      </div>
+      <div class="kpi-card today">
+        <span class="kpi-label">عدد الأصناف</span>
+        <strong>{{ auditData.items?.length || 0 }}</strong>
+        <small>سطر في التقرير</small>
+      </div>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card stock">
+        <span class="kpi-label">المشتريات</span>
+        <strong>{{ auditData.totalPurchasesValue | number:'1.2-2' }}</strong>
+        <small>حسب التكلفة</small>
+      </div>
+      <div class="kpi-card today">
+        <span class="kpi-label">المبيعات</span>
+        <strong>{{ auditData.totalSalesValue | number:'1.2-2' }}</strong>
+        <small>حسب التكلفة</small>
+      </div>
+      <div class="kpi-card low">
+        <span class="kpi-label">التوالف</span>
+        <strong>{{ auditData.totalDamagesValue | number:'1.2-2' }}</strong>
+        <small>قيمة التالف</small>
+      </div>
+      <div class="kpi-card expiry">
+        <span class="kpi-label">إجمالي النواقص</span>
+        <strong>{{ auditData.totalShortageValue | number:'1.2-2' }}</strong>
+        <small>قيمة الفروقات السالبة</small>
+      </div>
+    </div>
+
+    <section class="panel no-print">
+      <div class="panel-head">
+        <div>
+          <h3>حركة أكثر 10 أصناف</h3>
+          <p>مقارنة المبيعات والمشتريات والتوالف والنواقص</p>
+        </div>
+        <i class="pi pi-chart-bar"></i>
+      </div>
+      <p-chart type="bar" [data]="chartData" [options]="chartOptions" height="250px"></p-chart>
+    </section>
+
+    <section class="table-panel">
+      <p-table [value]="auditData.items" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 20, 50]"
+        styleClass="p-datatable-sm compact-table" responsiveLayout="scroll"
+        currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} صنف" [showCurrentPageReport]="true">
+        <ng-template pTemplate="header">
+          <tr>
+            <th>الصنف</th>
+            <th>التشغيلة</th>
+            <th class="text-center">دخول</th>
+            <th class="text-center">خروج</th>
+            <th class="text-center">الرصيد الدفتري</th>
+            <th class="text-center">الرصيد الفعلي</th>
+            <th class="text-center">الفارق</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          <tr>
+            <td>
+              <strong class="name-text">{{ item.medicineName }}</strong>
+              <small class="muted">ID: {{ item.medicineId || '-' }}</small>
+            </td>
+            <td><span class="batch-chip">{{ item.batchNumber || '-' }}</span></td>
+            <td class="text-center">
+              <span class="value-pill success">+{{ getItemInTotal(item) }}</span>
+            </td>
+            <td class="text-center">
+              <span class="value-pill danger">-{{ getItemOutTotal(item) }}</span>
+            </td>
+            <td class="text-center">
+              <strong class="balance-text">{{ item.expectedSystemBalance }}</strong>
+            </td>
+            <td class="text-center">
+              <strong class="actual-text">{{ item.actualSystemBalance }}</strong>
+            </td>
+            <td class="text-center">
+              <span class="value-pill" [ngClass]="getVarianceClass(item.variance)">
+                {{ item.variance }}
+              </span>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <span>لا توجد تفاصيل أصناف لهذا التقرير</span>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </section>
+  </ng-container>
+</div>

@@ -301,7 +301,7 @@ public class StockTransferService : IStockTransferService
 
                 var movement = new InventoryMovement(
                     item.MedicineId, null,
-                    StockMovementType.Damage, ReferenceType.Manual,
+                    StockMovementType.TransferOut, ReferenceType.BranchTransfer,
                     -item.QuantityRequested,
                     transfer.Id, transfer.TransferCode, dispatchedByUserId,
                     $"صادر تحويل — سند {transfer.TransferCode}");
@@ -416,7 +416,7 @@ public class StockTransferService : IStockTransferService
 
                     var movement = new InventoryMovement(
                         item.MedicineId, null,
-                        StockMovementType.SalesReturn, ReferenceType.Manual,
+                        StockMovementType.TransferIn, ReferenceType.BranchTransfer,
                         quantityReceived,
                         transfer.Id, transfer.TransferCode, receivedByUserId,
                         $"وارد تحويل — سند {transfer.TransferCode} — لمخزن {targetWarehouseId}");
@@ -609,7 +609,21 @@ public class StockTransferService : IStockTransferService
                 item.StockTransfer = null;
                 await _unitOfWork.StockTransferItems.UpdateAsync(item);
                 
-                // Optional: Create Inventory Movements for internal transfer here
+                var movOut = new InventoryMovement(
+                    item.MedicineId, null,
+                    StockMovementType.TransferOut, ReferenceType.BranchTransfer,
+                    -item.QuantityRequested,
+                    transfer.Id, transfer.TransferCode, approvedByUserId,
+                    $"صادر تحويل داخلي — سند {transfer.TransferCode}");
+                await _unitOfWork.InventoryMovements.AddAsync(movOut);
+
+                var movIn = new InventoryMovement(
+                    item.MedicineId, null,
+                    StockMovementType.TransferIn, ReferenceType.BranchTransfer,
+                    item.QuantityRequested,
+                    transfer.Id, transfer.TransferCode, approvedByUserId,
+                    $"وارد تحويل داخلي — سند {transfer.TransferCode}");
+                await _unitOfWork.InventoryMovements.AddAsync(movIn);
             }
 
             foreach (var stock in sourceStocks.Values)

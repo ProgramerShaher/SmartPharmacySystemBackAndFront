@@ -158,6 +158,7 @@ builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
 // -------------------- Inventory & Warehouse Services --------------------
 builder.Services.AddScoped<IInventoryStockService, InventoryStockService>();
 builder.Services.AddScoped<IStockCountService, StockCountService>();
+builder.Services.AddScoped<IAutomatedAuditService, AutomatedAuditService>();
 builder.Services.AddScoped<IDamagedGoodsService, DamagedGoodsService>();
 builder.Services.AddScoped<IStockTransferService, StockTransferService>();
 builder.Services.AddScoped<IMedicineWarehouseConfigService, MedicineWarehouseConfigService>();
@@ -181,6 +182,7 @@ builder.Services.AddControllers()
     });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<ExpiryCheckWorker>();
+builder.Services.AddHostedService<StockCountWorker>();
 
 // -------------------- CORS --------------------
 builder.Services.AddCors(options =>

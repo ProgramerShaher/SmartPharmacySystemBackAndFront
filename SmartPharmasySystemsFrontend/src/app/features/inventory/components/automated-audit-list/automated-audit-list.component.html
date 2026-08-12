@@ -1,0 +1,136 @@
+<div class="inventory-page" dir="rtl">
+  <p-toast></p-toast>
+  <p-confirmDialog header="تأكيد" icon="pi pi-exclamation-triangle" acceptLabel="نعم" rejectLabel="لا"></p-confirmDialog>
+
+  <div class="page-header">
+    <div class="title-wrap">
+      <div class="icon-circle"><i class="pi pi-shield"></i></div>
+      <div>
+        <h1>الجرد الآلي الشامل</h1>
+        <p>تقارير الجرد المولدة آليًا حسب المستودع ونوع الجرد وقيمة النواقص</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تحديث"
+        tooltipPosition="bottom" (onClick)="loadAudits()" [loading]="loading"></p-button>
+      <p-button icon="pi pi-plus" [rounded]="true" severity="primary" pTooltip="جرد آلي جديد"
+        tooltipPosition="bottom" (onClick)="showGenerateModal()"></p-button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card stock">
+      <span class="kpi-label">إجمالي التقارير</span>
+      <strong>{{ totalRecords || audits.length }}</strong>
+      <small>تقرير جرد آلي</small>
+    </div>
+    <div class="kpi-card expiry">
+      <span class="kpi-label">إجمالي النواقص</span>
+      <strong>{{ getTotalShortageValue() | number:'1.0-2' }}</strong>
+      <small>قيمة النواقص المسجلة</small>
+    </div>
+    <div class="kpi-card low">
+      <span class="kpi-label">جرد مستودعات</span>
+      <strong>{{ getWarehouseAuditCount() }}</strong>
+      <small>تقارير مرتبطة بمستودع</small>
+    </div>
+    <div class="kpi-card today">
+      <span class="kpi-label">جرد شامل</span>
+      <strong>{{ getGeneralAuditCount() }}</strong>
+      <small>تقارير لكل المستودعات</small>
+    </div>
+  </div>
+
+  <section class="table-panel">
+    <p-table [value]="audits" [loading]="loading" [paginator]="true" [rows]="10" [totalRecords]="totalRecords"
+      [rowsPerPageOptions]="[10, 15, 25, 50]" [lazy]="true" (onLazyLoad)="loadAudits($event)"
+      styleClass="p-datatable-sm compact-table" responsiveLayout="scroll" dataKey="id"
+      currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} تقرير" [showCurrentPageReport]="true">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>كود الجرد</th>
+          <th>التاريخ</th>
+          <th>المستودع</th>
+          <th>نوع الجرد</th>
+          <th class="text-center">النواقص</th>
+          <th class="text-center">إجراءات</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-audit>
+        <tr>
+          <td>
+            <strong class="code-text">{{ audit.auditCode }}</strong>
+            <small class="muted">ID: {{ audit.id }}</small>
+          </td>
+          <td>
+            <span class="date-main">{{ audit.auditDate | date:'dd/MM/yyyy' }}</span>
+            <small class="date-time">{{ audit.auditDate | date:'HH:mm' }}</small>
+          </td>
+          <td>
+            <strong class="name-text">{{ audit.warehouseName || 'كل المستودعات' }}</strong>
+            <small class="muted">{{ audit.warehouseId ? 'مستودع محدد' : 'جرد شامل' }}</small>
+          </td>
+          <td>
+            <span class="type-pill" [ngClass]="audit.warehouseId ? 'type-blue' : 'type-green'">
+              {{ audit.countTypeName }}
+            </span>
+          </td>
+          <td class="text-center">
+            <span class="value-pill danger">{{ audit.totalShortageValue | number:'1.2-2' }}</span>
+          </td>
+          <td class="text-center">
+            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
+              pTooltip="عرض التقرير" tooltipPosition="top"
+              [routerLink]="['/inventory/automated-audits', audit.id]"></p-button>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+              pTooltip="حذف" tooltipPosition="top" (onClick)="deleteAudit(audit.id)"></p-button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="empty-message">
+            <i class="pi pi-inbox"></i>
+            <span>لا توجد تقارير جرد آلي حتى الآن</span>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </section>
+
+  <p-dialog [(visible)]="displayGenerateModal" [modal]="true" [style]="{width: '92vw', maxWidth: '460px'}"
+    [draggable]="false" [resizable]="false" header="إنشاء جرد آلي جديد" styleClass="inventory-dialog">
+    <div class="dialog-form">
+      <div class="filter-field">
+        <label>المستودع (اختياري)</label>
+        <p-dropdown [options]="warehouses" [(ngModel)]="newAuditRequest.warehouseId" optionLabel="name"
+          optionValue="id" [showClear]="true" placeholder="اختر المستودع أو اتركه لجرد شامل"></p-dropdown>
+        <small>عند ترك الحقل فارغًا سيتم جرد كل المستودعات.</small>
+      </div>
+
+      <div class="filter-field">
+        <label>نوع الجرد</label>
+        <p-dropdown [options]="countTypes" [(ngModel)]="newAuditRequest.countType" optionLabel="label"
+          optionValue="value"></p-dropdown>
+      </div>
+
+      <div class="filter-field">
+        <label>ملاحظات</label>
+        <textarea pInputTextarea [(ngModel)]="newAuditRequest.notes" rows="3"
+          placeholder="ملاحظات حول الجرد الآلي"></textarea>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="dialog-actions">
+        <p-button label="إلغاء" severity="secondary" [outlined]="true" (onClick)="displayGenerateModal = false"
+          [disabled]="generating"></p-button>
+        <p-button label="ابدأ الجرد" icon="pi pi-play" (onClick)="generateAudit()" [loading]="generating"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

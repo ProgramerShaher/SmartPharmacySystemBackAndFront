@@ -44,5 +44,21 @@ export const INVENTORY_ROUTES: Routes = [
     {
         path: 'stock-counts/:id',
         loadComponent: () => import('./components/stock-count-detail/stock-count-detail.component').then(m => m.StockCountDetailComponent)
+    },
+    {
+        path: 'stock-counts-schedules',
+        loadComponent: () => import('./components/stock-count-schedule/stock-count-schedule.component').then(m => m.StockCountScheduleComponent)
+    },
+    {
+        path: 'flow-analysis',
+        loadComponent: () => import('./components/inventory-flow-analysis/inventory-flow-analysis.component').then(m => m.InventoryFlowAnalysisComponent)
+    },
+    {
+        path: 'automated-audits',
+        loadComponent: () => import('./components/automated-audit-list/automated-audit-list.component').then(m => m.AutomatedAuditListComponent)
+    },
+    {
+        path: 'automated-audits/:id',
+        loadComponent: () => import('./components/automated-audit-report/automated-audit-report.component').then(m => m.AutomatedAuditReportComponent)
     }
 ];

@@ -26,5 +26,6 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<StockMovementSummaryDto> GetSummaryAsync();
         Task<IEnumerable<StockCardDto>> GetStockCardAsync(int medicineId, int? batchId = null);
         Task<int> GetCurrentBalanceAsync(int medicineId, int? batchId = null);
+        Task<SmartPharmacySystem.Application.DTOs.Inventory.InventoryFlowReportDto> GetInventoryFlowReportAsync(int medicineId, string batchNumber);
     }
 }

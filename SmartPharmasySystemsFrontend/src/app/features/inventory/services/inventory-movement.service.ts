@@ -74,6 +74,14 @@ export class InventoryMovementService {
             .pipe(map(response => response.data), catchError(this.handleError));
     }
 
+    getInventoryFlowReport(medicineId: number, batchNumber?: string): Observable<any> {
+        let params = new HttpParams().set('medicineId', medicineId.toString());
+        if (batchNumber) params = params.set('batchNumber', batchNumber);
+
+        return this.http.get<ApiResponse<any>>(`${this.apiUrl}/flow-report`, { params })
+            .pipe(map(response => response.data), catchError(this.handleError));
+    }
+
     getMovementTypeLabel(type: number | string): string {
         const typeNum = typeof type === 'string' ? parseInt(type) : type;
         switch (typeNum) {

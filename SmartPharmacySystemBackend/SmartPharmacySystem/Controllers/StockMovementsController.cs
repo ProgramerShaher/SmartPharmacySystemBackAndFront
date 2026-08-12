@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.StockMovement;
 using SmartPharmacySystem.Application.DTOs.Shared;
@@ -31,8 +31,9 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> GetAll([FromQuery] StockMovementQueryDto query)
         {
             var result = await _service.SearchAsync(query);
-            return Ok(ApiResponse<PagedResult<StockMovementDto>>.Succeeded(result, "ØªÙ… Ø¬Ù„Ø¨ Ø§Ù„Ø­Ø±ÙƒØ§Øª Ø§Ù„Ù…Ø®Ø²Ù†ÙŠØ© Ø¨Ù†Ø¬Ø§Ø­"));
+            return Ok(ApiResponse<PagedResult<StockMovementDto>>.Succeeded(result, "تم جلب الحركات المخزنية بنجاح"));
         }
+
         [HttpGet("summary")]
         public async Task<IActionResult> GetSummary()
         {
@@ -44,7 +45,7 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var movement = await _service.GetByIdAsync(id);
-            return Ok(ApiResponse<StockMovementDto>.Succeeded(movement, "ØªÙ… Ø¬Ù„Ø¨ Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø­Ø±ÙƒØ© Ø¨Ù†Ø¬Ø§Ø­"));
+            return Ok(ApiResponse<StockMovementDto>.Succeeded(movement, "تم جلب بيانات الحركة بنجاح"));
         }
 
         // -------------------------------------------------------------
@@ -54,7 +55,7 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> GetStockCard([FromQuery] int medicineId, [FromQuery] int? batchId = null)
         {
             var result = await _service.GetStockCardAsync(medicineId, batchId);
-            return Ok(ApiResponse<IEnumerable<StockCardDto>>.Succeeded(result, "ØªÙ… Ø¬Ù„Ø¨ ÙƒØ±Øª Ø§Ù„ØµÙ†Ù Ø¨Ù†Ø¬Ø§Ø­"));
+            return Ok(ApiResponse<IEnumerable<StockCardDto>>.Succeeded(result, "تم جلب كرت الصنف بنجاح"));
         }
 
         // -------------------------------------------------------------
@@ -64,7 +65,7 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> GetBalance([FromQuery] int medicineId, [FromQuery] int? batchId = null)
         {
             var balance = await _service.GetCurrentBalanceAsync(medicineId, batchId);
-            return Ok(ApiResponse<int>.Succeeded(balance, "ØªÙ… Ø¬Ù„Ø¨ Ø±ØµÙŠØ¯ Ø§Ù„Ø­Ø§Ù„ÙŠ Ø¨Ù†Ø¬Ø§Ø­"));
+            return Ok(ApiResponse<int>.Succeeded(balance, "تم جلب رصيد الحالي بنجاح"));
         }
 
         // -------------------------------------------------------------
@@ -79,12 +80,20 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> CreateManual([FromBody] CreateManualMovementDto dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(ApiResponse<object>.Failed("Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ø­Ø±ÙƒØ© ØºÙŠØ± ØµØ­ÙŠØ­Ø©"));
+                return BadRequest(ApiResponse<object>.Failed("بيانات الحركة غير صحيحة"));
 
             await _service.CreateManualMovementAsync(dto);
-            return Ok(ApiResponse<object>.Succeeded(null, "ØªÙ… ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø­Ø±ÙƒØ© Ø§Ù„ÙŠØ¯ÙˆÙŠØ© Ø¨Ù†Ø¬Ø§Ø­"));
+            return Ok(ApiResponse<object>.Succeeded(null, "تم تسجيل الحركة اليدوية بنجاح"));
+        }
+
+        // -------------------------------------------------------------
+        // Inventory Flow Report
+        // -------------------------------------------------------------
+        [HttpGet("flow-report")]
+        public async Task<IActionResult> GetInventoryFlowReport([FromQuery] int medicineId, [FromQuery] string batchNumber = "")
+        {
+            var result = await _service.GetInventoryFlowReportAsync(medicineId, batchNumber);
+            return Ok(ApiResponse<SmartPharmacySystem.Application.DTOs.Inventory.InventoryFlowReportDto>.Succeeded(result, "تم جلب تقرير التدفق المخزني بنجاح"));
         }
     }
 }
-
-

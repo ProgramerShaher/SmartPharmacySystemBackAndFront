@@ -19,4 +19,12 @@ public interface IStockCountRepository
     Task<StockCountItem> AddItemAsync(StockCountItem item);
     Task UpdateItemAsync(StockCountItem item);
     Task DeleteItemAsync(int headerId, int medicineId, string batchNumber);
+
+    // Schedules
+    Task<StockCountSchedule?> GetScheduleByIdAsync(int id);
+    Task<IEnumerable<StockCountSchedule>> GetAllSchedulesAsync(int? warehouseId = null);
+    Task<IEnumerable<StockCountSchedule>> GetDueSchedulesAsync();
+    Task<StockCountSchedule> AddScheduleAsync(StockCountSchedule schedule);
+    Task UpdateScheduleAsync(StockCountSchedule schedule);
+    Task DeleteScheduleAsync(int id);
 }

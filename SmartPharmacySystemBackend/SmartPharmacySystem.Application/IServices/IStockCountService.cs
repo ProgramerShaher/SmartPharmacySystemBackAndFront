@@ -19,4 +19,11 @@ public interface IStockCountService
     Task DeleteItemAsync(int headerId, int medicineId, string batchNumber);
     Task<IEnumerable<StockCountItemDto>> GetItemsByHeaderIdAsync(int headerId);
     Task<bool> CodeExistsAsync(string countCode, int? excludeId = null);
+
+    // Automation & Scheduling
+    Task ProcessScheduledCountsAsync();
+    Task<IEnumerable<StockCountScheduleDto>> GetAllSchedulesAsync(int? warehouseId = null);
+    Task<StockCountScheduleDto> CreateScheduleAsync(CreateStockCountScheduleDto dto);
+    Task UpdateScheduleAsync(int id, UpdateStockCountScheduleDto dto);
+    Task DeleteScheduleAsync(int id);
 }

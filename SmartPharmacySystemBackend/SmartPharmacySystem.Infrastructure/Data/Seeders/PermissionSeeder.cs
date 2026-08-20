@@ -23,6 +23,7 @@ public static class PermissionSeeder
             new Permission { Module = "Sales", ModuleAr = "المبيعات", Action = "View Profit", ActionAr = "عرض التكلفة والربح أثناء البيع", Code = "sales.invoices.view_profit", Icon = "pi pi-dollar" },
             new Permission { Module = "Sales", ModuleAr = "المبيعات", Action = "View Returns", ActionAr = "عرض مرتجعات المبيعات", Code = "sales.returns.view", Icon = "pi pi-undo" },
             new Permission { Module = "Sales", ModuleAr = "المبيعات", Action = "Create Return", ActionAr = "إنشاء مرتجع مبيعات", Code = "sales.returns.create", Icon = "pi pi-plus" },
+            new Permission { Module = "Sales", ModuleAr = "المبيعات", Action = "Delete Return", ActionAr = "إلغاء مرتجع مبيعات", Code = "sales.returns.delete", Icon = "pi pi-trash" },
             new Permission { Module = "Sales", ModuleAr = "المبيعات", Action = "Manage Shifts", ActionAr = "فتح وإغلاق الورديات", Code = "sales.shifts.manage", Icon = "pi pi-clock" },
             new Permission { Module = "Sales", ModuleAr = "المبيعات", Action = "Manage Daily Closing", ActionAr = "الإغلاق اليومي للجرد النقدي", Code = "sales.daily_closing.manage", Icon = "pi pi-lock" },
             
@@ -88,13 +89,31 @@ public static class PermissionSeeder
             new Permission { Module = "Reports", ModuleAr = "التقارير", Action = "View Financial Reports", ActionAr = "عرض التقارير المالية", Code = "reports.financial.view", Icon = "pi pi-dollar" },
 
             // ===== 9. النظام والإدارة (Admin & Settings) =====
+            new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "View Users", ActionAr = "عرض قائمة المستخدمين", Code = "admin.users.view", Icon = "pi pi-users" },
             new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "Manage Users", ActionAr = "إدارة المستخدمين وحسابات الدخول", Code = "admin.users.manage", Icon = "pi pi-user-edit" },
+            new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "View Roles", ActionAr = "عرض الأدوار والصلاحيات", Code = "access.roles.view", Icon = "pi pi-shield" },
             new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "Manage Roles", ActionAr = "إنشاء وتعديل الأدوار والصلاحيات", Code = "admin.roles.manage", Icon = "pi pi-shield" },
             new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "View Audit Log", ActionAr = "سجل مراقبة النظام (Audit Log)", Code = "admin.audit_log.view", Icon = "pi pi-history" },
+            new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "View General Settings", ActionAr = "عرض الإعدادات العامة للنظام", Code = "settings.general.view", Icon = "pi pi-cog" },
             new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "Manage Settings", ActionAr = "إعدادات النظام العامة", Code = "admin.settings.manage", Icon = "pi pi-cog" },
             new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "Manage Invoice Sequences", ActionAr = "تعديل ترقيم الفواتير", Code = "admin.invoice_sequences.manage", Icon = "pi pi-sort-numeric-up" },
             new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "Manage Alerts", ActionAr = "إدارة تنبيهات النظام", Code = "admin.alerts.manage", Icon = "pi pi-bell" },
-            new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "Online Orders", ActionAr = "إدارة طلبات الأونلاين", Code = "online_orders.manage", Icon = "pi pi-globe" }
+            new Permission { Module = "Admin", ModuleAr = "إدارة النظام", Action = "Online Orders", ActionAr = "إدارة طلبات الأونلاين", Code = "online_orders.manage", Icon = "pi pi-globe" },
+
+            // ===== 10. المالية والخزينة — صلاحيات العرض =====
+            new Permission { Module = "Finance", ModuleAr = "المالية", Action = "View Treasury Dashboard", ActionAr = "عرض لوحة تحكم الخزينة", Code = "finance.dashboard.view", Icon = "pi pi-chart-pie" },
+            new Permission { Module = "Finance", ModuleAr = "المالية", Action = "View Treasury", ActionAr = "عرض الخزينة والأرصدة", Code = "finance.treasury.view", Icon = "pi pi-money-bill" },
+            new Permission { Module = "Finance", ModuleAr = "المالية", Action = "View Expenses", ActionAr = "عرض المصروفات النثرية", Code = "finance.expenses.view", Icon = "pi pi-list" },
+
+            // ===== 11. المحاسبة — صلاحيات العرض =====
+            new Permission { Module = "Accounting", ModuleAr = "المحاسبة", Action = "View Chart", ActionAr = "عرض شجرة الحسابات", Code = "accounting.chart.view", Icon = "pi pi-sitemap" },
+            new Permission { Module = "Accounting", ModuleAr = "المحاسبة", Action = "View Journal", ActionAr = "عرض قيود اليومية", Code = "accounting.journal.view", Icon = "pi pi-book" },
+
+            // ===== 12. الشركاء والموردون =====
+            new Permission { Module = "Partners", ModuleAr = "الشركاء", Action = "View Partners", ActionAr = "عرض قائمة الشركاء", Code = "partners.view", Icon = "pi pi-users" },
+
+            // ===== 13. لوحة التحكم =====
+            new Permission { Module = "Dashboard", ModuleAr = "لوحة التحكم", Action = "View Master Dashboard", ActionAr = "عرض لوحة التحكم الشاملة", Code = "dashboard.master", Icon = "pi pi-chart-line" }
         };
 
         var existingPermissions = await context.Permissions.ToListAsync();

@@ -64,6 +64,7 @@ public interface IApplicationDbContext
     DbSet<CustomerLedger> CustomerLedgers { get; }
     DbSet<InterBranchSettlement> InterBranchSettlements { get; }
     DbSet<DailyClosing> DailyClosings { get; }
+    DbSet<FinancialPeriod> FinancialPeriods { get; }
 
     // ===== Notifications =====
     DbSet<Notification> Notifications { get; }

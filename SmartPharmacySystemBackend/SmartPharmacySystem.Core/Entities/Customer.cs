@@ -34,6 +34,12 @@ namespace SmartPharmacySystem.Core.Entities
         public int? AccountId { get; set; }
 
 
+        /// <summary>
+        /// Optional link to a Pricelist for this customer.
+        /// ربط العميل بقائمة أسعار لتطبيق خصم تلقائي عند البيع.
+        /// </summary>
+        public int? PricelistId { get; set; }
+
         // Mobile App Auth
         [MaxLength(500)]
         public string? PasswordHash { get; set; }
@@ -42,6 +48,9 @@ namespace SmartPharmacySystem.Core.Entities
         // Navigation
         [ForeignKey(nameof(AccountId))]
         public virtual Account? Account { get; set; }
+
+        [ForeignKey(nameof(PricelistId))]
+        public virtual Pricelist? Pricelist { get; set; }
         public virtual ICollection<SaleInvoice> SaleInvoices { get; set; } = new List<SaleInvoice>();
         public virtual ICollection<CustomerReceipt> Receipts { get; set; } = new List<CustomerReceipt>();
     }

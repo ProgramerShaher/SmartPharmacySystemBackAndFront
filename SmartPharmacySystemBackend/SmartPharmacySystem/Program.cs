@@ -138,6 +138,7 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
 builder.Services.AddScoped<IChequeService, ChequeService>();
 builder.Services.AddScoped<IPharmacySettingsService, PharmacySettingsService>();
+builder.Services.AddHttpClient<IWhatsAppNotificationService, WhatsAppNotificationService>();
 
 // -------------------- HR & Payroll Services --------------------
 builder.Services.AddScoped<IBranchService, BranchService>();
@@ -154,6 +155,7 @@ builder.Services.AddScoped<ICustomerLedgerService, CustomerLedgerService>();
 builder.Services.AddScoped<IInterBranchSettlementService, InterBranchSettlementService>();
 builder.Services.AddScoped<IDailyClosingService, DailyClosingService>();
 builder.Services.AddScoped<IExpenseCategoryService, ExpenseCategoryService>();
+builder.Services.AddScoped<IClosingValidationService, ClosingValidationService>();
 
 // -------------------- Inventory & Warehouse Services --------------------
 builder.Services.AddScoped<IInventoryStockService, InventoryStockService>();
@@ -166,6 +168,8 @@ builder.Services.AddScoped<IMedicineWarehouseConfigService, MedicineWarehouseCon
 // -------------------- Additional Services --------------------
 builder.Services.AddScoped<IPriceOverrideService, PriceOverrideService>();
 builder.Services.AddScoped<IInvoiceSequenceService, InvoiceSequenceService>();
+builder.Services.AddScoped<IPricelistService, PricelistService>();
+builder.Services.AddScoped<IPricelistRepository, PricelistRepository>();
 
 // -------------------- Mobile App Services --------------------
 builder.Services.AddScoped<IOnlineOrderService, OnlineOrderService>();

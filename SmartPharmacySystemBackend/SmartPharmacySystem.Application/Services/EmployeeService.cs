@@ -59,6 +59,7 @@ public class EmployeeService : IEmployeeService
             throw new InvalidOperationException("رقم الهوية موجود بالفعل");
 
         var employee = _mapper.Map<Employee>(dto);
+        NormalizeShiftTimes(employee);
         await _unitOfWork.Employees.AddAsync(employee);
         await _unitOfWork.SaveChangesAsync();
         return _mapper.Map<EmployeeDto>(employee);
@@ -76,6 +77,7 @@ public class EmployeeService : IEmployeeService
             throw new InvalidOperationException("رقم الهوية موجود بالفعل");
 
         _mapper.Map(dto, employee);
+        NormalizeShiftTimes(employee);
         await _unitOfWork.Employees.UpdateAsync(employee);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -135,5 +137,14 @@ public class EmployeeService : IEmployeeService
         }
 
         return dashboard;
+    }
+
+    private static void NormalizeShiftTimes(Employee employee)
+    {
+        if (employee.ShiftStartTime.HasValue && !employee.ShiftEndTime.HasValue && employee.WorkingHours > 0)
+        {
+            var minutes = (double)(employee.WorkingHours * 60m);
+            employee.ShiftEndTime = employee.ShiftStartTime.Value.Add(TimeSpan.FromMinutes(minutes));
+        }
     }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartPharmacySystem.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.SalesReturns;
@@ -106,8 +107,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Approve sales return
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("sales.returns.create")]
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> Approve(int id)
         {
@@ -131,8 +132,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Cancel sales return
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("sales.returns.delete")]
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -156,8 +157,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete sales return
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("sales.returns.delete")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

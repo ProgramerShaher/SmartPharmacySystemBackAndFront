@@ -101,8 +101,65 @@ namespace SmartPharmacySystem.Controllers
             if (existing == null)
                 return NotFound(ApiResponse<object>.Failed($"Category with ID {id} not found", 404));
 
-            await _categoryService.DeleteAsync(id);
-            return Ok(ApiResponse<object>.Succeeded(null, "Category deleted successfully"));
+            try
+            {
+                await _categoryService.DeleteAsync(id);
+                return Ok(ApiResponse<object>.Succeeded(null, "Category deleted successfully"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponse<object>.Failed(ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Delete multiple categories
+        /// </summary>
+        /// <param name="ids">List of category IDs to delete</param>
+        /// <returns>Result of the deletion</returns>
+        [HttpDelete("bulk")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteBulk([FromBody] IEnumerable<int> ids)
+        {
+            if (ids == null || !ids.Any())
+                return BadRequest(ApiResponse<object>.Failed("No IDs provided", 400));
+
+            try
+            {
+                await _categoryService.DeleteBulkAsync(ids);
+                return Ok(ApiResponse<object>.Succeeded(null, "Categories deleted successfully"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponse<object>.Failed(ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Generate Excel Template for Categories Import
+        /// </summary>
+        [HttpGet("template")]
+        public async Task<IActionResult> GenerateExcelTemplate()
+        {
+            var content = await _categoryService.GenerateExcelTemplateAsync();
+            return File(content, "text/csv", "CategoriesTemplate.csv");
+        }
+
+        /// <summary>
+        /// Import categories from Excel
+        /// </summary>
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportFromExcel(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(ApiResponse<object>.Failed("لم يتم تحديد أي ملف"));
+
+            var result = await _categoryService.ImportFromExcelAsync(file);
+
+            if (result.FailedCount > 0 && result.SuccessCount == 0)
+                return BadRequest(ApiResponse<SmartPharmacySystem.Application.DTOs.Medicine.ImportResultDto>.Succeeded(result, "فشلت عملية الاستيراد كلياً", 400));
+
+            return Ok(ApiResponse<SmartPharmacySystem.Application.DTOs.Medicine.ImportResultDto>.Succeeded(result, "اكتملت عملية الاستيراد"));
         }
     }
 }

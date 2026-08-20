@@ -9,6 +9,7 @@ namespace SmartPharmacySystem.Core.Interfaces;
 public interface ISaleInvoiceRepository
 {
     Task<SaleInvoice> GetByIdAsync(int id);
+    Task<SaleInvoice> GetByIdForDisplayAsync(int id);
     Task<IEnumerable<SaleInvoice>> GetAllAsync();
     Task AddAsync(SaleInvoice entity);
     Task<IEnumerable<SaleInvoice>> GetUnpaidByCustomerIdAsync(int customerId);

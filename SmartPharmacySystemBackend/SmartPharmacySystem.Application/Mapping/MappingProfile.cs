@@ -54,7 +54,9 @@ namespace SmartPharmacySystem.Application.Mapping
             // Category Mappings
             CreateMap<CreateCategoryDto, Category>();
             CreateMap<UpdateCategoryDto, Category>();
-            CreateMap<Category, CategoryDto>().ReverseMap();
+            CreateMap<Category, CategoryDto>()
+                .ForMember(dest => dest.HasMedicines, opt => opt.MapFrom(src => src.Medicines != null && src.Medicines.Any(m => !m.IsDeleted)))
+                .ReverseMap();
 
             // Medicine Mappings
             CreateMap<CreateMedicineDto, Medicine>();
@@ -731,7 +733,10 @@ namespace SmartPharmacySystem.Application.Mapping
             // MonthlySalary Mappings
             CreateMap<MonthlySalary, MonthlySalaryDto>()
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.FullName : string.Empty))
+                .ForMember(dest => dest.EmployeeCode, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.EmployeeCode : string.Empty))
                 .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
+                .ForMember(dest => dest.PaidFromAccountName, opt => opt.MapFrom(src => src.PaidFromAccount != null ? src.PaidFromAccount.Name : string.Empty))
+                .ForMember(dest => dest.SalaryExpenseAccountName, opt => opt.MapFrom(src => src.SalaryExpenseAccount != null ? src.SalaryExpenseAccount.Name : string.Empty))
                 .ForMember(dest => dest.PaymentStatusName, opt => opt.MapFrom(src =>
                     src.PaymentStatus == Core.Enums.PaymentStatus.Pending ? "قيد الانتظار" : "تم الصرف"))
                 .ForMember(dest => dest.Deductions, opt => opt.MapFrom(src => src.Deductions));
@@ -825,13 +830,9 @@ namespace SmartPharmacySystem.Application.Mapping
 
             // ==================== New Service Mappings ====================
 
-            // MonthlySalary Mappings
+            // MonthlySalary command mappings
             CreateMap<CreateMonthlySalaryDto, MonthlySalary>();
             CreateMap<UpdateMonthlySalaryDto, MonthlySalary>();
-            CreateMap<MonthlySalary, MonthlySalaryDto>()
-                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.FullName : string.Empty))
-                .ForMember(dest => dest.EmployeeCode, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.EmployeeCode : string.Empty))
-                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty));
 
           
             // InvoiceSequence Mappings

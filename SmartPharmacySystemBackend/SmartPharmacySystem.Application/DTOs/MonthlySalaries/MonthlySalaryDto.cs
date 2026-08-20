@@ -22,8 +22,19 @@ public class MonthlySalaryDto
     public string PaymentStatusName { get; set; } = string.Empty;
     public string PaymentStatusColor { get; set; } = string.Empty;
     public DateTime? PaidAt { get; set; }
+    public int? PaidFromAccountId { get; set; }
+    public string PaidFromAccountName { get; set; } = string.Empty;
+    public int? SalaryExpenseAccountId { get; set; }
+    public string SalaryExpenseAccountName { get; set; } = string.Empty;
+    public int? JournalEntryId { get; set; }
     public List<SalaryDeductionItemDto> Deductions { get; set; } = new();
     public DateTime CreatedAt { get; set; }
+}
+
+public class PaySalaryDto
+{
+    public int PaidFromAccountId { get; set; }
+    public int? SalaryExpenseAccountId { get; set; }
 }
 
 public class CreateMonthlySalaryDto
@@ -68,6 +79,8 @@ public class PayrollSummaryDto
     public decimal TotalBonuses { get; set; }
     public decimal TotalDeductions { get; set; }
     public decimal TotalNetSalary { get; set; }
+    public int? PaidFromAccountId { get; set; }
+    public string PaidFromAccountName { get; set; } = string.Empty;
 }
 
 public class CreateSalaryDeductionItemDto

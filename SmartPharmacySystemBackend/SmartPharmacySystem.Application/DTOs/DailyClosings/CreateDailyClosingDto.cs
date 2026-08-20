@@ -19,4 +19,6 @@ public class CreateDailyClosingDto
     [Required(ErrorMessage = "الكاش الفعلي مطلوب")]
     [Range(0, double.MaxValue, ErrorMessage = "الكاش الفعلي يجب أن يكون صفر أو أكثر")]
     public decimal ActualCash { get; set; }
+
+    public bool TransferToMainSafe { get; set; } = false;
 }

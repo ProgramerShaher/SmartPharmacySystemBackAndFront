@@ -149,6 +149,9 @@ namespace SmartPharmacySystem.Infrastructure
         private IEmployeeBranchAssignmentRepository? _employeeBranchAssignments;
         public IEmployeeBranchAssignmentRepository EmployeeBranchAssignments => _employeeBranchAssignments ??= new EmployeeBranchAssignmentRepository(_context);
 
+        private IPricelistRepository? _pricelists;
+        public IPricelistRepository Pricelists => _pricelists ??= new PricelistRepository(_context);
+
         // ===== RBAC =====
         private IPermissionRepository? _permissions;
         public IPermissionRepository Permissions => _permissions ??= new PermissionRepository(_context);
@@ -158,6 +161,12 @@ namespace SmartPharmacySystem.Infrastructure
 
         private IAuditLogRepository? _auditLogs;
         public IAuditLogRepository AuditLogs => _auditLogs ??= new AuditLogRepository(_context);
+
+        private IUserShiftRepository? _userShifts;
+        public IUserShiftRepository UserShifts => _userShifts ??= new UserShiftRepository(_context);
+
+        private IFinancialPeriodRepository? _financialPeriods;
+        public IFinancialPeriodRepository FinancialPeriods => _financialPeriods ??= new FinancialPeriodRepository(_context);
 
         public async Task<int> SaveChangesAsync()
         {

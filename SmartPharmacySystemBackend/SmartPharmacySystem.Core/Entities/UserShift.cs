@@ -33,7 +33,6 @@ public class UserShift : BaseEntity
     [Required]
     [MaxLength(20)]
     public string Status { get; set; } = "Open"; // Open, Closed
-
     public string? Notes { get; set; }
 
     // Navigation properties

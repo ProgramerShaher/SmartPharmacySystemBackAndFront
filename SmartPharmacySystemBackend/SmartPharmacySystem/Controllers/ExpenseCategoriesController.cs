@@ -3,8 +3,12 @@ using SmartPharmacySystem.Application.DTOs.Expense;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
 
+using Microsoft.AspNetCore.Authorization;
+using SmartPharmacySystem.Authorization;
+
 namespace SmartPharmacySystem.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class ExpenseCategoriesController : ControllerBase
@@ -16,6 +20,7 @@ namespace SmartPharmacySystem.Controllers
             _expenseService = expenseService;
         }
 
+        [RequirePermission("finance.expenses.view")]
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,6 +28,7 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<IEnumerable<ExpenseCategoryDto>>.Succeeded(categories, "تم جلب الفئات بنجاح"));
         }
 
+        [RequirePermission("finance.expenses.create")]
         [HttpPost]
         public async Task<IActionResult> Create(CreateExpenseCategoryDto dto)
         {
@@ -30,6 +36,7 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<ExpenseCategoryDto>.Succeeded(category, "تم إنشاء الفئة بنجاح"));
         }
 
+        [RequirePermission("finance.expenses.create")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateExpenseCategoryDto dto)
         {
@@ -37,6 +44,7 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<string>.Succeeded(id.ToString(), "تم تحديث الفئة بنجاح"));
         }
 
+        [RequirePermission("finance.expenses.create")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

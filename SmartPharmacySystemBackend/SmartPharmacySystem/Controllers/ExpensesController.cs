@@ -4,10 +4,11 @@ using SmartPharmacySystem.Application.DTOs.Expense;
 using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
+using SmartPharmacySystem.Authorization;
 
 namespace SmartPharmacySystem.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class ExpensesController : ControllerBase
@@ -24,7 +25,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Search and paginate expenses with optional filters (date range, expense type)
         /// </summary>
-        /// <access>Admin</access>
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("finance.expenses.view")]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] ExpenseQueryDto query)
         {
@@ -39,7 +41,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Get expense by ID
         /// </summary>
-        /// <access>Admin</access>
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("finance.expenses.view")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -56,7 +59,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Create a new expense
         /// </summary>
-        /// <access>Admin</access>
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("finance.expenses.create")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateExpenseDto dto)
         {
@@ -81,7 +85,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Update an existing expense
         /// </summary>
-        /// <access>Admin</access>
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("finance.expenses.create")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateExpenseDto dto)
         {
@@ -103,7 +108,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete an expense (soft delete)
         /// </summary>
-        /// <access>Admin</access>
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("finance.expenses.create")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

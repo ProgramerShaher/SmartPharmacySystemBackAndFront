@@ -9,6 +9,7 @@ using SmartPharmacySystem.Core.Interfaces;
 
 using SmartPharmacySystem.Application.IServices;
 using System.Collections.Generic;
+using SmartPharmacySystem.Application.DTOs.Financial;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -19,14 +20,22 @@ namespace SmartPharmacySystem.Application.Services
         private readonly ILogger<ExpenseService> _logger;
         private readonly IFinancialService _financialService;
         private readonly IJournalEntryService _journalEntryService;
+        private readonly IClosingValidationService _closingValidationService;
 
-        public ExpenseService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<ExpenseService> logger, IFinancialService financialService, IJournalEntryService journalEntryService)
+        public ExpenseService(
+            IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            ILogger<ExpenseService> logger, 
+            IFinancialService financialService, 
+            IJournalEntryService journalEntryService,
+            IClosingValidationService closingValidationService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _financialService = financialService;
             _journalEntryService = journalEntryService;
+            _closingValidationService = closingValidationService;
         }
 
         public async Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto)
@@ -43,6 +52,8 @@ namespace SmartPharmacySystem.Application.Services
             expense.CreatedAt = DateTime.UtcNow;
             expense.IsDeleted = false;
 
+            await _closingValidationService.ValidateDateIsUnlockedAsync(expense.ExpenseDate, expense.BranchId);
+
             await _unitOfWork.BeginTransactionAsync();
             try
             {
@@ -52,17 +63,17 @@ namespace SmartPharmacySystem.Application.Services
                 // ==================== المحرك المحاسبي الاحترافي ====================
                 if (expense.PaymentMethod == PaymentType.Cash)
                 {
-                    var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                    var journalEntry = new JournalEntryDto
                     {
                         EntryDate = expense.ExpenseDate,
                         VoucherNumber = $"EXP-{expense.Id}",
                         Description = $"مصروف: {category.Name} - {expense.Notes ?? ""}",
                         Type = VoucherType.PaymentVoucher,
-                        Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
+                        Lines = new List<JournalEntryLineDto>()
                     };
 
                     // 1. الطرف المدين (من حـ/ المصروف)
-                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    journalEntry.Lines.Add(new JournalEntryLineDto
                     {
                         AccountId = category.AccountId ?? 5, // حساب المصروف المرتبط بالفئة أو حساب المصروفات العام
                         Debit = expense.Amount,
@@ -71,7 +82,7 @@ namespace SmartPharmacySystem.Application.Services
                     });
 
                     // 2. الطرف الدائن (إلى حـ/ الصندوق)
-                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    journalEntry.Lines.Add(new JournalEntryLineDto
                     {
                         AccountId = 1101, // الصندوق الرئيسي
                         Debit = 0,
@@ -122,6 +133,12 @@ namespace SmartPharmacySystem.Application.Services
             var category = await _unitOfWork.ExpenseCategories.GetByIdAsync(dto.CategoryId)
                 ?? throw new KeyNotFoundException("فئة المصروف غير موجودة");
 
+            await _closingValidationService.ValidateDateIsUnlockedAsync(expense.ExpenseDate, expense.BranchId);
+            if (dto.ExpenseDate != expense.ExpenseDate)
+            {
+                await _closingValidationService.ValidateDateIsUnlockedAsync(dto.ExpenseDate, expense.BranchId);
+            }
+
             decimal oldAmount = expense.Amount;
             var oldMethod = expense.PaymentMethod;
 
@@ -151,16 +168,16 @@ namespace SmartPharmacySystem.Application.Services
                 else if (oldMethod == PaymentType.Credit && expense.PaymentMethod == PaymentType.Cash)
                 {
                     // Switched from Credit to Cash: Create a NEW Journal Entry
-                    var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                    var journalEntry = new JournalEntryDto
                     {
                         EntryDate = expense.ExpenseDate,
                         VoucherNumber = $"EXP-{expense.Id}",
                         Description = $"مصروف: {category.Name} - {expense.Notes ?? ""}",
                         Type = VoucherType.PaymentVoucher,
-                        Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
+                        Lines = new List<JournalEntryLineDto>()
                     };
 
-                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    journalEntry.Lines.Add(new JournalEntryLineDto
                     {
                         AccountId = category.AccountId ?? 5,
                         Debit = expense.Amount,
@@ -168,7 +185,7 @@ namespace SmartPharmacySystem.Application.Services
                         Description = $"إثبات مصروف {category.Name}"
                     });
 
-                    journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                    journalEntry.Lines.Add(new JournalEntryLineDto
                     {
                         AccountId = 1101, // الصندوق الرئيسي
                         Debit = 0,
@@ -196,16 +213,25 @@ namespace SmartPharmacySystem.Application.Services
                         // For simplicity, we cancel the old and create a new one.
                         await _journalEntryService.CancelAsync(existingEntry.Id, expense.CreatedBy, $"تعديل مبلغ المصروف من {oldAmount} إلى {expense.Amount}");
 
-                        var newJournalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                        // Ensure Drawer Account Exists
+                        var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
+                        var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync($"11101-{expense.CreatedBy}")
+                                          ?? await _unitOfWork.Accounts.GetByCodeAsync("11101") 
+                                          ?? await _unitOfWork.Accounts.GetByCodeAsync("1101") 
+                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("صندوق") || a.Name.Contains("نقد"));
+
+                        var cashAccountId = cashAccount?.Id ?? 1101; // Fallback to 1101 if not found
+
+                        var newJournalEntry = new JournalEntryDto
                         {
                             EntryDate = expense.ExpenseDate,
                             VoucherNumber = $"EXP-{expense.Id}",
-                            Description = $"تعديل مصروف: {category.Name} - {expense.Notes ?? ""}",
-                            Type = VoucherType.PaymentVoucher,
-                            Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>
+                            Description = $"صرف مصروف: {category.Name} - {expense.Notes}",
+                            Type = SmartPharmacySystem.Core.Enums.VoucherType.ExpenseVoucher,
+                            Lines = new List<JournalEntryLineDto>
                             {
-                                new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto { AccountId = category.AccountId ?? 5, Debit = expense.Amount, Credit = 0, Description = $"إثبات مصروف {category.Name}" },
-                                new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto { AccountId = 1101, Debit = 0, Credit = expense.Amount, Description = $"صرف نقدية مقابل مصروف {category.Name}" }
+                                new JournalEntryLineDto { AccountId = category.AccountId ?? 5, Debit = expense.Amount, Credit = 0, Description = $"إثبات مصروف {category.Name}" },
+                                new JournalEntryLineDto { AccountId = cashAccountId, Debit = 0, Credit = expense.Amount, Description = $"دفع نقدي لمصروف {category.Name}" }
                             }
                         };
                         var createdEntry = await _journalEntryService.CreateAsync(newJournalEntry, expense.CreatedBy);
@@ -243,6 +269,8 @@ namespace SmartPharmacySystem.Application.Services
         {
             var expense = await _unitOfWork.Expenses.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"المصروف برقم {id} غير موجود");
+
+            await _closingValidationService.ValidateDateIsUnlockedAsync(expense.ExpenseDate, expense.BranchId);
 
             var category = await _unitOfWork.ExpenseCategories.GetByIdAsync(expense.CategoryId);
 

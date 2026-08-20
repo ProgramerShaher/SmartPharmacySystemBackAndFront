@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.SupplierPayments;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
+using SmartPharmacySystem.Authorization;
 using SmartPharmacySystem.Core.Interfaces;
 
 namespace SmartPharmacySystem.Controllers
@@ -21,6 +22,7 @@ namespace SmartPharmacySystem.Controllers
             _currentUserService = currentUserService;
         }
 
+        [RequirePermission("finance.treasury.view")]
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
@@ -28,6 +30,7 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<IEnumerable<SupplierPaymentDto>>.Succeeded(result, "تم جلب جميع السندات بنجاح."));
         }
 
+        [RequirePermission("finance.payments.create")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateSupplierPaymentDto dto)
         {
@@ -36,6 +39,7 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<SupplierPaymentDto>.Succeeded(result, "تم تسجيل سند الصرف بنجاح."));
         }
 
+        [RequirePermission("finance.payments.create")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -44,6 +48,7 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<object>.Succeeded(null!, "تم إلغاء سند الصرف بنجاح."));
         }
 
+        [RequirePermission("finance.treasury.view")]
         [HttpGet("supplier/{supplierId}/statement")]
         public async Task<IActionResult> GetStatement(int supplierId)
         {
@@ -51,6 +56,7 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<SupplierStatementDto>.Succeeded(result, "تم جلب كشف الحساب بنجاح."));
         }
 
+        [RequirePermission("finance.treasury.view")]
         [HttpGet("supplier/{supplierId}/recent-payments")]
         public async Task<IActionResult> GetRecentPayments(int supplierId)
         {

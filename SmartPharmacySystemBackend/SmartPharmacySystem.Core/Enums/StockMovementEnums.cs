@@ -25,5 +25,6 @@ public enum ReferenceType
     ManualAdjustment = 8,
     SupplierPayment = 9,
     CustomerReceipt = 10,
-    BranchTransfer = 11
+    BranchTransfer = 11,
+    MonthlySalary = 12
 }

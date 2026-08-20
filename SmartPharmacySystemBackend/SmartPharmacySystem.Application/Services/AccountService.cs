@@ -23,7 +23,24 @@ public class AccountService(
     {
         _logger.LogInformation("جاري جلب شجرة الحسابات بالكامل");
         var accounts = await _unitOfWork.Accounts.GetAllAsync();
-        return _mapper.Map<IEnumerable<AccountDto>>(accounts);
+        var dtos = _mapper.Map<IEnumerable<AccountDto>>(accounts).ToList();
+
+        var lookup = dtos.ToDictionary(a => a.Id);
+        var rootNodes = new List<AccountDto>();
+
+        foreach (var dto in dtos)
+        {
+            if (dto.ParentId.HasValue && lookup.TryGetValue(dto.ParentId.Value, out var parent))
+            {
+                parent.Children.Add(dto);
+            }
+            else
+            {
+                rootNodes.Add(dto);
+            }
+        }
+
+        return rootNodes;
     }
 
     public async Task<AccountDto> GetByIdAsync(int id)

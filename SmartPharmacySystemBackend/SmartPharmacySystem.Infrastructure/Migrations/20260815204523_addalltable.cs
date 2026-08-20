@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPharmacySystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class addedalltables : Migration
+    public partial class addalltable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -44,6 +44,34 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AuditLogs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Action = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    EntityType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    EntityId = table.Column<int>(type: "int", nullable: true),
+                    OldValues = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    NewValues = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IpAddress = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuditLogs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -135,6 +163,32 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Permissions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Module = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ModuleAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Action = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ActionAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    Icon = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Permissions", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PharmacySettings",
                 columns: table => new
                 {
@@ -172,7 +226,11 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    NameAr = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    Color = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true, defaultValue: "#64748b"),
+                    IsSystemRole = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<int>(type: "int", nullable: true),
@@ -413,22 +471,13 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Employees",
+                name: "RolePermissions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    EmployeeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    FullName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
-                    NationalId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    BranchId = table.Column<int>(type: "int", nullable: false),
-                    DepartmentId = table.Column<int>(type: "int", nullable: false),
-                    JobTitle = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    HireDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    TerminationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    BasicSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    DepartmentId1 = table.Column<int>(type: "int", nullable: true),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    PermissionId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<int>(type: "int", nullable: true),
@@ -439,24 +488,19 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Employees", x => x.Id);
+                    table.PrimaryKey("PK_RolePermissions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Employees_Branches_BranchId",
-                        column: x => x.BranchId,
-                        principalTable: "Branches",
+                        name: "FK_RolePermissions_Permissions_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "Permissions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Employees_Departments_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "Departments",
+                        name: "FK_RolePermissions_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Employees_Departments_DepartmentId1",
-                        column: x => x.DepartmentId1,
-                        principalTable: "Departments",
-                        principalColumn: "Id");
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -475,6 +519,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     ResetPasswordCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     LastLogin = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DefaultBranchId = table.Column<int>(type: "int", nullable: true),
                     BranchId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -752,6 +797,44 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StockCountSchedules",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    WarehouseId = table.Column<int>(type: "int", nullable: false),
+                    Frequency = table.Column<int>(type: "int", nullable: false),
+                    BranchId = table.Column<int>(type: "int", nullable: false),
+                    NextRunDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastRunDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StockCountSchedules", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StockCountSchedules_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_StockCountSchedules_Warehouses_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "InventoryStocks",
                 columns: table => new
                 {
@@ -857,91 +940,23 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Attendances",
+                name: "AutomatedAuditHeaders",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    EmployeeId = table.Column<int>(type: "int", nullable: false),
-                    WorkingBranchId = table.Column<int>(type: "int", nullable: false),
-                    CheckIn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CheckOut = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    WorkedHours = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: true),
-                    Shift = table.Column<int>(type: "int", nullable: false),
-                    AttendanceStatus = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<int>(type: "int", nullable: true),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedBy = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Attendances", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Attendances_Branches_WorkingBranchId",
-                        column: x => x.WorkingBranchId,
-                        principalTable: "Branches",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Attendances_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employees",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EmployeeLoans",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EmployeeId = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    MonthlyInstalment = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    RemainingAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    StartMonth = table.Column<int>(type: "int", nullable: false),
-                    StartYear = table.Column<int>(type: "int", nullable: false),
-                    IsFullyPaid = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CreatedBy = table.Column<int>(type: "int", nullable: true),
-                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    DeletedBy = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EmployeeLoans", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EmployeeLoans_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employees",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "MonthlySalaries",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EmployeeId = table.Column<int>(type: "int", nullable: false),
+                    AuditCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    WarehouseId = table.Column<int>(type: "int", nullable: true),
                     BranchId = table.Column<int>(type: "int", nullable: false),
-                    Month = table.Column<int>(type: "int", nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: false),
-                    BasicSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TotalAllowances = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TotalBonuses = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    TotalDeductions = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    PaymentStatus = table.Column<int>(type: "int", nullable: false),
-                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CountType = table.Column<int>(type: "int", nullable: false),
+                    AuditDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    TotalOpeningValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalPurchasesValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalSalesValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalDamagesValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TotalShortageValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<int>(type: "int", nullable: true),
@@ -952,17 +967,23 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MonthlySalaries", x => x.Id);
+                    table.PrimaryKey("PK_AutomatedAuditHeaders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_MonthlySalaries_Branches_BranchId",
+                        name: "FK_AutomatedAuditHeaders_Branches_BranchId",
                         column: x => x.BranchId,
                         principalTable: "Branches",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_MonthlySalaries_Employees_EmployeeId",
-                        column: x => x.EmployeeId,
-                        principalTable: "Employees",
+                        name: "FK_AutomatedAuditHeaders_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AutomatedAuditHeaders_Warehouses_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -1107,6 +1128,64 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Employees",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmployeeCode = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    NationalId = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    BranchId = table.Column<int>(type: "int", nullable: false),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false),
+                    JobTitle = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    HireDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TerminationDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    BasicSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Shift = table.Column<int>(type: "int", nullable: false),
+                    ShiftStartTime = table.Column<TimeSpan>(type: "time", nullable: true),
+                    ShiftEndTime = table.Column<TimeSpan>(type: "time", nullable: true),
+                    WorkingHours = table.Column<decimal>(type: "decimal(5,2)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    DepartmentId1 = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Employees", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Employees_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Employees_Departments_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "Departments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Employees_Departments_DepartmentId1",
+                        column: x => x.DepartmentId1,
+                        principalTable: "Departments",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Employees_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -1546,6 +1625,43 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserPermissionOverrides",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    PermissionId = table.Column<int>(type: "int", nullable: false),
+                    GrantType = table.Column<int>(type: "int", nullable: false),
+                    Reason = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    GrantedById = table.Column<int>(type: "int", nullable: true),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserPermissionOverrides", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserPermissionOverrides_Permissions_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "Permissions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserPermissionOverrides_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserShifts",
                 columns: table => new
                 {
@@ -1587,15 +1703,18 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SalaryDeductionItems",
+                name: "Attendances",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    MonthlySalaryId = table.Column<int>(type: "int", nullable: false),
-                    DeductionType = table.Column<int>(type: "int", nullable: false),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    EmployeeId = table.Column<int>(type: "int", nullable: false),
+                    WorkingBranchId = table.Column<int>(type: "int", nullable: false),
+                    CheckIn = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CheckOut = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    WorkedHours = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: true),
+                    Shift = table.Column<int>(type: "int", nullable: false),
+                    AttendanceStatus = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<int>(type: "int", nullable: true),
@@ -1606,13 +1725,110 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SalaryDeductionItems", x => x.Id);
+                    table.PrimaryKey("PK_Attendances", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_SalaryDeductionItems_MonthlySalaries_MonthlySalaryId",
-                        column: x => x.MonthlySalaryId,
-                        principalTable: "MonthlySalaries",
+                        name: "FK_Attendances_Branches_WorkingBranchId",
+                        column: x => x.WorkingBranchId,
+                        principalTable: "Branches",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Attendances_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EmployeeLoans",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmployeeId = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    MonthlyInstalment = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    RemainingAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    StartMonth = table.Column<int>(type: "int", nullable: false),
+                    StartYear = table.Column<int>(type: "int", nullable: false),
+                    IsFullyPaid = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeeLoans", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmployeeLoans_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MonthlySalaries",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EmployeeId = table.Column<int>(type: "int", nullable: false),
+                    BranchId = table.Column<int>(type: "int", nullable: false),
+                    Month = table.Column<int>(type: "int", nullable: false),
+                    Year = table.Column<int>(type: "int", nullable: false),
+                    BasicSalary = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalAllowances = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalBonuses = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    TotalDeductions = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    PaymentStatus = table.Column<int>(type: "int", nullable: false),
+                    PaidAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    PaidFromAccountId = table.Column<int>(type: "int", nullable: true),
+                    SalaryExpenseAccountId = table.Column<int>(type: "int", nullable: true),
+                    JournalEntryId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MonthlySalaries", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MonthlySalaries_Accounts_PaidFromAccountId",
+                        column: x => x.PaidFromAccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_MonthlySalaries_Accounts_SalaryExpenseAccountId",
+                        column: x => x.SalaryExpenseAccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_MonthlySalaries_Branches_BranchId",
+                        column: x => x.BranchId,
+                        principalTable: "Branches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MonthlySalaries_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_MonthlySalaries_JournalEntries_JournalEntryId",
+                        column: x => x.JournalEntryId,
+                        principalTable: "JournalEntries",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1651,6 +1867,67 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         principalTable: "MedicineBatches",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AutomatedAuditItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AutomatedAuditHeaderId = table.Column<int>(type: "int", nullable: false),
+                    WarehouseId = table.Column<int>(type: "int", nullable: false),
+                    MedicineId = table.Column<int>(type: "int", nullable: false),
+                    BatchId = table.Column<int>(type: "int", nullable: true),
+                    OpeningBalance = table.Column<int>(type: "int", nullable: false),
+                    TotalPurchases = table.Column<int>(type: "int", nullable: false),
+                    TotalSales = table.Column<int>(type: "int", nullable: false),
+                    TotalTransfersIn = table.Column<int>(type: "int", nullable: false),
+                    TotalTransfersOut = table.Column<int>(type: "int", nullable: false),
+                    TotalDamages = table.Column<int>(type: "int", nullable: false),
+                    TotalAdjustments = table.Column<int>(type: "int", nullable: false),
+                    TotalSalesReturns = table.Column<int>(type: "int", nullable: false),
+                    TotalPurchaseReturns = table.Column<int>(type: "int", nullable: false),
+                    ExpectedSystemBalance = table.Column<int>(type: "int", nullable: false),
+                    ActualSystemBalance = table.Column<int>(type: "int", nullable: false),
+                    Variance = table.Column<int>(type: "int", nullable: false),
+                    UnitCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    VarianceValue = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AutomatedAuditItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AutomatedAuditItems_AutomatedAuditHeaders_AutomatedAuditHeaderId",
+                        column: x => x.AutomatedAuditHeaderId,
+                        principalTable: "AutomatedAuditHeaders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_AutomatedAuditItems_MedicineBatches_BatchId",
+                        column: x => x.BatchId,
+                        principalTable: "MedicineBatches",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AutomatedAuditItems_Medicines_MedicineId",
+                        column: x => x.MedicineId,
+                        principalTable: "Medicines",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AutomatedAuditItems_Warehouses_WarehouseId",
+                        column: x => x.WarehouseId,
+                        principalTable: "Warehouses",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -2142,6 +2419,35 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "SalaryDeductionItems",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    MonthlySalaryId = table.Column<int>(type: "int", nullable: false),
+                    DeductionType = table.Column<int>(type: "int", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(250)", maxLength: 250, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CreatedBy = table.Column<int>(type: "int", nullable: true),
+                    UpdatedBy = table.Column<int>(type: "int", nullable: true),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
+                    DeletedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    DeletedBy = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SalaryDeductionItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SalaryDeductionItems_MonthlySalaries_MonthlySalaryId",
+                        column: x => x.MonthlySalaryId,
+                        principalTable: "MonthlySalaries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PurchaseReturnDetails",
                 columns: table => new
                 {
@@ -2251,16 +2557,6 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 });
 
             migrationBuilder.InsertData(
-                table: "Categories",
-                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "ImageUrl", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, "أدوية علاج الالتهابات البكتيرية", null, false, "مضادات حيوية", null, null },
-                    { 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, "أدوية تخفيف الألم وخافضات الحرارة", null, false, "مسكنات", null, null },
-                    { 3, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, "مكملات غذائية وفيتامينات", null, false, "فيتامينات", null, null }
-                });
-
-            migrationBuilder.InsertData(
                 table: "Customers",
                 columns: new[] { "Id", "AccountId", "Address", "CreatedAt", "CreatedBy", "CreditLimit", "DeletedAt", "DeletedBy", "Email", "IsActive", "IsDeleted", "Name", "PasswordHash", "PhoneNumber", "UpdatedAt", "UpdatedBy" },
                 values: new object[] { 1, null, null, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, 0m, null, null, null, true, false, "عميل نقدي عام", null, "000000000", null, null });
@@ -2270,24 +2566,24 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 columns: new[] { "Id", "AccountId", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, null, new DateTime(2026, 8, 4, 20, 53, 40, 71, DateTimeKind.Utc).AddTicks(8881), null, null, null, "رواتب الموظفين والبدلات", false, "رواتب", null, null },
-                    { 2, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(20), null, null, null, "إيجار مقر الصيدلية والمخازن", false, "إيجار", null, null },
-                    { 3, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(23), null, null, null, "فواتير الكهرباء", false, "كهرباء", null, null },
-                    { 4, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(24), null, null, null, "فواتير المياه", false, "مياه", null, null },
-                    { 5, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(25), null, null, null, "فواتير الهاتف والاشتراكات", false, "اتصالات وانترنت", null, null },
-                    { 6, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(26), null, null, null, "أدوات مكتبية ومطبوعات", false, "قرطاسية وأدوات مكتبية", null, null },
-                    { 7, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(27), null, null, null, "صيانة المعدات والمباني", false, "صيانة", null, null },
-                    { 8, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(28), null, null, null, "أدوات ومواد نظافة", false, "نظافة", null, null },
-                    { 9, null, new DateTime(2026, 8, 4, 20, 53, 40, 72, DateTimeKind.Utc).AddTicks(29), null, null, null, "مصاريف متنوعة", false, "أخرى", null, null }
+                    { 1, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(3969), null, null, null, "رواتب الموظفين والبدلات", false, "رواتب", null, null },
+                    { 2, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6023), null, null, null, "إيجار مقر الصيدلية والمخازن", false, "إيجار", null, null },
+                    { 3, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6027), null, null, null, "فواتير الكهرباء", false, "كهرباء", null, null },
+                    { 4, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6029), null, null, null, "فواتير المياه", false, "مياه", null, null },
+                    { 5, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6030), null, null, null, "فواتير الهاتف والاشتراكات", false, "اتصالات وانترنت", null, null },
+                    { 6, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6032), null, null, null, "أدوات مكتبية ومطبوعات", false, "قرطاسية وأدوات مكتبية", null, null },
+                    { 7, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6033), null, null, null, "صيانة المعدات والمباني", false, "صيانة", null, null },
+                    { 8, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6035), null, null, null, "أدوات ومواد نظافة", false, "نظافة", null, null },
+                    { 9, null, new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6137), null, null, null, "مصاريف متنوعة", false, "أخرى", null, null }
                 });
 
             migrationBuilder.InsertData(
                 table: "Roles",
-                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
+                columns: new[] { "Id", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Description", "IsActive", "IsDeleted", "IsSystemRole", "Name", "NameAr", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "مدير النظام - صلاحيات كاملة", false, "Admin", null, null },
-                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "صيدلي - صلاحيات البيع والشراء", false, "Pharmacist", null, null }
+                    { 1, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "مدير النظام - صلاحيات كاملة", true, false, false, "Admin", null, null, null },
+                    { 2, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "صيدلي - صلاحيات البيع والشراء", true, false, false, "Pharmacist", null, null, null }
                 });
 
             migrationBuilder.InsertData(
@@ -2314,23 +2610,14 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 values: new object[] { 1, 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), 1, null, null, "قيد افتتاحي - رصيد الصندوق", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), false, true, null, null, null, 50000m, 50000m, 4, null, null, "OB-2025-001" });
 
             migrationBuilder.InsertData(
-                table: "Medicines",
-                columns: new[] { "Id", "ActiveIngredient", "BaseUnitName", "CategoryId", "CreatedAt", "CreatedBy", "DefaultBarcode", "DefaultPurchasePrice", "DefaultSalePrice", "DeletedAt", "DeletedBy", "ImageUrl", "InternalCode", "IsDeleted", "Manufacturer", "MinAlertQuantity", "MovingAverageCost", "Name", "Notes", "ReorderLevel", "ScientificName", "SoldByUnit", "Status", "UpdatedAt", "UpdatedBy" },
-                values: new object[,]
-                {
-                    { 1, null, "حبة", 2, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "5011309100010", 10.00m, 15.00m, null, null, null, null, false, null, 0, 0m, "Panadol Advance", null, 10, "Paracetamol", false, "Active", null, null },
-                    { 2, null, "حبة", 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "5011309100020", 60.00m, 85.00m, null, null, null, null, false, null, 0, 0m, "Augmentin 1g", null, 10, "Amoxicillin", false, "Active", null, null }
-                });
-
-            migrationBuilder.InsertData(
                 table: "PharmacyAccounts",
                 columns: new[] { "Id", "Balance", "BranchId", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "IsActive", "IsDeleted", "Name", "UpdatedAt", "UpdatedBy" },
                 values: new object[] { 1, 0m, 1, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, null, null, true, false, "الخزينة الرئيسية", new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null });
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "BranchId", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "UpdatedAt", "UpdatedBy", "Username" },
-                values: new object[] { 1, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, "admin@pharmacy.com", "مدير النظام", false, null, null, "$2a$11$5BpJXPqqemBPqaJkHPd6yuGGAKUYN.6A/HN2UBzzOCiabM4wzVwX2", null, null, 1, 1, null, null, "admin" });
+                columns: new[] { "Id", "BranchId", "CreatedAt", "CreatedBy", "DefaultBranchId", "DeletedAt", "DeletedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "UpdatedAt", "UpdatedBy", "Username" },
+                values: new object[] { 1, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null, null, null, "admin@pharmacy.com", "مدير النظام", false, null, null, "$2a$11$mBYICyN5WVz4c3BKIdZ/BOPdLFnNKtyhlDulDFlYKkcDFjtez5yCq", null, null, 1, 1, null, null, "admin" });
 
             migrationBuilder.InsertData(
                 table: "Accounts",
@@ -2352,8 +2639,8 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "Id", "BranchId", "CreatedAt", "CreatedBy", "DeletedAt", "DeletedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "UpdatedAt", "UpdatedBy", "Username" },
-                values: new object[] { 2, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, null, null, "pharmacist@pharmacy.com", "صيدلي النظام", false, null, null, "$2a$11$5BpJXPqqemBPqaJkHPd6yuGGAKUYN.6A/HN2UBzzOCiabM4wzVwX2", null, null, 2, 1, null, null, "pharmacist" });
+                columns: new[] { "Id", "BranchId", "CreatedAt", "CreatedBy", "DefaultBranchId", "DeletedAt", "DeletedBy", "Email", "FullName", "IsDeleted", "LastLogin", "Notes", "PasswordHash", "PhoneNumber", "ResetPasswordCode", "RoleId", "Status", "UpdatedAt", "UpdatedBy", "Username" },
+                values: new object[] { 2, null, new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, null, null, null, "pharmacist@pharmacy.com", "صيدلي النظام", false, null, null, "$2a$11$mBYICyN5WVz4c3BKIdZ/BOPdLFnNKtyhlDulDFlYKkcDFjtez5yCq", null, null, 2, 1, null, null, "pharmacist" });
 
             migrationBuilder.InsertData(
                 table: "EmployeeBranchAssignments",
@@ -2365,8 +2652,8 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 columns: new[] { "Id", "AccountId", "BranchId", "CreatedAt", "CreatedBy", "Credit", "Debit", "DeletedAt", "DeletedBy", "Description", "IsDeleted", "JournalEntryId", "UpdatedAt", "UpdatedBy" },
                 values: new object[,]
                 {
-                    { 1, 1101, 1, new DateTime(2026, 8, 4, 20, 53, 40, 763, DateTimeKind.Utc).AddTicks(4051), null, 0m, 50000m, null, null, "إيداع رصيد افتتاحي", false, 1, null, null },
-                    { 2, 3101, 1, new DateTime(2026, 8, 4, 20, 53, 40, 763, DateTimeKind.Utc).AddTicks(6357), null, 50000m, 0m, null, null, "إثبات رأس المال", false, 1, null, null }
+                    { 1, 1101, 1, new DateTime(2026, 8, 15, 20, 45, 16, 399, DateTimeKind.Utc).AddTicks(7309), null, 0m, 50000m, null, null, "إيداع رصيد افتتاحي", false, 1, null, null },
+                    { 2, 3101, 1, new DateTime(2026, 8, 15, 20, 45, 16, 400, DateTimeKind.Utc).AddTicks(1015), null, 50000m, 0m, null, null, "إثبات رأس المال", false, 1, null, null }
                 });
 
             migrationBuilder.CreateIndex(
@@ -2404,6 +2691,51 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "IX_Attendances_WorkingBranchId",
                 table: "Attendances",
                 column: "WorkingBranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLogs_CreatedAt",
+                table: "AuditLogs",
+                column: "CreatedAt");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuditLogs_UserId",
+                table: "AuditLogs",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AutomatedAuditHeaders_BranchId",
+                table: "AutomatedAuditHeaders",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AutomatedAuditHeaders_CreatedByUserId",
+                table: "AutomatedAuditHeaders",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AutomatedAuditHeaders_WarehouseId",
+                table: "AutomatedAuditHeaders",
+                column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AutomatedAuditItems_AutomatedAuditHeaderId",
+                table: "AutomatedAuditItems",
+                column: "AutomatedAuditHeaderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AutomatedAuditItems_BatchId",
+                table: "AutomatedAuditItems",
+                column: "BatchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AutomatedAuditItems_MedicineId",
+                table: "AutomatedAuditItems",
+                column: "MedicineId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AutomatedAuditItems_WarehouseId",
+                table: "AutomatedAuditItems",
+                column: "WarehouseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Branches_BranchCode",
@@ -2559,6 +2891,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 table: "Employees",
                 column: "EmployeeCode",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Employees_UserId",
+                table: "Employees",
+                column: "UserId",
+                filter: "[UserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ExpenseCategories_AccountId",
@@ -2775,6 +3113,21 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_MonthlySalaries_JournalEntryId",
+                table: "MonthlySalaries",
+                column: "JournalEntryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MonthlySalaries_PaidFromAccountId",
+                table: "MonthlySalaries",
+                column: "PaidFromAccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_MonthlySalaries_SalaryExpenseAccountId",
+                table: "MonthlySalaries",
+                column: "SalaryExpenseAccountId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_BranchId",
                 table: "Notifications",
                 column: "BranchId");
@@ -2824,6 +3177,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "IX_OnlineOrders_Status",
                 table: "OnlineOrders",
                 column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Permissions_Code",
+                table: "Permissions",
+                column: "Code",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_PharmacyAccounts_BranchId",
@@ -2961,6 +3320,17 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "IX_PurchaseReturns_SupplierId",
                 table: "PurchaseReturns",
                 column: "SupplierId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RolePermissions_PermissionId",
+                table: "RolePermissions",
+                column: "PermissionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RolePermissions_RoleId_PermissionId",
+                table: "RolePermissions",
+                columns: new[] { "RoleId", "PermissionId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_Name",
@@ -3101,6 +3471,16 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "StockCountHeaderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_StockCountSchedules_BranchId",
+                table: "StockCountSchedules",
+                column: "BranchId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_StockCountSchedules_WarehouseId",
+                table: "StockCountSchedules",
+                column: "WarehouseId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_StockTransferItems_MedicineId",
                 table: "StockTransferItems",
                 column: "MedicineId");
@@ -3192,6 +3572,16 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 column: "PhoneNumber");
 
             migrationBuilder.CreateIndex(
+                name: "IX_UserPermissionOverrides_PermissionId",
+                table: "UserPermissionOverrides",
+                column: "PermissionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserPermissionOverrides_UserId_PermissionId",
+                table: "UserPermissionOverrides",
+                columns: new[] { "UserId", "PermissionId" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_BranchId",
                 table: "Users",
                 column: "BranchId");
@@ -3236,6 +3626,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Attendances");
+
+            migrationBuilder.DropTable(
+                name: "AuditLogs");
+
+            migrationBuilder.DropTable(
+                name: "AutomatedAuditItems");
 
             migrationBuilder.DropTable(
                 name: "Cheques");
@@ -3301,6 +3697,9 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "PurchaseReturnDetails");
 
             migrationBuilder.DropTable(
+                name: "RolePermissions");
+
+            migrationBuilder.DropTable(
                 name: "SalaryDeductionItems");
 
             migrationBuilder.DropTable(
@@ -3313,22 +3712,28 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "StockCountItems");
 
             migrationBuilder.DropTable(
+                name: "StockCountSchedules");
+
+            migrationBuilder.DropTable(
                 name: "StockTransferItems");
 
             migrationBuilder.DropTable(
                 name: "SupplierPayments");
 
             migrationBuilder.DropTable(
+                name: "UserPermissionOverrides");
+
+            migrationBuilder.DropTable(
                 name: "UserShifts");
+
+            migrationBuilder.DropTable(
+                name: "AutomatedAuditHeaders");
 
             migrationBuilder.DropTable(
                 name: "ExpenseCategories");
 
             migrationBuilder.DropTable(
                 name: "PharmacyAccounts");
-
-            migrationBuilder.DropTable(
-                name: "JournalEntries");
 
             migrationBuilder.DropTable(
                 name: "OnlineOrders");
@@ -3355,10 +3760,16 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 name: "StockTransfers");
 
             migrationBuilder.DropTable(
+                name: "Permissions");
+
+            migrationBuilder.DropTable(
                 name: "PurchaseInvoices");
 
             migrationBuilder.DropTable(
                 name: "Employees");
+
+            migrationBuilder.DropTable(
+                name: "JournalEntries");
 
             migrationBuilder.DropTable(
                 name: "Medicines");

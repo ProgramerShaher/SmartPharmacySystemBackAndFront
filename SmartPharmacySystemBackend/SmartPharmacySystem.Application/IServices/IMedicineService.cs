@@ -8,11 +8,14 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<MedicineDto> CreateMedicineAsync(CreateMedicineDto dto);
         Task UpdateMedicineAsync(int id, UpdateMedicineDto dto);
         Task DeleteMedicineAsync(int id);
+        Task DeleteBulkMedicinesAsync(IEnumerable<int> ids);
         Task<MedicineDto> GetMedicineByIdAsync(int id);
         Task<MedicineDetailsDto> GetMedicineDetailsAsync(int id);
         Task<IEnumerable<MedicineDto>> GetAllMedicinesAsync();
         Task<PagedResult<MedicineDto>> SearchAsync(MedicineQueryDto query);
         Task<IEnumerable<SmartPharmacySystem.Application.DTOs.MedicineBatch.MedicineBatchResponseDto>> GetBatchesByFEFOAsync(int medicineId);
         Task<IEnumerable<MedicineDto>> GetReorderReportAsync();
+        Task<ImportResultDto> ImportFromExcelAsync(Microsoft.AspNetCore.Http.IFormFile file);
+        Task<byte[]> GenerateExcelTemplateAsync();
     }
 }

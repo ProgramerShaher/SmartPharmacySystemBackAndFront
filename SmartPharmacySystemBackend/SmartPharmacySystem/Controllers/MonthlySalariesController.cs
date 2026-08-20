@@ -10,7 +10,13 @@ namespace SmartPharmacySystem.Controllers;
 public class MonthlySalariesController : ControllerBase
 {
     private readonly IMonthlySalaryService _salaryService;
-    public MonthlySalariesController(IMonthlySalaryService salaryService) => _salaryService = salaryService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public MonthlySalariesController(IMonthlySalaryService salaryService, ICurrentUserService currentUserService)
+    {
+        _salaryService = salaryService;
+        _currentUserService = currentUserService;
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
@@ -62,16 +68,16 @@ public class MonthlySalariesController : ControllerBase
     }
 
     [HttpPost("{id}/pay")]
-    public async Task<IActionResult> PaySalary(int id)
+    public async Task<IActionResult> PaySalary(int id, PaySalaryDto dto)
     {
-        var result = await _salaryService.PaySalaryAsync(id);
+        var result = await _salaryService.PaySalaryAsync(id, dto, _currentUserService.UserId);
         return Ok(ApiResponse<MonthlySalaryDto>.Succeeded(result, "تم اعتماد ودفع الراتب بنجاح"));
     }
 
     [HttpPost("pay-all")]
-    public async Task<IActionResult> PayAll([FromQuery] int month, [FromQuery] int year, [FromQuery] int? branchId)
+    public async Task<IActionResult> PayAll([FromQuery] int month, [FromQuery] int year, [FromQuery] int? branchId, PaySalaryDto dto)
     {
-        var count = await _salaryService.PayAllAsync(month, year, branchId);
+        var count = await _salaryService.PayAllAsync(month, year, branchId, dto, _currentUserService.UserId);
         return Ok(ApiResponse<int>.Succeeded(count, $"تم اعتماد ودفع {count} رواتب بنجاح"));
     }
 

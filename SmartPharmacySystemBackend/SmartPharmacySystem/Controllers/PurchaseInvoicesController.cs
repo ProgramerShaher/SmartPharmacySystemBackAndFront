@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartPharmacySystem.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 using SmartPharmacySystem.Application.Interfaces;
@@ -111,8 +112,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Approve purchase invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("purchases.invoices.approve")]
         [HttpPost("{id}/approve")]
 
         public async Task<IActionResult> Approve(int id)
@@ -134,8 +135,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Unapprove purchase invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("purchases.invoices.approve")]
         [HttpPost("{id}/unapprove")]
         public async Task<IActionResult> Unapprove(int id)
         {
@@ -152,8 +153,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Cancel purchase invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("purchases.invoices.delete")]
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -177,8 +178,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete purchase invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("purchases.invoices.delete")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

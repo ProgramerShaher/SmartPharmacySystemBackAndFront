@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Reports;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
+using SmartPharmacySystem.Authorization;
 
 namespace SmartPharmacySystem.Controllers;
 
@@ -11,7 +12,7 @@ namespace SmartPharmacySystem.Controllers;
 /// Imperial Reporting Center
 /// Performance Protocol: Response time < 100ms
 /// </summary>
-[Authorize(Roles = "Admin")]
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ReportsController : ControllerBase
@@ -37,6 +38,7 @@ public class ReportsController : ControllerBase
     /// <param name="fromDate">من تاريخ (اختياري)</param>
     /// <param name="toDate">إلى تاريخ (اختياري)</param>
     /// <returns>كشف الحساب مع الرصيد التراكمي</returns>
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("statement/{entityType}/{entityId}")]
     public async Task<IActionResult> GetUnifiedStatement(
         string entityType,
@@ -65,6 +67,7 @@ public class ReportsController : ControllerBase
     /// كشف الحساب مع التصفح
     /// Paginated Account Statement
     /// </summary>
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("statement/{entityType}/{entityId}/paged")]
     public async Task<IActionResult> GetUnifiedStatementPaged(
         string entityType,
@@ -100,6 +103,7 @@ public class ReportsController : ControllerBase
     /// <param name="fromDate">من تاريخ (مطلوب)</param>
     /// <param name="toDate">إلى تاريخ (مطلوب)</param>
     /// <param name="includeExpenseDetails">تضمين تفاصيل المصروفات حسب الفئة</param>
+    [RequirePermission("reports.financial.view")]
     [HttpGet("net-profit")]
     public async Task<IActionResult> GetNetProfitReport(
         [FromQuery] DateTime fromDate,
@@ -122,6 +126,7 @@ public class ReportsController : ControllerBase
     /// Atomic Inventory Valuation Report
     /// يربط كل حبة دواء بـ BatchId و ExpiryDate و PurchasePrice
     /// </summary>
+    [RequirePermission("reports.inventory.view")]
     [HttpGet("inventory-valuation")]
     public async Task<IActionResult> GetInventoryValuation([FromQuery] InventoryValuationQueryDto query)
     {
@@ -133,6 +138,7 @@ public class ReportsController : ControllerBase
     /// تقييم المخزون مع التصفح
     /// Paginated Inventory Valuation
     /// </summary>
+    [RequirePermission("reports.inventory.view")]
     [HttpGet("inventory-valuation/paged")]
     public async Task<IActionResult> GetInventoryValuationPaged([FromQuery] InventoryValuationQueryDto query)
     {
@@ -146,6 +152,7 @@ public class ReportsController : ControllerBase
     /// ملخص سريع للتقارير (للوحة التحكم)
     /// Quick Reports Summary (for Dashboard)
     /// </summary>
+    [RequirePermission("reports.sales.view")]
     [HttpGet("summary")]
     public async Task<IActionResult> GetReportsSummary()
     {
@@ -161,6 +168,7 @@ public class ReportsController : ControllerBase
     /// GET /api/Reports/daily-sales?date=2024-01-15
     /// </summary>
     /// <param name="date">تاريخ التقرير (الافتراضي: اليوم)</param>
+    [RequirePermission("reports.sales.view")]
     [HttpGet("daily-sales")]
     public async Task<IActionResult> GetDailySalesReport([FromQuery] DateTime? date = null)
     {
@@ -179,6 +187,7 @@ public class ReportsController : ControllerBase
     /// <param name="fromDate">من تاريخ</param>
     /// <param name="toDate">إلى تاريخ</param>
     /// <param name="top">عدد الأدوية (الافتراضي: 10)</param>
+    [RequirePermission("reports.sales.view")]
     [HttpGet("best-selling")]
     public async Task<IActionResult> GetBestSellingMedicines(
         [FromQuery] DateTime fromDate,
@@ -206,6 +215,7 @@ public class ReportsController : ControllerBase
     /// Customer Debts Report - shows receivables and payables
     /// GET /api/Reports/customer-debts
     /// </summary>
+    [RequirePermission("reports.financial.view")]
     [HttpGet("customer-debts")]
     public async Task<IActionResult> GetCustomerDebtsReport()
     {
@@ -213,6 +223,7 @@ public class ReportsController : ControllerBase
         return Ok(ApiResponse<CustomerDebtsReportDto>.Succeeded(result, "تم جلب تقرير ديون العملاء بنجاح"));
     }
 
+    [RequirePermission("reports.sales.view")]
     [HttpGet("employee-performance")]
     public async Task<IActionResult> GetEmployeePerformanceReport([FromQuery] EmployeePerformanceReportQueryDto query)
     {
@@ -239,6 +250,7 @@ public class ReportsController : ControllerBase
     /// Supplier Debts Report - shows payables and receivables
     /// GET /api/Reports/supplier-debts
     /// </summary>
+    [RequirePermission("reports.purchases.view")]
     [HttpGet("supplier-debts")]
     public async Task<IActionResult> GetSupplierDebtsReport()
     {
@@ -252,6 +264,7 @@ public class ReportsController : ControllerBase
     /// تصدير كشف الحساب بصيغة CSV
     /// Export Account Statement as CSV
     /// </summary>
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("statement/{entityType}/{entityId}/export")]
     public async Task<IActionResult> ExportStatement(
         string entityType,
@@ -311,6 +324,7 @@ public class ReportsController : ControllerBase
 
     // ===================== القوائم المالية النهائية - Financial Statements =====================
 
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("trial-balance")]
     public async Task<IActionResult> GetTrialBalance([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
     {
@@ -318,6 +332,7 @@ public class ReportsController : ControllerBase
         return Ok(ApiResponse<TrialBalanceDto>.Succeeded(result, "تم جلب ميزان المراجعة بنجاح"));
     }
 
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("income-statement")]
     public async Task<IActionResult> GetIncomeStatement([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
     {
@@ -325,6 +340,7 @@ public class ReportsController : ControllerBase
         return Ok(ApiResponse<IncomeStatementDto>.Succeeded(result, "تم جلب قائمة الدخل بنجاح"));
     }
 
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("balance-sheet")]
     public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime date)
     {

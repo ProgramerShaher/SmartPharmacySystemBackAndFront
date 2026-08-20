@@ -6,24 +6,23 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPharmacySystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class updateStockCountFrequency : Migration
+    public partial class AddFinancialPeriods : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "StockCountSchedules",
+                name: "FinancialPeriods",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    WarehouseId = table.Column<int>(type: "int", nullable: false),
-                    Frequency = table.Column<int>(type: "int", nullable: false),
-                    BranchId = table.Column<int>(type: "int", nullable: false),
-                    NextRunDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LastRunDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    Notes = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    PeriodName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsClosed = table.Column<bool>(type: "bit", nullable: false),
+                    ClosedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ClosedByUserId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<int>(type: "int", nullable: true),
@@ -34,19 +33,12 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StockCountSchedules", x => x.Id);
+                    table.PrimaryKey("PK_FinancialPeriods", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StockCountSchedules_Branches_BranchId",
-                        column: x => x.BranchId,
-                        principalTable: "Branches",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_StockCountSchedules_Warehouses_WarehouseId",
-                        column: x => x.WarehouseId,
-                        principalTable: "Warehouses",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        name: "FK_FinancialPeriods_Users_ClosedByUserId",
+                        column: x => x.ClosedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.UpdateData(
@@ -54,199 +46,194 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(4157));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(848));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5301));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(1973));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5303));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(1975));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5304));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(1976));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5305));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(1978));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5306));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(2067));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5307));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(2069));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 8,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5308));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(2070));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 9,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 27, 562, DateTimeKind.Utc).AddTicks(5309));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 188, DateTimeKind.Utc).AddTicks(2071));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 28, 147, DateTimeKind.Utc).AddTicks(4496));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 867, DateTimeKind.Utc).AddTicks(3932));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 12, 19, 29, 28, 147, DateTimeKind.Utc).AddTicks(6804));
+                value: new DateTime(2026, 8, 16, 21, 3, 47, 867, DateTimeKind.Utc).AddTicks(6673));
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "PasswordHash",
-                value: "$2a$11$AFCKYpU9fpK6RRN3xCD3K.dMAvj5bb.ZsZR3a4bUvEGAI01rqrCda");
+                value: "$2a$11$EMiXb67HTy99Lvj/zqWtCeP32oHrCWX/dK2ebeINuV9LzHgDsVj0.");
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "PasswordHash",
-                value: "$2a$11$AFCKYpU9fpK6RRN3xCD3K.dMAvj5bb.ZsZR3a4bUvEGAI01rqrCda");
+                value: "$2a$11$EMiXb67HTy99Lvj/zqWtCeP32oHrCWX/dK2ebeINuV9LzHgDsVj0.");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StockCountSchedules_BranchId",
-                table: "StockCountSchedules",
-                column: "BranchId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_StockCountSchedules_WarehouseId",
-                table: "StockCountSchedules",
-                column: "WarehouseId");
+                name: "IX_FinancialPeriods_ClosedByUserId",
+                table: "FinancialPeriods",
+                column: "ClosedByUserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "StockCountSchedules");
+                name: "FinancialPeriods");
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(2512));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(6594));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4480));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8931));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4485));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8935));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4488));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8937));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4492));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8940));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4495));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8942));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4499));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8944));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 8,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4502));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8946));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 9,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4506));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8948));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 23, 275, DateTimeKind.Utc).AddTicks(965));
+                value: new DateTime(2026, 8, 16, 19, 56, 25, 145, DateTimeKind.Utc).AddTicks(7654));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 23, 275, DateTimeKind.Utc).AddTicks(5775));
+                value: new DateTime(2026, 8, 16, 19, 56, 25, 146, DateTimeKind.Utc).AddTicks(2793));
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "PasswordHash",
-                value: "$2a$11$Ay7QunZsizqunn.ENjR5yemmVepSBO8E2p9zNIA93DyYTJMJyJQby");
+                value: "$2a$11$WbVIA2U2L/fzj4FC36DULe4OzI3GiFbWcmag0uBWrdlpuuyEr7ZlG");
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "PasswordHash",
-                value: "$2a$11$Ay7QunZsizqunn.ENjR5yemmVepSBO8E2p9zNIA93DyYTJMJyJQby");
+                value: "$2a$11$WbVIA2U2L/fzj4FC36DULe4OzI3GiFbWcmag0uBWrdlpuuyEr7ZlG");
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using SmartPharmacySystem.Application.DTOs.Shifts;
 using SmartPharmacySystem.Application.Wrappers;
+using SmartPharmacySystem.Application.DTOs.Financial;
 
 namespace SmartPharmacySystem.Application.Interfaces;
 

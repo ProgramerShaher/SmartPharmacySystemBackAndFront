@@ -54,6 +54,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FinancialTransaction> FinancialTransactions { get; set; } = null!;
     public DbSet<CustomerReceipt> CustomerReceipts { get; set; } = null!;
     public DbSet<Customer> Customers { get; set; } = null!;
+    public DbSet<Pricelist> Pricelists { get; set; } = null!;
+    public DbSet<PricelistItem> PricelistItems { get; set; } = null!;
     public DbSet<SupplierPayment> SupplierPayments { get; set; } = null!;
     public DbSet<OnlineOrder> OnlineOrders { get; set; } = null!;
     public DbSet<OnlineOrderItem> OnlineOrderItems { get; set; } = null!;
@@ -89,6 +91,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<CustomerLedger> CustomerLedgers { get; set; } = null!;
     public DbSet<InterBranchSettlement> InterBranchSettlements { get; set; } = null!;
     public DbSet<DailyClosing> DailyClosings { get; set; } = null!;
+    public DbSet<FinancialPeriod> FinancialPeriods { get; set; } = null!;
 
     // ===== Notifications =====
     public DbSet<Notification> Notifications { get; set; } = null!;
@@ -183,7 +186,41 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.Balance).HasPrecision(18, 2).HasDefaultValue(0);
             entity.Property(e => e.CreditLimit).HasPrecision(18, 2);
             entity.HasIndex(e => e.Name); // Search optimization
+
+            // Pricelist FK (optional)
+            entity.HasOne(e => e.Pricelist)
+                  .WithMany(p => p.Customers)
+                  .HasForeignKey(e => e.PricelistId)
+                  .OnDelete(DeleteBehavior.SetNull);
         });
+
+        // Pricelist Configuration
+        modelBuilder.Entity<Pricelist>(entity =>
+        {
+            entity.Property(e => e.GlobalDiscountPercentage).HasPrecision(5, 2);
+            entity.HasIndex(e => e.Name);
+        });
+
+        // PricelistItem Configuration
+        modelBuilder.Entity<PricelistItem>(entity =>
+        {
+            entity.Property(e => e.FixedPrice).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountPercentage).HasPrecision(5, 2);
+
+            entity.HasOne(e => e.Pricelist)
+                  .WithMany(p => p.Items)
+                  .HasForeignKey(e => e.PricelistId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            // Prevent duplicate items for same medicine in same pricelist
+            entity.HasIndex(e => new { e.PricelistId, e.MedicineId }).IsUnique();
+        });
+
 
         // CustomerReceipt Configuration
         modelBuilder.Entity<CustomerReceipt>(entity =>
@@ -1688,40 +1725,6 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
 
 
-        // 4. Seed Medicine Categories
-        modelBuilder.Entity<Category>().HasData(
-            new Category { Id = 1, Name = "مضادات حيوية", Description = "أدوية علاج الالتهابات البكتيرية", CreatedAt = new DateTime(2025, 1, 1) },
-            new Category { Id = 2, Name = "مسكنات", Description = "أدوية تخفيف الألم وخافضات الحرارة", CreatedAt = new DateTime(2025, 1, 1) },
-            new Category { Id = 3, Name = "فيتامينات", Description = "مكملات غذائية وفيتامينات", CreatedAt = new DateTime(2025, 1, 1) }
-        );
-
-        // 5. Seed Medicines
-        modelBuilder.Entity<Medicine>().HasData(
-            new Medicine 
-            { 
-                Id = 1, 
-                Name = "Panadol Advance", 
-                ScientificName = "Paracetamol", 
-                CategoryId = 2, 
-                DefaultBarcode = "5011309100010",
-                DefaultSalePrice = 15.00m,
-                DefaultPurchasePrice = 10.00m,
-                Status = "Active",
-                CreatedAt = new DateTime(2025, 1, 1)
-            },
-            new Medicine 
-            { 
-                Id = 2, 
-                Name = "Augmentin 1g", 
-                ScientificName = "Amoxicillin", 
-                CategoryId = 1, 
-                DefaultBarcode = "5011309100020",
-                DefaultSalePrice = 85.00m,
-                DefaultPurchasePrice = 60.00m,
-                Status = "Active",
-                CreatedAt = new DateTime(2025, 1, 1)
-            }
-        );
 
         // 6. Seed Suppliers & Customers
         modelBuilder.Entity<Supplier>().HasData(

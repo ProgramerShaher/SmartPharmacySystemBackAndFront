@@ -46,6 +46,18 @@ public class SaleInvoiceDetail : BaseEntity
     public decimal SalePrice { get; set; }
 
     /// <summary>
+    /// Discount percentage applied to this line (0-100). Applied manually by cashier.
+    /// نسبة الخصم اليدوية على هذا السطر (مثلاً 10 يعني 10%).
+    /// </summary>
+    public decimal DiscountPercentage { get; set; } = 0;
+
+    /// <summary>
+    /// Calculated discount amount for this line = (Quantity * SalePrice) * DiscountPercentage / 100.
+    /// مبلغ الخصم المحسوب لهذا السطر.
+    /// </summary>
+    public decimal DiscountAmount { get; set; } = 0;
+
+    /// <summary>
     /// Unit cost per item.
     /// </summary>
     public decimal UnitCost { get; set; }

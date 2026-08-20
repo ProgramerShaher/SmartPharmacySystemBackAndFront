@@ -14,5 +14,6 @@ public interface ICategoryRepository
     Task UpdateAsync(Category entity);
     Task SoftDeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
+    Task<bool> HasMedicinesAsync(int categoryId);
     Task<(IEnumerable<Category> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize, string sortBy, string sortDir);
 }

@@ -12,6 +12,7 @@ public class CategoryDto
     public string? ImageUrl { get; set; }
     public DateTime CreatedAt { get; set; }
     public bool IsDeleted { get; set; }
+    public bool HasMedicines { get; set; }
 }
 public class CreateCategoryDto
 {

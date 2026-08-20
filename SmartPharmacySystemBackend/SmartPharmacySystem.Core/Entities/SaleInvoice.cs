@@ -28,6 +28,12 @@ public class SaleInvoice : BaseMultiBranchEntity
     public decimal TotalAmount { get; set; }
 
     /// <summary>
+    /// Total discount applied to the whole invoice.
+    /// إجمالي الخصم المطبق على الفاتورة (يُسجل في حساب الخصومات المسموح بها).
+    /// </summary>
+    public decimal TotalDiscount { get; set; } = 0;
+
+    /// <summary>
     /// Total cost of the medicines sold.
     /// </summary>
     public decimal TotalCost { get; set; }
@@ -96,6 +102,17 @@ public class SaleInvoice : BaseMultiBranchEntity
     /// Collection of sale invoice details.
     /// </summary>
     public ICollection<SaleInvoiceDetail> SaleInvoiceDetails { get; set; }
+
+    /// <summary>
+    /// The ID of the cashier shift during which this invoice was created.
+    /// </summary>
+    public int? UserShiftId { get; set; }
+
+    /// <summary>
+    /// Navigation property to the user shift.
+    /// </summary>
+    [ForeignKey("UserShiftId")]
+    public virtual UserShift? UserShift { get; set; }
 
     /// <summary>
     /// Collection of sales returns related to this invoice.

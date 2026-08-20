@@ -45,9 +45,18 @@ public class MonthlySalary : BaseEntity
 
     public DateTime? PaidAt { get; set; }
 
+    public int? PaidFromAccountId { get; set; }
+
+    public int? SalaryExpenseAccountId { get; set; }
+
+    public int? JournalEntryId { get; set; }
+
     // Navigation properties
     public virtual Employee Employee { get; set; } = null!;
     public virtual Branch Branch { get; set; } = null!;
+    public virtual Account? PaidFromAccount { get; set; }
+    public virtual Account? SalaryExpenseAccount { get; set; }
+    public virtual JournalEntry? JournalEntry { get; set; }
     public virtual ICollection<SalaryDeductionItem> Deductions { get; set; } = new List<SalaryDeductionItem>();
 }
 

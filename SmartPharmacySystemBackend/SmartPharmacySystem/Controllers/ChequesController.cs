@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartPharmacySystem.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Financial;
 using SmartPharmacySystem.Application.IServices;
@@ -31,6 +32,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب الشيكات مع الفلترة والترقيم
         /// </summary>
+        [RequirePermission("finance.treasury.view")]
         [HttpGet]
         public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10, 
             [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null, 
@@ -43,6 +45,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب بيانات شيك معين
         /// </summary>
+        [RequirePermission("finance.treasury.view")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -60,6 +63,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// تسجيل شيك جديد
         /// </summary>
+        [RequirePermission("finance.cheques.manage")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ChequeDto dto)
         {
@@ -79,6 +83,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// تحديث حالة الشيك (تحصيل، رفض، إلخ)
         /// </summary>
+        [RequirePermission("finance.cheques.manage")]
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromQuery] string status, [FromBody] string? notes = null)
         {
@@ -97,6 +102,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب الشيكات المستحقة قريباً
         /// </summary>
+        [RequirePermission("finance.treasury.view")]
         [HttpGet("due-soon")]
         public async Task<IActionResult> GetDueSoon([FromQuery] int daysAhead = 7)
         {

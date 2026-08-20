@@ -8,6 +8,7 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Interfaces.Data;
 using SmartPharmacySystem.Application.Wrappers;
 using SmartPharmacySystem.Core.Entities;
+using SmartPharmacySystem.Application.IServices;
 
 namespace SmartPharmacySystem.Application.Services;
 
@@ -15,11 +16,19 @@ public class ShiftService : IShiftService
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
+    private readonly IJournalEntryService _journalEntryService;
+    private readonly SmartPharmacySystem.Core.Interfaces.IUnitOfWork _unitOfWork;
 
-    public ShiftService(IApplicationDbContext context, ICurrentUserService currentUserService)
+    public ShiftService(
+        IApplicationDbContext context, 
+        ICurrentUserService currentUserService,
+        IJournalEntryService journalEntryService,
+        SmartPharmacySystem.Core.Interfaces.IUnitOfWork unitOfWork)
     {
         _context = context;
         _currentUserService = currentUserService;
+        _journalEntryService = journalEntryService;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ApiResponse<ShiftDto>> GetCurrentShiftAsync()
@@ -85,6 +94,26 @@ public class ShiftService : IShiftService
         };
 
         _context.UserShifts.Add(shift);
+        
+        // Ensure Drawer Account Exists
+        var user = await _context.Users.FindAsync(userId.Value);
+        var drawerCode = $"11101-{userId.Value}";
+        var drawerAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.Code == drawerCode);
+        if (drawerAccount == null)
+        {
+            var mainSafe = await _context.Accounts.FirstOrDefaultAsync(a => a.Code == "11101") ?? await _context.Accounts.FirstOrDefaultAsync();
+            drawerAccount = new Account
+            {
+                Code = drawerCode,
+                Name = $"درج الكاشير - {user?.FullName ?? user?.Username}",
+                Type = SmartPharmacySystem.Core.Enums.AccountType.Asset,
+                ParentId = mainSafe?.Id,
+                IsMainAccount = false,
+                IsActive = true
+            };
+            _context.Accounts.Add(drawerAccount);
+        }
+
         await _context.SaveChangesAsync();
 
         // Reload to get navigation properties
@@ -125,7 +154,58 @@ public class ShiftService : IShiftService
             shift.Notes = string.IsNullOrEmpty(shift.Notes) ? request.Notes : $"{shift.Notes}\n{request.Notes}";
         }
 
+        // Close all Approved Invoices in this shift
+        var shiftInvoices = await _context.SaleInvoices
+            .Where(i => i.UserShiftId == shift.Id && i.Status == Core.Enums.DocumentStatus.Approved)
+            .ToListAsync();
+        
+        foreach (var inv in shiftInvoices)
+        {
+            inv.Status = Core.Enums.DocumentStatus.Closed;
+        }
+
         await _context.SaveChangesAsync();
+
+        // ----------------------------------------------------
+        // إنشاء قيد يومية آلي لترحيل النقدية للصندوق الرئيسي
+        // ----------------------------------------------------
+        if (request.TransferToMainSafe && request.ActualClosingCash > 0)
+        {
+            var drawerCode = $"11101-{userId.Value}";
+            var drawerAccount = await _unitOfWork.Accounts.GetByCodeAsync(drawerCode);
+            var mainSafe = await _unitOfWork.Accounts.GetByCodeAsync("11101") ?? await _unitOfWork.Accounts.GetByCodeAsync("11100");
+
+            if (drawerAccount != null && mainSafe != null)
+            {
+                var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
+                {
+                    EntryDate = DateTime.UtcNow,
+                    VoucherNumber = $"SH-{shift.Id}",
+                    Description = $"ترحيل نقدية إغلاق وردية رقم {shift.Id} - كاشير: {shift.User?.FullName ?? shift.User?.Username}",
+                    Type = SmartPharmacySystem.Core.Enums.VoucherType.JournalEntry,
+                    Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>
+                    {
+                        new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                        {
+                            AccountId = mainSafe.Id,
+                            Debit = request.ActualClosingCash,
+                            Credit = 0,
+                            Description = "استلام نقدية الوردية"
+                        },
+                        new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
+                        {
+                            AccountId = drawerAccount.Id,
+                            Debit = 0,
+                            Credit = request.ActualClosingCash,
+                            Description = "ترحيل نقدية الوردية"
+                        }
+                    }
+                };
+                
+                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId.Value);
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId.Value);
+            }
+        }
 
         return ApiResponse<ShiftDto>.Succeeded(MapToDto(shift), "Success");
     }
@@ -160,7 +240,7 @@ public class ShiftService : IShiftService
 
         var sales = await _context.SaleInvoices
             .Include(s => s.Customer)
-            .Where(s => s.CreatedBy == userId && s.CreatedAt >= startTime && s.CreatedAt <= endTime && s.Status == Core.Enums.DocumentStatus.Approved)
+            .Where(s => s.CreatedBy == userId && s.CreatedAt >= startTime && s.CreatedAt <= endTime && (s.Status == Core.Enums.DocumentStatus.Approved || s.Status == Core.Enums.DocumentStatus.Closed))
             .Select(s => new ShiftInvoiceDto
             {
                 Id = s.Id,
@@ -188,7 +268,7 @@ public class ShiftService : IShiftService
 
         var returns = await _context.SalesReturns
             .Include(r => r.Customer)
-            .Where(r => r.CreatedBy == userId && r.CreatedAt >= startTime && r.CreatedAt <= endTime && r.Status == Core.Enums.DocumentStatus.Approved)
+            .Where(r => r.CreatedBy == userId && r.CreatedAt >= startTime && r.CreatedAt <= endTime && (r.Status == Core.Enums.DocumentStatus.Approved || r.Status == Core.Enums.DocumentStatus.Closed))
             .Select(r => new ShiftReturnDto
             {
                 Id = r.Id,
@@ -218,12 +298,12 @@ public class ShiftService : IShiftService
 
         // Sales (Cash = 1, Visa = 2, Credit = 3 assuming Core.Enums.PaymentMethod)
         var sales = await _context.SaleInvoices
-            .Where(s => s.CreatedBy == userId && s.CreatedAt >= startTime && s.CreatedAt <= endTime && s.Status == Core.Enums.DocumentStatus.Approved)
+            .Where(s => s.CreatedBy == userId && s.CreatedAt >= startTime && s.CreatedAt <= endTime && (s.Status == Core.Enums.DocumentStatus.Approved || s.Status == Core.Enums.DocumentStatus.Closed))
             .ToListAsync();
 
         var salesReturns = await _context.SalesReturns
             .Include(s => s.SaleInvoice)
-            .Where(s => s.CreatedBy == userId && s.CreatedAt >= startTime && s.CreatedAt <= endTime && s.Status == Core.Enums.DocumentStatus.Approved)
+            .Where(s => s.CreatedBy == userId && s.CreatedAt >= startTime && s.CreatedAt <= endTime && (s.Status == Core.Enums.DocumentStatus.Approved || s.Status == Core.Enums.DocumentStatus.Closed))
             .ToListAsync();
 
         var expenses = await _context.Expenses
@@ -250,7 +330,7 @@ public class ShiftService : IShiftService
         var totalCustomerReceiptsCash = customerReceipts.Sum(c => c.Amount);
         var totalSupplierPaymentsCash = supplierPayments.Sum(s => s.Amount);
 
-        var expectedCash = shift.OpeningCash + totalSalesCash + totalCustomerReceiptsCash - totalReturnsCash - totalExpensesCash - totalSupplierPaymentsCash;
+        var expectedCash = shift.OpeningCash + totalSalesCash + totalCustomerReceiptsCash - totalReturnsCash - totalExpensesCash;
 
         return new ShiftSummaryDto
         {

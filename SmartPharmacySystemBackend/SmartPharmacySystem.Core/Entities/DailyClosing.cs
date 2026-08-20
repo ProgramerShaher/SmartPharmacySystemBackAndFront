@@ -12,7 +12,6 @@ public class DailyClosing : BaseMultiBranchEntity
 
     [Required]
     public ClosingStatus Status { get; set; } = ClosingStatus.Draft;
-
     [Required]
     [Column(TypeName = "decimal(18,2)")]
     public decimal OpeningCash { get; set; }

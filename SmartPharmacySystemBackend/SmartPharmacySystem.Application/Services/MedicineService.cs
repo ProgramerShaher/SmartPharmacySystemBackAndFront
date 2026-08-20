@@ -5,6 +5,10 @@ using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
+using ClosedXML.Excel;
+using Microsoft.AspNetCore.Http;
+using ExcelDataReader;
+using System.Data;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -117,6 +121,27 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        public async Task DeleteBulkMedicinesAsync(IEnumerable<int> ids)
+        {
+            var errors = new List<string>();
+            foreach (var id in ids)
+            {
+                try
+                {
+                    await DeleteMedicineAsync(id);
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(ex.Message);
+                }
+            }
+
+            if (errors.Any())
+            {
+                throw new InvalidOperationException("لم يتم حذف بعض الأدوية:\n" + string.Join("\n", errors));
+            }
+        }
+
         public async Task<MedicineDto> GetMedicineByIdAsync(int id)
         {
             var medicine = await _unitOfWork.Medicines.GetByIdAsync(id)
@@ -214,6 +239,135 @@ namespace SmartPharmacySystem.Application.Services
         {
             var medicines = await _unitOfWork.Medicines.GetReorderReadyMedicinesAsync();
             return _mapper.Map<IEnumerable<MedicineDto>>(medicines);
+        }
+
+        public async Task<byte[]> GenerateExcelTemplateAsync()
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("الاسم التجاري (مطلوب),الاسم العلمي,الصنف,الكود,الباركود,سعر الشراء,سعر البيع,الملاحظات,الوحدة الأساسية");
+            sb.AppendLine("بنادول ادفانس,باراسيتامول,مسكنات ألم,MED001,123456789,10,15,مسكن عام,حبة");
+            
+            var preamble = System.Text.Encoding.UTF8.GetPreamble();
+            var data = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            return preamble.Concat(data).ToArray();
+        }
+
+        public async Task<ImportResultDto> ImportFromExcelAsync(IFormFile file)
+        {
+            var result = new ImportResultDto();
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+            using var stream = file.OpenReadStream();
+            using var reader = ExcelReaderFactory.CreateReader(stream);
+            var conf = new ExcelDataSetConfiguration
+            {
+                ConfigureDataTable = _ => new ExcelDataTableConfiguration
+                {
+                    UseHeaderRow = true
+                }
+            };
+            var dataSet = reader.AsDataSet(conf);
+            var dataTable = dataSet.Tables[0];
+
+            var allCategories = (await _unitOfWork.Categories.GetAllAsync()).ToList();
+            var allMedicines = (await _unitOfWork.Medicines.GetAllAsync()).ToList();
+
+            var usedBarcodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var m in allMedicines)
+            {
+                if (!string.IsNullOrWhiteSpace(m.DefaultBarcode)) usedBarcodes.Add(m.DefaultBarcode);
+            }
+
+            int rowNumber = 1;
+            foreach (DataRow row in dataTable.Rows)
+            {
+                rowNumber++;
+                result.TotalProcessed++;
+                try
+                {
+                    var name = row[0]?.ToString()?.Trim();
+                    if (string.IsNullOrEmpty(name))
+                    {
+                        result.FailedCount++;
+                        result.Errors.Add($"الصف {rowNumber}: الاسم التجاري مطلوب.");
+                        continue;
+                    }
+
+                    var categoryName = row.ItemArray.Length > 2 ? row[2]?.ToString()?.Trim() : null;
+                    int? categoryId = null;
+                    if (!string.IsNullOrEmpty(categoryName))
+                    {
+                        var category = allCategories.FirstOrDefault(c => c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+                        if (category == null)
+                        {
+                            category = new Category { Name = categoryName, Description = "مضاف تلقائياً", CreatedAt = DateTime.UtcNow };
+                            await _unitOfWork.Categories.AddAsync(category);
+                            await _unitOfWork.SaveChangesAsync();
+                            allCategories.Add(category);
+                        }
+                        categoryId = category.Id;
+                    }
+
+                    var internalCode = row.ItemArray.Length > 3 ? row[3]?.ToString()?.Trim() : null;
+                    var barcode = row.ItemArray.Length > 4 ? row[4]?.ToString()?.Trim() : null;
+                    if (string.IsNullOrWhiteSpace(barcode)) barcode = null;
+                    
+                    var existingMedicine = allMedicines.FirstOrDefault(m => 
+                        m.Name.Equals(name, StringComparison.OrdinalIgnoreCase) || 
+                        (barcode != null && m.DefaultBarcode == barcode));
+
+                    bool isNew = existingMedicine == null;
+
+                    if (isNew && barcode != null && usedBarcodes.Contains(barcode))
+                    {
+                        result.FailedCount++;
+                        result.Errors.Add($"الصف {rowNumber}: الباركود ({barcode}) مستخدم مسبقاً.");
+                        continue;
+                    }
+                    if (barcode != null) usedBarcodes.Add(barcode);
+
+                    var medicine = isNew ? new Medicine() : existingMedicine;
+
+                    medicine.Name = name;
+                    medicine.ScientificName = row.ItemArray.Length > 1 ? row[1]?.ToString()?.Trim() : null;
+                    medicine.CategoryId = categoryId;
+                    medicine.InternalCode = internalCode;
+                    medicine.DefaultBarcode = barcode;
+                    medicine.BaseUnitName = row.ItemArray.Length > 8 && !string.IsNullOrWhiteSpace(row[8]?.ToString()) ? row[8].ToString().Trim() : "حبة";
+                    
+                    if (row.ItemArray.Length > 5 && decimal.TryParse(row[5]?.ToString(), out var pPrice)) medicine.DefaultPurchasePrice = pPrice;
+                    if (row.ItemArray.Length > 6 && decimal.TryParse(row[6]?.ToString(), out var sPrice)) medicine.DefaultSalePrice = sPrice;
+                    medicine.Notes = row.ItemArray.Length > 7 ? row[7]?.ToString()?.Trim() : null;
+
+                    medicine.UpdatedAt = DateTime.UtcNow;
+                    medicine.Status = "Active";
+
+                    if (isNew)
+                    {
+                        medicine.CreatedAt = DateTime.UtcNow;
+                        medicine.IsDeleted = false;
+                        await _unitOfWork.Medicines.AddAsync(medicine);
+                        result.SuccessCount++;
+                    }
+                    else
+                    {
+                        await _unitOfWork.Medicines.UpdateAsync(medicine);
+                        result.UpdatedCount++;
+                    }
+                    
+                    await _unitOfWork.SaveChangesAsync();
+                }
+                catch (Exception ex)
+                {
+                    result.FailedCount++;
+                    result.Errors.Add($"الصف {rowNumber}: {ex.Message}");
+                    
+                    // Break out of the loop completely if EF Core tracker is corrupted, 
+                    // but since we pre-validate barcodes, DB errors should be minimal.
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -18,19 +18,22 @@ namespace SmartPharmacySystem.Application.Services
         private readonly ILogger<SupplierPaymentService> _logger;
         private readonly IFinancialService _financialService;
         private readonly IJournalEntryService _journalEntryService;
+        private readonly IClosingValidationService _closingValidationService;
 
         public SupplierPaymentService(
             IUnitOfWork unitOfWork,
             IMapper mapper,
             ILogger<SupplierPaymentService> logger,
             IFinancialService financialService,
-            IJournalEntryService journalEntryService)
+            IJournalEntryService journalEntryService,
+            IClosingValidationService closingValidationService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _financialService = financialService;
             _journalEntryService = journalEntryService;
+            _closingValidationService = closingValidationService;
         }
 
         public async Task<SupplierPaymentDto> CreateAsync(CreateSupplierPaymentDto dto, int userId)
@@ -45,6 +48,8 @@ namespace SmartPharmacySystem.Application.Services
 
             var supplier = await _unitOfWork.Suppliers.GetByIdAsync(dto.SupplierId)
                 ?? throw new KeyNotFoundException("المورد غير موجود.");
+
+            await _closingValidationService.ValidateDateIsUnlockedAsync(dto.PaymentDate);
 
             await _unitOfWork.BeginTransactionAsync();
             try

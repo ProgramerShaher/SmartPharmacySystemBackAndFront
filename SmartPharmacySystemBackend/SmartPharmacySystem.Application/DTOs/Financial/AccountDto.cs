@@ -18,6 +18,7 @@ public class AccountDto
     public decimal CurrentBalance { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public ICollection<AccountDto> Children { get; set; } = new List<AccountDto>();
 }
 
 /// <summary>

@@ -17,6 +17,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         public async Task<Category?> GetByIdAsync(int id)
         {
             return await _context.Categories
+                .Include(c => c.Medicines)
                 .Where(c => !c.IsDeleted && c.Id == id)
                 .FirstOrDefaultAsync();
         }
@@ -24,6 +25,7 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
         public async Task<IEnumerable<Category>> GetAllAsync()
         {
             return await _context.Categories
+                .Include(c => c.Medicines)
                 .Where(c => !c.IsDeleted)
                 .OrderBy(c => c.Name)
                 .ToListAsync();
@@ -54,10 +56,15 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             return await _context.Categories.AnyAsync(c => c.Id == id && !c.IsDeleted);
         }
 
+        public async Task<bool> HasMedicinesAsync(int categoryId)
+        {
+            return await _context.Medicines.AnyAsync(m => m.CategoryId == categoryId && !m.IsDeleted);
+        }
+
         public async Task<(IEnumerable<Category> Items, int TotalCount)> GetPagedAsync(
             string? search, int page, int pageSize, string sortBy, string sortDir)
         {
-            var query = _context.Categories.Where(c => !c.IsDeleted);
+            var query = _context.Categories.Include(c => c.Medicines).Where(c => !c.IsDeleted);
 
             // Apply search filter
             if (!string.IsNullOrWhiteSpace(search))

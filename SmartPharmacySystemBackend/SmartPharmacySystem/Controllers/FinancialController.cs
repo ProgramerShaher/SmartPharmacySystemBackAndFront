@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Financial;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
+using SmartPharmacySystem.Authorization;
 using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Controllers;
@@ -25,6 +26,7 @@ public class FinancialController : ControllerBase
     /// Get pharmacy balance
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("finance.treasury.view")]
     [HttpGet("balance")]
     public async Task<IActionResult> GetBalance()
     {
@@ -36,6 +38,7 @@ public class FinancialController : ControllerBase
     /// Get specific account by ID
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("finance.treasury.view")]
     [HttpGet("accounts/{id}")]
     public async Task<IActionResult> GetAccountById(int id)
     {
@@ -47,6 +50,7 @@ public class FinancialController : ControllerBase
     /// Get financial transactions
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("finance.treasury.view")]
     [HttpGet("transactions")]
     public async Task<IActionResult> GetTransactions([FromQuery] FinancialTransactionQueryDto query)
     {
@@ -58,6 +62,7 @@ public class FinancialController : ControllerBase
     /// Get financial report
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("report")]
     public async Task<IActionResult> GetReport([FromQuery] DateTime? start, [FromQuery] DateTime? end)
     {
@@ -69,12 +74,11 @@ public class FinancialController : ControllerBase
     /// Record manual financial adjustment
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("accounting.journal.create")]
     [HttpPost("manual-adjustment")]
     public async Task<IActionResult> RecordManualAdjustment([FromBody] CreateManualAdjustmentRequest request)
     {
-        // For now, assuming the user is Admin for this endpoint 
-        // In a real scenario, this would be checked via [Authorize(Roles = "Admin")]
-        var isAdmin = User.IsInRole("Admin") || true;
+        var isAdmin = User.IsInRole("Admin");
 
         var mainAccount = await _financialService.GetBalanceAsync(); // Get current branch's main account
         
@@ -91,6 +95,7 @@ public class FinancialController : ControllerBase
     /// Get general ledger report (Keshf El Hesab)
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("accounting.journal.view")]
     [HttpGet("general-ledger")]
     public async Task<IActionResult> GetGeneralLedger([FromQuery] DateTime? start, [FromQuery] DateTime? end, [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
     {
@@ -106,6 +111,7 @@ public class FinancialController : ControllerBase
     /// Get annual financial report (Aggregation by category)
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("annual-report/{year}")]
     public async Task<IActionResult> GetAnnualReport(int year)
     {
@@ -117,6 +123,7 @@ public class FinancialController : ControllerBase
     /// Get annual financial summary (Smart Aggregation for Management)
     /// </summary>
     /// <access>Admin</access>
+    [RequirePermission("accounting.statements.view")]
     [HttpGet("annual-summary/{year}")]
     public async Task<IActionResult> GetAnnualSummary(int year)
     {

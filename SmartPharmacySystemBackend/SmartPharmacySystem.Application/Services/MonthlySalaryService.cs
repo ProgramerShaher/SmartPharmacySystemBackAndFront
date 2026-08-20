@@ -1,6 +1,8 @@
 using AutoMapper;
+using SmartPharmacySystem.Application.DTOs.Financial;
 using SmartPharmacySystem.Application.DTOs.MonthlySalaries;
 using SmartPharmacySystem.Application.Interfaces;
+using SmartPharmacySystem.Application.IServices;
 using SmartPharmacySystem.Application.Wrappers;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Enums;
@@ -10,13 +12,24 @@ namespace SmartPharmacySystem.Application.Services;
 
 public class MonthlySalaryService : IMonthlySalaryService
 {
+    private const int DefaultPaidFromAccountId = 1101;
+    private const int DefaultSalaryExpenseAccountId = 5201;
+
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IJournalEntryService _journalEntryService;
+    private readonly IFinancialService _financialService;
 
-    public MonthlySalaryService(IUnitOfWork unitOfWork, IMapper mapper)
+    public MonthlySalaryService(
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IJournalEntryService journalEntryService,
+        IFinancialService financialService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _journalEntryService = journalEntryService;
+        _financialService = financialService;
     }
 
     public async Task<MonthlySalaryDto> GetByIdAsync(int id)
@@ -110,32 +123,125 @@ public class MonthlySalaryService : IMonthlySalaryService
         return await _unitOfWork.MonthlySalaries.ExistsAsync(employeeId, month, year);
     }
 
-    public async Task<MonthlySalaryDto> PaySalaryAsync(int id)
+    public async Task<MonthlySalaryDto> PaySalaryAsync(int id, PaySalaryDto dto, int? userId = null)
     {
         var salary = await _unitOfWork.MonthlySalaries.GetByIdAsync(id)
             ?? throw new KeyNotFoundException("الراتب غير موجود");
 
-        salary.PaymentStatus = PaymentStatus.Paid;
-        salary.PaidAt = DateTime.UtcNow;
-        await _unitOfWork.MonthlySalaries.UpdateAsync(salary);
-        await _unitOfWork.SaveChangesAsync();
-        return MapToDto(salary);
+        if (salary.PaymentStatus == PaymentStatus.Paid)
+            throw new InvalidOperationException("تم صرف هذا الراتب مسبقاً");
+
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            await PaySalaryInternalAsync(salary, dto, userId);
+            await _unitOfWork.CommitAsync();
+            return MapToDto(salary);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
     }
 
-    public async Task<int> PayAllAsync(int month, int year, int? branchId = null)
+    public async Task<int> PayAllAsync(int month, int year, int? branchId, PaySalaryDto dto, int? userId = null)
     {
         var salaries = (await _unitOfWork.MonthlySalaries.GetByMonthYearAsync(month, year, branchId))
             .Where(s => s.PaymentStatus == PaymentStatus.Pending)
             .ToList();
 
-        foreach (var salary in salaries)
+        await _unitOfWork.BeginTransactionAsync();
+        try
         {
-            salary.PaymentStatus = PaymentStatus.Paid;
-            salary.PaidAt = DateTime.UtcNow;
-            await _unitOfWork.MonthlySalaries.UpdateAsync(salary);
+            foreach (var salary in salaries)
+            {
+                await PaySalaryInternalAsync(salary, dto, userId, saveImmediately: false);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.CommitAsync();
+            return salaries.Count;
         }
-        await _unitOfWork.SaveChangesAsync();
-        return salaries.Count;
+        catch
+        {
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
+    }
+
+    private async Task PaySalaryInternalAsync(MonthlySalary salary, PaySalaryDto dto, int? userId, bool saveImmediately = true)
+    {
+        var paidFromAccountId = dto.PaidFromAccountId > 0 ? dto.PaidFromAccountId : DefaultPaidFromAccountId;
+        var salaryExpenseAccountId = dto.SalaryExpenseAccountId ?? DefaultSalaryExpenseAccountId;
+
+        var paidFromAccount = await _unitOfWork.Accounts.GetByIdAsync(paidFromAccountId)
+            ?? throw new KeyNotFoundException("حساب صرف الراتب غير موجود");
+
+        if (paidFromAccount.IsMainAccount || !paidFromAccount.IsActive)
+            throw new InvalidOperationException("يجب اختيار حساب صرف فرعي ونشط");
+
+        var salaryExpenseAccount = await _unitOfWork.Accounts.GetByIdAsync(salaryExpenseAccountId)
+            ?? await _unitOfWork.Accounts.GetByCodeAsync("52001")
+            ?? await _unitOfWork.Accounts.GetByCodeAsync("5201")
+            ?? throw new KeyNotFoundException("حساب مصروف الرواتب غير موجود");
+
+        if (salaryExpenseAccount.IsMainAccount || !salaryExpenseAccount.IsActive)
+            throw new InvalidOperationException("يجب اختيار حساب مصروف رواتب فرعي ونشط");
+
+        var amount = salary.NetSalary;
+        if (amount <= 0)
+            throw new InvalidOperationException("صافي الراتب يجب أن يكون أكبر من صفر قبل الصرف");
+
+        var employeeName = salary.Employee?.FullName ?? $"Employee #{salary.EmployeeId}";
+        var period = $"{salary.Month:D2}/{salary.Year}";
+
+        var journalEntry = new JournalEntryDto
+        {
+            EntryDate = DateTime.UtcNow,
+            VoucherNumber = $"SAL-{salary.Id}",
+            Description = $"صرف راتب {employeeName} عن شهر {period}",
+            Type = VoucherType.PaymentVoucher,
+            Lines = new List<JournalEntryLineDto>
+            {
+                new()
+                {
+                    AccountId = salaryExpenseAccount.Id,
+                    Debit = amount,
+                    Credit = 0,
+                    Description = $"إثبات مصروف راتب {employeeName}"
+                },
+                new()
+                {
+                    AccountId = paidFromAccount.Id,
+                    Debit = 0,
+                    Credit = amount,
+                    Description = $"صرف راتب {employeeName} من {paidFromAccount.Name}"
+                }
+            }
+        };
+
+        var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
+        await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
+
+        await _financialService.ProcessTransactionAsync(
+            accountId: paidFromAccount.Id,
+            amount: amount,
+            type: FinancialTransactionType.Expense,
+            referenceType: ReferenceType.MonthlySalary,
+            referenceId: salary.Id,
+            description: $"صرف راتب {employeeName} عن شهر {period}");
+
+        salary.PaymentStatus = PaymentStatus.Paid;
+        salary.PaidAt = DateTime.UtcNow;
+        salary.PaidFromAccountId = paidFromAccount.Id;
+        salary.SalaryExpenseAccountId = salaryExpenseAccount.Id;
+        salary.JournalEntryId = createdEntry.Id;
+
+        await _unitOfWork.MonthlySalaries.UpdateAsync(salary);
+
+        if (saveImmediately)
+            await _unitOfWork.SaveChangesAsync();
     }
 
     private MonthlySalaryDto MapToDto(MonthlySalary salary)

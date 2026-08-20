@@ -45,4 +45,10 @@ public class CreateSaleInvoiceDetailDto
     [Range(0.01, double.MaxValue, ErrorMessage = "سعر البيع يجب أن يكون أكبر من صفر")]
     public decimal SalePrice { get; set; }
 
+    /// <summary>
+    /// Discount percentage applied manually by cashier (0-100).
+    /// نسبة الخصم اليدوية المطبقة من قِبل الكاشير على هذا السطر.
+    /// </summary>
+    [Range(0, 100)]
+    public decimal DiscountPercentage { get; set; } = 0;
 }

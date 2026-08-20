@@ -11,7 +11,7 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task UpdateAsync(int id, UpdateSaleInvoiceDto dto);
         Task DeleteAsync(int id);
         Task<SaleInvoiceDto> GetByIdAsync(int id);
-        Task<IEnumerable<SaleInvoiceDto>> GetAllAsync();
+        Task<IEnumerable<SaleInvoiceDto>> GetAllAsync(bool includeClosed = false);
         Task ApproveAsync(int id, int userId);
         Task UnapproveSalesInvoiceAsync(int id);
         Task<IEnumerable<SaleInvoiceDto>> GetUnpaidByCustomerIdAsync(int customerId);

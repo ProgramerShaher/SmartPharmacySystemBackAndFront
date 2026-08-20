@@ -39,5 +39,6 @@ public enum VoucherType
     /// فاتورة مشتريات
     /// </summary>
     PurchaseInvoice = 7,
-    JournalVoucher = 8
+    JournalVoucher = 8,
+    ExpenseVoucher = 9
 }

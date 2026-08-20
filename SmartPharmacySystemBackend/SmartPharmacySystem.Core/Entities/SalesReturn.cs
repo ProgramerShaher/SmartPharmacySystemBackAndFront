@@ -97,4 +97,15 @@ public class SalesReturn : BaseMultiBranchEntity
     /// Collection of sales return details.
     /// </summary>
     public ICollection<SalesReturnDetail> SalesReturnDetails { get; set; }
+
+    /// <summary>
+    /// The ID of the cashier shift during which this return was processed.
+    /// </summary>
+    public int? UserShiftId { get; set; }
+
+    /// <summary>
+    /// Navigation property to the user shift.
+    /// </summary>
+    [ForeignKey("UserShiftId")]
+    public virtual UserShift? UserShift { get; set; }
 }

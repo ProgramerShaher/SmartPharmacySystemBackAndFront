@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.SalesInvoices;
 using SmartPharmacySystem.Application.Interfaces;
@@ -23,7 +24,11 @@ namespace SmartPharmacySystem.Application.Services
         IAlertService alertService,
         IBarcodeService barcodeService,
         ICurrentUserService currentUserService,
-        Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor) : ISaleInvoiceService
+        IWhatsAppNotificationService whatsappNotificationService,
+        Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
+        IServiceScopeFactory serviceScopeFactory,
+        IShiftService shiftService,
+        IClosingValidationService closingValidationService) : ISaleInvoiceService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
@@ -35,7 +40,11 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IAlertService _alertService = alertService;
         private readonly IBarcodeService _barcodeService = barcodeService;
         private readonly ICurrentUserService _currentUserService = currentUserService;
+        private readonly IWhatsAppNotificationService _whatsappNotificationService = whatsappNotificationService;
         private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+        private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
+        private readonly IShiftService _shiftService = shiftService;
+        private readonly IClosingValidationService _closingValidationService = closingValidationService;
 
         public async Task<SaleInvoiceDto> CreateAsync(CreateSaleInvoiceDto dto, int userId)
         {
@@ -48,10 +57,17 @@ namespace SmartPharmacySystem.Application.Services
             if (!dto.CustomerId.HasValue && dto.PaymentMethod == PaymentType.Credit)
                 throw new InvalidOperationException("لا يمكن البيع بالآجل إلا لعميل مسجل في النظام.");
 
+            var currentShiftResponse = await _shiftService.GetCurrentShiftAsync();
+            if (!currentShiftResponse.Success || currentShiftResponse.Data == null)
+            {
+                throw new InvalidOperationException("لا يمكنك إجراء مبيعات. يجب فتح وردية (صندوق) أولاً.");
+            }
+
             var entity = _mapper.Map<SaleInvoice>(dto);
             entity.CreatedAt = DateTime.UtcNow;
             entity.CreatedBy = userId;
             entity.Status = DocumentStatus.Draft;
+            entity.UserShiftId = currentShiftResponse.Data.Id;
 
             if (entity.InvoiceDate == default)
                 entity.InvoiceDate = DateTime.Today;
@@ -93,6 +109,8 @@ namespace SmartPharmacySystem.Application.Services
             {
                 throw new InvalidOperationException("لا يمكن تعديل فاتورة معتمدة أو ملغاة. التعديل مسموح فقط لحالة مسودة (Draft).");
             }
+
+            await _closingValidationService.ValidateDateIsUnlockedAsync(entity.InvoiceDate, entity.BranchId);
 
             await _unitOfWork.BeginTransactionAsync();
             try
@@ -143,19 +161,17 @@ namespace SmartPharmacySystem.Application.Services
             var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"فاتورة المبيعات برقم {id} غير موجودة");
 
+            await _closingValidationService.ValidateDateIsUnlockedAsync(invoice.InvoiceDate, invoice.BranchId);
+
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("الفاتورة بالفعل معتمدة أو ملغاة.");
 
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                // قاعدة عمل: الزبون الطيار يجب أن يدفع نقداً فقط
-                // Business Rule: Walk-in customers can only pay cash
                 if (!invoice.CustomerId.HasValue && invoice.PaymentMethod == PaymentType.Credit)
                     throw new InvalidOperationException("لا يمكن البيع بالآجل إلا لعميل مسجل في النظام.");
 
-                // التحقق من وجود اسم العميل للزبون الطيار
-                // Validate customer name for walk-in customers
                 if (!invoice.CustomerId.HasValue && string.IsNullOrWhiteSpace(invoice.CustomerName))
                     throw new InvalidOperationException("يجب إدخال اسم العميل للزبون الطيار.");
 
@@ -189,9 +205,6 @@ namespace SmartPharmacySystem.Application.Services
                 if (!currentBranchId.HasValue)
                     throw new InvalidOperationException("لا يمكن اعتماد الفاتورة بدون تحديد الفرع الحالي للمستخدم.");
 
-                // ✅ Fix: Use the already-tracked Batch instances loaded via invoice.SaleInvoiceDetails.ThenInclude(d => d.Batch)
-                // This avoids a double-load of batches (via GetByIdsAsync with Include(b => b.Medicine))
-                // which caused EF Core identity map conflicts: "Medicine cannot be tracked because another instance is already being tracked"
                 var batchDict = invoice.SaleInvoiceDetails
                     .Where(d => d.Batch != null)
                     .GroupBy(d => d.BatchId)
@@ -199,8 +212,6 @@ namespace SmartPharmacySystem.Application.Services
 
                 var trackedBatches = batchDict.Values.ToList();
 
-                // Validate branch ownership directly on the MedicineBatch
-                // (Using PurchaseInvoice.BranchId is wrong because of Stock Transfers between branches)
                 foreach (var batch in trackedBatches)
                 {
                     if (batch.BranchId != batch.BranchId)
@@ -209,7 +220,6 @@ namespace SmartPharmacySystem.Application.Services
                     }
                 }
 
-                // Validate all batches first
                 foreach (var detail in invoice.SaleInvoiceDetails)
                 {
                     if (!batchDict.TryGetValue(detail.BatchId, out var batch))
@@ -237,7 +247,6 @@ namespace SmartPharmacySystem.Application.Services
                     }
                 }
 
-                // ✅ Optimized: Update all batches in memory, then save once
                 foreach (var detail in invoice.SaleInvoiceDetails)
                 {
                     var batch = batchDict[detail.BatchId];
@@ -245,26 +254,23 @@ namespace SmartPharmacySystem.Application.Services
                     batch.SoldQuantity += detail.Quantity;
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
 
-                    // Initialize remaining quantity to return
                     detail.RemainingQtyToReturn = detail.Quantity;
 
-                    // Deduct from InventoryStock
                     await DecreaseInventoryStockAsync(invoice.BranchId, detail.MedicineId, batch.CompanyBatchNumber, detail.Quantity);
                 }
 
-                // ==================== المحرك المحاسبي الاحترافي ====================
                 var journalEntry = new JournalEntryDto
                 {
-                    EntryDate = invoice.InvoiceDate,
+                    EntryDate = DateTime.UtcNow,
                     VoucherNumber = invoice.SaleInvoiceNumber,
                     Description = $"قيد مبيعات آلي - فاتورة رقم: {invoice.SaleInvoiceNumber} - العميل: {invoice.CustomerName ?? "زبون نقدي"}",
                     Type = VoucherType.SalesInvoice,
                     Lines = new List<JournalEntryLineDto>()
                 };
 
-                // Fetch required account IDs by code dynamically with fallback for development/testing
                 var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
-                var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync("11101") 
+                var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync($"11101-{userId}")
+                                  ?? await _unitOfWork.Accounts.GetByCodeAsync("11101") 
                                   ?? allAccounts.FirstOrDefault(a => a.Name.Contains("صندوق") || a.Name.Contains("نقد")) 
                                   ?? allAccounts.FirstOrDefault() 
                                   ?? throw new InvalidOperationException("حساب الصندوق غير موجود، يرجى تهيئة دليل الحسابات أولاً.");
@@ -280,12 +286,11 @@ namespace SmartPharmacySystem.Application.Services
                                           ?? allAccounts.FirstOrDefault() 
                                           ?? throw new InvalidOperationException("حساب إيرادات المبيعات غير موجود");
                 
-                // 1. الطرف المدين (من حـ/)
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = cashAccount.Id, // الصندوق الرئيسي
+                        AccountId = cashAccount.Id,
                         Debit = invoice.TotalAmount,
                         Credit = 0,
                         Description = $"تحصيل مبيعات نقدية - فاتورة {invoice.SaleInvoiceNumber}"
@@ -296,7 +301,7 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id, // ذمم العملاء
+                        AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id,
                         Debit = invoice.TotalAmount,
                         Credit = 0,
                         Description = $"مبيعات آجلة - فاتورة {invoice.SaleInvoiceNumber}"
@@ -305,16 +310,30 @@ namespace SmartPharmacySystem.Application.Services
                     await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, invoice.TotalAmount);
                 }
 
-                // 2. الطرف الدائن (إلى حـ/ المبيعات)
+                if (invoice.TotalDiscount > 0)
+                {
+                    var discountAccount = await _unitOfWork.Accounts.GetByCodeAsync("41002")
+                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("خصم مسموح"))
+                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("خصومات"))
+                                          ?? salesRevenueAccount;
+
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = discountAccount.Id,
+                        Debit = invoice.TotalDiscount,
+                        Credit = 0,
+                        Description = $"خصم مسموح به - فاتورة {invoice.SaleInvoiceNumber}"
+                    });
+                }
+
                 journalEntry.Lines.Add(new JournalEntryLineDto
                 {
-                    AccountId = salesRevenueAccount.Id, // إيرادات المبيعات
+                    AccountId = salesRevenueAccount.Id,
                     Debit = 0,
-                    Credit = invoice.TotalAmount,
+                    Credit = invoice.TotalAmount + invoice.TotalDiscount, // Gross Revenue
                     Description = $"إيراد مبيعات فاتورة {invoice.SaleInvoiceNumber}"
                 });
 
-                // 3. قيد التكلفة (لتتبع الربحية الدقيقة)
                 if (invoice.TotalCost > 0)
                 {
                     var cogsAccount = await _unitOfWork.Accounts.GetByCodeAsync("51001") 
@@ -329,34 +348,30 @@ namespace SmartPharmacySystem.Application.Services
                                            ?? allAccounts.FirstOrDefault()
                                            ?? throw new InvalidOperationException("حساب المخزون غير موجود");
 
-                    // من حـ/ تكلفة المشتريات
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = cogsAccount.Id, // تكلفة المشتريات
+                        AccountId = cogsAccount.Id,
                         Debit = invoice.TotalCost,
                         Credit = 0,
                         Description = $"تكلفة المبيعات - فاتورة {invoice.SaleInvoiceNumber}"
                     });
 
-                    // إلى حـ/ المخزون
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = inventoryAccount.Id, // مخزون الصيدلية
+                        AccountId = inventoryAccount.Id,
                         Debit = 0,
                         Credit = invoice.TotalCost,
                         Description = $"نقص المخزون - فاتورة {invoice.SaleInvoiceNumber}"
                     });
                 }
 
-                // حفظ وترحيل القيد
                 var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
-                await _journalEntryService.ApproveAsync(createdEntry.Id, userId); // ترحيل مباشر وتحديث الأرصدة
+                await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
 
-                // تحديث رصيد الصندوق المباشر إذا كان البيع نقداً
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
                     await _financialService.ProcessTransactionAsync(
-                        accountId: 1, // Will be dynamically mapped to branch main account in FinancialService
+                        accountId: 1,
                         amount: invoice.TotalAmount,
                         type: FinancialTransactionType.Income,
                         referenceType: ReferenceType.SaleInvoice,
@@ -371,10 +386,263 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
 
-                // ✅ Optimized: Move alerts to background (fire and forget)
-                // This prevents blocking the main transaction
+                if (invoice.CustomerId.HasValue)
+                {
+                    int wCustomerId = invoice.CustomerId.Value;
+                    int wInvoiceId = id;
+                    string wInvoiceNumber = invoice.SaleInvoiceNumber ?? $"INV-{id}";
+                    decimal wTotalAmount = invoice.TotalAmount;
+                    DateTime wInvoiceDate = invoice.InvoiceDate;
+                    string wCustomerName = invoice.CustomerName ?? "عميلنا العزيز";
+                    var wPaymentMethod = invoice.PaymentMethod;
+
+                    _logger.LogInformation("WhatsApp INVOICE: Queuing notification for CustomerId={CustomerId}, InvoiceId={InvoiceId}, Amount={Amount}, Payment={Payment}",
+                        wCustomerId, wInvoiceId, wTotalAmount, wPaymentMethod);
+
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            _logger.LogInformation("WhatsApp INVOICE: Background task started for InvoiceId={InvoiceId}", wInvoiceId);
+
+                            using (var scope = _serviceScopeFactory.CreateScope())
+                            {
+                                var scopedUoW = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+                                var scopedWhatsApp = scope.ServiceProvider.GetRequiredService<IWhatsAppNotificationService>();
+                                var scopedConfig = scope.ServiceProvider.GetService<Microsoft.Extensions.Configuration.IConfiguration>();
+                                bool includeItems = true;
+                                try
+                                {
+                                    var includeSetting = scopedConfig?["WhatsAppSettings:IncludeItemsInMessage"];
+                                    if (!string.IsNullOrWhiteSpace(includeSetting) && bool.TryParse(includeSetting, out var parsed))
+                                        includeItems = parsed;
+                                    _logger.LogInformation("WhatsApp INVOICE: IncludeItemsInMessage setting = {Val}", includeItems);
+                                }
+                                catch { includeItems = true; }
+
+                                var cust = await scopedUoW.Customers.GetByIdAsync(wCustomerId);
+                                if (cust == null)
+                                {
+                                    _logger.LogWarning("WhatsApp INVOICE: Customer {CustomerId} not found in scoped context", wCustomerId);
+                                    return;
+                                }
+                                if (string.IsNullOrWhiteSpace(cust.PhoneNumber))
+                                {
+                                    _logger.LogWarning("WhatsApp INVOICE: Customer {CustomerId} has no phone number", wCustomerId);
+                                    return;
+                                }
+
+                                string safeCustomerName = string.IsNullOrWhiteSpace(cust.Name) ? wCustomerName : cust.Name;
+                                safeCustomerName = System.Text.RegularExpressions.Regex.Replace(safeCustomerName, @"[\r\n\t\u202A-\u202E\u200E\u200F]", " ").Trim();
+                                if (safeCustomerName.Length > 60) safeCustomerName = safeCustomerName.Substring(0, 60);
+
+                                decimal safeBalance = cust.Balance;
+                                string safePhone = cust.PhoneNumber!;
+
+                                _logger.LogInformation("WhatsApp INVOICE: Customer found - Name={Name}, Phone={Phone}, Balance={Balance}",
+                                    safeCustomerName, safePhone, safeBalance);
+
+                                string itemsBlock = string.Empty;
+                                int itemsCount = 0;
+
+                                if (includeItems)
+                                {
+                                    try
+                                    {
+                                        _logger.LogInformation("WhatsApp INVOICE: Loading invoice details for items list...");
+                                        var invoiceForMsg = await scopedUoW.SaleInvoices.GetByIdForDisplayAsync(wInvoiceId);
+                                        var sb = new System.Text.StringBuilder();
+
+                                        if (invoiceForMsg != null && invoiceForMsg.SaleInvoiceDetails != null && invoiceForMsg.SaleInvoiceDetails.Count > 0)
+                                        {
+                                            var details = invoiceForMsg.SaleInvoiceDetails
+                                                .Where(x => x != null)
+                                                .OrderBy(x => x.Id)
+                                                .Take(20)
+                                                .ToList();
+
+                                            itemsCount = invoiceForMsg.SaleInvoiceDetails.Count;
+                                            sb.AppendLine();
+                                            sb.AppendLine("--- تفاصيل الأصناف ---");
+                                            int idx = 1;
+                                            foreach (var d in details)
+                                            {
+                                                try
+                                                {
+                                                    string medName = $"صنف #{d.MedicineId}";
+                                                    try
+                                                    {
+                                                        if (d.Medicine != null && !string.IsNullOrWhiteSpace(d.Medicine.Name))
+                                                        {
+                                                            medName = d.Medicine.Name;
+                                                            medName = System.Text.RegularExpressions.Regex.Replace(medName, @"[\r\n\t\u202A-\u202E\u200E\u200F]", " ").Trim();
+                                                            if (medName.Length > 50) medName = medName.Substring(0, 50);
+                                                        }
+                                                    }
+                                                    catch { }
+
+                                                    try
+                                                    {
+                                                        if (d.Medicine != null && !string.IsNullOrWhiteSpace(d.Medicine.ScientificName) && d.Medicine.ScientificName != medName)
+                                                        {
+                                                            string sciName = d.Medicine.ScientificName!;
+                                                            sciName = System.Text.RegularExpressions.Regex.Replace(sciName, @"[\r\n\t\u202A-\u202E\u200E\u200F]", " ").Trim();
+                                                            if (sciName.Length > 40) sciName = sciName.Substring(0, 40);
+                                                            medName = $"{medName} ({sciName})";
+                                                        }
+                                                    }
+                                                    catch { }
+
+                                                    string unitName = "حبة";
+                                                    try
+                                                    {
+                                                        if (d.SaleUnit != null && !string.IsNullOrWhiteSpace(d.SaleUnit.Name))
+                                                        {
+                                                            unitName = d.SaleUnit.Name;
+                                                        }
+                                                        else if (d.Medicine != null && !string.IsNullOrWhiteSpace(d.Medicine.BaseUnitName))
+                                                        {
+                                                            unitName = d.Medicine.BaseUnitName;
+                                                        }
+                                                        unitName = System.Text.RegularExpressions.Regex.Replace(unitName, @"[\r\n\t]", " ").Trim();
+                                                        if (unitName.Length > 15) unitName = unitName.Substring(0, 15);
+                                                    }
+                                                    catch { unitName = "حبة"; }
+
+                                                    int qtyToShow = d.QuantityInSaleUnit > 0 ? d.QuantityInSaleUnit : d.Quantity;
+                                                    if (qtyToShow < 0) qtyToShow = 0;
+
+                                                    decimal lineTotal = d.TotalLineAmount;
+                                                    if (lineTotal < 0) lineTotal = 0;
+
+                                                    if (sb.Length > 3500)
+                                                    {
+                                                        sb.AppendLine($"... (تم اقتطاع باقي الأصناف)");
+                                                        break;
+                                                    }
+
+                                                    sb.AppendLine($"{idx}. {medName} × {qtyToShow} {unitName} = {lineTotal:N0} ريال يمني");
+                                                    idx++;
+                                                }
+                                                catch (Exception itemEx)
+                                                {
+                                                    _logger.LogWarning(itemEx, "WhatsApp INVOICE: Skipping bad item line #{ItemIdx}", idx);
+                                                    continue;
+                                                }
+                                            }
+                                            if (itemsCount > 20)
+                                                sb.AppendLine($"... (و{itemsCount - 20} صنفاً آخر - إجمالي {itemsCount})");
+                                            sb.AppendLine("------------------------");
+                                        }
+                                        else
+                                        {
+                                            _logger.LogWarning("WhatsApp INVOICE: No details found (invoiceForMsg={InvNull}, Details={DetailsNull}, Count={Cnt})",
+                                                invoiceForMsg == null, invoiceForMsg?.SaleInvoiceDetails == null, invoiceForMsg?.SaleInvoiceDetails?.Count ?? 0);
+                                        }
+                                        itemsBlock = sb.ToString();
+                                        if (itemsBlock.Length > 4000)
+                                            itemsBlock = itemsBlock.Substring(0, 4000) + "\n... (تم اقتطاع النص)";
+                                        _logger.LogInformation("WhatsApp INVOICE: Items block built OK. ItemsCount={Cnt}, BlockLen={Len}", itemsCount, itemsBlock.Length);
+                                    }
+                                    catch (Exception itemsEx)
+                                    {
+                                        _logger.LogWarning(itemsEx, "⚠️  WhatsApp INVOICE: FAILED to build items list (continuing with simple message). Error: {Msg}", itemsEx.Message);
+                                        itemsBlock = string.Empty;
+                                    }
+                                }
+                                else
+                                {
+                                    _logger.LogInformation("WhatsApp INVOICE: Items disabled via IncludeItemsInMessage=false");
+                                }
+
+                                string msg;
+                                string simpleMsg;
+
+                                if (wPaymentMethod == PaymentType.Credit)
+                                {
+                                    msg = $"مرحباً {safeCustomerName}،\n" +
+                                          $"تم تقييد مبلغ {wTotalAmount:N0} ريال يمني على حسابك بموجب فاتورة مبيعات آجلة رقم {wInvoiceNumber} بتاريخ {wInvoiceDate:yyyy-MM-dd}.\n" +
+                                          $"{itemsBlock}" +
+                                          $"إجمالي المبلغ المقيد عليك: {safeBalance:N0} ريال يمني.\n" +
+                                          $"نتمنى لكم دوام الصحة والعافية.";
+
+                                    simpleMsg = $"مرحباً {safeCustomerName}، تم تقييد مبلغ {wTotalAmount:N0} ريال يمني. فاتورة رقم {wInvoiceNumber}. إجمالي المبلغ المقيد عليك: {safeBalance:N0} ريال يمني. شكراً.";
+                                }
+                                else
+                                {
+                                    msg = $"مرحباً {safeCustomerName}،\n" +
+                                          $"شكراً لزيارتك لصيدليتنا. تفاصيل فاتورة مبيعات نقدية رقم {wInvoiceNumber} بتاريخ {wInvoiceDate:yyyy-MM-dd}:\n" +
+                                          $"الإجمالي المندفع: {wTotalAmount:N0} ريال يمني.\n" +
+                                          $"{itemsBlock}" +
+                                          $"نتمنى لكم دوام الصحة والعافية.";
+
+                                    simpleMsg = $"مرحباً {safeCustomerName}، تم إصدار فاتورة مبيعات نقدية رقم {wInvoiceNumber} بقيمة {wTotalAmount:N0} ريال يمني. شكراً لزيارتكم.";
+                                }
+
+                                if (msg.Length > 5000)
+                                {
+                                    _logger.LogWarning("WhatsApp INVOICE: Message too long ({Len}), trimming items and retrying with simple message...", msg.Length);
+                                    if (wPaymentMethod == PaymentType.Credit)
+                                    {
+                                        msg = $"مرحباً {safeCustomerName}،\n" +
+                                              $"تم تقييد مبلغ {wTotalAmount:N0} ريال يمني على حسابك بموجب فاتورة مبيعات آجلة رقم {wInvoiceNumber} بتاريخ {wInvoiceDate:yyyy-MM-dd}.\n" +
+                                              $"عدد الأصناف: {itemsCount}\n" +
+                                              $"إجمالي المبلغ المقيد عليك: {safeBalance:N0} ريال يمني.\n" +
+                                              $"نتمنى لكم دوام الصحة والعافية.";
+                                    }
+                                    else
+                                    {
+                                        msg = $"مرحباً {safeCustomerName}،\n" +
+                                              $"تفاصيل فاتورة مبيعات نقدية رقم {wInvoiceNumber} بتاريخ {wInvoiceDate:yyyy-MM-dd}:\n" +
+                                              $"الإجمالي: {wTotalAmount:N0} ريال يمني.\n" +
+                                              $"عدد الأصناف: {itemsCount}\n" +
+                                              $"نتمنى لكم دوام الصحة والعافية.";
+                                    }
+                                }
+
+                                _logger.LogInformation("WhatsApp INVOICE: Message prepared. Items={Items}, Length={Len}. Sending now...",
+                                    itemsCount, msg.Length);
+
+                                bool sent = false;
+                                try
+                                {
+                                    sent = await scopedWhatsApp.SendMessageAsync(safePhone, msg);
+                                }
+                                catch (Exception sendEx)
+                                {
+                                    _logger.LogError(sendEx, "WhatsApp INVOICE: SendMessageAsync THREW exception, trying SIMPLE fallback message...");
+                                    try
+                                    {
+                                        sent = await scopedWhatsApp.SendMessageAsync(safePhone, simpleMsg);
+                                    }
+                                    catch (Exception fallbackEx)
+                                    {
+                                        _logger.LogCritical(fallbackEx, "WhatsApp INVOICE: EVEN FALLBACK FAILED for InvoiceId={InvoiceId}", wInvoiceId);
+                                        sent = false;
+                                    }
+                                }
+
+                                if (sent)
+                                    _logger.LogInformation("✅ WhatsApp INVOICE: Message sent successfully to {Phone} for InvoiceId={InvoiceId}", safePhone, wInvoiceId);
+                                else
+                                    _logger.LogError("❌ WhatsApp INVOICE: SendMessageAsync returned FALSE for InvoiceId={InvoiceId}, Phone={Phone}", wInvoiceId, safePhone);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "WhatsApp INVOICE: FATAL EXCEPTION in background task for InvoiceId={InvoiceId}", wInvoiceId);
+                        }
+                    }).ContinueWith(t =>
+                    {
+                        if (t.IsFaulted && t.Exception != null)
+                        {
+                            _logger.LogCritical(t.Exception, "FATAL GUARD (Invoice WhatsApp): UNHANDLED background task exception OBSERVED. API process is protected.");
+                        }
+                    }, TaskContinuationOptions.OnlyOnFaulted);
+                }
+
                 var medicineIds = invoice.SaleInvoiceDetails.Select(d => d.MedicineId).Distinct().ToList();
-                _ = Task.Run(async () =>
+                Task.Run(async () =>
                 {
                     try
                     {
@@ -387,7 +655,13 @@ namespace SmartPharmacySystem.Application.Services
                     {
                         _logger.LogError(ex, "Error syncing alerts for invoice {InvoiceId}", id);
                     }
-                });
+                }).ContinueWith(t =>
+                {
+                    if (t.IsFaulted && t.Exception != null)
+                    {
+                        _logger.LogCritical(t.Exception, "FATAL GUARD (Alerts Sync): UNHANDLED background task exception OBSERVED. API process is protected.");
+                    }
+                }, TaskContinuationOptions.OnlyOnFaulted);
             }
             catch (Exception ex)
             {
@@ -401,6 +675,8 @@ namespace SmartPharmacySystem.Application.Services
         {
             var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"فاتورة المبيعات برقم {id} غير موجودة");
+
+            await _closingValidationService.ValidateDateIsUnlockedAsync(invoice.InvoiceDate, invoice.BranchId);
 
             if (invoice.Status != DocumentStatus.Approved)
                 throw new InvalidOperationException("الفاتورة ليست في حالة اعتماد لتتمكن من إلغاء الاعتماد.");
@@ -559,9 +835,13 @@ namespace SmartPharmacySystem.Application.Services
             return _mapper.Map<SaleInvoiceDto>(entity);
         }
 
-        public async Task<IEnumerable<SaleInvoiceDto>> GetAllAsync()
+        public async Task<IEnumerable<SaleInvoiceDto>> GetAllAsync(bool includeClosed = false)
         {
             var entities = await _unitOfWork.SaleInvoices.GetAllAsync();
+            if (!includeClosed)
+            {
+                entities = entities.Where(e => e.Status != DocumentStatus.Closed).ToList();
+            }
             return _mapper.Map<IEnumerable<SaleInvoiceDto>>(entities);
         }
 
@@ -683,12 +963,18 @@ namespace SmartPharmacySystem.Application.Services
             }
 
             invoice.TotalAmount = invoice.SaleInvoiceDetails.Sum(d => d.TotalLineAmount);
+            invoice.TotalDiscount = invoice.SaleInvoiceDetails.Sum(d => d.DiscountAmount);
             invoice.TotalCost = invoice.SaleInvoiceDetails.Sum(d => d.TotalCost);
             invoice.TotalProfit = invoice.SaleInvoiceDetails.Sum(d => d.Profit);
         }
 
         private SaleInvoiceDetail CreateSplitDetail(SaleInvoiceDetail template, MedicineBatch batch, int quantity, int conversionFactor)
         {
+            var grossLineAmount = (quantity / (decimal)conversionFactor) * template.SalePrice;
+            var discountPercentage = template.DiscountPercentage;
+            var discountAmount = Math.Round(grossLineAmount * (discountPercentage / 100m), 2);
+            var netLineAmount = grossLineAmount - discountAmount;
+
             return new SaleInvoiceDetail
             {
                 MedicineId = template.MedicineId,
@@ -697,10 +983,12 @@ namespace SmartPharmacySystem.Application.Services
                 QuantityInSaleUnit = quantity / conversionFactor, // integer division, might be 0 for partials
                 SaleUnitId = template.SaleUnitId,
                 SalePrice = template.SalePrice,
+                DiscountPercentage = discountPercentage,
+                DiscountAmount = discountAmount,
                 UnitCost = batch.UnitPurchasePrice,
                 TotalCost = quantity * batch.UnitPurchasePrice,
-                TotalLineAmount = (quantity / (decimal)conversionFactor) * template.SalePrice, // calculate amount correctly if partial
-                Profit = ((quantity / (decimal)conversionFactor) * template.SalePrice) - (quantity * batch.UnitPurchasePrice)
+                TotalLineAmount = netLineAmount, // Net amount after discount
+                Profit = netLineAmount - (quantity * batch.UnitPurchasePrice) // Profit based on net amount
             };
         }
 

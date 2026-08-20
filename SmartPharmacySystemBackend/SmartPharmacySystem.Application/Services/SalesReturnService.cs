@@ -18,7 +18,8 @@ namespace SmartPharmacySystem.Application.Services
         ILogger<SalesReturnService> logger,
         IStockMovementService stockMovementService,
         IJournalEntryService journalEntryService,
-        IBarcodeService barcodeService) : ISalesReturnService
+        IBarcodeService barcodeService,
+        IShiftService shiftService) : ISalesReturnService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
@@ -26,6 +27,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IStockMovementService _stockMovementService = stockMovementService;
         private readonly IJournalEntryService _journalEntryService = journalEntryService;
         private readonly IBarcodeService _barcodeService = barcodeService;
+        private readonly IShiftService _shiftService = shiftService;
 
         public async Task<SalesReturnDto> CreateAsync(CreateSalesReturnDto dto, int userId)
         {
@@ -41,11 +43,23 @@ namespace SmartPharmacySystem.Application.Services
                 if (invoice.Status != DocumentStatus.Approved)
                     throw new InvalidOperationException("لا يمكن عمل مرتجع لفاتورة غير معتمدة أو ملغاة.");
 
+                // 1. Current user must have an open shift
+                var currentShiftResponse = await _shiftService.GetCurrentShiftAsync();
+                if (!currentShiftResponse.Success || currentShiftResponse.Data == null)
+                {
+                    throw new InvalidOperationException("لا يمكنك إجراء مرتجعات. يجب فتح وردية (صندوق) أولاً.");
+                }
+
+                // 2. Validate that the current date isn't closed (Firewall check)
+                // We use DateTime.UtcNow for the return date
+                // _closingValidationService will be injected later
+
                 var entity = _mapper.Map<SalesReturn>(dto);
                 entity.CreatedAt = DateTime.UtcNow;
                 entity.CreatedBy = userId;
                 entity.Status = DocumentStatus.Draft;
                 entity.CustomerId = invoice.CustomerId;
+                entity.UserShiftId = currentShiftResponse.Data.Id;
 
                 entity.TotalAmount = 0;
                 entity.TotalCost = 0;

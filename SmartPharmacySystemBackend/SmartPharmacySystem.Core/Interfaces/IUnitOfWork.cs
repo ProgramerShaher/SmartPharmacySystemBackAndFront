@@ -52,11 +52,17 @@ public interface IUnitOfWork
     IWarehouseRepository Warehouses { get; }
     IBranchRepository Branches { get; }
     IEmployeeBranchAssignmentRepository EmployeeBranchAssignments { get; }
+    IPricelistRepository Pricelists { get; }
+
 
     // ===== RBAC: Roles, Permissions, Audit =====
     IPermissionRepository Permissions { get; }
     IUserPermissionOverrideRepository UserPermissionOverrides { get; }
     IAuditLogRepository AuditLogs { get; }
+    
+    // ===== Shifts & Periods =====
+    IUserShiftRepository UserShifts { get; }
+    IFinancialPeriodRepository FinancialPeriods { get; }
 
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();

@@ -4,8 +4,13 @@ using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
 using SmartPharmacySystem.Core.Enums;
 
+using SmartPharmacySystem.Authorization;
+using Microsoft.AspNetCore.Authorization;
+
 namespace SmartPharmacySystem.Controllers;
 
+[Authorize]
+[RequirePermission("finance.inter_branch.settle")]
 [ApiController]
 [Route("api/[controller]")]
 public class InterBranchSettlementsController : ControllerBase

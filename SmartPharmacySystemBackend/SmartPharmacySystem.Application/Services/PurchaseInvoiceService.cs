@@ -25,6 +25,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IBarcodeService _barcodeService;
         private readonly ICurrentUserService _currentUserService;
         private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
+        private readonly IClosingValidationService _closingValidationService;
 
         public PurchaseInvoiceService(
             IUnitOfWork unitOfWork,
@@ -37,7 +38,8 @@ namespace SmartPharmacySystem.Application.Services
             IAlertService alertService,
             IBarcodeService barcodeService,
             ICurrentUserService currentUserService,
-            Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
+            Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
+            IClosingValidationService closingValidationService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -50,6 +52,7 @@ namespace SmartPharmacySystem.Application.Services
             _barcodeService = barcodeService;
             _currentUserService = currentUserService;
             _httpContextAccessor = httpContextAccessor;
+            _closingValidationService = closingValidationService;
         }
 
         public async Task<PurchaseInvoiceDto> CreateAsync(CreatePurchaseInvoiceDto dto, int userId)
@@ -154,6 +157,8 @@ namespace SmartPharmacySystem.Application.Services
             var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id)
                  ?? throw new KeyNotFoundException($"فاتورة الشراء برقم {id} غير موجودة");
 
+            await _closingValidationService.ValidateDateIsUnlockedAsync(invoice.PurchaseDate, invoice.BranchId);
+
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("لا يمكن تعديل فاتورة تم اعتمادها أو إلغاؤها.");
 
@@ -217,6 +222,8 @@ namespace SmartPharmacySystem.Application.Services
         {
             var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"فاتورة الشراء برقم {id} غير موجودة");
+
+            await _closingValidationService.ValidateDateIsUnlockedAsync(invoice.PurchaseDate, invoice.BranchId);
 
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("الفاتورة يجب أن تكون مسودة للاعتماد.");
@@ -371,6 +378,8 @@ namespace SmartPharmacySystem.Application.Services
             var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"فاتورة الشراء برقم {id} غير موجودة");
 
+            await _closingValidationService.ValidateDateIsUnlockedAsync(invoice.PurchaseDate, invoice.BranchId);
+
             if (invoice.Status == DocumentStatus.Cancelled)
                 throw new InvalidOperationException("الفاتورة ملغاة بالفعل.");
 
@@ -450,6 +459,8 @@ namespace SmartPharmacySystem.Application.Services
         {
             var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"فاتورة الشراء برقم {id} غير موجودة");
+
+            await _closingValidationService.ValidateDateIsUnlockedAsync(invoice.PurchaseDate, invoice.BranchId);
 
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("لا يمكن حذف فاتورة معتمدة أو ملغاة.");

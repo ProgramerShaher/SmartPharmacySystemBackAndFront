@@ -4,6 +4,7 @@ using SmartPharmacySystem.Application.DTOs.Medicine;
 using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.Wrappers;
+using Microsoft.AspNetCore.Http;
 
 namespace SmartPharmacySystem.Controllers
 {
@@ -112,7 +113,29 @@ namespace SmartPharmacySystem.Controllers
                     return BadRequest(ApiResponse<object>.Failed("Invalid medicine ID provided"));
 
                 await _medicineService.DeleteMedicineAsync(id);
-                return Ok(ApiResponse<object>.Succeeded(null, "Medicine deleted successfully"));
+                return Ok(ApiResponse<object>.Succeeded(null, "Medicine deleted or marked as inactive successfully"));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponse<object>.Failed(ex.Message));
+            }
+        }
+
+        /// <summary>
+        /// Delete multiple medicines
+        /// </summary>
+        /// <access>Admin</access>
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("bulk")]
+        public async Task<IActionResult> DeleteBulk([FromBody] IEnumerable<int> ids)
+        {
+            try
+            {
+                if (ids == null || !ids.Any())
+                    return BadRequest(ApiResponse<object>.Failed("No IDs provided", 400));
+
+                await _medicineService.DeleteBulkMedicinesAsync(ids);
+                return Ok(ApiResponse<object>.Succeeded(null, "Medicines deleted successfully"));
             }
             catch (InvalidOperationException ex)
             {
@@ -120,8 +143,8 @@ namespace SmartPharmacySystem.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error deleting medicine {Id}", id);
-                return StatusCode(500, ApiResponse<object>.Failed("An error occurred while deleting the medicine"));
+                _logger.LogError(ex, "Error deleting medicine");
+                return StatusCode(500, ApiResponse<object>.Failed("An error occurred while deleting the medicines"));
             }
         }
 
@@ -159,6 +182,30 @@ namespace SmartPharmacySystem.Controllers
         {
             var report = await _medicineService.GetReorderReportAsync();
             return Ok(ApiResponse<IEnumerable<MedicineDto>>.Succeeded(report, "Reorder report generated successfully"));
+        }
+
+        /// <summary>
+        /// Import medicines from Excel file
+        /// </summary>
+        [HttpPost("import")]
+        public async Task<IActionResult> ImportFromExcel(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest(ApiResponse<object>.Failed("Please upload a valid Excel file."));
+
+            var result = await _medicineService.ImportFromExcelAsync(file);
+            return Ok(ApiResponse<ImportResultDto>.Succeeded(result, "Import completed"));
+        }
+
+        /// <summary>
+        /// Download Excel template for importing medicines
+        /// </summary>
+        [HttpGet("export-template")]
+        [AllowAnonymous]
+        public async Task<IActionResult> ExportTemplate()
+        {
+            var content = await _medicineService.GenerateExcelTemplateAsync();
+            return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "MedicinesTemplate.xlsx");
         }
     }
 }

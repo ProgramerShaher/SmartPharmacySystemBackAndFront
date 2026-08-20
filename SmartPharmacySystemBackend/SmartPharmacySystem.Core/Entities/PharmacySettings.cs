@@ -39,7 +39,7 @@ public class PharmacySettings : BaseEntity
     public string? Website { get; set; }
 
     [MaxLength(20)]
-    public string BaseCurrency { get; set; } = "ر.س";
+    public string BaseCurrency { get; set; } = "ريال يمني";
 
     [MaxLength(500)]
     public string? InvoiceWelcomeMessage { get; set; }

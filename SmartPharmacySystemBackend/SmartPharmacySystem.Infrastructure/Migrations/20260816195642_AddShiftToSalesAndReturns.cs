@@ -6,238 +6,256 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartPharmacySystem.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class editemployees : Migration
+    public partial class AddShiftToSalesAndReturns : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
-                name: "Shift",
-                table: "Employees",
+                name: "UserShiftId",
+                table: "SalesReturns",
                 type: "int",
-                nullable: false,
-                defaultValue: 0);
-
-            migrationBuilder.AddColumn<TimeSpan>(
-                name: "ShiftEndTime",
-                table: "Employees",
-                type: "time",
                 nullable: true);
 
-            migrationBuilder.AddColumn<TimeSpan>(
-                name: "ShiftStartTime",
-                table: "Employees",
-                type: "time",
+            migrationBuilder.AddColumn<int>(
+                name: "UserShiftId",
+                table: "SaleInvoices",
+                type: "int",
                 nullable: true);
-
-            migrationBuilder.AddColumn<decimal>(
-                name: "WorkingHours",
-                table: "Employees",
-                type: "decimal(5,2)",
-                nullable: false,
-                defaultValue: 0m);
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(2512));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(6594));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4480));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8931));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4485));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8935));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4488));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8937));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4492));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8940));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4495));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8942));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4499));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8944));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 8,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4502));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8946));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 9,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 22, 371, DateTimeKind.Utc).AddTicks(4506));
+                value: new DateTime(2026, 8, 16, 19, 56, 22, 814, DateTimeKind.Utc).AddTicks(8948));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 23, 275, DateTimeKind.Utc).AddTicks(965));
+                value: new DateTime(2026, 8, 16, 19, 56, 25, 145, DateTimeKind.Utc).AddTicks(7654));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 23, 16, 23, 275, DateTimeKind.Utc).AddTicks(5775));
+                value: new DateTime(2026, 8, 16, 19, 56, 25, 146, DateTimeKind.Utc).AddTicks(2793));
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "PasswordHash",
-                value: "$2a$11$Ay7QunZsizqunn.ENjR5yemmVepSBO8E2p9zNIA93DyYTJMJyJQby");
+                value: "$2a$11$WbVIA2U2L/fzj4FC36DULe4OzI3GiFbWcmag0uBWrdlpuuyEr7ZlG");
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "PasswordHash",
-                value: "$2a$11$Ay7QunZsizqunn.ENjR5yemmVepSBO8E2p9zNIA93DyYTJMJyJQby");
+                value: "$2a$11$WbVIA2U2L/fzj4FC36DULe4OzI3GiFbWcmag0uBWrdlpuuyEr7ZlG");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SalesReturns_UserShiftId",
+                table: "SalesReturns",
+                column: "UserShiftId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SaleInvoices_UserShiftId",
+                table: "SaleInvoices",
+                column: "UserShiftId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SaleInvoices_UserShifts_UserShiftId",
+                table: "SaleInvoices",
+                column: "UserShiftId",
+                principalTable: "UserShifts",
+                principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SalesReturns_UserShifts_UserShiftId",
+                table: "SalesReturns",
+                column: "UserShiftId",
+                principalTable: "UserShifts",
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Shift",
-                table: "Employees");
+            migrationBuilder.DropForeignKey(
+                name: "FK_SaleInvoices_UserShifts_UserShiftId",
+                table: "SaleInvoices");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_SalesReturns_UserShifts_UserShiftId",
+                table: "SalesReturns");
+
+            migrationBuilder.DropIndex(
+                name: "IX_SalesReturns_UserShiftId",
+                table: "SalesReturns");
+
+            migrationBuilder.DropIndex(
+                name: "IX_SaleInvoices_UserShiftId",
+                table: "SaleInvoices");
 
             migrationBuilder.DropColumn(
-                name: "ShiftEndTime",
-                table: "Employees");
+                name: "UserShiftId",
+                table: "SalesReturns");
 
             migrationBuilder.DropColumn(
-                name: "ShiftStartTime",
-                table: "Employees");
-
-            migrationBuilder.DropColumn(
-                name: "WorkingHours",
-                table: "Employees");
+                name: "UserShiftId",
+                table: "SaleInvoices");
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 652, DateTimeKind.Utc).AddTicks(8973));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(3969));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(298));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6023));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 3,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(301));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6027));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 4,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(302));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6029));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 5,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(303));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6030));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 6,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(304));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6032));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 7,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(306));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6033));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 8,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(307));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6035));
 
             migrationBuilder.UpdateData(
                 table: "ExpenseCategories",
                 keyColumn: "Id",
                 keyValue: 9,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 2, 653, DateTimeKind.Utc).AddTicks(308));
+                value: new DateTime(2026, 8, 15, 20, 45, 15, 402, DateTimeKind.Utc).AddTicks(6137));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 3, 565, DateTimeKind.Utc).AddTicks(5956));
+                value: new DateTime(2026, 8, 15, 20, 45, 16, 399, DateTimeKind.Utc).AddTicks(7309));
 
             migrationBuilder.UpdateData(
                 table: "JournalEntryLines",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "CreatedAt",
-                value: new DateTime(2026, 8, 10, 14, 40, 3, 566, DateTimeKind.Utc).AddTicks(768));
+                value: new DateTime(2026, 8, 15, 20, 45, 16, 400, DateTimeKind.Utc).AddTicks(1015));
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 1,
                 column: "PasswordHash",
-                value: "$2a$11$ouvmzVLVwaIOdF3raxMiGuHWKSUm48ZyYlL/3AGMOoylCqV.w9xy2");
+                value: "$2a$11$mBYICyN5WVz4c3BKIdZ/BOPdLFnNKtyhlDulDFlYKkcDFjtez5yCq");
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: 2,
                 column: "PasswordHash",
-                value: "$2a$11$ouvmzVLVwaIOdF3raxMiGuHWKSUm48ZyYlL/3AGMOoylCqV.w9xy2");
+                value: "$2a$11$mBYICyN5WVz4c3BKIdZ/BOPdLFnNKtyhlDulDFlYKkcDFjtez5yCq");
         }
     }
 }

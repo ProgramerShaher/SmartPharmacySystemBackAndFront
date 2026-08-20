@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartPharmacySystem.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Financial;
 using SmartPharmacySystem.Application.IServices;
@@ -31,6 +32,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب القيود المحاسبية مع الفلترة والترقيم
         /// </summary>
+        [RequirePermission("accounting.journal.view")]
         [HttpGet]
         public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int pageSize = 10, 
             [FromQuery] DateTime? startDate = null, [FromQuery] DateTime? endDate = null, [FromQuery] string? status = null)
@@ -42,6 +44,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب قيد معين بواسطة المعرف
         /// </summary>
+        [RequirePermission("accounting.journal.view")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -59,6 +62,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// إنشاء قيد محاسبي جديد (مسودة)
         /// </summary>
+        [RequirePermission("accounting.journal.create")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] JournalEntryDto dto)
         {
@@ -78,6 +82,7 @@ namespace SmartPharmacySystem.Controllers
         /// اعتماد وترحيل القيد المحاسبي
         /// </summary>
         /// <access>Admin | Accountant</access>
+        [RequirePermission("accounting.journal.post")]
         [HttpPost("{id}/approve")]
         public async Task<IActionResult> Approve(int id)
         {
@@ -97,6 +102,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// إنشاء قيد عكسي لتصحيح خطأ
         /// </summary>
+        [RequirePermission("accounting.journal.unpost")]
         [HttpPost("{id}/reverse")]
         public async Task<IActionResult> Reverse(int id, [FromBody] string reason)
         {

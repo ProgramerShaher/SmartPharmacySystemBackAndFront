@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartPharmacySystem.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.Financial;
 using SmartPharmacySystem.Application.IServices;
@@ -25,6 +26,7 @@ namespace SmartPharmacySystem.Controllers
         /// جلب شجرة الحسابات بالكامل
         /// </summary>
         /// <access>Admin | Accountant</access>
+        [RequirePermission("accounting.chart.view")]
         [HttpGet("tree")]
         public async Task<IActionResult> GetTree()
         {
@@ -43,6 +45,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب حساب معين بواسطة المعرف
         /// </summary>
+        [RequirePermission("accounting.chart.view")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -66,6 +69,7 @@ namespace SmartPharmacySystem.Controllers
         /// إضافة حساب جديد في شجرة الحسابات
         /// </summary>
         /// <access>Admin | Accountant</access>
+        [RequirePermission("accounting.chart.manage")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] AccountDto dto)
         {
@@ -91,6 +95,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// تحديث بيانات حساب موجود
         /// </summary>
+        [RequirePermission("accounting.chart.manage")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] AccountDto dto)
         {
@@ -120,6 +125,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// تغيير حالة تفعيل الحساب (نشط/غير نشط)
         /// </summary>
+        [RequirePermission("accounting.chart.manage")]
         [HttpPatch("{id}/toggle-status")]
         public async Task<IActionResult> ToggleStatus(int id, [FromBody] bool isActive)
         {
@@ -148,7 +154,7 @@ namespace SmartPharmacySystem.Controllers
         /// حذف حساب من الشجرة
         /// </summary>
         /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        [RequirePermission("accounting.chart.manage")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -175,6 +181,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب الرصيد الحالي لحساب معين
         /// </summary>
+        [RequirePermission("accounting.chart.view")]
         [HttpGet("{id}/balance")]
         public async Task<IActionResult> GetBalance(int id)
         {
@@ -199,6 +206,7 @@ namespace SmartPharmacySystem.Controllers
         /// <param name="id">معرف الحساب</param>
         /// <param name="startDate">تاريخ البداية</param>
         /// <param name="endDate">تاريخ النهاية</param>
+        [RequirePermission("accounting.chart.view")]
         [HttpGet("{id}/ledger")]
         public async Task<IActionResult> GetLedger(int id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
@@ -223,6 +231,7 @@ namespace SmartPharmacySystem.Controllers
         /// جلب ميزان المراجعة لجميع الحسابات
         /// </summary>
         /// <param name="asOfDate">التاريخ المطلوب (اختياري)</param>
+        [RequirePermission("accounting.statements.view")]
         [HttpGet("trial-balance")]
         public async Task<IActionResult> GetTrialBalance([FromQuery] DateTime? asOfDate)
         {
@@ -241,6 +250,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب قائمة الدخل
         /// </summary>
+        [RequirePermission("accounting.statements.view")]
         [HttpGet("income-statement")]
         public async Task<IActionResult> GetIncomeStatement([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
@@ -259,6 +269,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب الميزانية العمومية
         /// </summary>
+        [RequirePermission("accounting.statements.view")]
         [HttpGet("balance-sheet")]
         public async Task<IActionResult> GetBalanceSheet([FromQuery] DateTime asOfDate)
         {
@@ -277,6 +288,7 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// جلب دفتر الأستاذ لجميع الحسابات التي تمت عليها حركات
         /// </summary>
+        [RequirePermission("accounting.chart.view")]
         [HttpGet("all-ledgers")]
         public async Task<IActionResult> GetAllLedgers([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {

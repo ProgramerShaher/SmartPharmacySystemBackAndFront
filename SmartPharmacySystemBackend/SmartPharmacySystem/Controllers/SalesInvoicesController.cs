@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartPharmacySystem.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using SmartPharmacySystem.Application.DTOs.SalesInvoices;
@@ -32,9 +33,9 @@ namespace SmartPharmacySystem.Controllers
         /// </summary>
         /// <access>Admin | Pharmacist</access>
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] string? search = null)
+        public async Task<IActionResult> GetAll([FromQuery] string? search = null, [FromQuery] bool includeClosed = false)
         {
-            var invoices = await _service.GetAllAsync();
+            var invoices = await _service.GetAllAsync(includeClosed);
 
             if (!string.IsNullOrEmpty(search))
             {
@@ -117,8 +118,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Approve sales invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("sales.invoices.create")]
         [HttpPost("{id}/approve")]
         public async Task<Results<Ok<ApiResponse<object>>, BadRequest<ApiResponse<object>>>> Approve(int id)
         {
@@ -146,8 +147,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Unapprove sales invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("sales.invoices.delete")]
         [HttpPost("{id}/unapprove")]
         public async Task<IActionResult> Unapprove(int id)
         {
@@ -164,8 +165,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Cancel sales invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("sales.invoices.delete")]
         [HttpPost("{id}/cancel")]
         public async Task<IActionResult> Cancel(int id)
         {
@@ -189,8 +190,8 @@ namespace SmartPharmacySystem.Controllers
         /// <summary>
         /// Delete sales invoice
         /// </summary>
-        /// <access>Admin</access>
-        [Authorize(Roles = "Admin")]
+        /// <access>Admin | Employee with permission</access>
+        [RequirePermission("sales.invoices.delete")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

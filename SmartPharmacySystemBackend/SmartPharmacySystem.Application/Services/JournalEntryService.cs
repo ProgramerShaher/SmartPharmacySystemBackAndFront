@@ -15,11 +15,13 @@ namespace SmartPharmacySystem.Application.Services;
 public class JournalEntryService(
     IUnitOfWork unitOfWork,
     IMapper mapper,
-    ILogger<JournalEntryService> logger) : IJournalEntryService
+    ILogger<JournalEntryService> logger,
+    SmartPharmacySystem.Application.Interfaces.IClosingValidationService closingValidationService) : IJournalEntryService
 {
     private readonly IUnitOfWork _unitOfWork = unitOfWork;
     private readonly IMapper _mapper = mapper;
     private readonly ILogger<JournalEntryService> _logger = logger;
+    private readonly SmartPharmacySystem.Application.Interfaces.IClosingValidationService _closingValidationService = closingValidationService;
 
     public async Task<JournalEntryDto> GetByIdAsync(int id)
     {
@@ -59,6 +61,8 @@ public class JournalEntryService(
         if (!IsBalanced(dto))
             throw new InvalidOperationException("القيد غير متوازن (المدين لا يساوي الدائن)");
 
+        await _closingValidationService.ValidateDateIsUnlockedAsync(dto.EntryDate, null);
+
         var entry = _mapper.Map<JournalEntry>(dto);
         entry.CreatedAt = DateTime.UtcNow;
         entry.CreatedBy = userId;
@@ -81,6 +85,12 @@ public class JournalEntryService(
 
         if (entry.IsPosted)
             throw new InvalidOperationException("لا يمكن تعديل قيد تم ترحيله بالفعل");
+
+        await _closingValidationService.ValidateDateIsUnlockedAsync(entry.EntryDate, null);
+        if (dto.EntryDate != entry.EntryDate)
+        {
+            await _closingValidationService.ValidateDateIsUnlockedAsync(dto.EntryDate, null);
+        }
 
         if (!IsBalanced(dto))
             throw new InvalidOperationException("القيد غير متوازن");
@@ -126,6 +136,8 @@ public class JournalEntryService(
 
         if (entry.IsPosted)
             throw new InvalidOperationException("لا يمكن حذف قيد تم ترحيله، يجب عمل قيد عكسي بدلاً من ذلك");
+
+        await _closingValidationService.ValidateDateIsUnlockedAsync(entry.EntryDate, null);
 
         await _unitOfWork.JournalEntries.SoftDeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();

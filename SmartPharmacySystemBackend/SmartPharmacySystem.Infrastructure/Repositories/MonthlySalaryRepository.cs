@@ -17,6 +17,8 @@ public class MonthlySalaryRepository : IMonthlySalaryRepository
             .AsNoTracking()
             .Include(s => s.Employee)
             .Include(s => s.Branch)
+            .Include(s => s.PaidFromAccount)
+            .Include(s => s.SalaryExpenseAccount)
             .Include(s => s.Deductions)
             .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted);
     }
@@ -27,6 +29,8 @@ public class MonthlySalaryRepository : IMonthlySalaryRepository
             .AsNoTracking()
             .Include(s => s.Employee)
             .Include(s => s.Branch)
+            .Include(s => s.PaidFromAccount)
+            .Include(s => s.SalaryExpenseAccount)
             .Include(s => s.Deductions)
             .FirstOrDefaultAsync(s => s.EmployeeId == employeeId
                 && s.Month == month
@@ -39,6 +43,9 @@ public class MonthlySalaryRepository : IMonthlySalaryRepository
         return await _context.MonthlySalaries
             .AsNoTracking()
             .Include(s => s.Branch)
+            .Include(s => s.PaidFromAccount)
+            .Include(s => s.SalaryExpenseAccount)
+            .Include(s => s.Deductions)
             .Where(s => s.EmployeeId == employeeId && !s.IsDeleted)
             .OrderByDescending(s => s.Year).ThenByDescending(s => s.Month)
             .ToListAsync();
@@ -50,6 +57,8 @@ public class MonthlySalaryRepository : IMonthlySalaryRepository
             .AsNoTracking()
             .Include(s => s.Employee)
             .Include(s => s.Deductions)
+            .Include(s => s.PaidFromAccount)
+            .Include(s => s.SalaryExpenseAccount)
             .Where(s => s.BranchId == branchId && s.Month == month && s.Year == year && !s.IsDeleted)
             .OrderBy(s => s.Employee.FullName)
             .ToListAsync();
@@ -60,6 +69,9 @@ public class MonthlySalaryRepository : IMonthlySalaryRepository
         var query = _context.MonthlySalaries.AsNoTracking()
             .Include(s => s.Employee)
             .Include(s => s.Branch)
+            .Include(s => s.PaidFromAccount)
+            .Include(s => s.SalaryExpenseAccount)
+            .Include(s => s.Deductions)
             .Where(s => s.Month == month && s.Year == year && !s.IsDeleted);
 
         if (branchId.HasValue)

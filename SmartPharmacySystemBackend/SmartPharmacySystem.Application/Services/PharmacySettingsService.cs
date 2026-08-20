@@ -27,7 +27,7 @@ public class PharmacySettingsService : IPharmacySettingsService
             settings = new PharmacySettings 
             {
                 PharmacyName = "صيدلية جديدة",
-                BaseCurrency = "ر.س"
+                BaseCurrency = "ريال يمني"
             };
             await _unitOfWork.PharmacySettings.AddAsync(settings);
             await _unitOfWork.SaveChangesAsync();

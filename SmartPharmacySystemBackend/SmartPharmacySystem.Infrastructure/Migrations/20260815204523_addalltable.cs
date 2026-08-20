@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -13,6 +13,8 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            if (true) return; // تجاوز مؤقت لإنشاء الجداول لأنها موجودة مسبقاً في قاعدة البيانات
+            
             migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new

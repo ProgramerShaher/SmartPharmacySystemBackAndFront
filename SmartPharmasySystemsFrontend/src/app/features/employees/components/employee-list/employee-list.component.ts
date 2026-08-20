@@ -1,7 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -66,6 +66,7 @@ export class EmployeeListComponent implements OnInit {
   editMode = false;
 
   constructor(
+    private router: Router,
     private employeeService: EmployeeService,
     private attendanceService: AttendanceService,
     private monthlySalaryService: MonthlySalaryService,
@@ -161,6 +162,10 @@ export class EmployeeListComponent implements OnInit {
   onFormSaved(): void {
     this.showForm = false;
     this.loadData();
+  }
+
+  goToProfile(employeeId: number): void {
+    this.router.navigate(['/employees/profile', employeeId]);
   }
 
   // --- Monthly Attendance Calendar Logic ---

@@ -149,6 +149,72 @@
                 </p-table>
             </p-tabPanel>
 
+            <!-- Main Safe Ledger Tab -->
+            <p-tabPanel header="حركة الصندوق الرئيسي">
+                <ng-template pTemplate="header">
+                    <i class="pi pi-box"></i>
+                    <span>حركة الصندوق الرئيسي (11101)</span>
+                </ng-template>
+
+                <div class="fin-filter-panel mb-2">
+                    <span class="p-input-icon-right fin-search-input">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="dtSafe.filterGlobal($any($event.target).value, 'contains')" placeholder="بحث في البيان..." />
+                    </span>
+                    <p-calendar [(ngModel)]="ledgerDateFilter" selectionMode="range" [readonlyInput]="true" placeholder="تصفية بالتاريخ" (onSelect)="loadMainSafeLedger()" [showIcon]="true" styleClass="fin-calendar"></p-calendar>
+                </div>
+
+                <div *ngIf="mainSafeLedger" style="margin-bottom: 1rem; background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between;">
+                    <div>
+                        <span style="display: block; font-size: 0.85rem; color: #64748b;">رصيد أول المدة</span>
+                        <span style="font-weight: 700; color: #334155;">{{ mainSafeLedger.openingBalance | number:'1.0-2' }}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.85rem; color: #64748b;">إجمالي الوارد</span>
+                        <span style="font-weight: 700; color: #16a34a;">{{ mainSafeLedger.totalDebit | number:'1.0-2' }}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.85rem; color: #64748b;">إجمالي المنصرف</span>
+                        <span style="font-weight: 700; color: #dc2626;">{{ mainSafeLedger.totalCredit | number:'1.0-2' }}</span>
+                    </div>
+                    <div>
+                        <span style="display: block; font-size: 0.85rem; color: #64748b;">رصيد آخر المدة</span>
+                        <span style="font-weight: 700; font-size: 1.1rem; color: #0f766e;">{{ mainSafeLedger.closingBalance | number:'1.0-2' }}</span>
+                    </div>
+                </div>
+
+                <p-table #dtSafe [value]="mainSafeLedger?.entries || []" [rows]="10" [paginator]="true" 
+                    [loading]="loadingMainSafeLedger" styleClass="fin-table" responsiveLayout="scroll"
+                    [globalFilterFields]="['description']">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 15%">التاريخ</th>
+                            <th style="width: 35%">البيان</th>
+                            <th style="width: 15%">وارد (مدين)</th>
+                            <th style="width: 15%">منصرف (دائن)</th>
+                            <th style="width: 20%">الرصيد</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-line>
+                        <tr>
+                            <td style="color: #64748b; font-size: 0.75rem;">{{ line.date | date:'dd/MM/yyyy hh:mm a' }}</td>
+                            <td class="font-bold" style="color: #1e293b;">{{ line.description }}</td>
+                            <td style="color: #16a34a; font-weight: 600;">{{ line.debit > 0 ? (line.debit | number:'1.0-2') : '-' }}</td>
+                            <td style="color: #dc2626; font-weight: 600;">{{ line.credit > 0 ? (line.credit | number:'1.0-2') : '-' }}</td>
+                            <td style="font-weight: 700; color: #0f766e;">{{ line.runningBalance | number:'1.0-2' }}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptydata">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: #64748b;">
+                                <i class="pi pi-box" style="font-size: 1.5rem; color: #e2e8f0; display: block; margin-bottom: 0.5rem;"></i>
+                                <span style="font-weight: 700; color: #1e293b;">لا توجد حركات على الصندوق</span>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-tabPanel>
+
             <!-- Annual Chart Tab -->
             <p-tabPanel header="التحليل السنوي">
                 <ng-template pTemplate="header">

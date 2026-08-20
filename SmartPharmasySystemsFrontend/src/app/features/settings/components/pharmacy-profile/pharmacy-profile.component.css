@@ -1,6 +1,6 @@
-.settings-container {
-    padding: 1.5rem;
-    max-width: 1400px;
+.settings-wrapper {
+    padding: 0.5rem;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
@@ -8,95 +8,109 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--surface-border);
+    margin-bottom: 0.75rem;
 }
 
-.header-title {
+.header-titles h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
     display: flex;
     align-items: center;
+    gap: 0.4rem;
+}
+
+.header-titles p {
+    margin: 0.2rem 0 0;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+}
+
+.settings-layout {
+    display: flex;
     gap: 0.75rem;
+    align-items: flex-start;
 }
 
-.header-title i {
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    background: var(--primary-50);
+.settings-sidebar {
+    width: 200px;
+    flex-shrink: 0;
     padding: 0.5rem;
-    border-radius: 8px;
-}
-
-.header-title h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-color);
-}
-
-.settings-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 1.5rem;
-    align-items: start;
-}
-
-.settings-card {
     background: var(--surface-card);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    border: 1px solid var(--surface-border);
-    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.settings-card:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-}
-
-.card-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px dashed var(--surface-border);
-}
-
-.card-header h3 {
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-menu li {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    transition: all 0.2s;
 }
 
-.card-header h3 i {
+.sidebar-menu li i {
+    font-size: 1rem;
+}
+
+.sidebar-menu li:hover {
+    background: var(--surface-hover);
+    color: var(--text-color);
+}
+
+.sidebar-menu li.active {
+    background: var(--primary-50);
     color: var(--primary-color);
 }
 
-/* Logo Section */
-.logo-section {
+.settings-content {
+    flex-grow: 1;
+    padding: 1rem;
+    background: var(--surface-card);
+    min-height: 320px;
+}
+
+.panel-title {
+    margin: 0 0 1rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--surface-border);
+    padding-bottom: 0.5rem;
+}
+
+/* Logo specific */
+.logo-upload-container {
     display: flex;
-    flex-direction: column;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0.75rem;
     background: var(--surface-ground);
-    border-radius: 8px;
     border: 1px dashed var(--surface-border);
 }
 
 .logo-preview {
-    width: 120px;
-    height: 120px;
-    border-radius: 12px;
-    overflow: hidden;
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
     background: white;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    border: 2px solid white;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .logo-preview img {
@@ -105,48 +119,37 @@
     object-fit: contain;
 }
 
-.logo-upload {
-    text-align: center;
-}
-
-.help-text {
-    display: block;
-    margin-top: 0.5rem;
-    color: var(--text-color-secondary);
-    font-size: 0.8rem;
+.logo-actions h4 {
+    margin: 0 0 0.2rem 0;
+    font-size: 0.85rem;
+    color: var(--text-color);
 }
 
 /* Compact Forms */
 .form-compact .field {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
 }
-
 .form-compact label {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-color-secondary);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.2rem;
     display: block;
 }
-
-.form-compact input, 
-.form-compact .p-dropdown,
-.form-compact textarea {
-    width: 100%;
-}
-
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0 1rem;
+    gap: 0 0.75rem;
 }
-
 .form-grid .full-width {
     grid-column: 1 / -1;
 }
 
-.required {
-    color: var(--pink-500);
+/* Animations */
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .loading-state {
@@ -154,243 +157,71 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4rem;
-    color: var(--text-color-secondary);
+    padding: 2rem;
 }
 
-.loading-state i {
-    margin-bottom: 1rem;
-    color: var(--primary-color);
+/* Overriding PrimeNG to be ultra-compact */
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-dropdown,
+:host ::ng-deep .p-calendar,
+:host ::ng-deep .p-autocomplete,
+:host ::ng-deep .p-inputnumber {
+    font-size: 0.75rem !important;
+    width: 100%;
 }
 
-/* Animations */
-.fade-in {
-    animation: fadeIn 0.3s ease-in-out;
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-dropdown {
+    height: 28px !important;
+    min-height: 28px !important;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-dropdown-label {
+    padding: 0 0.5rem !important;
+    line-height: 26px !important;
+}
+
+:host ::ng-deep textarea.p-inputtext {
+    min-height: 48px !important;
+    height: auto !important;
+    padding: 0.25rem 0.5rem !important;
+    line-height: 1.3 !important;
+}
+
+:host ::ng-deep .p-dropdown-trigger {
+    width: 24px !important;
+}
+
+:host ::ng-deep .p-button {
+    height: 28px !important;
+    padding: 0 0.75rem !important;
+    font-size: 0.75rem !important;
+}
+
+:host ::ng-deep .p-button-icon {
+    font-size: 0.75rem !important;
+}
+
+:host ::ng-deep .p-input-icon-right > i {
+    font-size: 0.75rem !important;
+    margin-top: -6px !important;
+    right: 0.5rem !important;
+}
+
+:host ::ng-deep .p-input-icon-right > .p-inputtext {
+    padding-right: 22px !important;
 }
 
 /* Responsive */
 @media screen and (max-width: 768px) {
-    .settings-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .settings-header {
+    .settings-layout {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
     }
-    
+    .settings-sidebar {
+        width: 100%;
+    }
     .form-grid {
         grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    :host {
-        display: block;
-        max-width: 100vw;
-        overflow-x: hidden;
-    }
-
-    .settings-container,
-    .settings-container * {
-        box-sizing: border-box;
-    }
-
-    .settings-container {
-        width: 100%;
-        max-width: 100%;
-        padding: 8px !important;
-        overflow-x: hidden;
-    }
-
-    .settings-header,
-    .settings-card,
-    .logo-section {
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-    }
-
-    .settings-header {
-        align-items: stretch !important;
-        gap: 8px !important;
-        margin-bottom: 8px !important;
-        padding-bottom: 8px !important;
-    }
-
-    .header-title {
-        gap: 6px !important;
-        min-width: 0;
-    }
-
-    .header-title i {
-        width: 30px;
-        height: 30px;
-        padding: 0 !important;
-        border-radius: 7px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.9rem !important;
-        flex-shrink: 0;
-    }
-
-    .header-title h2 {
-        font-size: 1rem !important;
-        line-height: 1.2;
-        margin: 0;
-    }
-
-    .settings-grid {
-        grid-template-columns: 1fr !important;
-        gap: 8px !important;
-    }
-
-    .settings-card {
-        padding: 8px !important;
-        min-width: 0;
-    }
-
-    .card-header {
-        margin-bottom: 8px !important;
-        padding-bottom: 6px !important;
-    }
-
-    .card-header h3 {
-        font-size: 0.9rem !important;
-        line-height: 1.2;
-        gap: 5px;
-    }
-
-    .card-header h3 i {
-        font-size: 0.85rem;
-    }
-
-    .logo-section {
-        gap: 8px !important;
-        padding: 8px !important;
-    }
-
-    .logo-preview {
-        width: 72px !important;
-        height: 72px !important;
-        border-radius: 8px !important;
-    }
-
-    .logo-upload {
-        width: 100%;
-    }
-
-    .form-compact.mt-4 {
-        margin-top: 8px !important;
-    }
-
-    .form-compact .field {
-        margin-bottom: 8px !important;
-        min-width: 0;
-    }
-
-    .form-compact label {
-        font-size: 10px !important;
-        margin-bottom: 3px !important;
-        line-height: 1.2;
-    }
-
-    .form-grid {
-        grid-template-columns: 1fr !important;
-        gap: 0 !important;
-    }
-
-    .help-text,
-    .p-error {
-        font-size: 10px !important;
-        line-height: 1.25;
-        margin-top: 3px !important;
-    }
-
-    .loading-state {
-        padding: 24px 8px !important;
-        font-size: 11px;
-    }
-
-    :host ::ng-deep .p-button,
-    :host ::ng-deep .p-fileupload-choose {
-        width: 100% !important;
-        height: 32px !important;
-        min-height: 32px !important;
-        justify-content: center !important;
-        padding: 0 8px !important;
-        font-size: 11px !important;
-        border-radius: 6px !important;
-    }
-
-    :host ::ng-deep .p-button-label,
-    :host ::ng-deep .p-button-icon {
-        font-size: 11px !important;
-    }
-
-    :host ::ng-deep .p-inputtext,
-    :host ::ng-deep .p-dropdown,
-    :host ::ng-deep .p-calendar,
-    :host ::ng-deep .p-autocomplete,
-    :host ::ng-deep .p-inputnumber,
-    .form-compact input,
-    .form-compact textarea {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        font-size: 11px !important;
-    }
-
-    :host ::ng-deep .p-inputtext,
-    :host ::ng-deep .p-dropdown {
-        height: 32px !important;
-        min-height: 32px !important;
-    }
-
-    :host ::ng-deep .p-inputtext,
-    :host ::ng-deep .p-dropdown-label,
-    .form-compact input {
-        padding: 0 8px !important;
-        line-height: 30px !important;
-    }
-
-    .form-compact textarea,
-    :host ::ng-deep textarea.p-inputtext {
-        min-height: 64px !important;
-        height: auto !important;
-        padding: 6px 8px !important;
-        line-height: 1.35 !important;
-    }
-
-    :host ::ng-deep .p-dropdown-trigger {
-        width: 30px !important;
-    }
-
-    :host ::ng-deep .p-input-icon-right {
-        width: 100% !important;
-        display: block !important;
-    }
-
-    :host ::ng-deep .p-input-icon-right > i {
-        font-size: 11px !important;
-        margin-top: -5px !important;
-        right: 8px !important;
-    }
-
-    :host ::ng-deep .p-input-icon-right > .p-inputtext {
-        padding-right: 28px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .settings-container {
-        padding: 6px !important;
     }
 }

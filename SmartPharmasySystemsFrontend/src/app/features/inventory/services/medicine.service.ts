@@ -96,12 +96,38 @@ export class MedicineService {
         );
     }
 
+    /**
+     * Delete multiple medicines
+     */
+    deleteBulk(ids: number[]): Observable<ApiResponse<any>> {
+        return this.http.request<ApiResponse<any>>('delete', `${this.apiUrl}/bulk`, { body: ids });
+    }
+
   /**
    * Get distinct manufacturers for dropdown
    */
     getManufacturers(): Observable<string[]> {
         return this.http.get<ApiResponse<string[]>>(`${this.apiUrl}/manufacturers`).pipe(
             map(response => response.data || [])
+        );
+    }
+
+    /**
+     * Download Excel template for importing medicines
+     */
+    downloadTemplate(): void {
+        const url = `${this.apiUrl}/export-template`;
+        window.open(url, '_blank');
+    }
+
+    /**
+     * Import medicines from Excel file
+     */
+    importMedicines(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.post<ApiResponse<any>>(`${this.apiUrl}/import`, formData).pipe(
+            map(response => response.data)
         );
     }
 }

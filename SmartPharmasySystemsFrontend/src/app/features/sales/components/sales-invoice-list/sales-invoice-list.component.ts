@@ -23,6 +23,7 @@ import { ChartModule } from 'primeng/chart';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { ToastModule } from 'primeng/toast';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
     selector: 'app-sales-invoice-list',
@@ -42,7 +43,8 @@ import { ToastModule } from 'primeng/toast';
         ChartModule,
         DropdownModule,
         CalendarModule,
-        ToastModule
+        ToastModule,
+        CheckboxModule
     ],
     templateUrl: './sales-invoice-list.component.html',
     styleUrls: ['./sales-invoice-list.component.scss'],
@@ -182,9 +184,11 @@ export class SalesInvoiceListComponent implements OnInit {
         };
     }
 
+    includeClosedInvoices = signal(false);
+
     loadInvoices() {
         this.loading.set(true);
-        this.salesService.getAll().subscribe({
+        this.salesService.getAll(undefined, this.includeClosedInvoices()).subscribe({
             next: (data) => {
                 this.invoices.set(data);
                 this.loading.set(false);
@@ -470,8 +474,8 @@ export class SalesInvoiceListComponent implements OnInit {
                 <td style="text-align: center;">${this.escapeHtml(inv.saleInvoiceNumber || '#' + inv.id)}</td>
                 <td style="text-align: center;">${new Date(inv.invoiceDate).toLocaleDateString('ar-EG')}</td>
                 <td>${this.escapeHtml(inv.customerName || 'نقدي')}</td>
-                <td style="text-align: left; direction: ltr;">${(inv.totalAmount || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                <td style="text-align: left; direction: ltr;">${(inv.totalProfit || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                <td style="text-align: left; direction: ltr;">${(inv.totalAmount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+                <td style="text-align: left; direction: ltr;">${(inv.totalProfit || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                 <td style="text-align: center;">${this.getStatusLabel(inv.status)}</td>
             </tr>
         `).join('');
@@ -527,7 +531,7 @@ export class SalesInvoiceListComponent implements OnInit {
         printWindow.document.open();
         printWindow.document.write(html);
         printWindow.document.close();
-        
+
         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تجهيز تقرير PDF للطباعة' });
     }
 
@@ -547,7 +551,7 @@ export class SalesInvoiceListComponent implements OnInit {
         }));
 
         const worksheet = xlsx.utils.json_to_sheet(exportData);
-        
+
         // Add RTL and column widths
         worksheet['!cols'] = [
             { wch: 15 }, // Invoice Number
@@ -558,16 +562,16 @@ export class SalesInvoiceListComponent implements OnInit {
             { wch: 15 }  // Status
         ];
 
-        const workbook = { 
-            Sheets: { 'Invoices': worksheet }, 
+        const workbook = {
+            Sheets: { 'Invoices': worksheet },
             SheetNames: ['Invoices'],
             Workbook: { Views: [{ RTL: true }] }
         };
-        
+
         const excelBuffer: any = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
         const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
         const data: Blob = new Blob([excelBuffer], { type: EXCEL_TYPE });
-        
+
         FileSaver.saveAs(data, `Sales_Invoices_${new Date().getTime()}.xlsx`);
         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تصدير الفواتير إلى Excel' });
     }
@@ -612,18 +616,19 @@ export class SalesInvoiceListComponent implements OnInit {
     }
 
     isDraft(invoice: SaleInvoice): boolean {
-        const statusNum = Number(invoice.status);
-        return statusNum === DocumentStatus.Draft;
+        return invoice.status === DocumentStatus.Draft || invoice.status?.toString() === 'Draft' || invoice.status?.toString() === '0';
     }
 
     isApproved(invoice: SaleInvoice): boolean {
-        const statusNum = Number(invoice.status);
-        return statusNum === DocumentStatus.Approved;
+        return invoice.status === DocumentStatus.Approved || invoice.status?.toString() === 'Approved' || invoice.status?.toString() === '1';
     }
 
     isCancelled(invoice: SaleInvoice): boolean {
-        const statusNum = Number(invoice.status);
-        return statusNum === DocumentStatus.Cancelled;
+        return invoice.status === DocumentStatus.Cancelled || invoice.status?.toString() === 'Cancelled' || invoice.status?.toString() === '2';
+    }
+
+    isClosed(invoice: SaleInvoice): boolean {
+        return invoice.status === DocumentStatus.Closed || invoice.status?.toString() === 'Closed' || invoice.status?.toString() === '3';
     }
 
     // Helper methods

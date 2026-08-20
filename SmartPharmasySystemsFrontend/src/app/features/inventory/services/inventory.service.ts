@@ -47,6 +47,9 @@ export class InventoryService {
     deleteMedicine(id: number): Observable<void> {
         return this.http.delete<ApiResponse<void>>(`${environment.apiUrl}/Medicines/${id}`).pipe(map(res => res.data));
     }
+    deleteBulkMedicines(ids: number[]): Observable<ApiResponse<void>> {
+        return this.http.request<ApiResponse<void>>('delete', `${environment.apiUrl}/Medicines/bulk`, { body: ids });
+    }
 
     // --- MedicineBatch Service Spec ---
     getAllBatches(filter?: string): Observable<MedicineBatch[]> {

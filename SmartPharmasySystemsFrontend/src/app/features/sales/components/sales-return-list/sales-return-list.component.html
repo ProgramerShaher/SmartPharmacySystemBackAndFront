@@ -14,7 +14,7 @@
         <div class="actions no-print">
             <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تحديث"
                 tooltipPosition="bottom" (onClick)="loadReturns()"></p-button>
-            <p-button label="إضافة مردود" icon="pi pi-plus" [rounded]="true" severity="danger"
+            <p-button *appHasPermission="['sales.returns.create']" label="إضافة مردود" icon="pi pi-plus" [rounded]="true" severity="danger"
                 (onClick)="navigateToCreate()"></p-button>
         </div>
     </div>
@@ -115,11 +115,11 @@
                         <div class="actions justify-content-center">
                             <!-- DRAFT STATUS -->
                             <ng-container *ngIf="ret.status === 'Draft' || ret.status === 1">
-                                <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
+                                <p-button *appHasPermission="['sales.returns.create']" icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
                                     size="small" pTooltip="اعتماد" (onClick)="approveReturn(ret.id)"></p-button>
-                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
+                                <p-button *appHasPermission="['sales.returns.create']" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
                                     size="small" pTooltip="تعديل" (onClick)="viewDetails(ret.id)"></p-button>
-                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                <p-button *appHasPermission="['sales.returns.delete']" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
                                     size="small" pTooltip="حذف" (onClick)="deleteReturn(ret.id)"></p-button>
                             </ng-container>
 

@@ -5,9 +5,15 @@
             <span class="status-badge">فاتورة بيع</span>
             <h1 class="header-title">تسجيل فاتورة بيع</h1>
         </div>
-        <button class="btn-close" (click)="goBack()" pTooltip="إغلاق">
-            <i class="pi pi-times"></i>
-        </button>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline" (click)="openDrawerLedger()" pTooltip="رصيد وحركة درج الكاشير"
+                style="background: #e0f2fe; color: #0284c7; border-color: #7dd3fc; height: 36px;">
+                <i class="pi pi-wallet" style="margin-left: 5px;"></i> درج الكاشير
+            </button>
+            <button class="btn-close" (click)="goBack()" pTooltip="إغلاق">
+                <i class="pi pi-times"></i>
+            </button>
+        </div>
     </div>
 
     <!-- القسم الأول: البيانات الأساسية -->
@@ -34,7 +40,7 @@
             <label>اختر العميل</label>
             <p-dropdown [options]="customers" [(ngModel)]="selectedCustomer" optionLabel="name"
                 placeholder="ابحث عن العميل..." [filter]="true" filterBy="name" [showClear]="true" appendTo="body"
-                styleClass="custom-p-input">
+                styleClass="custom-p-input" (onChange)="onCustomerChange($event.value)">
             </p-dropdown>
         </div>
 
@@ -117,13 +123,14 @@
 
     <!-- الجدول والقائمة الفارغة -->
     <div class="table-container">
-        <p-table [value]="items()" responsiveLayout="scroll" styleClass="custom-p-table">
+        <p-table [value]="items()" dataKey="batchId" responsiveLayout="scroll" styleClass="custom-p-table">
             <ng-template pTemplate="header">
                 <tr>
                     <th>الصنف</th>
                     <th style="text-align: center;">الدفعة</th>
                     <th style="text-align: center;">الكمية</th>
                     <th style="text-align: left;">السعر</th>
+                    <th style="text-align: center; width: 100px;">الخصم %</th>
                     <th style="text-align: left;">الإجمالي</th>
                     <th style="text-align: left;">الربح</th>
                     <th style="text-align: center;"></th>
@@ -142,7 +149,18 @@
                         <span style="font-weight: 700;">{{ item.quantity }}</span>
                     </td>
                     <td style="text-align: left;">{{ item.salePrice | number:'1.0-2' }}</td>
-                    <td style="text-align: left; font-weight: 700; color: #0d9488;">{{ item.total | number:'1.0-2' }}
+                    <td style="text-align: center;" (click)="$event.stopPropagation()">
+                        <p-inputNumber [(ngModel)]="item.discountPercentage" [min]="0" [max]="100"
+                            (ngModelChange)="updateItemDiscount(i, $event)" [showButtons]="false"
+                            styleClass="custom-p-input discount-input" inputStyleClass="discount-input-field">
+                        </p-inputNumber>
+                    </td>
+                    <td style="text-align: left;">
+                        <span style="font-weight: 700; color: #0d9488;">{{ item.netTotal | number:'1.0-2' }}</span>
+                        <br *ngIf="item.discountAmount > 0" />
+                        <span *ngIf="item.discountAmount > 0"
+                            style="font-size: 0.75rem; color: #ef4444; text-decoration: line-through;">{{ item.total |
+                            number:'1.0-2' }}</span>
                     </td>
                     <td style="text-align: left;">
                         <span
@@ -196,3 +214,82 @@
 <app-barcode-simulator [(visible)]="simulatorVisible" [currentTransactionType]="transactionType"
     (onScan)="processScannedBarcode($event)">
 </app-barcode-simulator>
+
+<!-- Drawer Status Modal -->
+<p-dialog [(visible)]="drawerLedgerVisible" [modal]="true" [style]="{width: '75vw', maxWidth: '800px', padding: '0'}" styleClass="premium-item-modal drawer-modal" [showHeader]="false" [closable]="false" dir="rtl">
+    <div class="modal-shell" dir="rtl">
+        <div class="modal-header">
+            <div class="modal-title">
+                <span class="modal-icon">
+                    <i class="pi pi-wallet"></i>
+                </span>
+                <div>
+                    <h2>حركة درج الكاشير (رصيدي)</h2>
+                    <p *ngIf="drawerLedger">رقم الحساب: {{drawerLedger.accountCode}}</p>
+                </div>
+            </div>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary close-btn" (click)="drawerLedgerVisible = false"></button>
+        </div>
+
+        <div class="modal-body p-fluid">
+            <div *ngIf="loadingDrawer" style="text-align: center; padding: 2rem;">
+                <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+            </div>
+
+            <div *ngIf="!loadingDrawer && drawerLedger">
+                <div class="detail-grid mb-3">
+                    <div class="detail-card">
+                        <span class="detail-label"><i class="pi pi-history"></i> رصيد الوردية السابقة (المتبقي بالدرج)</span>
+                        <span class="detail-val" style="font-size: 18px; color: #0f766e;">{{drawerLedger.openingBalance | number:'1.0-2'}} ر.ي</span>
+                    </div>
+                    <div class="detail-card">
+                        <span class="detail-label"><i class="pi pi-chart-line"></i> إجمالي حركات الوردية الحالية</span>
+                        <span class="detail-val" style="font-size: 18px; color: #3b82f6;" dir="ltr">{{(drawerLedger.totalDebit - drawerLedger.totalCredit) | number:'1.0-2'}} ر.ي</span>
+                    </div>
+                </div>
+
+                <div class="status-banner mb-3" style="display: flex; justify-content: space-between; align-items: center; background: #0f766e; color: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(15, 118, 110, 0.2);">
+                    <div>
+                        <span style="display: block; font-size: 13px; opacity: 0.9; font-weight: 600;">الرصيد الكلي في الدرج (الإجمالي)</span>
+                        <span style="font-size: 28px; font-weight: 800;">{{drawerLedger.closingBalance | number:'1.0-2'}} <span style="font-size: 16px; font-weight: 600;">ر.ي</span></span>
+                    </div>
+                    <div style="text-align: left; opacity: 0.9;">
+                        <span style="display: block; font-size: 12px;">الحساب:</span>
+                        <span style="font-size: 14px; font-weight: 700;">{{drawerLedger.accountName}}</span>
+                    </div>
+                </div>
+
+                <p-table [value]="drawerLedger.entries" [scrollable]="true" scrollHeight="300px" styleClass="p-datatable-sm custom-p-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 15%">التاريخ</th>
+                            <th style="width: 35%">البيان</th>
+                            <th style="width: 20%">وارد (مبيعات)</th>
+                            <th style="width: 20%">منصرف (مرتجعات)</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-line>
+                        <tr>
+                            <td>{{line.date | date:'dd/MM/yyyy HH:mm'}}</td>
+                            <td>{{line.description}}</td>
+                            <td style="color: #16a34a; font-weight: 600;">{{line.debit > 0 ? (line.debit | number:'1.0-2') : '-'}}</td>
+                            <td style="color: #dc2626; font-weight: 600;">{{line.credit > 0 ? (line.credit | number:'1.0-2') : '-'}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 2rem;">لا توجد حركات على هذا الدرج في الوردية الحالية</td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+        </div>
+
+        <div class="modal-footer" style="justify-content: flex-start; gap: 0.5rem; flex-wrap: wrap;">
+            <button *appHasPermission="['sales.shifts.manage']" pButton label="إغلاق الوردية وترحيل الرصيد للصندوق" icon="pi pi-sign-out" [rounded]="true" severity="danger" (click)="closeShiftFromDrawer(true)"></button>
+            <button *appHasPermission="['sales.shifts.manage']" pButton label="إغلاق الوردية فقط (إبقاء الرصيد بالدرج)" icon="pi pi-power-off" [rounded]="true" severity="warning" (click)="closeShiftFromDrawer(false)"></button>
+            <span style="flex: 1"></span>
+            <button pButton label="إغلاق النافذة" icon="pi pi-times" [rounded]="true" [outlined]="true" severity="secondary" (click)="drawerLedgerVisible = false"></button>
+        </div>
+    </div>
+</p-dialog>

@@ -10,7 +10,14 @@
             </div>
         </div>
 
-        <div class="inventory-actions">
+        <div class="inventory-actions flex gap-2">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".csv, .xlsx, .xls" style="display: none;">
+            <p-button label="تحميل قالب الاستيراد" icon="pi pi-download" styleClass="p-button-outlined p-button-secondary border-round-lg font-bold"
+                (onClick)="downloadTemplate()" pTooltip="تحميل قالب إكسل لإضافة الأصناف"></p-button>
+            <p-button label="استيراد من إكسل" icon="pi pi-upload" styleClass="p-button-outlined p-button-info border-round-lg font-bold"
+                (onClick)="fileInput.click()" pTooltip="رفع ملف إكسل لدفعة أصناف"></p-button>
+            <p-button *ngIf="selectedCategories.length > 0" label="حذف المحدد ({{selectedCategories.length}})" icon="pi pi-trash" styleClass="p-button-danger border-round-lg font-bold"
+                (onClick)="deleteSelectedCategories()"></p-button>
             <p-button label="إضافة فئة" icon="pi pi-plus" styleClass="p-button-success border-round-lg font-bold"
                 (onClick)="showAddModal()"></p-button>
         </div>
@@ -32,10 +39,12 @@
     <section class="inventory-panel">
     <p-table [value]="categories" [lazy]="true" (onLazyLoad)="loadCategories($event)" [paginator]="true" [rows]="10"
         [totalRecords]="totalRecords" [loading]="loading" [showCurrentPageReport]="true"
+        [(selection)]="selectedCategories" dataKey="id"
         currentPageReportTemplate="{first}-{last} من {totalRecords}"
         responsiveLayout="scroll" styleClass="p-datatable-sm inventory-table" [rowsPerPageOptions]="[10, 25, 50]">
         <ng-template pTemplate="header">
             <tr [style]="{'background': 'var(--table-header-bg)'}">
+                <th style="width: 4rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
                 <th pSortableColumn="id" class="text-center w-5rem">ID <p-sortIcon field="id"></p-sortIcon></th>
                 <th pSortableColumn="name">اسم الفئة <p-sortIcon field="name"></p-sortIcon></th>
                 <th>الوصف</th>
@@ -45,6 +54,7 @@
 
         <ng-template pTemplate="body" let-category>
             <tr class="hover:bg-surface-hover transition-all transition-duration-200">
+                <td><p-tableCheckbox *ngIf="!category.hasMedicines" [value]="category"></p-tableCheckbox></td>
                 <td class="text-center font-bold text-color-secondary">{{category.id}}</td>
                 <td class="font-bold text-color">{{category.name}}</td>
                 <td class="text-color-secondary">{{category.description || '-'}}</td>
@@ -52,7 +62,7 @@
                     <div class="flex align-items-center justify-content-center gap-2">
                         <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" pTooltip="تعديل"
                             tooltipPosition="top" (onClick)="editCategory(category)"></p-button>
-                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="حذف"
+                        <p-button *ngIf="!category.hasMedicines" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="حذف"
                             tooltipPosition="top" (onClick)="deleteCategory(category)"></p-button>
                     </div>
                 </td>

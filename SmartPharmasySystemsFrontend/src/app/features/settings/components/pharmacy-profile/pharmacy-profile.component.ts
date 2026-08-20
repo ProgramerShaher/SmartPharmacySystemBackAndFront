@@ -42,6 +42,7 @@ export class PharmacyProfileComponent implements OnInit {
   isSaving = false;
   currentLogoUrl: string | null = null;
   serverUrl = environment.apiUrl.replace('/api', ''); // Get base server URL for images
+  activeTab: 'identity' | 'contact' | 'legal' = 'identity';
 
   currencies = [
     { label: 'ريال سعودي (ر.س)', value: 'ر.س' },

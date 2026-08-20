@@ -12,6 +12,10 @@
             </div>
         </div>
         <div class="flex gap-2">
+            <div class="flex align-items-center ml-3 mr-3">
+                <p-checkbox [(ngModel)]="includeClosedInvoices" [binary]="true" inputId="includeClosed" (onChange)="loadSales()"></p-checkbox>
+                <label for="includeClosed" class="ml-2 mb-0">عرض الفواتير المغلقة</label>
+            </div>
             <span class="p-input-icon-left">
                 <i class="pi pi-search"></i>
                 <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"

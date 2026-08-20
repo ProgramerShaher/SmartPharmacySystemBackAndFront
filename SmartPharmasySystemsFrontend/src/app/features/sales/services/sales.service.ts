@@ -9,8 +9,11 @@ export class SalesService {
     constructor(private http: HttpClient) { }
 
     // --- SaleInvoice Service Spec ---
-    getAll(search?: string): Observable<SaleInvoice[]> {
-        return this.http.get<ApiResponse<SaleInvoice[]>>(`${environment.apiUrl}/SalesInvoices`, { params: search ? { search } : {} }).pipe(map(res => res.data));
+    getAll(search?: string, includeClosed?: boolean): Observable<SaleInvoice[]> {
+        let params: any = {};
+        if (search) params.search = search;
+        if (includeClosed) params.includeClosed = true;
+        return this.http.get<ApiResponse<SaleInvoice[]>>(`${environment.apiUrl}/SalesInvoices`, { params }).pipe(map(res => res.data));
     }
 
     getById(id: number): Observable<SaleInvoice> {

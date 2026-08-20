@@ -981,50 +981,62 @@ body {
    GLOBAL RESPONSIVE OVERRIDES (SALES, PURCHASES & COMMON LAYOUTS)
    ========================================================================== */
 @media (max-width: 768px) {
+
     /* 1. Global Page Header responsiveness */
-    .page-header, .inventory-hero {
+    .page-header,
+    .inventory-hero {
         flex-direction: column !important;
         align-items: flex-start !important;
         gap: 0.5rem !important;
         padding: 0.4rem 0.6rem !important;
     }
-    
-    .page-header .actions, .inventory-actions {
+
+    .page-header .actions,
+    .inventory-actions {
         width: 100% !important;
         justify-content: flex-end !important;
     }
-    
-    .inventory-actions button, .inventory-actions .p-button {
+
+    .inventory-actions button,
+    .inventory-actions .p-button {
         width: 100% !important;
     }
 
     /* 2. KPI Grids */
-    .kpi-grid, .inventory-stats {
+    .kpi-grid,
+    .inventory-stats {
         grid-template-columns: repeat(2, 1fr) !important;
         gap: 0.35rem !important;
     }
 
-    .kpi-card, .inventory-stat-card {
+    .kpi-card,
+    .inventory-stat-card {
         padding: 0.45rem !important;
     }
 
-    .kpi-card strong, .inventory-stat-card strong {
+    .kpi-card strong,
+    .inventory-stat-card strong {
         font-size: 0.85rem !important;
     }
 
     /* 3. Charts and Filters Grids */
-    .charts-grid, .charts-row {
+    .charts-grid,
+    .charts-row {
         grid-template-columns: 1fr !important;
         gap: 0.5rem !important;
     }
 
-    .filters-panel, .inventory-filter-panel {
+    .filters-panel,
+    .inventory-filter-panel {
         grid-template-columns: 1fr !important;
         gap: 0.4rem !important;
         padding: 0.4rem !important;
     }
 
-    .filter-field, .inventory-filter, .inventory-filter.wide, .inventory-filter.small {
+    .filter-field,
+    .inventory-filter,
+    .inventory-filter.wide,
+    .inventory-filter.small {
         grid-column: span 12 !important;
     }
 
@@ -1067,19 +1079,25 @@ body {
 
     /* 6. Tables and Paginators compact design */
     ::ng-deep {
-        .compact-table, .custom-p-table, .inventory-table {
+
+        .compact-table,
+        .custom-p-table,
+        .inventory-table {
             table {
                 font-size: 11px !important;
             }
-            .p-datatable-thead > tr > th {
+
+            .p-datatable-thead>tr>th {
                 font-size: 9px !important;
                 padding: 6px 8px !important;
             }
-            .p-datatable-tbody > tr > td {
+
+            .p-datatable-tbody>tr>td {
                 font-size: 9px !important;
                 padding: 8px 8px !important;
             }
         }
+
         .p-paginator {
             font-size: 10px !important;
             padding: 0.2rem !important;
@@ -1101,7 +1119,8 @@ body {
         width: 100% !important;
     }
 
-    .footer-actions .btn, .footer-actions button {
+    .footer-actions .btn,
+    .footer-actions button {
         width: 100% !important;
         height: 32px !important;
         font-size: 11px !important;
@@ -1127,7 +1146,9 @@ body {
 }
 
 @media (max-width: 480px) {
-    .kpi-grid, .inventory-stats {
+
+    .kpi-grid,
+    .inventory-stats {
         grid-template-columns: 1fr !important;
     }
 }

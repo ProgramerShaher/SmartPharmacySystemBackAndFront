@@ -1,0 +1,23 @@
+.shift-details-container {
+    .info-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid var(--surface-border);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+    }
+
+    ::v-deep .p-tabview {
+        .p-tabview-nav {
+            margin-bottom: 1rem;
+        }
+        
+        .p-tabview-panels {
+            padding: 0;
+            background: transparent;
+        }
+    }
+}

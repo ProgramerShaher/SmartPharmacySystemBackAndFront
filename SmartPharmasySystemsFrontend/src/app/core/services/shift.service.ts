@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ShiftDto, OpenShiftDto, CloseShiftDto, ShiftSummaryDto, ShiftDetailsDto, ApiResponse } from '../models';
 import { environment } from '../../../environments/environment';
 
@@ -13,6 +14,9 @@ export class ShiftService {
   // Subject to trigger modal from anywhere
   private showModalSubject = new Subject<'open' | 'close'>();
   showModal$ = this.showModalSubject.asObservable();
+  
+  // Optional flag to set default behavior for shift closing modal
+  public transferIntent: boolean | null = null;
 
   constructor(private http: HttpClient) { }
 
@@ -42,5 +46,14 @@ export class ShiftService {
 
   getDetails(id: number): Observable<ApiResponse<ShiftDetailsDto>> {
     return this.http.get<ApiResponse<ShiftDetailsDto>>(`${this.apiUrl}/${id}/Details`);
+  }
+
+  getMyDrawerLedger(startDate?: string, endDate?: string): Observable<any> {
+    let params: any = {};
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/my-drawer-ledger`, { params }).pipe(
+        map(res => res.data)
+    );
   }
 }

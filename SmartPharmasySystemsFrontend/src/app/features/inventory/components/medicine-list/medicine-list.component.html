@@ -24,7 +24,20 @@
                         placeholder="الكل" styleClass="w-full p-dropdown-sm" appendTo="body"></p-dropdown>
                 </div>
             </div>
-            <div class="action-buttons">
+            <div class="action-buttons flex gap-2 align-items-center">
+                <button pButton label="تحميل قالب الإكسل" icon="pi pi-download" (click)="downloadTemplate()"
+                    class="p-button-outlined p-button-sm px-3"></button>
+                
+                <div class="relative">
+                    <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;">
+                    <button pButton label="استيراد من إكسل" icon="pi pi-upload" 
+                        (click)="fileInput.click()" [loading]="isImporting()"
+                        class="p-button-secondary p-button-sm px-3"></button>
+                </div>
+
+                <button *ngIf="selectedMedicines.length > 0" pButton label="حذف المحدد ({{selectedMedicines.length}})" icon="pi pi-trash"
+                    (click)="deleteSelectedMedicines()" class="p-button-danger p-button-sm px-3 mx-2"></button>
+
                 <button pButton label="إضافة دواء جديد" icon="pi pi-plus" (click)="openAddMedicine()"
                     class="imperial-btn-primary p-button-sm px-4"></button>
             </div>
@@ -35,10 +48,12 @@
     <div class="ledger-card-wrapper">
         <p-table [value]="medicines()" [lazy]="true" (onLazyLoad)="loadMedicines($event)" [paginator]="true"
             [rows]="10" [totalRecords]="totalRecords()" [loading]="loading()" [rowHover]="true"
+            [(selection)]="selectedMedicines" dataKey="id"
             responsiveLayout="scroll" styleClass="p-datatable-sm imperial-statement-table">
             
             <ng-template pTemplate="header">
                 <tr>
+                    <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
                     <th class="col-num text-center">#</th>
                     <th pSortableColumn="name" style="min-width: 15rem">
                         المنتج الدوائي
@@ -63,7 +78,8 @@
 
             <ng-template pTemplate="body" let-medicine let-i="rowIndex">
                 <tr>
-                    <td class="text-center font-mono text-secondary">{{ i + 1 }}</td>
+                    <td><p-tableCheckbox [value]="medicine"></p-tableCheckbox></td>
+                    <td class="col-num text-center">{{medicine.internalCode || '-'}}</td>
                     
                     <td>
                         <div class="flex flex-column gap-1">

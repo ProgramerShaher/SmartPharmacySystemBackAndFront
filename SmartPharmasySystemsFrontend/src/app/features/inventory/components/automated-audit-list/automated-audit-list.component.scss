@@ -53,7 +53,9 @@
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
 }
 
-.icon-circle i { font-size: 1rem; }
+.icon-circle i {
+  font-size: 1rem;
+}
 
 h1 {
   margin: 0;
@@ -97,10 +99,21 @@ h1 {
   height: 100%;
 }
 
-.kpi-card.stock::before { background: var(--primary-color); }
-.kpi-card.expiry::before { background: #ef4444; }
-.kpi-card.low::before { background: #f59e0b; }
-.kpi-card.today::before { background: #3b82f6; }
+.kpi-card.stock::before {
+  background: var(--primary-color);
+}
+
+.kpi-card.expiry::before {
+  background: #ef4444;
+}
+
+.kpi-card.low::before {
+  background: #f59e0b;
+}
+
+.kpi-card.today::before {
+  background: #3b82f6;
+}
 
 .kpi-label {
   display: block;
@@ -116,11 +129,28 @@ h1 {
   line-height: 1.2;
 }
 
-.kpi-card.stock strong { color: var(--primary-600); }
-.kpi-card.expiry strong { color: #dc2626; }
-.kpi-card.low strong { color: #d97706; }
-.kpi-card.today strong { color: #2563eb; }
-.kpi-card small { color: #94a3b8; font-size: 0.55rem; margin-top: 0.2rem; display: block; }
+.kpi-card.stock strong {
+  color: var(--primary-600);
+}
+
+.kpi-card.expiry strong {
+  color: #dc2626;
+}
+
+.kpi-card.low strong {
+  color: #d97706;
+}
+
+.kpi-card.today strong {
+  color: #2563eb;
+}
+
+.kpi-card small {
+  color: #94a3b8;
+  font-size: 0.55rem;
+  margin-top: 0.2rem;
+  display: block;
+}
 
 .table-panel {
   border-radius: 8px;
@@ -139,9 +169,21 @@ h1 {
   white-space: nowrap;
 }
 
-.type-green { background: #dcfce7; color: #15803d; }
-.type-blue { background: #dbeafe; color: #1d4ed8; }
-.value-pill.danger { background: #fee2e2; color: #b91c1c; min-width: 3rem; }
+.type-green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.type-blue {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.value-pill.danger {
+  background: #fee2e2;
+  color: #b91c1c;
+  min-width: 3rem;
+}
 
 .date-main,
 .name-text,
@@ -150,12 +192,37 @@ h1 {
   font-size: 0.65rem;
 }
 
-.date-main { color: #0f766e; font-weight: 800; }
-.date-time { color: #64748b; font-size: 0.55rem; }
-.name-text { color: #1d4ed8; font-weight: 700; }
-.code-text { color: #0f172a; font-family: Consolas, monospace; font-weight: 700; }
-.muted { display: block; color: #94a3b8; font-size: 0.55rem; margin-top: 0.1rem; }
-.text-center { text-align: center; }
+.date-main {
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.date-time {
+  color: #64748b;
+  font-size: 0.55rem;
+}
+
+.name-text {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
+.code-text {
+  color: #0f172a;
+  font-family: Consolas, monospace;
+  font-weight: 700;
+}
+
+.muted {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.55rem;
+  margin-top: 0.1rem;
+}
+
+.text-center {
+  text-align: center;
+}
 
 .empty-message {
   text-align: center;
@@ -198,7 +265,7 @@ h1 {
 }
 
 :host ::ng-deep {
-  .compact-table .p-datatable-thead > tr > th {
+  .compact-table .p-datatable-thead>tr>th {
     background: #f8fafc;
     color: #475569;
     font-size: 0.6rem;
@@ -207,42 +274,75 @@ h1 {
     border-bottom: 1px solid #e2e8f0;
   }
 
-  .compact-table .p-datatable-tbody > tr > td {
+  .compact-table .p-datatable-tbody>tr>td {
     padding: 0.25rem 0.4rem;
     border-color: #eef2f7;
     vertical-align: middle;
   }
 
-  .compact-table .p-datatable-tbody > tr:hover { background: #f8fafc !important; }
-  .p-paginator { padding: 0.3rem; background: #f8fafc; border: 0; font-size: 0.65rem; }
+  .compact-table .p-datatable-tbody>tr:hover {
+    background: #f8fafc !important;
+  }
+
+  .p-paginator {
+    padding: 0.3rem;
+    background: #f8fafc;
+    border: 0;
+    font-size: 0.65rem;
+  }
+
   .p-button.p-button-sm,
-  .p-button.p-button-icon-only { width: 2rem; height: 2rem; }
+  .p-button.p-button-icon-only {
+    width: 2rem;
+    height: 2rem;
+  }
+
   .p-inputtext,
   .p-dropdown,
-  textarea { width: 100%; min-height: 1.8rem; font-size: 0.65rem; border-radius: 6px; }
+  textarea {
+    width: 100%;
+    min-height: 1.8rem;
+    font-size: 0.65rem;
+    border-radius: 6px;
+  }
 }
 
 @media (max-width: 768px) {
-  .inventory-page { padding: 6px !important; }
+  .inventory-page {
+    padding: 6px !important;
+  }
+
   .page-header {
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 8px !important;
     padding: 8px 10px !important;
   }
+
   .actions {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 6px !important;
   }
+
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 6px !important;
   }
+
   .kpi-card {
     padding: 6px 8px !important;
-    strong { font-size: 13px !important; }
-    .kpi-label { font-size: 9px !important; }
-    small { font-size: 8px !important; }
+
+    strong {
+      font-size: 13px !important;
+    }
+
+    .kpi-label {
+      font-size: 9px !important;
+    }
+
+    small {
+      font-size: 8px !important;
+    }
   }
 }

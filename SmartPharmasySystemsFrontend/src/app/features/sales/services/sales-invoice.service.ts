@@ -15,9 +15,10 @@ export class SaleInvoiceService {
 
     constructor(private http: HttpClient) { }
 
-    getAll(search?: string): Observable<SaleInvoice[]> {
+    getAll(search?: string, includeClosed?: boolean): Observable<SaleInvoice[]> {
         let params = new HttpParams();
         if (search) params = params.set('search', search);
+        if (includeClosed) params = params.set('includeClosed', 'true');
 
         return this.http.get<ApiResponse<SaleInvoice[]>>(this.apiUrl, { params }).pipe(
             map(res => res.data)

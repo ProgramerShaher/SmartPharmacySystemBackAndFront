@@ -7,6 +7,7 @@ import { SaleInvoice, CreateSaleInvoiceDto } from '../../../../core/models';
 import { Medicine, MedicineBatch } from '../../../../core/models';
 import { MedicineBatchResponseDto } from '../../../../core/models/medicine-batch.interface';
 import { MessageService } from 'primeng/api';
+import { PricelistService, PricelistSelectDto, PricelistItem } from '../../../inventory/services/pricelist.service';
 // PrimeNG Imports
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -28,7 +29,7 @@ import { DropdownModule } from "primeng/dropdown";
 import { BarcodeService } from '../../../../core/services/barcode.service';
 import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
 import { TransactionType } from '../../../../core/models/barcode.interface';
-import { HostListener } from '@angular/core';
+import { HostListener, ChangeDetectorRef } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
 interface InvoiceItem {
@@ -39,12 +40,17 @@ interface InvoiceItem {
     quantity: number;
     salePrice: number;
     unitCost: number;
-    total: number;
+    total: number;         // total BEFORE discount
+    netTotal: number;      // total AFTER line discount
     profit: number;
     expiryDate?: Date;
     availableQuantity: number;
     saleUnitId?: number | null;
     unitName?: string;
+    /** Manual discount applied by cashier (0-100%) */
+    discountPercentage: number;
+    /** Calculated discount amount for this line */
+    discountAmount: number;
 }
 
 import { ShiftService } from '../../../../core/services/shift.service';
@@ -82,10 +88,17 @@ export class SaleInvoiceCreateComponent implements OnInit {
     items = signal<InvoiceItem[]>([]);
     discount = signal<number>(0);
 
+    // 🏷️ PRICELIST
+    /** Global pricelist discount from customer pricelist (e.g. 10%) */
+    customerPricelistId = signal<number | null>(null);
+    customerPricelistDiscount = signal<number>(0);
+    activePricelistItems = signal<PricelistItem[]>([]); // To store item-specific overrides
+
     // ⚡ REACTIVE TOTALS (0ms Latency)
     subtotal = computed(() => this.items().reduce((sum, item) => sum + item.total, 0));
+    totalDiscount = computed(() => this.items().reduce((sum, item) => sum + item.discountAmount, 0) + this.discount());
     totalProfit = computed(() => this.items().reduce((sum, item) => sum + item.profit, 0));
-    total = computed(() => Math.max(0, this.subtotal() - this.discount()));
+    total = computed(() => Math.max(0, this.subtotal() - this.totalDiscount()));
     totalQuantity = computed(() => this.items().reduce((sum, item) => sum + item.quantity, 0));
 
     // 💡 INLINE LIVE TOTAL (Instant Calculation)
@@ -111,7 +124,11 @@ export class SaleInvoiceCreateComponent implements OnInit {
     get maxAllowedQuantityInline(): number {
         if (!this.inlineBatch) return 0;
         const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
-        return Math.floor(this.inlineBatch.remainingQuantity / unitFactor);
+        if (this.availableBatches && this.availableBatches.length > 0) {
+            const totalRemaining = this.availableBatches.reduce((sum, b) => sum + (b.remainingQuantity || 0), 0);
+            return Math.floor(totalRemaining / unitFactor);
+        }
+        return 99999;
     }
 
     // 🛫 OPERATIONAL STATE
@@ -147,6 +164,11 @@ export class SaleInvoiceCreateComponent implements OnInit {
     isEditMode = false;
     invoiceId: number | null = null;
 
+    // 💰 DRAWER STATUS
+    drawerLedgerVisible = false;
+    drawerLedger: any = null;
+    loadingDrawer = false;
+
     constructor(
         private salesService: SaleInvoiceService,
         private messageService: MessageService,
@@ -155,8 +177,10 @@ export class SaleInvoiceCreateComponent implements OnInit {
         private customerService: CustomerService,
         private barcodeService: BarcodeService,
         private shiftService: ShiftService,
+        private pricelistService: PricelistService,
         private router: Router,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
@@ -327,29 +351,103 @@ export class SaleInvoiceCreateComponent implements OnInit {
         if (this.isCashCustomer) {
             this.selectedCustomer = null;
             this.paymentMethod = 'Cash';
+            this.selectedPaymentMethod = 1;
         } else {
             this.paymentMethod = 'Credit'; // Default to credit if selecting a specific customer, can be changed logic
+            this.selectedPaymentMethod = 2;
         }
     }
 
     // 💼 LOAD CUSTOMERS
     loadCustomers() {
-        // Load all customers from backend
         this.customerService.getAll({ pageSize: 100 }).subscribe({
             next: (result) => {
                 this.customers = result.items.map(c => ({
                     id: c.id,
                     name: c.name,
-                    phone: c.phoneNumber || ''
+                    phone: c.phoneNumber || '',
+                    pricelistId: (c as any).pricelistId || null,
+                    pricelistDiscountPercentage: (c as any).pricelistDiscountPercentage || 0
                 }));
             },
             error: () => {
                 this.messageService.add({ severity: 'warn', summary: 'تحذير', detail: 'فشل تحميل قائمة العملاء' });
-                // Fallback to empty list
                 this.customers = [];
             }
         });
     }
+
+    /** Called when cashier selects a customer from dropdown - loads their pricelist */
+    onCustomerChange(customer: any) {
+        if (customer && customer.pricelistId) {
+            this.customerPricelistId.set(customer.pricelistId);
+            this.customerPricelistDiscount.set(customer.pricelistDiscountPercentage || 0);
+
+            // Fetch the full pricelist to get item overrides
+            this.pricelistService.getById(customer.pricelistId).subscribe({
+                next: (pricelist) => {
+                    this.activePricelistItems.set(pricelist.items || []);
+
+                    if (customer.pricelistDiscountPercentage > 0 || (pricelist.items && pricelist.items.length > 0)) {
+                        this.messageService.add({
+                            severity: 'info',
+                            summary: 'قائمة أسعار مخصصة',
+                            detail: `تم تطبيق قائمة أسعار العميل (${pricelist.name}) بنجاح`
+                        });
+                        // Recalculate all existing items using the newly fetched pricelist
+                        this.recalculateAllItems();
+                    }
+                },
+                error: () => {
+                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل جلب تفاصيل قائمة أسعار العميل' });
+                }
+            });
+        } else {
+            this.customerPricelistId.set(null);
+            this.customerPricelistDiscount.set(0);
+            this.activePricelistItems.set([]);
+            this.recalculateAllItems(); // Remove discounts if customer is changed back to standard
+        }
+    }
+
+    /** Recalculate all items based on current active pricelist (global + overrides) */
+    recalculateAllItems() {
+        const updated = this.items().map(item => {
+            const override = this.activePricelistItems().find(p => p.medicineId === item.medicineId);
+
+            let finalDiscountPct = this.customerPricelistDiscount(); // default global
+
+            if (override) {
+                if (override.fixedPrice !== undefined && override.fixedPrice !== null) {
+                    // Calculate equivalent discount percentage for the fixed price
+                    if (item.salePrice > 0 && override.fixedPrice < item.salePrice) {
+                        finalDiscountPct = ((item.salePrice - override.fixedPrice) / item.salePrice) * 100;
+                    } else {
+                        finalDiscountPct = 0; // If fixed price is higher or equal, 0 discount (or handle differently)
+                    }
+                } else if (override.discountPercentage !== undefined && override.discountPercentage !== null) {
+                    finalDiscountPct = override.discountPercentage;
+                }
+            }
+
+            const discountAmount = Math.round((item.total * finalDiscountPct / 100) * 100) / 100;
+            return { ...item, discountPercentage: Math.round(finalDiscountPct * 100) / 100, discountAmount, netTotal: item.total - discountAmount };
+        });
+        this.items.set(updated);
+    }
+
+    /** Update discount for a specific line item */
+    updateItemDiscount(index: number, discountPct: number) {
+        const current = this.items();
+        if (current[index]) {
+            const item = current[index];
+            item.discountPercentage = discountPct;
+            item.discountAmount = Math.round((item.total * discountPct / 100) * 100) / 100;
+            item.netTotal = item.total - item.discountAmount;
+            this.items.set([...current]);
+        }
+    }
+
 
     searchCustomer(event: any) {
         // Mock search for now or implement real service call
@@ -363,6 +461,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 this.invoiceDate = new Date(invoice.invoiceDate);
                 const method: any = invoice.paymentMethod;
                 this.paymentMethod = (method === 2 || method === 'Credit') ? 'Credit' : 'Cash';
+                this.selectedPaymentMethod = (method === 2 || method === 'Credit') ? 2 : 1;
 
                 if (invoice.customerId) {
                     this.selectedCustomer = { id: invoice.customerId, name: invoice.customerName };
@@ -378,12 +477,15 @@ export class SaleInvoiceCreateComponent implements OnInit {
                     batchNumber: d.companyBatchNumber || '',
                     quantity: d.quantity,
                     salePrice: d.salePrice,
-                    unitCost: 0, // Need fetch for profit calc if strict
+                    unitCost: 0,
                     total: d.quantity * d.salePrice,
+                    netTotal: d.quantity * d.salePrice,
                     profit: 0,
-                    availableQuantity: 9999, // Fallback
+                    availableQuantity: 9999,
                     saleUnitId: d.saleUnitId,
-                    unitName: d.saleUnitId ? 'وحدة' : 'أساسية'
+                    unitName: d.saleUnitId ? 'وحدة' : 'أساسية',
+                    discountPercentage: (d as any).discountPercentage || 0,
+                    discountAmount: (d as any).discountAmount || 0
                 }));
                 this.items.set(mappedItems);
                 this.saving = false;
@@ -405,8 +507,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
     updateItemQuantity(item: InvoiceItem, qty: number) {
         if (qty > item.availableQuantity) {
-            this.messageService.add({ severity: 'warn', summary: 'Stock Limit', detail: `Only ${item.availableQuantity} available` });
-            qty = item.availableQuantity;
+            this.messageService.add({ severity: 'info', summary: 'تنبيه مخزون', detail: `الكمية المطلوبة أكبر من المتوفر في الدفعة الحالية (${item.availableQuantity})، سيتم السحب من الدفعات الأخرى تلقائياً.` });
         }
 
         item.quantity = qty;
@@ -441,6 +542,14 @@ export class SaleInvoiceCreateComponent implements OnInit {
             return;
         }
 
+        // Refresh time to prevent stale timestamps if the page was left open for a while
+        if (!this.isEditMode) {
+            const now = new Date();
+            if (this.invoiceDate.toDateString() === now.toDateString()) {
+                this.invoiceDate = now;
+            }
+        }
+
         // Before saving, ensure shift is open
         this.shiftService.getCurrentShift().subscribe({
             next: () => {
@@ -471,7 +580,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
     private createInvoiceWithCustomer(approve: boolean, customerId: number | null, customerName: string) {
         const payload: CreateSaleInvoiceDto = {
             invoiceDate: this.invoiceDate.toISOString(),
-            paymentMethod: this.paymentMethod === 'Cash' ? 1 : 2,
+            paymentMethod: this.selectedPaymentMethod,
             customerId: customerId,
             customerName: customerName,
             details: this.items().map(item => ({
@@ -479,7 +588,8 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 batchId: item.batchId,
                 quantity: item.quantity,
                 salePrice: item.salePrice,
-                saleUnitId: item.saleUnitId
+                saleUnitId: item.saleUnitId,
+                discountPercentage: item.discountPercentage || 0
             })),
             notes: approve ? 'تم الاعتماد من نقطة البيع' : 'مسودة من نقطة البيع'
         };
@@ -611,9 +721,13 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
         // Validation against stock
         const requestedBaseUnits = this.inlineQuantity * unitFactor;
-        if (requestedBaseUnits > this.inlineBatch.remainingQuantity) {
-            this.messageService.add({ severity: 'error', summary: 'رصيد غير كاف', detail: `الكمية المتوفرة ${this.inlineBatch.remainingQuantity} وحدة أساسية فقط.` });
+        const totalAvailableUnits = this.availableBatches.reduce((sum, b) => sum + (b.remainingQuantity || 0), 0);
+
+        if (this.availableBatches.length > 1 && requestedBaseUnits > totalAvailableUnits) {
+            this.messageService.add({ severity: 'error', summary: 'رصيد غير كاف', detail: `إجمالي الكمية المتوفرة للصنف ${totalAvailableUnits} وحدة أساسية فقط.` });
             return;
+        } else if (requestedBaseUnits > this.inlineBatch.remainingQuantity) {
+            this.messageService.add({ severity: 'info', summary: 'تنبيه مخزون', detail: `الكمية المطلوبة أكبر من المتوفر في الدفعة المحددة، سيتم السحب من الدفعات الأخرى تلقائياً.` });
         }
 
         if (this.editingItemIndex !== null) {
@@ -664,12 +778,38 @@ export class SaleInvoiceCreateComponent implements OnInit {
                     salePrice: salePrice,
                     unitCost: unitCost,
                     total: this.inlineQuantity * salePrice,
+                    netTotal: this.inlineQuantity * salePrice,
                     profit: (salePrice - unitCost) * this.inlineQuantity,
                     expiryDate: new Date(this.inlineBatch.expiryDate),
                     availableQuantity: Math.floor(this.inlineBatch.remainingQuantity / unitFactor),
                     saleUnitId: saleUnitId,
-                    unitName: unitName
+                    unitName: unitName,
+                    discountPercentage: 0,
+                    discountAmount: 0
                 };
+
+                // Apply pricelist discount (global or override)
+                const override = this.activePricelistItems().find(p => p.medicineId === newItem.medicineId);
+                let finalDiscountPct = this.customerPricelistDiscount();
+
+                if (override) {
+                    if (override.fixedPrice !== undefined && override.fixedPrice !== null) {
+                        if (newItem.salePrice > 0 && override.fixedPrice < newItem.salePrice) {
+                            finalDiscountPct = ((newItem.salePrice - override.fixedPrice) / newItem.salePrice) * 100;
+                        } else {
+                            finalDiscountPct = 0;
+                        }
+                    } else if (override.discountPercentage !== undefined && override.discountPercentage !== null) {
+                        finalDiscountPct = override.discountPercentage;
+                    }
+                }
+
+                if (finalDiscountPct > 0) {
+                    newItem.discountPercentage = Math.round(finalDiscountPct * 100) / 100;
+                    newItem.discountAmount = Math.round((newItem.total * newItem.discountPercentage / 100) * 100) / 100;
+                    newItem.netTotal = newItem.total - newItem.discountAmount;
+                }
+
 
                 this.items.update(current => [...current, newItem]);
                 this.messageService.add({ severity: 'success', summary: 'تمت الإضافة', detail: 'تم إضافة الصنف بنجاح' });
@@ -727,5 +867,33 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
         this.availableBatches = [this.inlineBatch];
         this.inlineQuantity = item.quantity;
+    }
+
+    // 💰 DRAWER LOGIC
+    openDrawerLedger() {
+        this.drawerLedgerVisible = true;
+        this.loadingDrawer = true;
+        this.cdr.markForCheck(); // Trigger UI update for loading spinner
+
+        // Fetch from backend (we added my-drawer-ledger endpoint)
+        this.shiftService.getMyDrawerLedger().subscribe({
+            next: (ledger) => {
+                this.drawerLedger = ledger;
+                this.loadingDrawer = false;
+                this.cdr.markForCheck(); // Trigger UI update for loaded data
+            },
+            error: (err) => {
+                this.loadingDrawer = false;
+                this.drawerLedgerVisible = false;
+                this.cdr.markForCheck(); // Trigger UI update for error
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'لم يتم العثور على درج (قد تكون الوردية مغلقة)' });
+            }
+        });
+    }
+
+    closeShiftFromDrawer(transferToSafe: boolean = true) {
+        this.shiftService.transferIntent = transferToSafe;
+        this.shiftService.requestShiftModal('close');
+        this.drawerLedgerVisible = false;
     }
 }

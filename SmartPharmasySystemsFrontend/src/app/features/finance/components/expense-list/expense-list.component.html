@@ -11,7 +11,7 @@
       </div>
     </div>
     <div class="inventory-actions">
-      <button pButton label="إضافة مصروف جديد" icon="pi pi-plus"
+      <button *appHasPermission="['finance.expenses.create']" pButton label="إضافة مصروف جديد" icon="pi pi-plus"
         class="p-button-raised p-button-success border-round-lg" (click)="addNewExpense()"></button>
     </div>
   </section>
@@ -148,14 +148,16 @@
                 class="p-button-rounded p-button-success p-button-sm border-round-lg w-2rem h-2rem"
                 (click)="printVoucher(expense)" pTooltip="طباعة السند" tooltipPosition="top">
               </button>
-              <button pButton type="button" icon="pi pi-pencil"
-                class="p-button-rounded p-button-warning p-button-sm border-round-lg w-2rem h-2rem"
-                (click)="editExpense(expense)" pTooltip="تعديل" tooltipPosition="top">
-              </button>
-              <button pButton type="button" icon="pi pi-trash"
-                class="p-button-rounded p-button-danger p-button-sm border-round-lg w-2rem h-2rem"
-                (click)="deleteExpense($event, expense)" pTooltip="حذف" tooltipPosition="top">
-              </button>
+              <ng-container *appHasPermission="['finance.expenses.create']">
+                <button pButton type="button" icon="pi pi-pencil"
+                  class="p-button-rounded p-button-warning p-button-sm border-round-lg w-2rem h-2rem"
+                  (click)="editExpense(expense)" pTooltip="تعديل" tooltipPosition="top">
+                </button>
+                <button pButton type="button" icon="pi pi-trash"
+                  class="p-button-rounded p-button-danger p-button-sm border-round-lg w-2rem h-2rem"
+                  (click)="deleteExpense($event, expense)" pTooltip="حذف" tooltipPosition="top">
+                </button>
+              </ng-container>
             </div>
           </td>
         </tr>
@@ -166,7 +168,7 @@
           <td colspan="8" class="text-center py-4">
             <i class="pi pi-inbox text-4xl text-300 block mb-2"></i>
             <p class="text-600 font-bold mb-3">لا توجد مصروفات مسجلة حالياً</p>
-            <button pButton type="button" label="إضافة أول مصروف" icon="pi pi-plus" class="p-button-sm border-round-lg" (click)="addNewExpense()"></button>
+            <button *appHasPermission="['finance.expenses.create']" pButton type="button" label="إضافة أول مصروف" icon="pi pi-plus" class="p-button-sm border-round-lg" (click)="addNewExpense()"></button>
           </td>
         </tr>
       </ng-template>

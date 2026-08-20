@@ -69,6 +69,7 @@
             <div style="flex: 1;">
                 <label class="dialog-label">ساعات العمل <span class="text-danger">*</span></label>
                 <p-inputNumber [(ngModel)]="model.workingHours" [min]="1" [max]="24" [maxFractionDigits]="1"
+                    (onInput)="recalculateShiftEndTime()"
                     placeholder="8" [class.ng-invalid]="hasError('workingHours')"></p-inputNumber>
                 <small *ngIf="hasError('workingHours')" class="text-danger" style="font-size: 0.55rem;">{{ errors['workingHours'] }}</small>
             </div>
@@ -78,6 +79,7 @@
             <div style="flex: 1;">
                 <label class="dialog-label">وقت البدء (اختياري)</label>
                 <p-calendar [(ngModel)]="model.shiftStartTime" [timeOnly]="true" hourFormat="12" [showIcon]="true" 
+                    (onSelect)="recalculateShiftEndTime()"
                     icon="pi pi-clock" placeholder="وقت البدء" appendTo="body"></p-calendar>
             </div>
             <div style="flex: 1;">

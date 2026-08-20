@@ -1,6 +1,7 @@
 <div class="inventory-page" dir="rtl">
   <p-toast></p-toast>
-  <p-confirmDialog header="تأكيد" icon="pi pi-exclamation-triangle" acceptLabel="نعم" rejectLabel="لا"></p-confirmDialog>
+  <p-confirmDialog header="تأكيد" icon="pi pi-exclamation-triangle" acceptLabel="نعم"
+    rejectLabel="لا"></p-confirmDialog>
 
   <div class="page-header">
     <div class="title-wrap">
@@ -14,8 +15,8 @@
     <div class="actions">
       <p-button icon="pi pi-refresh" [rounded]="true" [outlined]="true" severity="secondary" pTooltip="تحديث"
         tooltipPosition="bottom" (onClick)="loadAudits()" [loading]="loading"></p-button>
-      <p-button icon="pi pi-plus" [rounded]="true" severity="primary" pTooltip="جرد آلي جديد"
-        tooltipPosition="bottom" (onClick)="showGenerateModal()"></p-button>
+      <p-button icon="pi pi-plus" [rounded]="true" severity="primary" pTooltip="جرد آلي جديد" tooltipPosition="bottom"
+        (onClick)="showGenerateModal()"></p-button>
     </div>
   </div>
 
@@ -85,8 +86,8 @@
             <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
               pTooltip="عرض التقرير" tooltipPosition="top"
               [routerLink]="['/inventory/automated-audits', audit.id]"></p-button>
-            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
-              pTooltip="حذف" tooltipPosition="top" (onClick)="deleteAudit(audit.id)"></p-button>
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small" pTooltip="حذف"
+              tooltipPosition="top" (onClick)="deleteAudit(audit.id)"></p-button>
           </td>
         </tr>
       </ng-template>
@@ -107,8 +108,8 @@
     <div class="dialog-form">
       <div class="filter-field">
         <label>المستودع (اختياري)</label>
-        <p-dropdown [options]="warehouses" [(ngModel)]="newAuditRequest.warehouseId" optionLabel="name"
-          optionValue="id" [showClear]="true" placeholder="اختر المستودع أو اتركه لجرد شامل"></p-dropdown>
+        <p-dropdown [options]="warehouses" [(ngModel)]="newAuditRequest.warehouseId" optionLabel="name" optionValue="id"
+          [showClear]="true" placeholder="اختر المستودع أو اتركه لجرد شامل"></p-dropdown>
         <small>عند ترك الحقل فارغًا سيتم جرد كل المستودعات.</small>
       </div>
 

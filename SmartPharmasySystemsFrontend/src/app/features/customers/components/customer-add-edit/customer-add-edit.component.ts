@@ -13,6 +13,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ToastModule } from 'primeng/toast';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DropdownModule } from 'primeng/dropdown';
+import { PricelistService, PricelistSelectDto } from '../../../inventory/services/pricelist.service';
 
 @Component({
   selector: 'app-customer-add-edit',
@@ -27,7 +29,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     InputTextareaModule,
     InputSwitchModule,
     ToastModule,
-    ProgressSpinnerModule
+    ProgressSpinnerModule,
+    DropdownModule
   ],
   providers: [MessageService],
   templateUrl: './customer-add-edit.component.html',
@@ -42,10 +45,12 @@ export class CustomerAddEditComponent implements OnInit, OnChanges {
   isEditMode = signal(false);
   loading = signal(false);
   saving = signal(false);
+  pricelists = signal<PricelistSelectDto[]>([]);
 
   constructor(
     private fb: FormBuilder,
     private customerService: CustomerService,
+    private pricelistService: PricelistService,
     private messageService: MessageService
   ) {
     this.customerForm = this.fb.group({
@@ -55,12 +60,21 @@ export class CustomerAddEditComponent implements OnInit, OnChanges {
       address: [''],
       creditLimit: [0],
       notes: [''],
+      pricelistId: [null],
       isActive: [true]
     });
   }
 
   ngOnInit() {
     this.initForm();
+    this.loadPricelists();
+  }
+
+  loadPricelists() {
+    this.pricelistService.getSelectList().subscribe({
+      next: (data) => this.pricelists.set(data),
+      error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل قوائم الأسعار' })
+    });
   }
 
   ngOnChanges(changes: SimpleChanges) {

@@ -1,0 +1,47 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.card {
+    background: var(--surface-card);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05);
+}
+
+.custom-table {
+    :host ::ng-deep {
+        .p-datatable-header {
+            background-color: var(--surface-50);
+            border: 1px solid var(--surface-border);
+            border-bottom: 0;
+            padding: 1rem;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .p-datatable-thead > tr > th {
+            background-color: var(--surface-50);
+            color: var(--text-color);
+            font-weight: 600;
+            padding: 1rem;
+            border: 1px solid var(--surface-border);
+        }
+
+        .p-datatable-tbody > tr > td {
+            padding: 1rem;
+            border: 1px solid var(--surface-border);
+            color: var(--text-color-secondary);
+        }
+
+        .p-datatable-tbody > tr:nth-child(even) {
+            background-color: var(--surface-50);
+        }
+
+        .p-datatable-tbody > tr:hover {
+            background-color: var(--surface-hover);
+        }
+    }
+}

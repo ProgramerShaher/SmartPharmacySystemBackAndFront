@@ -67,6 +67,13 @@ export class CategoryService {
     }
 
     /**
+     * Delete multiple categories
+     */
+    deleteBulk(ids: number[]): Observable<ApiResponse<any>> {
+        return this.http.request<ApiResponse<any>>('delete', `${this.apiUrl}/bulk`, { body: ids });
+    }
+
+    /**
      * Get all categories for dropdowns (helper)
      * Fetches a large page size to get all
      */
@@ -81,5 +88,21 @@ export class CategoryService {
      */
     getAll(): Observable<CategoryDto[]> {
         return this.getAllForDropdown();
+    }
+
+    /**
+     * Download Excel Template
+     */
+    downloadTemplate(): void {
+        window.open(`${this.apiUrl}/template`, '_blank');
+    }
+
+    /**
+     * Import from Excel
+     */
+    importFromExcel(file: File): Observable<ApiResponse<any>> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.http.post<ApiResponse<any>>(`${this.apiUrl}/import`, formData);
     }
 }

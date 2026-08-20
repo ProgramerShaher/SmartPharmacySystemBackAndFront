@@ -10,6 +10,9 @@ export interface Customer {
     creditLimit?: number;
     notes?: string;
     isActive: boolean;
+    pricelistId?: number;
+    pricelistName?: string;
+    pricelistDiscountPercentage?: number;
     createdAt: string;
     updatedAt?: string;
 }

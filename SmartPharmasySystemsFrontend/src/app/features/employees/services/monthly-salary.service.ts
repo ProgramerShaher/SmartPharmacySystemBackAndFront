@@ -20,6 +20,12 @@ export class MonthlySalaryService {
         );
     }
 
+    getByEmployeeId(employeeId: number): Observable<any[]> {
+        return this.http.get<ApiResponse<any[]>>(`${this.apiUrl}/employee/${employeeId}`).pipe(
+            map(response => response.data)
+        );
+    }
+
     getByBranchMonthYear(month: number, year: number, branchId?: number): Observable<any[]> {
         let params = new HttpParams()
             .set('month', month.toString())
@@ -50,20 +56,20 @@ export class MonthlySalaryService {
         );
     }
 
-    pay(id: number): Observable<any> {
-        return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/pay`, {}).pipe(
+    pay(id: number, paidFromAccountId: number, salaryExpenseAccountId?: number): Observable<any> {
+        return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/pay`, { paidFromAccountId, salaryExpenseAccountId }).pipe(
             map(response => response.data)
         );
     }
 
-    payAll(month: number, year: number, branchId?: number): Observable<number> {
+    payAll(month: number, year: number, branchId: number | undefined, paidFromAccountId: number, salaryExpenseAccountId?: number): Observable<number> {
         let params = new HttpParams()
             .set('month', month.toString())
             .set('year', year.toString());
         if (branchId) {
             params = params.set('branchId', branchId.toString());
         }
-        return this.http.post<ApiResponse<number>>(`${this.apiUrl}/pay-all`, {}, { params }).pipe(
+        return this.http.post<ApiResponse<number>>(`${this.apiUrl}/pay-all`, { paidFromAccountId, salaryExpenseAccountId }, { params }).pipe(
             map(response => response.data)
         );
     }

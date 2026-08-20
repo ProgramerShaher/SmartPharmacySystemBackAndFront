@@ -1,0 +1,60 @@
+<div class="card">
+    <p-confirmDialog></p-confirmDialog>
+
+    <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4 gap-3">
+        <div>
+            <h2 class="m-0 text-900 font-bold text-2xl flex align-items-center gap-2">
+                <i class="pi pi-lock text-3xl text-primary"></i>
+                الإقفال اليومي للصناديق
+            </h2>
+            <p class="text-500 mt-2 mb-0">إدارة الأيام المقفلة محاسبياً ومنع التعديل على الحركات السابقة</p>
+        </div>
+        <div class="flex align-items-center gap-2">
+            <span class="p-input-icon-left">
+                <i class="pi pi-calendar"></i>
+                <p-calendar [(ngModel)]="selectedDate" dateFormat="yy-mm-dd" [readonlyInput]="true" placeholder="اختر يوم للإقفال"></p-calendar>
+            </span>
+            <div class="flex align-items-center ml-3 mr-3">
+                <p-checkbox [(ngModel)]="transferToMainSafe" [binary]="true" inputId="transferToMainSafeDay"></p-checkbox>
+                <label for="transferToMainSafeDay" class="ml-2 mb-0">ترحيل نقدية الصناديق الفرعية</label>
+            </div>
+            <button pButton type="button" label="تنفيذ إقفال يومي" icon="pi pi-check-circle" class="p-button-danger" 
+                    (click)="confirmCloseDay()" [disabled]="!selectedDate || loading">
+            </button>
+        </div>
+    </div>
+
+    <p-table #dt [value]="closings" [loading]="loading"
+             [rows]="10" [paginator]="true" responsiveLayout="scroll"
+             [rowHover]="true" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped custom-table"
+             [globalFilterFields]="['closingDate', 'closedByName']">
+        
+        <ng-template pTemplate="header">
+            <tr>
+                <th>تاريخ الإقفال</th>
+                <th>تم الإقفال بواسطة</th>
+                <th>تاريخ ووقت التنفيذ</th>
+                <th>إجمالي المبيعات</th>
+                <th>إجمالي المشتريات</th>
+                <th>الحالة</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-closing>
+            <tr>
+                <td><span class="font-bold text-700">{{ closing.closingDate | date:'yyyy-MM-dd' }}</span></td>
+                <td>{{ closing.closedByName || 'النظام' }}</td>
+                <td>{{ closing.createdAt | date:'yyyy-MM-dd hh:mm a' }}</td>
+                <td class="text-success font-bold">{{ closing.totalSalesAmount | currency:'SAR ':'symbol':'1.2-2' }}</td>
+                <td class="text-danger font-bold">{{ closing.totalPurchasesAmount | currency:'SAR ':'symbol':'1.2-2' }}</td>
+                <td>
+                    <p-tag [severity]="getStatusSeverity(closing.status)" [value]="getStatusName(closing.status)"></p-tag>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="6" class="text-center p-4">لا توجد إقفالات يومية مسجلة بعد.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

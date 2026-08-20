@@ -8,6 +8,7 @@ export interface Category {
     imageUrl?: string;
     createdAt?: string;
     isDeleted?: boolean;
+    hasMedicines?: boolean;
 }
 
 export interface CategoryDto {
@@ -17,6 +18,7 @@ export interface CategoryDto {
     imageUrl?: string;
     createdAt: string;
     medicinesCount?: number;
+    hasMedicines?: boolean;
 }
 
 export interface CreateCategoryDto {

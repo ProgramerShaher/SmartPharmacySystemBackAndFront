@@ -21,6 +21,7 @@ export interface OpenShiftDto {
 export interface CloseShiftDto {
     actualClosingCash: number;
     notes?: string;
+    transferToMainSafe?: boolean;
 }
 
 export interface ShiftSummaryDto {

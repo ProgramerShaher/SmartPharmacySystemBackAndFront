@@ -89,7 +89,10 @@ export class AttendanceComponent implements OnInit {
         // Fetch actual attendances for today
         this.attendanceService.getByBranch(this.selectedBranch, this.filterDate, this.filterDate).subscribe({
           next: (attendances) => {
-             const mapped = emps.map(emp => {
+             const selectedDay = this.startOfDay(this.filterDate);
+             const mapped = emps
+              .filter(emp => this.isEmployeeActiveOnDate(emp, selectedDay))
+              .map(emp => {
                 const record = attendances.find((a: any) => a.employeeId === emp.id);
                 return {
                     employeeId: emp.id,
@@ -214,5 +217,23 @@ export class AttendanceComponent implements OnInit {
       case AttendanceStatus.OnLeave: return 'info';
       default: return 'info';
     }
+  }
+
+  private isEmployeeActiveOnDate(emp: any, selectedDay: Date): boolean {
+    if (!emp.hireDate) return true;
+
+    const hireDate = this.startOfDay(new Date(emp.hireDate));
+    if (selectedDay < hireDate) return false;
+
+    if (emp.terminationDate) {
+      const terminationDate = this.startOfDay(new Date(emp.terminationDate));
+      if (selectedDay > terminationDate) return false;
+    }
+
+    return true;
+  }
+
+  private startOfDay(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 }

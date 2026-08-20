@@ -186,10 +186,21 @@ export class CustomerReceiptsComponent implements OnInit {
     loadingInvoices = signal(false);
 
     onCustomerSelect(event: any) {
-        const customer: Customer = event.value || event;
+        const customer: Customer = (event?.value ?? event) as Customer;
+        console.log('🔎 [DEBUG] onCustomerSelect called. event:', event, 'customer:', customer);
+
+        if (!customer || !customer.id) {
+            console.warn('⚠️ [DEBUG] onCustomerSelect: invalid customer object received', customer);
+            return;
+        }
+
         this.selectedCustomer = customer;
         this.selectedCustomerObj = customer;
-        this.receiptForm.patchValue({ customerId: customer.id });
+
+        // 🔧 FIX: Store the FULL customer OBJECT in the form (not just id),
+        // because the same form field is bound to p-autoComplete which returns objects.
+        this.receiptForm.patchValue({ customerId: customer });
+        console.log('✅ [DEBUG] Form customerId set to full customer object. Form value now:', { ...this.receiptForm.value });
 
         // Reset invoice selection state
         this.unpaidInvoices.set([]);
@@ -254,47 +265,144 @@ export class CustomerReceiptsComponent implements OnInit {
     }
 
     saveReceipt() {
-        if (this.receiptForm.invalid || !this.receiptForm.value.customerId?.id) {
+        console.log('========================================');
+        console.log('🔎 [DEBUG SAVE] saveReceipt() INVOKED!');
+        console.log('  Form raw value:', JSON.stringify(this.receiptForm.value, (k, v) => typeof v === 'bigint' ? v.toString() : v, 2));
+        console.log('  Form VALID?', this.receiptForm.valid, '| Form INVALID?', this.receiptForm.invalid);
+        console.log('  Form errors (if any):', JSON.stringify(this.receiptForm.errors));
+        console.log('  Form controls errors:');
+        Object.keys(this.receiptForm.controls).forEach(k => {
+            const ctrl = this.receiptForm.get(k)!;
+            if (ctrl.invalid) console.log(`    - ${k}: INVALID, errors:`, JSON.stringify(ctrl.errors));
+        });
+        console.log('========================================');
+
+        const formVal = this.receiptForm.value;
+
+        // 🔧 FIX: Robust extraction of customerId - handles BOTH formats:
+        // Case A: customerId is a full Customer OBJECT (from p-autoComplete selection)
+        // Case B: customerId is a primitive NUMBER (from other code paths)
+        let extractedCustomerId: number | null = null;
+        const rawCustomerField = formVal.customerId;
+        console.log('🔎 [DEBUG SAVE] rawCustomerField type:', typeof rawCustomerField, 'value:', rawCustomerField);
+
+        if (rawCustomerField && typeof rawCustomerField === 'object') {
+            extractedCustomerId = Number(rawCustomerField.id);
+            console.log('✅ [DEBUG SAVE] Customer extracted from OBJECT: id =', extractedCustomerId);
+        } else if (typeof rawCustomerField === 'number' && rawCustomerField > 0) {
+            extractedCustomerId = rawCustomerField;
+            console.log('✅ [DEBUG SAVE] Customer extracted from NUMBER: id =', extractedCustomerId);
+        } else if (typeof rawCustomerField === 'string' && /^\d+$/.test(rawCustomerField)) {
+            extractedCustomerId = parseInt(rawCustomerField, 10);
+            console.log('✅ [DEBUG SAVE] Customer extracted from STRING numeric: id =', extractedCustomerId);
+        }
+
+        const isCustomerOk = extractedCustomerId !== null && extractedCustomerId > 0;
+        const isFormValid = this.receiptForm.valid;
+        const amountCheck = Number(formVal.amount || 0) >= 1;
+        const dateCheck = !!formVal.receiptDate;
+        const payCheck = !!formVal.paymentMethod;
+
+        console.log('🔎 [DEBUG SAVE] Validation gates:');
+        console.log('  isCustomerOk =', isCustomerOk, '(extractedCustomerId =', extractedCustomerId, ')');
+        console.log('  isFormValid  =', isFormValid);
+        console.log('  amount>=1    =', amountCheck, '(amount=', formVal.amount, ')');
+        console.log('  datePresent  =', dateCheck,  '(date=', formVal.receiptDate, ')');
+        console.log('  payPresent   =', payCheck,   '(pay=', formVal.paymentMethod, ')');
+
+        if (!isCustomerOk || !isFormValid || !amountCheck || !dateCheck || !payCheck) {
+            console.warn('❌ [DEBUG SAVE] VALIDATION FAILED — marking all touched and EXITING (no request sent).');
             this.receiptForm.markAllAsTouched();
+
+            let errReason = 'الرجاء تعبئة الحقول المطلوبة:';
+            if (!isCustomerOk) errReason += '\n• العميل غير مختار بشكل صحيح (اختره من القائمة المنسدلة)';
+            if (!amountCheck)  errReason += '\n• المبلغ يجب أن يكون أكبر من صفر';
+            if (!dateCheck)    errReason += '\n• تاريخ السند مطلوب';
+            if (!payCheck)     errReason += '\n• طريقة الدفع مطلوبة';
+
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'بيانات غير مكتملة',
+                detail: errReason,
+                life: 8000
+            });
             return;
         }
 
-        const amount = Number(this.receiptForm.value.amount || 0);
+        const amount = Number(formVal.amount || 0);
 
-        this.saving.set(true);
-
-        const formVal = this.receiptForm.value;
-        const customerId = formVal.customerId.id;
-        
         const invoiceObj = formVal.saleInvoiceId;
-        const invoiceId = (typeof invoiceObj === 'object' && invoiceObj !== null) ? invoiceObj.id : invoiceObj;
-        
+        let invoiceId: number | null | undefined = null;
+        if (typeof invoiceObj === 'object' && invoiceObj !== null && invoiceObj.id) {
+            invoiceId = Number(invoiceObj.id);
+            console.log('✅ [DEBUG SAVE] SaleInvoice extracted from OBJECT:', invoiceId);
+        } else if (typeof invoiceObj === 'number' && invoiceObj > 0) {
+            invoiceId = invoiceObj;
+            console.log('✅ [DEBUG SAVE] SaleInvoice extracted from NUMBER:', invoiceId);
+        }
+
         let refNo = formVal.referenceNo;
         if (!refNo && invoiceObj && typeof invoiceObj === 'object') {
             refNo = invoiceObj.saleInvoiceNumber || String(invoiceObj.id);
         }
 
         const dto: CreateCustomerReceiptDto = {
-            customerId,
+            customerId: extractedCustomerId!,
             amount,
             receiptDate: (formVal.receiptDate as Date).toISOString(),
             paymentMethod: formVal.paymentMethod,
-            referenceNo: refNo,
-            saleInvoiceId: invoiceId,
+            referenceNo: refNo || undefined,
+            saleInvoiceId: invoiceId ?? undefined,
             notes: formVal.notes || 'سند قبض'
         };
 
+        console.log('🚀 [DEBUG SAVE] ALL VALIDATIONS PASSED. Sending request...');
+        console.log('  DTO to send:', JSON.stringify(dto, null, 2));
+        console.log('  URL:', `${environment.apiUrl}/CustomerReceipts/customer`);
+
+        this.saving.set(true);
+
         this.customerService.createReceipt(dto).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ سند القبض وتحديث الرصيد' });
+            next: (response) => {
+                console.log('✅ [DEBUG SAVE] SERVER RESPONSE RECEIVED: SUCCESS!', response);
+                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ سند القبض وتحديث الرصيد بنجاح ✅' });
                 this.displayDialog.set(false);
                 this.loadReceipts();
-                this.loadStats(); // Refresh stats
+                this.loadStats();
                 this.saving.set(false);
             },
             error: (err) => {
-                const errorMsg = err.error?.message || 'فشل في حفظ السند';
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: errorMsg });
+                console.error('❌ [DEBUG SAVE] SERVER ERROR RECEIVED:');
+                console.error('  Status:', err.status);
+                console.error('  StatusText:', err.statusText);
+                console.error('  URL:', err.url);
+                console.error('  Error body:', err.error);
+                console.error('  Full error:', err);
+
+                let errorMsg = 'فشل في حفظ السند';
+                if (err.error?.message) {
+                    errorMsg = err.error.message;
+                } else if (err.error?.errors) {
+                    const validationErrors = Object.entries(err.error.errors)
+                        .map(([k, v]) => `• ${k}: ${Array.isArray(v) ? v.join('، ') : v}`)
+                        .join('\n');
+                    errorMsg = `أخطاء تحقق: \n${validationErrors}`;
+                } else if (typeof err.error === 'string') {
+                    errorMsg = err.error;
+                } else if (err.status === 401) {
+                    errorMsg = 'انتهت صلاحية الجلسة (غير مصرح به - 401). الرجاء تسجيل الدخول مرة أخرى.';
+                } else if (err.status === 0) {
+                    errorMsg = 'تعذر الاتصال بخادم الـ Backend. هل خادم الـ API يعمل؟';
+                } else if (err.status >= 500) {
+                    errorMsg = `خطأ داخلي في الخادم (${err.status}). راجع سجلات الخلفية.`;
+                }
+
+                this.messageService.add({
+                    severity: 'error',
+                    summary: `خطأ ${err.status || ''}`,
+                    detail: errorMsg,
+                    life: 15000
+                });
                 this.saving.set(false);
             }
         });

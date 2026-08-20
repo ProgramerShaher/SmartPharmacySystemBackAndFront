@@ -2,6 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FinancialService } from '../../../../core/services/financial.service';
+import { AccountingService } from '../../../../core/services/accounting.service';
 import {
     FinancialTransaction,
     FinancialReport,
@@ -78,8 +79,15 @@ export class FinancialDashboardComponent implements OnInit {
     adjustmentForm: FormGroup;
     saving = false;
 
+    // Main Safe Ledger
+    mainSafeLedger: any = null;
+    loadingMainSafeLedger = true;
+    mainSafeAccountId: number | null = null;
+    ledgerDateFilter: Date[] | undefined;
+
     constructor(
         private financialService: FinancialService,
+        private accountingService: AccountingService,
         private fb: FormBuilder,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
@@ -114,6 +122,25 @@ export class FinancialDashboardComponent implements OnInit {
         });
 
         this.refreshAll();
+        
+        // Find Main Safe Account ID (11101)
+        this.accountingService.getAccountsTree().subscribe(tree => {
+            const findAccount = (nodes: any[], code: string): any => {
+                for (let node of nodes) {
+                    if (node.code === code) return node;
+                    if (node.children && node.children.length > 0) {
+                        const found = findAccount(node.children, code);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            };
+            const mainSafe = findAccount(tree, '11101');
+            if (mainSafe) {
+                this.mainSafeAccountId = mainSafe.id;
+                this.loadMainSafeLedger();
+            }
+        });
     }
 
     refreshAll() {
@@ -125,6 +152,7 @@ export class FinancialDashboardComponent implements OnInit {
         this.loadReport();
         this.loadTransactions();
         this.loadCharts();
+        if (this.mainSafeAccountId) this.loadMainSafeLedger();
     }
 
     loadReport() {
@@ -154,6 +182,28 @@ export class FinancialDashboardComponent implements OnInit {
                 this.loadingTransactions = false;
             },
             error: () => this.loadingTransactions = false
+        });
+    }
+
+    loadMainSafeLedger() {
+        if (!this.mainSafeAccountId) return;
+        this.loadingMainSafeLedger = true;
+        
+        const today = new Date();
+        let startDate = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+        let endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0).toISOString();
+
+        if (this.ledgerDateFilter && this.ledgerDateFilter[0] && this.ledgerDateFilter[1]) {
+            startDate = this.ledgerDateFilter[0].toISOString();
+            endDate = this.ledgerDateFilter[1].toISOString();
+        }
+
+        this.accountingService.getAccountLedger(this.mainSafeAccountId, startDate, endDate).subscribe({
+            next: (data) => {
+                this.mainSafeLedger = data;
+                this.loadingMainSafeLedger = false;
+            },
+            error: () => this.loadingMainSafeLedger = false
         });
     }
 

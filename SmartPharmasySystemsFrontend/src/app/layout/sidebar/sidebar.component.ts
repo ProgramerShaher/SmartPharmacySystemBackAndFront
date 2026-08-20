@@ -175,12 +175,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: 'pi pi-shopping-cart',
       iconClass: 'icon-sales',
       match: '/sales',
-      extraMatches: ['/online-orders', '/pos'],
+      extraMatches: ['/online-orders', '/pos', '/shifts'],
       anyPermission: ['sales.invoices.view', 'sales.invoices.create', 'sales.create', 'sales.manage'],
       children: [
         {
           label: 'شاشة الكاشير (POS)', route: '/sales/create', icon: 'pi pi-desktop',
           anyPermission: ['sales.invoices.create', 'sales.create', 'sales.invoices.view', 'sales.manage']
+        },
+        {
+          label: 'إدارة الورديات', route: '/shifts', icon: 'pi pi-briefcase',
+          anyPermission: ['sales.shifts.manage', 'sales.invoices.create']
         },
         {
           label: 'فواتير المبيعات', route: '/sales', icon: 'pi pi-list', exact: true,
@@ -191,11 +195,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
           permission: 'sales.returns.view'
         },
         {
+          label: 'قوائم الأسعار والخصومات', route: '/sales/pricelists', icon: 'pi pi-tag',
+        },
+        {
           label: 'طلبات الأونلاين', route: '/online-orders', icon: 'pi pi-globe',
           permission: 'online_orders.manage'
         },
         {
-          label: 'إغلاق الورديات', route: '/sales/daily-closing', icon: 'pi pi-lock',
+          label: 'الإقفال اليومي للصناديق', route: '/accounting/daily-closing', icon: 'pi pi-lock',
           permission: 'sales.daily_closing.manage'
         }
       ]
@@ -307,7 +314,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       children: [
         {
           label: 'الخزينة والأرصدة', route: '/financial/dashboard', icon: 'pi pi-money-bill', exact: true,
-          permission: 'finance.dashboard.view'
+          anyPermission: ['finance.dashboard.view', 'finance.treasury.view']
         },
         {
           label: 'سندات القبض', route: '/customers/receipts', icon: 'pi pi-arrow-down-left',
@@ -319,19 +326,19 @@ export class SidebarComponent implements OnInit, OnDestroy {
         },
         {
           label: 'المصروفات النثرية', route: '/finance/expenses', icon: 'pi pi-money-bill',
-          permission: 'finance.expenses.view'
+          anyPermission: ['finance.expenses.view', 'finance.expenses.create']
         },
         {
           label: 'دفتر الأستاذ', route: '/financial/ledger', icon: 'pi pi-book',
-          permission: 'accounting.chart.view'
+          anyPermission: ['accounting.chart.view', 'accounting.chart.manage']
         },
         {
           label: 'شجرة الحسابات', route: '/accounting/chart', icon: 'pi pi-sitemap',
-          permission: 'accounting.chart.view'
+          anyPermission: ['accounting.chart.view', 'accounting.chart.manage']
         },
         {
           label: 'قيود اليومية', route: '/accounting/journal', icon: 'pi pi-book',
-          permission: 'accounting.journal.view'
+          anyPermission: ['accounting.journal.view', 'accounting.journal.create']
         },
         {
           label: 'ميزان المراجعة', route: '/accounting/trial-balance', icon: 'pi pi-table',
@@ -343,6 +350,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
         },
         {
           label: 'أرصدة الحسابات', route: '/accounting/balances', icon: 'pi pi-dollar',
+          permission: 'accounting.statements.view'
+        },
+        {
+          label: 'الفترات المحاسبية (إقفال شهري)', route: '/accounting/financial-periods', icon: 'pi pi-calendar-times',
           permission: 'accounting.statements.view'
         }
       ]
@@ -419,11 +430,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
       children: [
         {
           label: 'المستخدمون', route: '/users', icon: 'pi pi-user-edit',
-          permission: 'admin.users.view'
+          anyPermission: ['admin.users.view', 'admin.users.manage']
         },
         {
           label: 'الأدوار والصلاحيات', route: '/roles', icon: 'pi pi-shield',
-          permission: 'access.roles.view'
+          anyPermission: ['access.roles.view', 'admin.roles.manage']
         },
         {
           label: 'فروع الصيدلية', route: '/branches', icon: 'pi pi-building',
@@ -439,7 +450,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         },
         {
           label: 'الإعدادات العامة', route: '/settings', icon: 'pi pi-cog', exact: true,
-          permission: 'settings.general.view'
+          anyPermission: ['settings.general.view', 'admin.settings.manage']
         }
       ]
     }

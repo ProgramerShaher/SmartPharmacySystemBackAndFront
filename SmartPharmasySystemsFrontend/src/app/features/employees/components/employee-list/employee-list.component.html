@@ -145,6 +145,8 @@
                           pTooltip="تفاصيل الراتب" tooltipPosition="top" (onClick)="openSalaryDetails(emp)"></p-button>
                 <p-button icon="pi pi-calendar" [rounded]="true" [text]="true" severity="info"
                           pTooltip="عرض جدول الحضور" tooltipPosition="top" (onClick)="openAttendanceDialog(emp)"></p-button>
+                <p-button icon="pi pi-user" [rounded]="true" [text]="true" severity="help"
+                          pTooltip="الملف الشخصي" tooltipPosition="top" (onClick)="goToProfile(emp.id)"></p-button>
               </div>
             </td>
           </tr>

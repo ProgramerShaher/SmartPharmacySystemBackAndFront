@@ -1,0 +1,138 @@
+<div *ngIf="loading" class="flex justify-content-center align-items-center p-5">
+    <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+</div>
+
+<div *ngIf="error" class="p-4 text-center">
+    <p-messages severity="error">
+        <ng-template pTemplate>
+            <i class="pi pi-times-circle text-2xl mr-2"></i>
+            <span>{{ error }}</span>
+        </ng-template>
+    </p-messages>
+    <p-button label="إعادة المحاولة" icon="pi pi-refresh" (onClick)="loadDetails()" [text]="true"></p-button>
+</div>
+
+<div *ngIf="!loading && !error && details" dir="rtl" class="shift-details-container">
+    <!-- الملخص المالي للوردية -->
+    <div class="summary-section mb-4">
+        <h3 class="text-lg font-bold mb-3 text-primary"><i class="pi pi-chart-pie mr-2"></i> الملخص المالي للوردية</h3>
+        <div class="grid">
+            <div class="col-12 md:col-6 lg:col-4">
+                <div class="info-card bg-blue-50 border-round p-3 h-full">
+                    <span class="text-500 font-medium text-sm">الرصيد الافتتاحي</span>
+                    <div class="text-xl text-blue-900 font-bold mt-2">{{ details.summary.openingCash | currency:' ':'symbol':'1.2-2' }}</div>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-4">
+                <div class="info-card bg-green-50 border-round p-3 h-full">
+                    <span class="text-500 font-medium text-sm">إجمالي مبيعات الكاش</span>
+                    <div class="text-xl text-green-900 font-bold mt-2">{{ details.summary.totalSalesCash | currency:' ':'symbol':'1.2-2' }}</div>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-4">
+                <div class="info-card bg-orange-50 border-round p-3 h-full">
+                    <span class="text-500 font-medium text-sm">إجمالي المرتجعات (كاش)</span>
+                    <div class="text-xl text-orange-900 font-bold mt-2">{{ details.summary.totalReturnsCash | currency:' ':'symbol':'1.2-2' }}</div>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-4">
+                <div class="info-card bg-indigo-50 border-round p-3 h-full">
+                    <span class="text-500 font-medium text-sm">سندات القبض (كاش)</span>
+                    <div class="text-xl text-indigo-900 font-bold mt-2">{{ details.summary.totalCustomerReceiptsCash | currency:' ':'symbol':'1.2-2' }}</div>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-4">
+                <div class="info-card bg-pink-50 border-round p-3 h-full">
+                    <span class="text-500 font-medium text-sm">المصروفات و مدفوعات الموردين</span>
+                    <div class="text-xl text-pink-900 font-bold mt-2">{{ details.summary.totalExpensesCash + details.summary.totalSupplierPaymentsCash | currency:' ':'symbol':'1.2-2' }}</div>
+                </div>
+            </div>
+            <div class="col-12 md:col-6 lg:col-4">
+                <div class="info-card border-round p-3 h-full" [ngClass]="{'bg-purple-100': details.summary.status === 'Closed', 'bg-bluegray-50': details.summary.status !== 'Closed'}">
+                    <span class="text-500 font-medium text-sm">الرصيد المتوقع في الدرج</span>
+                    <div class="text-2xl text-900 font-bold mt-2">{{ details.summary.expectedClosingCash | currency:' ':'symbol':'1.2-2' }}</div>
+                    <div *ngIf="details.summary.status === 'Closed'" class="text-sm mt-1" [ngClass]="{'text-red-600': details.summary.difference < 0, 'text-green-600': details.summary.difference >= 0}">
+                        الفعلي: {{ details.summary.actualClosingCash | currency:' ':'symbol':'1.2-2' }} (الفرق: {{ details.summary.difference | currency:' ':'symbol':'1.2-2' }})
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- التفاصيل (فواتير، مصروفات، إلخ) عبر Tabs -->
+    <p-tabView>
+        <p-tabPanel header="فواتير المبيعات ({{ details.invoices.length }})">
+            <p-table [value]="details.invoices" [paginator]="true" [rows]="5" styleClass="p-datatable-sm" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>رقم الفاتورة</th>
+                        <th>العميل</th>
+                        <th>طريقة الدفع</th>
+                        <th>المبلغ</th>
+                        <th>الوقت</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-inv>
+                    <tr>
+                        <td>{{ inv.invoiceNumber }}</td>
+                        <td>{{ inv.customerName || 'عميل نقدي' }}</td>
+                        <td><p-tag [value]="inv.paymentMethod"></p-tag></td>
+                        <td class="font-bold">{{ inv.totalAmount | currency:' ':'symbol':'1.2-2' }}</td>
+                        <td>{{ inv.createdAt | date:'shortTime' }}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="5" class="text-center p-3 text-secondary">لا يوجد مبيعات في هذه الوردية</td></tr>
+                </ng-template>
+            </p-table>
+        </p-tabPanel>
+
+        <p-tabPanel header="المرتجعات ({{ details.returns.length }})">
+            <p-table [value]="details.returns" [paginator]="true" [rows]="5" styleClass="p-datatable-sm" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>العميل</th>
+                        <th>السبب</th>
+                        <th>المبلغ المرجع</th>
+                        <th>الوقت</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-ret>
+                    <tr>
+                        <td>{{ ret.customerName || 'عميل نقدي' }}</td>
+                        <td>{{ ret.reason || '---' }}</td>
+                        <td class="font-bold text-danger">{{ ret.totalAmount | currency:' ':'symbol':'1.2-2' }}</td>
+                        <td>{{ ret.createdAt | date:'shortTime' }}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="4" class="text-center p-3 text-secondary">لا يوجد مرتجعات</td></tr>
+                </ng-template>
+            </p-table>
+        </p-tabPanel>
+
+        <p-tabPanel header="المصروفات ({{ details.expenses.length }})">
+            <p-table [value]="details.expenses" [paginator]="true" [rows]="5" styleClass="p-datatable-sm" responsiveLayout="scroll">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>رقم المرجع</th>
+                        <th>الفئة</th>
+                        <th>البيان</th>
+                        <th>المبلغ</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-exp>
+                    <tr>
+                        <td>{{ exp.referenceNumber }}</td>
+                        <td>{{ exp.categoryName }}</td>
+                        <td>{{ exp.notes || '---' }}</td>
+                        <td class="font-bold text-danger">{{ exp.amount | currency:' ':'symbol':'1.2-2' }}</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr><td colspan="4" class="text-center p-3 text-secondary">لا يوجد مصروفات</td></tr>
+                </ng-template>
+            </p-table>
+        </p-tabPanel>
+    </p-tabView>
+</div>

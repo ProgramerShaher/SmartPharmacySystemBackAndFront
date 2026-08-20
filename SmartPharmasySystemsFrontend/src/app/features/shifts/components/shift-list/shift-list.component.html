@@ -1,0 +1,132 @@
+<div class="movements-container" dir="rtl">
+    <div class="page-header">
+        <h1>
+            <i class="pi pi-briefcase"></i>
+            إدارة الورديات (Shifts)
+        </h1>
+        <p-button label="فتح وردية جديدة" icon="pi pi-plus" (onClick)="openNewShift()" severity="success"
+            raised></p-button>
+    </div>
+
+    <div class="table-card">
+        <p-table #dt [value]="shifts" [paginator]="true" [rows]="10" [loading]="loading" [showCurrentPageReport]="true"
+            styleClass="p-datatable-striped"
+            currentPageReportTemplate="عرض {first} إلى {last} من أصل {totalRecords} وردية">
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>رقم الوردية</th>
+                    <th>المستخدم</th>
+                    <th>وقت الفتح</th>
+                    <th>وقت الإغلاق</th>
+                    <th>الرصيد الافتتاحي</th>
+                    <th>الحالة</th>
+                    <th class="text-center">الإجراءات</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-shift>
+                <tr>
+                    <td><strong>#{{ shift.id }}</strong></td>
+                    <td>
+                        <div class="user-cell">
+                            <span class="user-name">{{ shift.userName }}</span>
+                        </div>
+                    </td>
+                    <td>{{ shift.startTime | date:'dd/MM/yyyy hh:mm a' }}</td>
+                    <td>
+                        <span *ngIf="shift.endTime">{{ shift.endTime | date:'dd/MM/yyyy hh:mm a' }}</span>
+                        <span *ngIf="!shift.endTime" class="text-secondary">---</span>
+                    </td>
+                    <td class="amount-cell">{{ shift.openingCash | currency:' ':'symbol':'1.2-2' }}</td>
+                    <td>
+                        <p-tag [value]="getShiftStatusLabel(shift.status)"
+                            [severity]="getShiftStatusSeverity(shift.status)"></p-tag>
+                    </td>
+                    <td class="actions-cell">
+                        <p-button icon="pi pi-eye" [text]="true" [rounded]="true" severity="info"
+                            pTooltip="عرض التفاصيل" (onClick)="viewDetails(shift)"></p-button>
+                        
+                        <p-button *ngIf="shift.status === 'Open'" icon="pi pi-power-off" [text]="true" [rounded]="true" severity="danger" 
+                            pTooltip="إغلاق الوردية" (onClick)="closeCurrentShift(shift)"></p-button>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7">
+                        <div class="flex flex-column align-items-center p-5 text-secondary">
+                            <i class="pi pi-info-circle text-4xl mb-3"></i>
+                            <span>لا توجد ورديات متاحة</span>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</div>
+
+<!-- Modal فتح وردية -->
+<p-dialog header="فتح وردية جديدة للكاشير" [(visible)]="displayOpenModal" [modal]="true" [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
+    <div class="p-fluid">
+        <div class="field">
+            <label for="openingCash">الرصيد الافتتاحي (درج الكاشير)</label>
+            <p-inputNumber id="openingCash" [(ngModel)]="openData.openingCash" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="w-full"></p-inputNumber>
+            <small class="text-secondary block mt-1">المبلغ النقدي الموجود في الدرج قبل بدء البيع</small>
+        </div>
+        <div class="field">
+            <label for="openNotes">ملاحظات (اختياري)</label>
+            <textarea pInputTextarea id="openNotes" [(ngModel)]="openData.notes" rows="3"></textarea>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="إلغاء" icon="pi pi-times" (onClick)="displayOpenModal = false" severity="secondary" [text]="true"></p-button>
+        <p-button label="فتح الوردية" icon="pi pi-check" (onClick)="confirmOpenShift()" severity="success"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal إغلاق الوردية -->
+<p-dialog header="إغلاق الوردية وترحيل النقدية" [(visible)]="displayCloseModal" [modal]="true" [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
+    
+    <div class="p-fluid">
+        <p-messages *ngIf="selectedShift" severity="info">
+            <ng-template pTemplate>
+                <div class="flex align-items-center">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    <div>
+                        الرصيد المتوقع في الدرج: <strong>{{ selectedShift.expectedClosingCash | currency:' ':'symbol':'1.2-2' }}</strong>
+                    </div>
+                </div>
+            </ng-template>
+        </p-messages>
+
+        <div class="field mt-3">
+            <label for="actualCash">الرصيد الفعلي (المعدود في الدرج)</label>
+            <p-inputNumber id="actualCash" [(ngModel)]="closeData.actualClosingCash" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="w-full"></p-inputNumber>
+            <small class="block mt-2" [ngClass]="{'text-danger font-bold': (selectedShift?.expectedClosingCash ?? 0) > (closeData.actualClosingCash ?? 0), 'text-success font-bold': (closeData.actualClosingCash ?? 0) > (selectedShift?.expectedClosingCash ?? 0)}">
+                الفرق: {{ (closeData.actualClosingCash ?? 0) - (selectedShift?.expectedClosingCash ?? 0) | currency:' ':'symbol':'1.2-2' }}
+            </small>
+        </div>
+        <div class="field mt-3">
+            <p-checkbox [(ngModel)]="closeData.transferToMainSafe" [binary]="true" inputId="transferToMainSafe"></p-checkbox>
+            <label for="transferToMainSafe" class="ml-2">ترحيل النقدية إلى الصندوق الرئيسي (الخزينة)</label>
+        </div>
+        <div class="field">
+            <label for="closeNotes">ملاحظات الإغلاق (اختياري)</label>
+            <textarea pInputTextarea id="closeNotes" [(ngModel)]="closeData.notes" rows="3"></textarea>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="إلغاء" icon="pi pi-times" (onClick)="displayCloseModal = false" severity="secondary" [text]="true"></p-button>
+        <p-button label="تأكيد الإغلاق" icon="pi pi-lock" (onClick)="confirmCloseShift()" severity="danger"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal التفاصيل -->
+<p-dialog header="تفاصيل الوردية" [(visible)]="displayDetailsModal" [modal]="true" [style]="{width: '600px'}" [draggable]="false" [resizable]="false" [maximizable]="true">
+    <app-shift-details *ngIf="displayDetailsModal && selectedShift" [shiftId]="selectedShift.id"></app-shift-details>
+</p-dialog>
+
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

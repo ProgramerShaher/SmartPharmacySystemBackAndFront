@@ -123,6 +123,18 @@ export class EmployeeFormComponent implements OnInit {
         return Object.keys(this.errors).length === 0;
     }
 
+    recalculateShiftEndTime() {
+        if (!this.model.shiftStartTime || !this.model.workingHours) return;
+
+        const start = this.model.shiftStartTime instanceof Date
+            ? this.model.shiftStartTime
+            : new Date(`1970-01-01T${this.model.shiftStartTime}`);
+
+        const end = new Date(start);
+        end.setMinutes(end.getMinutes() + Math.round(Number(this.model.workingHours) * 60));
+        this.model.shiftEndTime = end;
+    }
+
     save() {
         if (!this.validate()) {
             this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'يرجى تصحيح الأخطاء قبل الحفظ' });

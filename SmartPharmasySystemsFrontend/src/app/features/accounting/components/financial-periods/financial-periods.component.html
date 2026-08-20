@@ -1,0 +1,80 @@
+<div class="card">
+    <p-confirmDialog></p-confirmDialog>
+
+    <div class="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4 gap-3">
+        <div>
+            <h2 class="m-0 text-900 font-bold text-2xl flex align-items-center gap-2">
+                <i class="pi pi-calendar-times text-3xl text-primary"></i>
+                الفترات المحاسبية (الإقفال الشهري والسنوي)
+            </h2>
+            <p class="text-500 mt-2 mb-0">إدارة فترات النظام المالية لمنع التلاعب في الأشهر المقفلة</p>
+        </div>
+        <div class="flex align-items-center gap-2">
+            <button pButton type="button" label="إنشاء فترة جديدة" icon="pi pi-plus" class="p-button-primary" 
+                    (click)="showCreateModal()">
+            </button>
+        </div>
+    </div>
+
+    <p-table #dt [value]="periods" [loading]="loading"
+             [rows]="10" [paginator]="true" responsiveLayout="scroll"
+             [rowHover]="true" styleClass="p-datatable-sm p-datatable-gridlines p-datatable-striped custom-table">
+        
+        <ng-template pTemplate="header">
+            <tr>
+                <th>اسم الفترة (الشهر)</th>
+                <th>من تاريخ</th>
+                <th>إلى تاريخ</th>
+                <th>الحالة</th>
+                <th>تمت الإضافة</th>
+                <th>إجراءات</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-period>
+            <tr>
+                <td><span class="font-bold text-800">{{ period.periodName }}</span></td>
+                <td>{{ period.startDate | date:'yyyy-MM-dd' }}</td>
+                <td>{{ period.endDate | date:'yyyy-MM-dd' }}</td>
+                <td>
+                    <p-tag [severity]="period.isClosed ? 'danger' : 'success'" [value]="period.isClosed ? 'مغلقة' : 'مفتوحة / نشطة'"></p-tag>
+                </td>
+                <td>{{ period.createdAt | date:'yyyy-MM-dd' }}</td>
+                <td>
+                    <button *ngIf="!period.isClosed" pButton type="button" icon="pi pi-lock" label="إغلاق الفترة" 
+                            class="p-button-danger p-button-sm p-button-text" (click)="confirmClosePeriod(period)">
+                    </button>
+                    <span *ngIf="period.isClosed" class="text-500 text-sm"><i class="pi pi-check-circle"></i> مقفل نهائياً</span>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="6" class="text-center p-4">لا توجد فترات محاسبية مسجلة. قم بإنشاء فترة جديدة لتبدأ العمل.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <!-- Create Period Modal -->
+    <p-dialog header="إنشاء فترة محاسبية جديدة" [(visible)]="createModalVisible" [modal]="true" [style]="{width: '450px'}" [draggable]="false" [resizable]="false">
+        <form [formGroup]="periodForm" (ngSubmit)="createPeriod()">
+            <div class="p-fluid">
+                <div class="field">
+                    <label for="periodName">اسم الفترة (مثال: شهر يناير 2026)</label>
+                    <input pInputText id="periodName" formControlName="periodName" placeholder="أدخل اسم الفترة" required autofocus />
+                </div>
+                <div class="field">
+                    <label for="startDate">تاريخ البداية</label>
+                    <p-calendar id="startDate" formControlName="startDate" dateFormat="yy-mm-dd" appendTo="body" [showIcon]="true"></p-calendar>
+                </div>
+                <div class="field">
+                    <label for="endDate">تاريخ النهاية</label>
+                    <p-calendar id="endDate" formControlName="endDate" dateFormat="yy-mm-dd" appendTo="body" [showIcon]="true"></p-calendar>
+                </div>
+            </div>
+            <div class="flex justify-content-end gap-2 mt-4">
+                <p-button label="إلغاء" icon="pi pi-times" (onClick)="createModalVisible = false" styleClass="p-button-text"></p-button>
+                <p-button label="حفظ الفترة" icon="pi pi-check" type="submit" [disabled]="periodForm.invalid || loading" [loading]="loading"></p-button>
+            </div>
+        </form>
+    </p-dialog>
+</div>

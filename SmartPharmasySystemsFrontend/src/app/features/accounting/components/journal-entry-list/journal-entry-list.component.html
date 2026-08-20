@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="actions no-print">
-      <p-button icon="pi pi-plus" label="إنشاء قيد جديد" size="small" severity="primary" (onClick)="showAddDialog()"></p-button>
+      <p-button *appHasPermission="['accounting.journal.create']" icon="pi pi-plus" label="إنشاء قيد جديد" size="small" severity="primary" (onClick)="showAddDialog()"></p-button>
       <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" (onClick)="loadEntries()" [loading]="loading"></p-button>
     </div>
   </div>
@@ -43,8 +43,10 @@
           <td class="text-center no-print">
             <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
                       pTooltip="عرض التفاصيل" (onClick)="viewEntry(entry)"></p-button>
-            <p-button icon="pi pi-check-circle" [rounded]="true" [text]="true" severity="success" size="small"
-                      pTooltip="ترحيل القيد" *ngIf="!entry.isPosted" (onClick)="postEntry(entry.id)"></p-button>
+            <ng-container *appHasPermission="['accounting.journal.post']">
+              <p-button icon="pi pi-check-circle" [rounded]="true" [text]="true" severity="success" size="small"
+                        pTooltip="ترحيل القيد" *ngIf="!entry.isPosted" (onClick)="postEntry(entry.id)"></p-button>
+            </ng-container>
           </td>
         </tr>
       </ng-template>

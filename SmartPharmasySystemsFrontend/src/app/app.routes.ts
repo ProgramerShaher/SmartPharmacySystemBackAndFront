@@ -102,28 +102,28 @@ export const routes: Routes = [
             {
                 path: 'financial',
                 canActivate: [permissionGuard],
-                data: { permission: 'finance.treasury.view' },
+                data: { anyPermission: ['finance.treasury.view', 'finance.dashboard.view'] },
                 loadChildren: () => import('./features/financial/financial.routes').then(m => m.FINANCIAL_ROUTES)
             },
             // ---- المصروفات
             {
                 path: 'finance',
                 canActivate: [permissionGuard],
-                data: { permission: 'finance.expenses.view' },
+                data: { anyPermission: ['finance.expenses.view', 'finance.expenses.create'] },
                 loadChildren: () => import('./features/finance/finance.routes').then(m => m.FINANCE_ROUTES)
             },
             // ---- المستخدمين
             {
                 path: 'users',
                 canActivate: [permissionGuard],
-                data: { permission: 'admin.users.view' },
+                data: { anyPermission: ['admin.users.view', 'admin.users.manage'] },
                 loadChildren: () => import('./features/users/users.routes').then(m => m.USERS_ROUTES)
             },
             // ---- الأدوار والصلاحيات
             {
                 path: 'roles',
                 canActivate: [permissionGuard],
-                data: { permission: 'access.roles.view' },
+                data: { anyPermission: ['access.roles.view', 'admin.roles.manage'] },
                 loadChildren: () => import('./features/roles/roles.routes').then(m => m.rolesRoutes)
             },
             // ---- التنبيهات
@@ -151,14 +151,21 @@ export const routes: Routes = [
             {
                 path: 'accounting',
                 canActivate: [permissionGuard],
-                data: { permission: 'accounting.chart.view' },
+                data: { anyPermission: ['accounting.chart.view', 'accounting.chart.manage', 'accounting.statements.view'] },
                 loadChildren: () => import('./features/accounting/accounting.routes').then(m => m.ACCOUNTING_ROUTES)
+            },
+            // ---- الورديات
+            {
+                path: 'shifts',
+                canActivate: [permissionGuard],
+                data: { anyPermission: ['sales.shifts.manage', 'sales.invoices.create'] },
+                loadChildren: () => import('./features/shifts/shifts.module').then(m => m.ShiftsModule)
             },
             // ---- الإعدادات
             {
                 path: 'settings',
                 canActivate: [permissionGuard],
-                data: { permission: 'settings.general.view' },
+                data: { anyPermission: ['settings.general.view', 'admin.settings.manage'] },
                 loadChildren: () => import('./features/settings/settings.routes').then(m => m.SETTINGS_ROUTES)
             }
         ]

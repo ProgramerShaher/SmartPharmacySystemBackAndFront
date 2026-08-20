@@ -743,6 +743,7 @@
     }
 
     @media (max-width: 768px) {
+
         /* Make card borderless and fit screen */
         .card {
             padding: 8px !important;
@@ -804,22 +805,31 @@
 
         /* تحويل جدول المبيعات إلى كروت للهاتف الذكي */
         .custom-p-table {
-            table, thead, tbody, th, td, tr {
+
+            table,
+            thead,
+            tbody,
+            th,
+            td,
+            tr {
                 display: block !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
             }
+
             thead {
                 display: none !important;
             }
+
             tr {
                 margin-bottom: 8px !important;
                 border: 1px solid #e2e8f0 !important;
                 border-radius: 8px !important;
                 padding: 8px !important;
                 background: #ffffff !important;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
             }
+
             td {
                 border: none !important;
                 padding: 4px 0 !important;
@@ -827,13 +837,43 @@
                 justify-content: space-between !important;
                 align-items: center !important;
                 font-size: 11px !important;
-                
-                &:nth-child(1):before { content: "الصنف:"; font-weight: 700; color: #64748b; }
-                &:nth-child(2):before { content: "الدفعة:"; font-weight: 700; color: #64748b; }
-                &:nth-child(3):before { content: "الكمية:"; font-weight: 700; color: #64748b; }
-                &:nth-child(4):before { content: "السعر:"; font-weight: 700; color: #64748b; }
-                &:nth-child(5):before { content: "الإجمالي:"; font-weight: 700; color: #64748b; }
-                &:nth-child(6):before { content: "الربح:"; font-weight: 700; color: #64748b; }
+
+                &:nth-child(1):before {
+                    content: "الصنف:";
+                    font-weight: 700;
+                    color: #64748b;
+                }
+
+                &:nth-child(2):before {
+                    content: "الدفعة:";
+                    font-weight: 700;
+                    color: #64748b;
+                }
+
+                &:nth-child(3):before {
+                    content: "الكمية:";
+                    font-weight: 700;
+                    color: #64748b;
+                }
+
+                &:nth-child(4):before {
+                    content: "السعر:";
+                    font-weight: 700;
+                    color: #64748b;
+                }
+
+                &:nth-child(5):before {
+                    content: "الإجمالي:";
+                    font-weight: 700;
+                    color: #64748b;
+                }
+
+                &:nth-child(6):before {
+                    content: "الربح:";
+                    font-weight: 700;
+                    color: #64748b;
+                }
+
                 &:nth-child(7) {
                     justify-content: flex-end !important;
                     margin-top: 6px !important;
@@ -888,4 +928,138 @@
         }
     }
 }
-
+
+/* Modal Shell Custom Styling for Drawer */
+:host ::ng-deep {
+    .drawer-modal .p-dialog-content {
+        padding: 0 !important;
+    }
+
+    .modal-shell {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #e2e8f0;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.85rem 1.25rem 0.6rem;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fafafa;
+    }
+
+    .modal-title {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+
+        h2 {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        p {
+            margin: 0.1rem 0 0;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+    }
+
+    .modal-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: #0d9488;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        i {
+            color: white;
+            font-size: 1.05rem;
+        }
+    }
+
+    .close-btn {
+        width: 30px;
+        height: 30px;
+        color: #64748b !important;
+    }
+
+    .modal-body {
+        padding: 0.85rem 1.25rem;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .status-banner {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+
+        .status-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.65rem;
+    }
+
+    .detail-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.6rem 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+
+        .detail-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+
+            i {
+                color: #0d9488;
+            }
+        }
+
+        .detail-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        padding: 0.65rem 1.25rem 0.85rem;
+        border-top: 1px solid #f1f5f9;
+        background: #fafafa;
+    }
+
+    .p-button.p-button-rounded {
+        border-radius: 6px !important;
+        font-size: 0.75rem !important;
+        padding: 0.35rem 0.75rem !important;
+    }
+}

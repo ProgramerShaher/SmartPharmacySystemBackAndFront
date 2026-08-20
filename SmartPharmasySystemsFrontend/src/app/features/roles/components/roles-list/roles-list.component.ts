@@ -11,8 +11,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { RolesService, RoleDto } from '../../services/roles.service';
 import { PermissionService, PermissionGroup } from '../../../../core/services/permission.service';
-import { TreeModule } from 'primeng/tree';
-import { TreeNode } from 'primeng/api';
+import { CheckboxModule } from 'primeng/checkbox';
+import { CardModule } from 'primeng/card';
 import { HasPermissionDirective } from '../../../../shared/directives/has-permission.directive';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { InputSwitchModule } from 'primeng/inputswitch';
@@ -23,7 +23,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
   imports: [
     CommonModule, FormsModule, ReactiveFormsModule, TableModule, ButtonModule,
     DialogModule, InputTextModule, ToastModule, ConfirmDialogModule, TooltipModule,
-    TreeModule, HasPermissionDirective, ColorPickerModule, InputSwitchModule
+    CheckboxModule, CardModule, HasPermissionDirective, ColorPickerModule, InputSwitchModule
   ],
   templateUrl: './roles-list.component.html',
   styleUrls: ['./roles-list.component.scss']
@@ -53,10 +53,9 @@ export class RolesListComponent implements OnInit {
     isActive: [true]
   });
 
-  // Permissions Tree
+  // Permissions
   permissionGroups: PermissionGroup[] = [];
-  permissionsTree: TreeNode[] = [];
-  selectedPermissions: TreeNode[] = [];
+  selectedPermissionIds: number[] = [];
   selectedRoleForPermissions: RoleDto | null = null;
 
   ngOnInit() {
@@ -81,30 +80,18 @@ export class RolesListComponent implements OnInit {
   loadAllPermissions() {
     this.permissionService.getAllPermissionsGrouped().subscribe(res => {
       this.permissionGroups = res;
-      this.permissionsTree = this.buildTree(res);
-    });
-  }
-
-  buildTree(groups: PermissionGroup[]): TreeNode[] {
-    return groups.map(g => {
-      return {
-        key: 'g_' + g.module,
-        label: g.moduleAr || g.module,
-        data: 'module',
-        expanded: true,
-        children: g.permissions.map(p => ({
-          key: p.id.toString(),
-          label: p.actionAr || p.action,
-          data: p.id
-        }))
-      };
     });
   }
 
   openNew() {
     this.isEdit = false;
-    this.roleForm.reset({ isActive: true, color: '#3b82f6', id: 0 });
+    this.roleForm.reset({ isActive: true, color: '3b82f6', id: 0 });
     this.displayDialog = true;
+  }
+
+  getValidColor(color: string | null | undefined): string {
+    if (!color) return '#3b82f6';
+    return color.startsWith('#') ? color : '#' + color;
   }
 
   openEdit(role: RoleDto) {
@@ -118,7 +105,7 @@ export class RolesListComponent implements OnInit {
       name: role.name,
       nameAr: role.nameAr,
       description: role.description,
-      color: role.color,
+      color: role.color ? role.color.replace('#', '') : '3b82f6',
       isActive: role.isActive
     });
     this.displayDialog = true;
@@ -132,7 +119,7 @@ export class RolesListComponent implements OnInit {
       name: val.name,
       nameAr: val.nameAr,
       description: val.description,
-      color: val.color,
+      color: this.getValidColor(val.color),
       isActive: val.isActive
     };
 
@@ -179,40 +166,56 @@ export class RolesListComponent implements OnInit {
 
   openPermissions(role: RoleDto) {
     this.selectedRoleForPermissions = role;
-    this.selectedPermissions = [];
+    this.selectedPermissionIds = [];
     
     this.rolesService.getPermissions(role.id).subscribe(res => {
-      const perms = res.data || [];
-      this.selectedPermissions = this.findNodes(this.permissionsTree, perms);
+      this.selectedPermissionIds = res.data || [];
       this.displayPermissionsDialog = true;
     });
   }
 
-  findNodes(tree: TreeNode[], ids: number[]): TreeNode[] {
-    let result: TreeNode[] = [];
-    for (let node of tree) {
-      if (node.children) {
-        const childMatches = this.findNodes(node.children, ids);
-        result = [...result, ...childMatches];
-        // PrimeNG Tree automatically checks parents if all children are checked
-      } else {
-        if (ids.includes(node.data)) {
-          result.push(node);
+  getThemeForModule(moduleName: string) {
+    const module = (moduleName || '').toLowerCase();
+    if (module.includes('sale') || module.includes('shift')) return { header: 'theme-green-header', bg: 'theme-green-bg', icon: 'pi-shopping-cart' };
+    if (module.includes('inventory') || module.includes('warehouse')) return { header: 'theme-blue-header', bg: 'theme-blue-bg', icon: 'pi-box' };
+    if (module.includes('finance') || module.includes('account') || module.includes('treasury')) return { header: 'theme-teal-header', bg: 'theme-teal-bg', icon: 'pi-wallet' };
+    if (module.includes('purchase')) return { header: 'theme-orange-header', bg: 'theme-orange-bg', icon: 'pi-truck' };
+    if (module.includes('partner') || module.includes('customer')) return { header: 'theme-cyan-header', bg: 'theme-cyan-bg', icon: 'pi-users' };
+    if (module.includes('admin') || module.includes('setting') || module.includes('role')) return { header: 'theme-purple-header', bg: 'theme-purple-bg', icon: 'pi-cog' };
+    if (module.includes('hr') || module.includes('employee')) return { header: 'theme-pink-header', bg: 'theme-pink-bg', icon: 'pi-id-card' };
+    if (module.includes('report')) return { header: 'theme-indigo-header', bg: 'theme-indigo-bg', icon: 'pi-chart-bar' };
+    
+    // Default
+    return { header: 'theme-gray-header', bg: 'theme-gray-bg', icon: 'pi-folder' };
+  }
+
+  toggleGroup(group: PermissionGroup, checked: boolean) {
+    const groupIds = group.permissions.map(p => p.id);
+    let newSelection = [...this.selectedPermissionIds];
+
+    if (checked) {
+      for (let id of groupIds) {
+        if (!newSelection.includes(id)) {
+          newSelection.push(id);
         }
       }
+    } else {
+      newSelection = newSelection.filter(id => !groupIds.includes(id));
     }
-    return result;
+    
+    // Reassign the array to trigger UI change detection in PrimeNG
+    this.selectedPermissionIds = newSelection;
+  }
+
+  isGroupSelected(group: PermissionGroup): boolean {
+    if (!group.permissions || group.permissions.length === 0) return false;
+    return group.permissions.every(p => this.selectedPermissionIds.includes(p.id));
   }
 
   savePermissions() {
     if (!this.selectedRoleForPermissions) return;
     
-    // Only get leaves (actual permission IDs), ignore group nodes
-    const ids = this.selectedPermissions
-      .filter(n => typeof n.data === 'number')
-      .map(n => n.data as number);
-      
-    this.rolesService.updatePermissions(this.selectedRoleForPermissions.id, ids).subscribe({
+    this.rolesService.updatePermissions(this.selectedRoleForPermissions.id, this.selectedPermissionIds).subscribe({
       next: () => {
         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ الصلاحيات' });
         this.displayPermissionsDialog = false;

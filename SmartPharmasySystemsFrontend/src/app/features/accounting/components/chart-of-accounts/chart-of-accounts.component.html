@@ -12,7 +12,7 @@
     <div class="actions no-print">
       <p-button icon="pi pi-angle-double-down" label="توسيع الكل" size="small" [outlined]="true" severity="secondary" (onClick)="expandAll()"></p-button>
       <p-button icon="pi pi-angle-double-up" label="طي الكل" size="small" [outlined]="true" severity="secondary" (onClick)="collapseAll()"></p-button>
-      <p-button icon="pi pi-plus" label="حساب رئيسي" size="small" severity="primary" (onClick)="showAddDialog()"></p-button>
+      <p-button *appHasPermission="['accounting.chart.manage']" icon="pi pi-plus" label="حساب رئيسي" size="small" severity="primary" (onClick)="showAddDialog()"></p-button>
       <p-button icon="pi pi-refresh" [rounded]="true" severity="primary" (onClick)="loadAccounts()" [loading]="loading"></p-button>
     </div>
   </div>
@@ -49,19 +49,21 @@
                 {{node.data.currentBalance | number:'1.2-2'}}
               </span>
               <div class="node-actions no-print">
-                <p-inputSwitch [(ngModel)]="node.data.isActive"
-                               (onChange)="toggleAccountStatus(node.data)"
-                               pTooltip="تفعيل/تعطيل"
-                               tooltipPosition="top"></p-inputSwitch>
-                <p-button icon="pi pi-plus-circle" [rounded]="true" [text]="true" severity="info" size="small"
-                        pTooltip="إضافة حساب فرعي"
-                        tooltipPosition="top"
-                        (click)="showAddDialog(node.data)"
-                        *ngIf="node.data.isMainAccount"></p-button>
-                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
-                        pTooltip="حذف"
-                        tooltipPosition="top"
-                        (click)="deleteAccount(node)"></p-button>
+                <ng-container *appHasPermission="['accounting.chart.manage']">
+                  <p-inputSwitch [(ngModel)]="node.data.isActive"
+                                 (onChange)="toggleAccountStatus(node.data)"
+                                 pTooltip="تفعيل/تعطيل"
+                                 tooltipPosition="top"></p-inputSwitch>
+                  <p-button icon="pi pi-plus-circle" [rounded]="true" [text]="true" severity="info" size="small"
+                          pTooltip="إضافة حساب فرعي"
+                          tooltipPosition="top"
+                          (click)="showAddDialog(node.data)"
+                          *ngIf="node.data.isMainAccount"></p-button>
+                  <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+                          pTooltip="حذف"
+                          tooltipPosition="top"
+                          (click)="deleteAccount(node)"></p-button>
+                </ng-container>
               </div>
             </div>
           </div>

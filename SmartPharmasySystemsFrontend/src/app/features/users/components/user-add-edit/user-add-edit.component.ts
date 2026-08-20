@@ -86,7 +86,7 @@ export class UserFormComponent implements OnInit {
                 password: ''
             });
             // If editing, password is not required
-            this.password.setValidators([Validators.minLength(8)]);
+            this.password.setValidators([Validators.minLength(3)]);
             this.password.updateValueAndValidity();
         }
 
@@ -127,7 +127,7 @@ export class UserFormComponent implements OnInit {
             username: ['', [Validators.required, Validators.minLength(3)]],
             fullName: ['', [Validators.required]],
             email: ['', [Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(8)]],
+            password: ['', [Validators.required, Validators.minLength(3)]],
             confirmPassword: [''],
             roleId: [2, [Validators.required]], // Default to Pharmacist
             defaultBranchId: [null],

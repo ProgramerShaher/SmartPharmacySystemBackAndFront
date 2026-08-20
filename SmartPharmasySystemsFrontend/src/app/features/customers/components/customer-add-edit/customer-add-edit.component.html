@@ -61,6 +61,15 @@
                     </p-inputNumber>
                 </div>
 
+                <!-- Pricelist -->
+                <div class="field col-6 mb-2">
+                    <label for="pricelistId" class="font-bold text-xs mb-1 text-gray-500 block">قائمة الأسعار المخصصة (اختياري)</label>
+                    <p-dropdown id="pricelistId" formControlName="pricelistId" [options]="pricelists()"
+                        optionLabel="name" optionValue="id" [showClear]="true" placeholder="-- العميل يتبع التسعيرة الافتراضية --"
+                        styleClass="w-full premium-input h-full flex align-items-center">
+                    </p-dropdown>
+                </div>
+
                 <!-- Status Switch -->
                 <div class="field col-6 mb-2">
                     <label class="font-bold text-xs mb-1 text-gray-500 block">حالة الحساب والنشاط</label>

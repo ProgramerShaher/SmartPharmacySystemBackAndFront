@@ -1,0 +1,208 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="pricelist-page">
+  <!-- ============ Header ============ -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <div class="header-icon">
+          <i class="pi pi-tag"></i>
+        </div>
+        <div>
+          <h1>قوائم الأسعار</h1>
+          <p>إدارة قوائم أسعار العملاء والخصومات التلقائية</p>
+        </div>
+      </div>
+      <button pButton icon="pi pi-plus" label="إضافة قائمة أسعار"
+        class="p-button-primary" (click)="openAdd()">
+      </button>
+    </div>
+  </div>
+
+  <!-- ============ Grid ============ -->
+  @if (loading()) {
+    <div class="loading-state">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>جاري التحميل...</p>
+    </div>
+  } @else if (pricelists().length === 0) {
+    <div class="empty-state">
+      <i class="pi pi-tag"></i>
+      <h3>لا توجد قوائم أسعار</h3>
+      <p>أنشئ قائمة أسعار جديدة لتطبيق خصومات على العملاء</p>
+      <button pButton label="إضافة قائمة الأسعار الأولى" icon="pi pi-plus" (click)="openAdd()"></button>
+    </div>
+  } @else {
+    <div class="pricelist-grid">
+      @for (pl of pricelists(); track pl.id) {
+        <div class="pricelist-card" [class.inactive]="!pl.isActive">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-badge">
+                <i class="pi pi-percentage"></i>
+                {{ pl.globalDiscountPercentage }}%
+              </div>
+              <h3>{{ pl.name }}</h3>
+            </div>
+            <p-tag
+              [value]="pl.isActive ? 'نشطة' : 'متوقفة'"
+              [severity]="pl.isActive ? 'success' : 'secondary'"
+            />
+          </div>
+
+          @if (pl.description) {
+            <p class="card-desc">{{ pl.description }}</p>
+          }
+
+          <div class="card-stats">
+            <div class="stat">
+              <i class="pi pi-users"></i>
+              <span>{{ pl.customersCount }} عميل مرتبط</span>
+            </div>
+            <div class="stat">
+              <i class="pi pi-list"></i>
+              <span>{{ pl.items.length }} تجاوز سعر</span>
+            </div>
+          </div>
+
+          @if (pl.items.length > 0) {
+            <div class="items-preview">
+              <div class="items-label">تجاوزات الأسعار:</div>
+              @for (item of pl.items.slice(0, 3); track item.id) {
+                <div class="item-row">
+                  <span class="item-name">{{ item.medicineName }}</span>
+                  @if (item.fixedPrice) {
+                    <span class="item-price">{{ item.fixedPrice | number:'1.0-0' }} ر.ي</span>
+                  } @else if (item.discountPercentage) {
+                    <span class="item-discount">{{ item.discountPercentage }}% خصم</span>
+                  }
+                </div>
+              }
+              @if (pl.items.length > 3) {
+                <div class="items-more">+{{ pl.items.length - 3 }} آخرين</div>
+              }
+            </div>
+          }
+
+          <div class="card-actions">
+            <button pButton icon="pi pi-pencil" label="تعديل"
+              class="p-button-outlined p-button-sm"
+              (click)="openEdit(pl)">
+            </button>
+            <button pButton icon="pi pi-trash"
+              class="p-button-outlined p-button-danger p-button-sm"
+              pTooltip="حذف القائمة"
+              (click)="delete(pl)">
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- ============ Premium Dialog ============ -->
+<p-dialog
+  [(visible)]="showDialog"
+  [modal]="true"
+  [style]="{ width: '750px', maxHeight: '90vh' }"
+  [header]="isEdit() ? 'تعديل قائمة الأسعار' : 'إدارة قائمة أسعار جديدة'"
+  [closable]="true"
+  styleClass="premium-dialog"
+>
+  <div class="premium-body">
+    <!-- Header visual -->
+    <div class="premium-header-banner">
+      <h2>{{ isEdit() ? 'تحديث قائمة الأسعار' : 'إنشاء قائمة جديدة للتسعير' }}</h2>
+      <p>قم بضبط الخصومات العامة، وخصص أسعاراً استثنائية لأدوية محددة بدقة وسهولة.</p>
+    </div>
+
+    <!-- Basic Info -->
+    <div class="premium-card">
+      <div class="card-title-sub"><i class="pi pi-info-circle"></i> البيانات الأساسية</div>
+      <div class="premium-grid">
+        <div class="form-group full">
+          <label>اسم القائمة <span class="required">*</span></label>
+          <span class="p-input-icon-right w-full" style="display: block;">
+            <i class="pi pi-tag" style="left: 1rem; right: auto;"></i>
+            <input pInputText [(ngModel)]="form.name" placeholder="مثال: خصم كبار العملاء" class="w-full premium-input" />
+          </span>
+        </div>
+        <div class="form-group full">
+          <label>الوصف</label>
+          <textarea pInputTextarea [(ngModel)]="form.description" rows="2"
+            placeholder="وصف اختياري يوضح الغرض من هذه القائمة" class="w-full premium-input">
+          </textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>الخصم العام (%) <span class="required">*</span></label>
+          <p-inputNumber [(ngModel)]="form.globalDiscountPercentage" [min]="0" [max]="100"
+            mode="decimal" [useGrouping]="false" class="w-full" inputStyleClass="w-full premium-input" />
+          <small class="hint-text">يُطبق على جميع الأدوية تلقائياً</small>
+        </div>
+        <div class="form-group flex-center">
+          <label>حالة التفعيل</label>
+          <div class="premium-switch">
+             <p-checkbox [(ngModel)]="form.isActive" [binary]="true" inputId="isActive" />
+             <label for="isActive">القائمة نشطة ومفعلة للعملاء</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medicine Overrides -->
+    <div class="premium-card">
+      <div class="card-title-sub"><i class="pi pi-bolt"></i> تسعير خاص (تجاوزات الأصناف)</div>
+      <p class="override-hint">استثنِ بعض الأدوية من الخصم العام وامنحها سعراً ثابتاً أو خصماً خاصاً بها.</p>
+
+      <div class="premium-add-bar">
+        <p-dropdown [options]="medicines" [(ngModel)]="newItem.medicineId"
+          placeholder="ابحث عن دواء لعمل استثناء..." [filter]="true" class="flex-1" styleClass="w-full premium-input" />
+        
+        <div class="bar-inputs">
+          <p-inputNumber [(ngModel)]="newItem.fixedPrice" placeholder="سعر ثابت" [min]="0"
+            mode="decimal" [useGrouping]="false" inputStyleClass="premium-input-small" />
+          <span class="or-divider">أو</span>
+          <p-inputNumber [(ngModel)]="newItem.discountPercentage" placeholder="% خصم" [min]="0" [max]="100"
+            mode="decimal" [useGrouping]="false" inputStyleClass="premium-input-small" />
+          
+          <button pButton icon="pi pi-plus" class="p-button-rounded premium-add-btn" pTooltip="إضافة التجاوز" (click)="addItem()"></button>
+        </div>
+      </div>
+
+      @if (form.items.length > 0) {
+        <div class="premium-items-list">
+          @for (item of form.items; track item.medicineId; let i = $index) {
+            <div class="premium-item-row">
+              <div class="item-icon-name">
+                <div class="circle-icon"><i class="pi pi-box"></i></div>
+                <span class="medicine-name">{{ getMedicineName(item.medicineId) }}</span>
+              </div>
+              <div class="item-badges">
+                @if (item.fixedPrice) {
+                  <span class="badge-price"><i class="pi pi-money-bill"></i> {{ item.fixedPrice | number:'1.0-0' }}</span>
+                } @else if (item.discountPercentage) {
+                  <span class="badge-discount"><i class="pi pi-percentage"></i> {{ item.discountPercentage }} خصم</span>
+                } @else {
+                  <span class="badge-default">الخصم العام</span>
+                }
+                <button class="remove-btn" pTooltip="حذف الاستثناء" (click)="removeItem(i)"><i class="pi pi-trash"></i></button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="إلغاء" icon="pi pi-times"
+      class="p-button-text" (click)="showDialog.set(false)">
+    </button>
+    <button pButton [label]="isEdit() ? 'حفظ التعديلات' : 'إنشاء القائمة'" icon="pi pi-save"
+      [loading]="saving()" (click)="save()">
+    </button>
+  </ng-template>
+</p-dialog>

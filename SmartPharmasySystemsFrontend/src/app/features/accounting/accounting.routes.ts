@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { permissionGuard } from '../../core/guards/permission.guard';
 
 export const ACCOUNTING_ROUTES: Routes = [
   {
@@ -6,28 +7,45 @@ export const ACCOUNTING_ROUTES: Routes = [
     children: [
       {
         path: 'chart',
-        loadComponent: () => import('./components/chart-of-accounts/chart-of-accounts.component').then(m => m.ChartOfAccountsComponent),
-        data: { title: 'شجرة الحسابات' }
+        canActivate: [permissionGuard],
+        data: { anyPermission: ['accounting.chart.view', 'accounting.chart.manage'], title: 'شجرة الحسابات' },
+        loadComponent: () => import('./components/chart-of-accounts/chart-of-accounts.component').then(m => m.ChartOfAccountsComponent)
       },
       {
         path: 'journal',
-        loadComponent: () => import('./components/journal-entry-list/journal-entry-list.component').then(m => m.JournalEntryListComponent),
-        data: { title: 'القيود اليومية' }
+        canActivate: [permissionGuard],
+        data: { anyPermission: ['accounting.journal.view', 'accounting.journal.create'], title: 'القيود اليومية' },
+        loadComponent: () => import('./components/journal-entry-list/journal-entry-list.component').then(m => m.JournalEntryListComponent)
       },
       {
         path: 'trial-balance',
-        loadComponent: () => import('./components/trial-balance/trial-balance.component').then(m => m.TrialBalanceComponent),
-        data: { title: 'ميزان المراجعة' }
+        canActivate: [permissionGuard],
+        data: { permission: 'accounting.statements.view', title: 'ميزان المراجعة' },
+        loadComponent: () => import('./components/trial-balance/trial-balance.component').then(m => m.TrialBalanceComponent)
       },
       {
         path: 'financial-statements',
-        loadComponent: () => import('./components/financial-statements/financial-statements.component').then(m => m.FinancialStatementsComponent),
-        data: { title: 'القوائم المالية' }
+        canActivate: [permissionGuard],
+        data: { permission: 'accounting.statements.view', title: 'القوائم المالية' },
+        loadComponent: () => import('./components/financial-statements/financial-statements.component').then(m => m.FinancialStatementsComponent)
       },
       {
         path: 'balances',
-        loadComponent: () => import('./components/accounts-balances/accounts-balances.component').then(m => m.AccountsBalancesComponent),
-        data: { title: 'أرصدة الحسابات' }
+        canActivate: [permissionGuard],
+        data: { permission: 'accounting.statements.view', title: 'أرصدة الحسابات' },
+        loadComponent: () => import('./components/accounts-balances/accounts-balances.component').then(m => m.AccountsBalancesComponent)
+      },
+      {
+        path: 'daily-closing',
+        canActivate: [permissionGuard],
+        data: { permission: 'sales.daily_closing.manage', title: 'الإقفال اليومي' },
+        loadComponent: () => import('./components/daily-closings/daily-closings.component').then(m => m.DailyClosingsComponent)
+      },
+      {
+        path: 'financial-periods',
+        canActivate: [permissionGuard],
+        data: { permission: 'accounting.statements.view', title: 'الفترات المحاسبية' },
+        loadComponent: () => import('./components/financial-periods/financial-periods.component').then(m => m.FinancialPeriodsComponent)
       },
       { path: '', redirectTo: 'chart', pathMatch: 'full' }
     ]

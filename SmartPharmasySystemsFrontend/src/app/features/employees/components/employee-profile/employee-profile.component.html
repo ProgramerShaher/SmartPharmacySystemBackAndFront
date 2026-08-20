@@ -1,0 +1,225 @@
+<div class="emp-wrap animate-fade-in" dir="rtl">
+  <!-- Loading State -->
+  <div *ngIf="loading()" style="padding: 1rem; text-align: center;">
+    <p-progressSpinner strokeWidth="3" animationDuration=".5s"></p-progressSpinner>
+  </div>
+
+  <ng-container *ngIf="!loading() && employee()">
+    <!-- ===== Premium Header ===== -->
+    <div class="emp-header no-print">
+      <div class="emp-header-start">
+        <div class="emp-icon">
+          <i class="pi pi-user"></i>
+        </div>
+        <div>
+          <h1 class="emp-title">{{ employee()?.fullName }}</h1>
+          <p class="emp-subtitle">{{ employee()?.jobTitle }} - {{ employee()?.departmentName }} | كود: {{ employee()?.employeeCode }}</p>
+        </div>
+      </div>
+      <div class="emp-header-end">
+        <p-button icon="pi pi-money-bill" label="إضافة سلفة" severity="success" size="small" (onClick)="addLoan()"></p-button>
+        <p-button icon="pi pi-calendar-plus" label="إضافة إجازة" severity="warning" size="small" (onClick)="addLeave()"></p-button>
+        <p-button icon="pi pi-print" label="طباعة" severity="secondary" [outlined]="true" size="small" (onClick)="printProfile()"></p-button>
+        <p-button icon="pi pi-arrow-left" label="عودة" severity="secondary" [text]="true" size="small" (onClick)="goBack()"></p-button>
+      </div>
+    </div>
+
+    <!-- ===== KPI Cards ===== -->
+    <div class="emp-kpi-row no-print">
+      <div class="emp-kpi-card" data-color="teal">
+        <div class="emp-kpi-inner">
+          <div class="emp-kpi-left">
+            <span class="emp-kpi-label">الراتب الأساسي</span>
+            <strong class="emp-kpi-value">{{ employee()?.basicSalary | number:'1.0-2' }} ريال</strong>
+          </div>
+          <div class="emp-kpi-badge emp-kpi-badge-teal">
+            <i class="pi pi-wallet"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="emp-kpi-card" data-color="emerald">
+        <div class="emp-kpi-inner">
+          <div class="emp-kpi-left">
+            <span class="emp-kpi-label">تاريخ التعيين</span>
+            <strong class="emp-kpi-value">{{ employee()?.hireDate | date:'yyyy-MM-dd' }}</strong>
+          </div>
+          <div class="emp-kpi-badge emp-kpi-badge-blue">
+            <i class="pi pi-calendar"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="emp-kpi-card" data-color="ruby">
+        <div class="emp-kpi-inner">
+          <div class="emp-kpi-left">
+            <span class="emp-kpi-label">المتبقي من السلف</span>
+            <strong class="emp-kpi-value">{{ remainingLoan() | number:'1.0-2' }} ريال</strong>
+          </div>
+          <div class="emp-kpi-badge emp-kpi-badge-ruby">
+            <i class="pi pi-credit-card"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Main Content Tabs ===== -->
+    <div class="profile-card no-print">
+      <p-tabView styleClass="p-tabview-sm">
+        
+        <!-- Tab 1: Basic Info -->
+        <p-tabPanel header="البيانات الأساسية" leftIcon="pi pi-info-circle">
+          <div class="info-grid" style="margin-top: 0.5rem;">
+            <div class="info-item">
+              <label>رقم الهوية / الإقامة</label>
+              <strong>{{ employee()?.nationalId || 'غير مسجل' }}</strong>
+            </div>
+            <div class="info-item">
+              <label>رقم الهاتف</label>
+              <strong><a href="tel:{{employee()?.phoneNumber}}" style="text-decoration: none; color: inherit;">{{ employee()?.phoneNumber || 'غير مسجل' }}</a></strong>
+            </div>
+            <div class="info-item">
+              <label>البريد الإلكتروني</label>
+              <strong><a href="mailto:{{employee()?.email}}" style="text-decoration: none; color: inherit;">{{ employee()?.email || 'غير مسجل' }}</a></strong>
+            </div>
+            <div class="info-item">
+              <label>تاريخ الميلاد</label>
+              <strong>{{ employee()?.dateOfBirth ? (employee()?.dateOfBirth | date:'yyyy-MM-dd') : 'غير مسجل' }}</strong>
+            </div>
+            <div class="info-item">
+              <label>العنوان</label>
+              <strong>{{ employee()?.address || 'غير مسجل' }}</strong>
+            </div>
+            <div class="info-item">
+              <label>الفرع</label>
+              <strong>{{ employee()?.branchName || 'غير محدد' }}</strong>
+            </div>
+            <div class="info-item">
+              <label>الحالة</label>
+              <strong>
+                <p-tag [value]="employee()?.isActive ? 'نشط' : 'موقوف'" [severity]="employee()?.isActive ? 'success' : 'danger'"></p-tag>
+              </strong>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <!-- Tab 2: Payroll -->
+        <p-tabPanel header="سجل الرواتب" leftIcon="pi pi-money-bill">
+          <p-table [value]="salaries()" responsiveLayout="scroll" styleClass="p-datatable-sm" [paginator]="true" [rows]="10">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>الشهر / السنة</th>
+                <th>الأساسي</th>
+                <th>بدلات / مكافآت</th>
+                <th>استقطاعات</th>
+                <th>الصافي</th>
+                <th>الحالة</th>
+                <th>تاريخ الدفع</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-s>
+              <tr>
+                <td><strong>{{ s.monthName }} {{ s.year }}</strong></td>
+                <td>{{ s.basicSalary | number:'1.0-2' }}</td>
+                <td><span style="color: #10b981;">+{{ (s.totalAllowances + s.totalBonuses) | number:'1.0-2' }}</span></td>
+                <td><span style="color: #ef4444;">-{{ s.totalDeductions | number:'1.0-2' }}</span></td>
+                <td><strong>{{ s.netSalary | number:'1.0-2' }}</strong></td>
+                <td><p-tag [value]="s.paymentStatusName" [severity]="s.paymentStatusColor"></p-tag></td>
+                <td>{{ s.paidAt ? (s.paidAt | date:'yyyy-MM-dd') : '-' }}</td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="emptydata">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 2rem; color: #64748b;">لا يوجد سجل رواتب متاح.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+
+        <!-- Tab 3: Loans -->
+        <p-tabPanel header="السلف والعهد" leftIcon="pi pi-credit-card">
+          <p-table [value]="loans()" responsiveLayout="scroll" styleClass="p-datatable-sm" [paginator]="true" [rows]="10">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>رقم السلفة</th>
+                <th>التاريخ</th>
+                <th>المبلغ الإجمالي</th>
+                <th>المدفوع</th>
+                <th>المتبقي</th>
+                <th>ملاحظات</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-l>
+              <tr>
+                <td><strong>#{{ l.id }}</strong></td>
+                <td>{{ l.loanDate | date:'yyyy-MM-dd' }}</td>
+                <td><strong>{{ l.amount | number:'1.0-2' }}</strong></td>
+                <td><span style="color: #10b981;">{{ l.paidAmount | number:'1.0-2' }}</span></td>
+                <td><span style="color: #ef4444;">{{ l.remainingAmount | number:'1.0-2' }}</span></td>
+                <td>{{ l.notes || '-' }}</td>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="emptydata">
+              <tr>
+                <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">لا توجد سلف مسجلة.</td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </p-tabPanel>
+
+      </p-tabView>
+    </div>
+  </ng-container>
+
+  <!-- ===================== PRINT TEMPLATE ===================== -->
+  <div class="print-only" *ngIf="!loading() && employee()" style="direction: rtl; display: none;">
+    <div style="text-align: center; margin-bottom: 2rem; border-bottom: 2px solid #000; padding-bottom: 1rem;">
+      <h1>ملف الموظف</h1>
+      <h2>الصيدلية الذكية - {{ employee()?.branchName }}</h2>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+      <div>
+          <p><strong>اسم الموظف:</strong> {{ employee()?.fullName }}</p>
+          <p><strong>كود الموظف:</strong> {{ employee()?.employeeCode }}</p>
+          <p><strong>القسم / المسمى:</strong> {{ employee()?.departmentName }} - {{ employee()?.jobTitle }}</p>
+      </div>
+      <div>
+          <p><strong>تاريخ التعيين:</strong> {{ employee()?.hireDate | date:'yyyy-MM-dd' }}</p>
+          <p><strong>الراتب الأساسي:</strong> {{ employee()?.basicSalary | number:'1.0-2' }}</p>
+          <p><strong>تاريخ الطباعة:</strong> {{ filterDate | date:'yyyy-MM-dd HH:mm' }}</p>
+      </div>
+    </div>
+
+    <h3>البيانات الأساسية</h3>
+    <table class="print-table" style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+      <tr>
+        <td style="border: 1px solid #000; padding: 8px;"><strong>رقم الهوية:</strong> {{ employee()?.nationalId }}</td>
+        <td style="border: 1px solid #000; padding: 8px;"><strong>رقم الهاتف:</strong> {{ employee()?.phoneNumber }}</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #000; padding: 8px;"><strong>البريد:</strong> {{ employee()?.email }}</td>
+        <td style="border: 1px solid #000; padding: 8px;"><strong>العنوان:</strong> {{ employee()?.address }}</td>
+      </tr>
+    </table>
+
+    <h3 *ngIf="remainingLoan() > 0">السلف المتبقية</h3>
+    <table class="print-table" *ngIf="remainingLoan() > 0" style="width: 100%; border-collapse: collapse; margin-bottom: 2rem;">
+      <tr>
+        <td style="border: 1px solid #000; padding: 8px; font-weight: bold; background: #f2f2f2;">إجمالي المبالغ المتبقية</td>
+        <td style="border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; color: red;">{{ remainingLoan() | number:'1.0-2' }} ريال</td>
+      </tr>
+    </table>
+
+    <div style="margin-top: 4rem; display: flex; justify-content: space-between;">
+      <div style="text-align: center;">
+        <p><strong>توقيع الموظف</strong></p>
+        <p>_________________</p>
+      </div>
+      <div style="text-align: center;">
+        <p><strong>اعتماد شؤون الموظفين</strong></p>
+        <p>_________________</p>
+      </div>
+    </div>
+  </div>
+</div>

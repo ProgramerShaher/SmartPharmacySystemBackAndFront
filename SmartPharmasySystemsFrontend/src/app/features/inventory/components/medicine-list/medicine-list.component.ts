@@ -52,6 +52,7 @@ export class MedicineListComponent implements OnInit {
     medicines = signal<Medicine[]>([]);
     totalRecords = signal(0);
     loading = signal(true);
+    isImporting = signal(false);
 
     // Filters
     searchTerm = signal('');
@@ -64,6 +65,7 @@ export class MedicineListComponent implements OnInit {
     showDetailsDialog = signal(false);
 
     selectedMedicine: Medicine | null = null;
+    selectedMedicines: Medicine[] = [];
     selectedMedicineId = signal<number | null>(null);
     selectedMedicineIdForBatch = 0;
     selectedMedicineNameForBatch = '';
@@ -171,6 +173,32 @@ export class MedicineListComponent implements OnInit {
         });
     }
 
+    deleteSelectedMedicines() {
+        if (!this.selectedMedicines || this.selectedMedicines.length === 0) return;
+
+        this.confirmationService.confirm({
+            message: `هل أنت متأكد من حذف ${this.selectedMedicines.length} دواء؟`,
+            header: 'تأكيد الحذف الجماعي',
+            icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'نعم، احذف',
+            rejectLabel: 'إلغاء',
+            accept: () => {
+                const ids = this.selectedMedicines.map(m => m.id);
+                this.medicineService.deleteBulk(ids).subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حذف الأدوية بنجاح' });
+                        this.selectedMedicines = [];
+                        this.loadMedicines(this.lastLazyEvent);
+                    },
+                    error: (err) => {
+                        console.error('Delete Bulk Medicines Error:', err);
+                        this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'حدث خطأ أثناء الحذف' });
+                    }
+                });
+            }
+        });
+    }
+
     // --- Batch Actions (Inventory Setup) ---
 
     openAddBatch(medicine: Medicine) {
@@ -197,5 +225,56 @@ export class MedicineListComponent implements OnInit {
 
     getStatusSeverity(status: string): 'success' | 'danger' | 'warning' | 'info' {
         return status === 'Active' ? 'success' : 'danger';
+    }
+
+    // --- Excel Import/Export ---
+    downloadTemplate() {
+        this.medicineService.downloadTemplate();
+    }
+
+    onFileSelected(event: any) {
+        const file: File = event.target.files[0];
+        if (file) {
+            this.isImporting.set(true);
+            this.medicineService.importMedicines(file).subscribe({
+                next: (res: any) => {
+                    this.isImporting.set(false);
+                    // Clear the file input
+                    event.target.value = '';
+                    
+                    let summary = `تم استيراد ${res.successCount} دواء بنجاح.`;
+                    if (res.updatedCount > 0) summary += ` تم تحديث ${res.updatedCount} دواء.`;
+                    if (res.failedCount > 0) summary += ` فشل استيراد ${res.failedCount} صفوف.`;
+                    
+                    this.messageService.add({
+                        severity: res.failedCount > 0 ? 'warn' : 'success',
+                        summary: 'نتيجة الاستيراد',
+                        detail: summary,
+                        life: 5000
+                    });
+
+                    if (res.errors && res.errors.length > 0) {
+                        // عرض الأخطاء في رسالة منفصلة
+                        setTimeout(() => {
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'أخطاء الاستيراد',
+                                detail: res.errors.join('\n'),
+                                life: 10000
+                            });
+                        }, 500);
+                    }
+
+                    if (res.successCount > 0 || res.updatedCount > 0) {
+                        this.loadMedicines(this.lastLazyEvent);
+                    }
+                },
+                error: (err) => {
+                    this.isImporting.set(false);
+                    event.target.value = '';
+                    this.messageService.add({ severity: 'error', summary: 'خطأ', detail: err.error?.message || 'فشل في استيراد الملف' });
+                }
+            });
+        }
     }
 }

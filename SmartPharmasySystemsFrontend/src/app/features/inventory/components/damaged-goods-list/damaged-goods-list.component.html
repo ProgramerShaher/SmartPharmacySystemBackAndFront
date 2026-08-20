@@ -1,0 +1,256 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="damaged-goods-page">
+  <!-- ============ Page Header ============ -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <div class="header-icon">
+          <i class="pi pi-trash"></i>
+        </div>
+        <div>
+          <h1>إدارة التوالف والإتلاف</h1>
+          <p>تسجيل وإدارة إتلاف الأدوية مع إنشاء القيود المحاسبية تلقائياً</p>
+        </div>
+      </div>
+      <button pButton icon="pi pi-plus" label="تسجيل إتلاف جديد"
+        class="p-button-danger" (click)="openAddDialog()">
+      </button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="summary-card total">
+        <div class="card-icon"><i class="pi pi-list"></i></div>
+        <div class="card-info">
+          <div class="card-value">{{ records().length }}</div>
+          <div class="card-label">إجمالي السجلات</div>
+        </div>
+      </div>
+      <div class="summary-card pending" (click)="setTab('pending')">
+        <div class="card-icon"><i class="pi pi-clock"></i></div>
+        <div class="card-info">
+          <div class="card-value">{{ getPendingCount() }}</div>
+          <div class="card-label">بانتظار الاعتماد</div>
+        </div>
+      </div>
+      <div class="summary-card value">
+        <div class="card-icon"><i class="pi pi-dollar"></i></div>
+        <div class="card-info">
+          <div class="card-value">{{ getTotalDamageValue() | number:'1.0-0' }}</div>
+          <div class="card-label">قيمة الإتلاف الإجمالية</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Tab Bar ============ -->
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="activeTab() === 'all'" (click)="setTab('all')">
+      <i class="pi pi-list"></i> الكل
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'pending'" (click)="setTab('pending')">
+      <i class="pi pi-clock"></i> بانتظار الاعتماد
+      @if (getPendingCount() > 0) {
+        <span class="badge-count">{{ getPendingCount() }}</span>
+      }
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'approved'" (click)="setTab('approved')">
+      <i class="pi pi-check-circle"></i> المعتمدة
+    </button>
+  </div>
+
+  <!-- ============ Data Table ============ -->
+  <div class="table-container">
+    <p-table
+      [value]="records()"
+      [loading]="loading()"
+      [paginator]="true"
+      [rows]="15"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="عرض {first} إلى {last} من {totalRecords} سجل"
+      [globalFilterFields]="['damageCode', 'medicineName', 'batchNumber']"
+      styleClass="p-datatable-striped p-datatable-sm"
+      responsiveLayout="scroll"
+      rowHover="true"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th>كود الإتلاف</th>
+          <th>الدواء</th>
+          <th>رقم الدفعة</th>
+          <th>الكمية</th>
+          <th>نوع الضرر</th>
+          <th>قيمة الإتلاف</th>
+          <th>طريقة التخلص</th>
+          <th>الحالة</th>
+          <th>تاريخ التسجيل</th>
+          <th>الإجراءات</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-rec>
+        <tr>
+          <td>
+            <span class="damage-code">{{ rec.damageCode }}</span>
+          </td>
+          <td>
+            <div class="medicine-info">
+              <i class="pi pi-bookmark"></i>
+              {{ rec.medicineName || 'دواء #' + rec.medicineId }}
+            </div>
+          </td>
+          <td><code>{{ rec.batchNumber }}</code></td>
+          <td>
+            <span class="quantity-badge">{{ rec.quantity }}</span>
+          </td>
+          <td>{{ getDamageTypeLabel(rec.damageType) }}</td>
+          <td>
+            <span class="damage-value">{{ rec.damageValue | number:'1.2-2' }} ر.ي</span>
+          </td>
+          <td>{{ getDisposalMethodLabel(rec.disposalMethod) }}</td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(rec.status)"
+              [severity]="getStatusSeverity(rec.status)"
+            />
+          </td>
+          <td>{{ rec.createdAt | date:'yyyy/MM/dd' }}</td>
+          <td>
+            <div class="action-btns">
+              @if (rec.status === 0) {
+                <button pButton pRipple icon="pi pi-check" pTooltip="اعتماد الإتلاف وإنشاء القيد"
+                  class="p-button-success p-button-sm p-button-text"
+                  (click)="approve(rec)">
+                </button>
+              }
+              @if (rec.status === 0) {
+                <button pButton pRipple icon="pi pi-trash" pTooltip="حذف"
+                  class="p-button-danger p-button-sm p-button-text"
+                  (click)="delete(rec)">
+                </button>
+              }
+              @if (rec.status === 1) {
+                <span class="approved-label">
+                  <i class="pi pi-check-circle"></i>
+                  معتمد
+                </span>
+              }
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="10" class="empty-state">
+            <div class="empty-content">
+              <i class="pi pi-inbox"></i>
+              <p>لا توجد سجلات إتلاف</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<!-- ============ Add Dialog ============ -->
+<p-dialog
+  [(visible)]="showAddDialog"
+  [modal]="true"
+  [style]="{ width: '600px' }"
+  header="تسجيل إذن إتلاف جديد"
+  [closable]="true"
+  styleClass="damage-dialog"
+>
+  <div class="dialog-body">
+    <div class="accounting-info-box">
+      <i class="pi pi-info-circle"></i>
+      <span>عند اعتماد هذا الإذن سيتم تلقائياً: خصم الكمية من المخزون + إنشاء قيد محاسبي (مدين: مصاريف التوالف / دائن: مخزون الأدوية)</span>
+    </div>
+
+    <p-divider />
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>المستودع <span class="required">*</span></label>
+        <p-dropdown
+          [options]="warehouses"
+          [(ngModel)]="form.sourceWarehouseId"
+          placeholder="اختر المستودع"
+          [showClear]="true"
+          class="w-full"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>الدواء <span class="required">*</span></label>
+        <p-dropdown
+          [options]="medicines"
+          [(ngModel)]="form.medicineId"
+          placeholder="اختر الدواء"
+          [filter]="true"
+          filterPlaceholder="بحث..."
+          [showClear]="true"
+          class="w-full"
+          (onChange)="onMedicineSelect($event.value)"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>رقم الدفعة <span class="required">*</span></label>
+        <p-dropdown
+          [options]="batches"
+          [(ngModel)]="form.batchNumber"
+          placeholder="اختر الدفعة"
+          [showClear]="true"
+          [disabled]="!form.medicineId"
+          class="w-full"
+          (onChange)="onBatchSelect($event.value)"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>الكمية <span class="required">*</span></label>
+        <p-inputNumber
+          [(ngModel)]="form.quantity"
+          [min]="1"
+          mode="decimal"
+          [showButtons]="true"
+          class="w-full"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>نوع الضرر <span class="required">*</span></label>
+        <p-dropdown
+          [options]="damageTypes"
+          [(ngModel)]="form.damageType"
+          placeholder="نوع الضرر"
+          class="w-full"
+        />
+      </div>
+
+      <div class="form-group">
+        <label>طريقة التخلص <span class="required">*</span></label>
+        <p-dropdown
+          [options]="disposalMethods"
+          [(ngModel)]="form.disposalMethod"
+          placeholder="طريقة التخلص"
+          class="w-full"
+        />
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="إلغاء" icon="pi pi-times"
+      class="p-button-text" (click)="showAddDialog.set(false)">
+    </button>
+    <button pButton label="تسجيل الإتلاف" icon="pi pi-save"
+      class="p-button-danger" [loading]="saving()" (click)="save()">
+    </button>
+  </ng-template>
+</p-dialog>

@@ -1,50 +1,63 @@
-<p-dialog [(visible)]="visible" [modal]="true" [closable]="false" [draggable]="false" [resizable]="false"
-    styleClass="shift-dialog" maskStyleClass="backdrop-blur-sm bg-black-alpha-40"
-    [style]="{width: '450px', maxWidth: '95vw'}">
+<p-dialog [header]="mode === 'open' ? 'فتح وردية جديدة' : 'إغلاق الوردية وترحيل النقدية'" 
+    [(visible)]="visible" 
+    (onHide)="onHide()"
+    [modal]="true" 
+    [style]="{width: '450px'}" 
+    [draggable]="false" 
+    [resizable]="false"
+    [closable]="mode === 'open' ? true : false"> <!-- لا يمكن إغلاق نافذة الخروج إلا بتأكيد الإغلاق أو تسجيل الدخول -->
     
-    <ng-template pTemplate="header">
-        <div class="shift-header">
-            <div class="shift-icon" [ngClass]="{'icon-open': mode === 'open', 'icon-close': mode === 'close'}">
-                <i class="pi" [ngClass]="mode === 'open' ? 'pi-sign-in' : 'pi-sign-out'"></i>
-            </div>
-            <div class="shift-title">
-                <h2>{{ mode === 'open' ? 'بدء وردية جديدة' : 'إنهاء الوردية' }}</h2>
-                <p>{{ mode === 'open' ? 'الرجاء إدخال المبلغ المتوفر حالياً في الصندوق للبدء.' : 'الرجاء إدخال المبلغ الفعلي في الصندوق لإنهاء عملك.' }}</p>
-            </div>
+    <div class="p-fluid mt-2" [formGroup]="shiftForm">
+        
+        <!-- حالة التحميل -->
+        <div *ngIf="loadingShift" class="flex justify-content-center p-3">
+            <i class="pi pi-spin pi-spinner text-2xl text-primary"></i>
         </div>
-    </ng-template>
 
-    <div class="shift-body p-fluid" dir="rtl">
-        <form [formGroup]="shiftForm" (ngSubmit)="submit()">
-            <div class="field">
-                <label for="cashAmount" class="font-bold text-700">
-                    {{ mode === 'open' ? 'المبلغ الافتتاحي في الصندوق' : 'المبلغ الفعلي في الصندوق' }} <span class="text-red-500">*</span>
-                </label>
-                <span class="p-input-icon-right">
-                    <i class="pi pi-money-bill text-400"></i>
-                    <input pInputText type="number" id="cashAmount" formControlName="cashAmount" 
-                        placeholder="0.00" class="p-inputtext-lg font-bold" />
-                </span>
-                <small class="text-red-500 mt-1 block" *ngIf="shiftForm.get('cashAmount')?.touched && shiftForm.get('cashAmount')?.invalid">
-                    يجب إدخال المبلغ بشكل صحيح
-                </small>
-            </div>
+        <ng-container *ngIf="!loadingShift">
+            <!-- رسالة معلومات عند الإغلاق -->
+            <p-messages *ngIf="mode === 'close' && currentShift" severity="info">
+                <ng-template pTemplate>
+                    <div class="flex align-items-center w-full">
+                        <i class="pi pi-info-circle mr-2 text-xl"></i>
+                        <div>
+                            الرصيد المتوقع في الدرج: <strong>{{ currentShift.expectedClosingCash | currency:' ':'symbol':'1.2-2' }}</strong>
+                        </div>
+                    </div>
+                </ng-template>
+            </p-messages>
 
             <div class="field mt-3">
-                <label for="notes" class="text-700">ملاحظات (اختياري)</label>
-                <textarea pInputTextarea id="notes" formControlName="notes" rows="3" 
-                    placeholder="أي تفاصيل أخرى ترغب بإضافتها..."></textarea>
+                <label for="cashAmount">{{ mode === 'open' ? 'الرصيد الافتتاحي (في الدرج الآن)' : 'الرصيد الفعلي (الذي قمت بعده الآن)' }}</label>
+                <p-inputNumber id="cashAmount" formControlName="cashAmount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [autofocus]="true" styleClass="w-full"></p-inputNumber>
+                
+                <!-- عرض العجز والزيادة عند الإغلاق -->
+                <small *ngIf="mode === 'close' && currentShift" class="block mt-2" 
+                    [ngClass]="{'text-red-600 font-bold': difference < 0, 'text-green-600 font-bold': difference > 0}">
+                    الفرق: {{ difference | currency:' ':'symbol':'1.2-2' }}
+                    <span *ngIf="difference === 0" class="text-600 font-normal">(مطابق)</span>
+                </small>
             </div>
-        </form>
+            
+            <div class="field">
+                <label for="notes">ملاحظات (اختياري)</label>
+                <textarea pInputTextarea id="notes" formControlName="notes" rows="3"></textarea>
+            </div>
+            
+            <div class="field-checkbox mt-3" *ngIf="mode === 'close'">
+                <p-checkbox formControlName="transferToMainSafe" [binary]="true" inputId="transferCash"></p-checkbox>
+                <label for="transferCash" class="ml-2 font-bold" style="margin-right: 0.5rem; cursor: pointer;">ترحيل الرصيد إلى الصندوق الرئيسي وإفراغ الدرج</label>
+            </div>
+        </ng-container>
     </div>
-
+    
     <ng-template pTemplate="footer">
-        <div class="shift-footer w-full flex gap-2">
-            <button pButton class="w-full p-button-lg" [ngClass]="mode === 'open' ? 'p-button-primary' : 'p-button-warning'" 
-                [icon]="mode === 'open' ? 'pi pi-play' : 'pi pi-stop'" 
-                [label]="mode === 'open' ? 'بدء الوردية' : 'إغلاق الوردية وتسجيل الخروج'" 
-                [disabled]="shiftForm.invalid || loading" [loading]="loading" (click)="submit()">
-            </button>
-        </div>
+        <p-button *ngIf="mode === 'open'" label="إلغاء" icon="pi pi-times" (onClick)="visible = false" severity="secondary" [text]="true"></p-button>
+        <p-button [label]="mode === 'open' ? 'تأكيد الفتح' : 'تأكيد الإغلاق والخروج'" 
+                 [icon]="mode === 'open' ? 'pi pi-check' : 'pi pi-lock'" 
+                 (onClick)="submit()" 
+                 [loading]="loading"
+                 [disabled]="shiftForm.invalid"
+                 [severity]="mode === 'open' ? 'success' : 'danger'"></p-button>
     </ng-template>
 </p-dialog>

@@ -12,6 +12,8 @@
     </div>
     <div class="emp-header-end" style="display: flex; gap: 1rem; align-items: center;">
       <p-dropdown [options]="branches" [(ngModel)]="selectedBranch" optionLabel="name" optionValue="id" (onChange)="loadData()" placeholder="اختر الفرع"></p-dropdown>
+      <p-dropdown [options]="paymentAccounts" [(ngModel)]="selectedPaymentAccountId" optionLabel="name" optionValue="id" placeholder="حساب صرف الرواتب"></p-dropdown>
+      <p-dropdown [options]="expenseAccounts" [(ngModel)]="selectedSalaryExpenseAccountId" optionLabel="name" optionValue="id" placeholder="حساب مصروف الرواتب"></p-dropdown>
       <p-calendar [(ngModel)]="filterDate" view="month" dateFormat="mm/yy" [readonlyInput]="true" (onSelect)="loadData()"></p-calendar>
       <p-button icon="pi pi-money-bill" label="اعتماد ودفع الكل" severity="success" (onClick)="payAll()" [disabled]="records().length === 0"></p-button>
     </div>
@@ -78,6 +80,7 @@
           <th class="text-center">البدلات</th>
           <th class="text-center">المكافآت</th>
           <th class="text-center">الاستقطاعات</th>
+          <th class="text-center">تفاصيل الخصم</th>
           <th class="text-center">صافي الراتب</th>
           <th class="text-center">الحالة</th>
           <th class="text-center">الإجراءات</th>
@@ -92,6 +95,16 @@
           <td class="text-center"><span style="color: #10b981; font-weight: 700;">+{{ s.totalAllowances | number:'1.0-2' }}</span></td>
           <td class="text-center"><span style="color: #3b82f6; font-weight: 700;">+{{ s.totalBonuses | number:'1.0-2' }}</span></td>
           <td class="text-center"><span style="color: #ef4444; font-weight: 700;">-{{ s.totalDeductions | number:'1.0-2' }}</span></td>
+          <td class="text-center">
+            <div *ngIf="s.deductions?.length; else noDeductions" style="display: grid; gap: 0.25rem; text-align: right;">
+              <small *ngFor="let d of s.deductions" style="color: #991b1b; font-weight: 700;">
+                {{ d.description }} - {{ d.amount | number:'1.0-2' }}
+              </small>
+            </div>
+            <ng-template #noDeductions>
+              <small style="color: #94a3b8;">لا يوجد</small>
+            </ng-template>
+          </td>
           
           <td class="text-center"><strong style="font-size: 0.85rem;">{{ s.netSalary | number:'1.0-2' }}</strong></td>
           
@@ -116,7 +129,7 @@
       </ng-template>
       <ng-template pTemplate="emptydata">
         <tr>
-          <td colspan="9" class="emp-empty">
+          <td colspan="10" class="emp-empty">
             <i class="pi pi-wallet"></i>
             <span>لا توجد رواتب مسجلة لهذا الشهر</span>
           </td>

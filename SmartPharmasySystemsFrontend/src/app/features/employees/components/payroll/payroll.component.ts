@@ -15,6 +15,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MonthlySalaryService } from '../../services/monthly-salary.service';
 import { EmployeeService } from '../../services/employee.service';
+import { AccountingService } from '../../../../core/services/accounting.service';
+import { AccountDto, AccountType } from '../../../../core/models/accounting.interface';
 
 @Component({
   selector: 'app-payroll',
@@ -46,6 +48,10 @@ export class PayrollComponent implements OnInit {
   filterDate = new Date();
   branches: any[] = [];
   selectedBranch: any = null;
+  paymentAccounts: AccountDto[] = [];
+  expenseAccounts: AccountDto[] = [];
+  selectedPaymentAccountId: number | null = null;
+  selectedSalaryExpenseAccountId: number | null = null;
 
   showForm = false;
   selectedRecord: any = null;
@@ -57,12 +63,48 @@ export class PayrollComponent implements OnInit {
   constructor(
     private salaryService: MonthlySalaryService,
     private employeeService: EmployeeService,
+    private accountingService: AccountingService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
   ) {}
 
   ngOnInit(): void {
     this.loadBranches();
+    this.loadAccounts();
+  }
+
+  loadAccounts(): void {
+    this.accountingService.getAccountsTree().subscribe({
+      next: (accounts) => {
+        const flat = this.flattenAccounts(accounts);
+
+        // الباك-إند يرسل الخاصية باسم type وليس accountType
+        // نقارن مع النص والرقم معاً لضمان التوافق
+        this.paymentAccounts = flat.filter(a =>
+          a.isActive && !a.isMainAccount &&
+          ((a.type as any) === 'Asset' || (a.type as any) === AccountType.Asset)
+        );
+
+        this.expenseAccounts = flat.filter(a =>
+          a.isActive && !a.isMainAccount &&
+          ((a.type as any) === 'Expense' || (a.type as any) === AccountType.Expense)
+        );
+
+        this.selectedPaymentAccountId = this.paymentAccounts.find(a => a.code === '1101' || a.code === '11101')?.id ?? this.paymentAccounts[0]?.id ?? null;
+        this.selectedSalaryExpenseAccountId = this.expenseAccounts.find(a => a.code === '5201' || a.code === '52001')?.id ?? this.expenseAccounts[0]?.id ?? null;
+      },
+      error: () => {}
+    });
+  }
+
+  private flattenAccounts(accounts: AccountDto[]): AccountDto[] {
+    return accounts.reduce<AccountDto[]>((acc, account) => {
+      acc.push(account);
+      if (account.children?.length) {
+        acc.push(...this.flattenAccounts(account.children));
+      }
+      return acc;
+    }, []);
   }
 
   loadBranches(): void {
@@ -106,6 +148,10 @@ export class PayrollComponent implements OnInit {
 
   payAll(): void {
     const pendingCount = this.records().filter(r => r.paymentStatus === 1).length;
+    if (!this.selectedPaymentAccountId) {
+      this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'اختر حساب صرف الرواتب أولاً' });
+      return;
+    }
     if (pendingCount === 0) {
       this.messageService.add({ severity: 'info', summary: 'ملاحظة', detail: 'لا يوجد رواتب قيد الانتظار لاعتمادها.' });
       return;
@@ -119,7 +165,7 @@ export class PayrollComponent implements OnInit {
         this.loading.set(true);
         const m = this.filterDate.getMonth() + 1;
         const y = this.filterDate.getFullYear();
-        this.salaryService.payAll(m, y, this.selectedBranch).subscribe({
+        this.salaryService.payAll(m, y, this.selectedBranch, this.selectedPaymentAccountId!, this.selectedSalaryExpenseAccountId ?? undefined).subscribe({
           next: (count) => {
             this.messageService.add({ severity: 'success', summary: 'نجاح', detail: `تم اعتماد ${count} رواتب بنجاح` });
             this.loadData();
@@ -134,11 +180,16 @@ export class PayrollComponent implements OnInit {
   }
 
   paySingle(id: number): void {
+    if (!this.selectedPaymentAccountId) {
+      this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'اختر حساب صرف الرواتب أولاً' });
+      return;
+    }
+
     this.confirmationService.confirm({
       message: 'هل أنت متأكد من اعتماد ودفع هذا الراتب؟',
       accept: () => {
         this.loading.set(true);
-        this.salaryService.pay(id).subscribe({
+        this.salaryService.pay(id, this.selectedPaymentAccountId!, this.selectedSalaryExpenseAccountId ?? undefined).subscribe({
           next: () => {
             this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم اعتماد الراتب بنجاح' });
             this.loadData();

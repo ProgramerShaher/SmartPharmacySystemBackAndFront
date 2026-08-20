@@ -13,6 +13,8 @@ import { ChartModule } from 'primeng/chart';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { FormsModule } from '@angular/forms';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @Component({
     selector: 'app-sale-invoice-list',
@@ -26,7 +28,9 @@ import { TooltipModule } from 'primeng/tooltip';
         TagModule,
         ChartModule,
         ConfirmDialogModule,
-        TooltipModule
+        TooltipModule,
+        FormsModule,
+        CheckboxModule
     ],
     templateUrl: './sale-invoice-list.component.html',
     providers: [ConfirmationService]
@@ -87,9 +91,11 @@ export class SaleInvoiceListComponent implements OnInit {
         };
     }
 
+    includeClosedInvoices = false;
+
     loadSales() {
         this.loading = true;
-        this.salesService.getAll().subscribe({
+        this.salesService.getAll('', this.includeClosedInvoices).subscribe({
             next: (data) => {
                 this.sales = data;
                 this.loading = false;

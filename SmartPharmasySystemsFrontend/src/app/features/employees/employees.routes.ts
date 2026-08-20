@@ -12,5 +12,10 @@ export const EMPLOYEES_ROUTES: Routes = [
     {
         path: 'payroll',
         loadComponent: () => import('./components/payroll/payroll.component').then(m => m.PayrollComponent)
+    },
+    // Triggering recompile for newly added employee profile component
+    {
+        path: 'profile/:id',
+        loadComponent: () => import('./components/employee-profile/employee-profile.component').then(m => m.EmployeeProfileComponent)
     }
 ];

@@ -59,4 +59,5 @@ export class WarehouseService {
         return this.http.get<ApiResponse<any[]>>(`${environment.apiUrl}/InventoryStocks/warehouse/${warehouseId}`)
             .pipe(map(r => r.data || []));
     }
+   
 }

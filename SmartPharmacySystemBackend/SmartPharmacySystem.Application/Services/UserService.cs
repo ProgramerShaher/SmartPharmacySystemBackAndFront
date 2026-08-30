@@ -28,10 +28,12 @@ namespace SmartPharmacySystem.Application.Services
                 throw new ArgumentException("كلمات المرور غير متطابقة");
             }
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var user = _mapper.Map<User>(dto);
+                User user = null;
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
+                user = _mapper.Map<User>(dto);
                 user.CreatedAt = DateTime.UtcNow;
                 user.IsDeleted = false;
 
@@ -54,12 +56,11 @@ namespace SmartPharmacySystem.Application.Services
                     await _unitOfWork.SaveChangesAsync();
                 }
 
-                await _unitOfWork.CommitAsync();
+                });
                 return _mapper.Map<UserDto>(user);
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error creating user with employee setup.");
                 throw;
             }
@@ -82,9 +83,10 @@ namespace SmartPharmacySystem.Application.Services
             // Map other fields but exclude Password to avoid overwriting it if empty (handled manually above)
             _mapper.Map(dto, user);
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 await _unitOfWork.Users.UpdateAsync(user);
 
                 // Update Branch Assignments
@@ -120,11 +122,10 @@ namespace SmartPharmacySystem.Application.Services
                 }
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch
             {
-                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }

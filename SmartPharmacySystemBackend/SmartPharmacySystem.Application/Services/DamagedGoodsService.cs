@@ -118,9 +118,10 @@ public class DamagedGoodsService : IDamagedGoodsService
                 $"لا يوجد مخزن تالف (Damaged) مُعرَّف للفرع رقم {sourceWarehouse.BranchId}. " +
                 "يرجى إنشاء مخزن تالف للفرع أولاً.");
 
-        await _unitOfWork.BeginTransactionAsync();
         try
         {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             // ===== 1. خصم الكمية من المخزن الأصلي =====
             var sourceStock = await _unitOfWork.InventoryStocks
                 .GetByWarehouseMedicineBatchAsync(
@@ -255,7 +256,7 @@ public class DamagedGoodsService : IDamagedGoodsService
             }
 
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            });
 
             // إشعار الإدارة بالخسارة المالية
             await _notificationService.SendNotificationAsync(
@@ -269,7 +270,6 @@ public class DamagedGoodsService : IDamagedGoodsService
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
             _logger.LogError(ex, "Error approving DamagedGoodsRecord {Id}", id);
             throw;
         }

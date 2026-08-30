@@ -204,7 +204,7 @@
 
 <!-- ═══════════ Add/Edit Dialog ═══════════ -->
 <p-dialog [visible]="displayAddEditSidebar()" [modal]="true"
-          [draggable]="false" [resizable]="false"
+          [draggable]="false" [resizable]="false" [dismissableMask]="true"
           [style]="{width: '600px', maxWidth: '95vw'}"
           [header]="sideBarHeader()"
           (onHide)="onAddEditClose()" styleClass="imperial-dialog">
@@ -216,12 +216,12 @@
 </p-dialog>
 
 <!-- ═══════════ Receipts Dialog ═══════════ -->
-<p-dialog [visible]="receiptsDialogVisible()" [modal]="true"
-          [draggable]="false" [resizable]="false"
+<p-dialog [(visible)]="receiptsVisible" [modal]="true"
+          [draggable]="false" [resizable]="false" [dismissableMask]="true"
           [style]="{width: '820px', maxWidth: '95vw'}"
           header="إدارة سندات القبض للعملاء"
           (onHide)="closeReceiptsDialog()" styleClass="imperial-dialog">
-  <app-customer-receipts *ngIf="receiptsDialogVisible()"
+  <app-customer-receipts *ngIf="receiptsVisible"
     [dialogMode]="true"
     [autoOpenCreate]="true"
     [presetCustomerId]="selectedCustomerIdForReceipt()"

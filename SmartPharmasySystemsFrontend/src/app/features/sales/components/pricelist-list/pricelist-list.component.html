@@ -102,107 +102,139 @@
   }
 </div>
 
-<!-- ============ Premium Dialog ============ -->
+<!-- ============ Imperial Dialog ============ -->
 <p-dialog
   [(visible)]="showDialog"
   [modal]="true"
-  [style]="{ width: '750px', maxHeight: '90vh' }"
-  [header]="isEdit() ? 'تعديل قائمة الأسعار' : 'إدارة قائمة أسعار جديدة'"
-  [closable]="true"
-  styleClass="premium-dialog"
+  [style]="{ width: '700px' }"
+  [breakpoints]="{'960px': '95vw'}"
+  [draggable]="false"
+  [resizable]="false"
+  [showHeader]="false"
+  styleClass="imperial-modal"
 >
-  <div class="premium-body">
-    <!-- Header visual -->
-    <div class="premium-header-banner">
-      <h2>{{ isEdit() ? 'تحديث قائمة الأسعار' : 'إنشاء قائمة جديدة للتسعير' }}</h2>
-      <p>قم بضبط الخصومات العامة، وخصص أسعاراً استثنائية لأدوية محددة بدقة وسهولة.</p>
-    </div>
-
-    <!-- Basic Info -->
-    <div class="premium-card">
-      <div class="card-title-sub"><i class="pi pi-info-circle"></i> البيانات الأساسية</div>
-      <div class="premium-grid">
-        <div class="form-group full">
-          <label>اسم القائمة <span class="required">*</span></label>
-          <span class="p-input-icon-right w-full" style="display: block;">
-            <i class="pi pi-tag" style="left: 1rem; right: auto;"></i>
-            <input pInputText [(ngModel)]="form.name" placeholder="مثال: خصم كبار العملاء" class="w-full premium-input" />
-          </span>
-        </div>
-        <div class="form-group full">
-          <label>الوصف</label>
-          <textarea pInputTextarea [(ngModel)]="form.description" rows="2"
-            placeholder="وصف اختياري يوضح الغرض من هذه القائمة" class="w-full premium-input">
-          </textarea>
-        </div>
-        
-        <div class="form-group">
-          <label>الخصم العام (%) <span class="required">*</span></label>
-          <p-inputNumber [(ngModel)]="form.globalDiscountPercentage" [min]="0" [max]="100"
-            mode="decimal" [useGrouping]="false" class="w-full" inputStyleClass="w-full premium-input" />
-          <small class="hint-text">يُطبق على جميع الأدوية تلقائياً</small>
-        </div>
-        <div class="form-group flex-center">
-          <label>حالة التفعيل</label>
-          <div class="premium-switch">
-             <p-checkbox [(ngModel)]="form.isActive" [binary]="true" inputId="isActive" />
-             <label for="isActive">القائمة نشطة ومفعلة للعملاء</label>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Medicine Overrides -->
-    <div class="premium-card">
-      <div class="card-title-sub"><i class="pi pi-bolt"></i> تسعير خاص (تجاوزات الأصناف)</div>
-      <p class="override-hint">استثنِ بعض الأدوية من الخصم العام وامنحها سعراً ثابتاً أو خصماً خاصاً بها.</p>
-
-      <div class="premium-add-bar">
-        <p-dropdown [options]="medicines" [(ngModel)]="newItem.medicineId"
-          placeholder="ابحث عن دواء لعمل استثناء..." [filter]="true" class="flex-1" styleClass="w-full premium-input" />
-        
-        <div class="bar-inputs">
-          <p-inputNumber [(ngModel)]="newItem.fixedPrice" placeholder="سعر ثابت" [min]="0"
-            mode="decimal" [useGrouping]="false" inputStyleClass="premium-input-small" />
-          <span class="or-divider">أو</span>
-          <p-inputNumber [(ngModel)]="newItem.discountPercentage" placeholder="% خصم" [min]="0" [max]="100"
-            mode="decimal" [useGrouping]="false" inputStyleClass="premium-input-small" />
-          
-          <button pButton icon="pi pi-plus" class="p-button-rounded premium-add-btn" pTooltip="إضافة التجاوز" (click)="addItem()"></button>
-        </div>
-      </div>
-
-      @if (form.items.length > 0) {
-        <div class="premium-items-list">
-          @for (item of form.items; track item.medicineId; let i = $index) {
-            <div class="premium-item-row">
-              <div class="item-icon-name">
-                <div class="circle-icon"><i class="pi pi-box"></i></div>
-                <span class="medicine-name">{{ getMedicineName(item.medicineId) }}</span>
-              </div>
-              <div class="item-badges">
-                @if (item.fixedPrice) {
-                  <span class="badge-price"><i class="pi pi-money-bill"></i> {{ item.fixedPrice | number:'1.0-0' }}</span>
-                } @else if (item.discountPercentage) {
-                  <span class="badge-discount"><i class="pi pi-percentage"></i> {{ item.discountPercentage }} خصم</span>
-                } @else {
-                  <span class="badge-default">الخصم العام</span>
-                }
-                <button class="remove-btn" pTooltip="حذف الاستثناء" (click)="removeItem(i)"><i class="pi pi-trash"></i></button>
-              </div>
+  <div class="statement-container fadein p-2" dir="rtl" style="font-size: 0.8rem;">
+    <!-- ═══════════ Imperial Header Bar ═══════════ -->
+    <div class="imperial-header-bar p-2 mb-2 border-round">
+        <div class="flex align-items-center gap-2">
+            <div class="header-icon-badge flex align-items-center justify-content-center bg-teal-100 text-teal-700 border-circle" style="width: 28px; height: 28px;">
+                <i class="pi pi-tag text-sm"></i>
             </div>
-          }
+            <div class="header-titles">
+                <h2 class="main-title m-0 text-base font-bold">{{ isEdit() ? 'تعديل قائمة الأسعار' : 'إنشاء قائمة جديدة' }}</h2>
+                <span class="sub-title" style="font-size: 0.7rem;">ضبط الخصومات والأسعار الاستثنائية.</span>
+            </div>
         </div>
-      }
+        <div class="flex align-items-center gap-2">
+            <span class="status-badge px-2 py-1 border-round-2xl text-white font-bold" style="font-size: 0.65rem;" [ngClass]="form.isActive ? 'bg-teal-500' : 'bg-gray-400'">
+                {{form.isActive ? 'نشط' : 'غير نشط'}}
+            </span>
+            <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary" style="width: 2rem; height: 2rem;" (click)="showDialog.set(false)"></button>
+        </div>
+    </div>
+
+    <!-- ═══════════ Basic Info Grid ═══════════ -->
+    <div class="grid formgrid p-fluid m-0 mb-2 p-2 bg-gray-50 border-round border-1 border-200">
+        <div class="col-12 md:col-8 p-1">
+            <label class="font-bold text-700 mb-1 block" style="font-size: 0.75rem;">اسم القائمة <span class="text-red-500">*</span></label>
+            <span class="p-input-icon-right w-full">
+                <i class="pi pi-tag text-xs" style="left: 0.5rem; right: auto;"></i>
+                <input pInputText [(ngModel)]="form.name" (focus)="onInputFocus($event)" placeholder="اسم القائمة" class="p-inputtext-sm w-full py-1 px-2" style="font-size: 0.75rem;" />
+            </span>
+        </div>
+        <div class="col-12 md:col-4 p-1">
+            <label class="font-bold text-700 mb-1 block" style="font-size: 0.75rem;">الخصم العام (%) <span class="text-red-500">*</span></label>
+            <p-inputNumber [(ngModel)]="form.globalDiscountPercentage" (onFocus)="onInputFocus($event)" [min]="0" [max]="100" mode="decimal" [useGrouping]="false" class="w-full" inputStyleClass="p-inputtext-sm w-full py-1 px-2" [style]="{'font-size': '0.75rem'}"></p-inputNumber>
+        </div>
+        <div class="col-12 p-1">
+            <label class="font-bold text-700 mb-1 block" style="font-size: 0.75rem;">الوصف</label>
+            <input pInputText [(ngModel)]="form.description" (focus)="onInputFocus($event)" placeholder="وصف اختياري" class="p-inputtext-sm w-full py-1 px-2" style="font-size: 0.75rem;" />
+        </div>
+        <div class="col-12 p-1 flex align-items-center gap-2 mt-1">
+            <p-checkbox [(ngModel)]="form.isActive" [binary]="true" inputId="isActive"></p-checkbox>
+            <label for="isActive" class="font-bold text-700 m-0 cursor-pointer" style="font-size: 0.75rem;">القائمة نشطة ومفعلة للعملاء</label>
+        </div>
+    </div>
+
+    <!-- ═══════════ Medicine Overrides ═══════════ -->
+    <div class="flex justify-content-between align-items-center mt-2 mb-1 px-1">
+        <h4 class="m-0 font-bold text-700" style="font-size: 0.8rem;"><i class="pi pi-bolt text-teal-600 mr-1"></i> تسعير خاص (استثناءات الأدوية)</h4>
+    </div>
+    
+    <div class="bg-white p-2 border-round border-1 border-300 shadow-1 mb-2">
+        <div class="flex flex-wrap gap-2 align-items-center w-full mb-2 bg-blue-50 p-2 border-round">
+            <p-dropdown [options]="[{label: 'دواء واحد', value: 'single'}, {label: 'دواء من دفعة', value: 'batch'}, {label: 'كل الأدوية', value: 'all'}]"
+                [(ngModel)]="bulkType" appendTo="body" panelStyleClass="text-xs" styleClass="p-inputtext-sm" [style]="{'width': '110px', 'font-size': '0.75rem'}" (onChange)="newItem.medicineId = 0; selectedBulkBatchId = null;"></p-dropdown>
+                
+            <div *ngIf="bulkType === 'single'" class="flex-1" style="min-width: 150px;">
+                <p-dropdown [options]="medicines" [(ngModel)]="newItem.medicineId" appendTo="body" panelStyleClass="text-xs"
+                    placeholder="ابحث عن دواء..." [filter]="true" styleClass="p-inputtext-sm w-full" [style]="{'font-size': '0.75rem'}"></p-dropdown>
+            </div>
+            
+            <div *ngIf="bulkType === 'batch'" class="flex-1" style="min-width: 150px;">
+                <p-dropdown [options]="batches" [(ngModel)]="selectedBulkBatchId" appendTo="body" panelStyleClass="text-xs"
+                    placeholder="ابحث عن دفعة مخزنية..." [filter]="true" styleClass="p-inputtext-sm w-full" [style]="{'font-size': '0.75rem'}"></p-dropdown>
+            </div>
+                
+            <div *ngIf="bulkType === 'all'" class="flex-1 text-blue-700 font-bold flex align-items-center" style="font-size: 0.7rem;">
+                <i class="pi pi-info-circle mr-1"></i> سيتم تطبيق السعر أدناه على جميع الأدوية.
+            </div>
+
+            <p-inputNumber [(ngModel)]="newItem.fixedPrice" (onFocus)="onInputFocus($event)" placeholder="سعر ثابت" [min]="0"
+                mode="decimal" [useGrouping]="false" inputStyleClass="p-inputtext-sm w-full py-1 px-2" [style]="{'width': '75px', 'font-size': '0.75rem'}"></p-inputNumber>
+            
+            <span class="font-bold text-500" style="font-size: 0.7rem;">أو</span>
+            
+            <p-inputNumber [(ngModel)]="newItem.discountPercentage" (onFocus)="onInputFocus($event)" placeholder="% خصم" [min]="0" [max]="100"
+                mode="decimal" [useGrouping]="false" inputStyleClass="p-inputtext-sm w-full py-1 px-2" [style]="{'width': '65px', 'font-size': '0.75rem'}"></p-inputNumber>
+            
+            <button *ngIf="bulkType === 'single'" pButton icon="pi pi-plus" class="p-button-sm p-button-rounded" style="width: 2rem; height: 2rem;" pTooltip="إضافة الدواء" (click)="addItem()"></button>
+            <button *ngIf="bulkType === 'batch'" pButton icon="pi pi-plus" class="p-button-sm p-button-rounded p-button-warning" style="width: 2rem; height: 2rem;" pTooltip="إضافة الدواء" (click)="addMedicinesFromBatch()"></button>
+            <button *ngIf="bulkType === 'all'" pButton icon="pi pi-check-circle" class="p-button-sm p-button-rounded p-button-success" style="width: 2rem; height: 2rem;" pTooltip="إضافة جميع الأدوية" (click)="addAllMedicines()"></button>
+        </div>
+
+        <div class="ledger-card-wrapper border-1 border-200 border-round overflow-hidden" *ngIf="form.items.length > 0" style="max-height: 200px; overflow-y: auto;">
+            <p-table [value]="form.items" styleClass="p-datatable-sm imperial-statement-table">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th class="py-1 px-2" style="font-size: 0.7rem;">الصنف</th>
+                        <th class="text-center py-1 px-2" style="width: 35%; font-size: 0.7rem;">التجاوز (سعر / خصم)</th>
+                        <th class="text-center py-1 px-2" style="width: 15%; font-size: 0.7rem;">إجراء</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                    <tr class="border-bottom-1 border-200">
+                        <td class="py-1 px-2">
+                            <div class="flex align-items-center gap-1">
+                                <i class="pi pi-box text-teal-500" style="font-size: 0.65rem;"></i>
+                                <span class="font-bold text-700" style="font-size: 0.75rem;">{{ getMedicineName(item.medicineId) }}</span>
+                            </div>
+                        </td>
+                        <td class="text-center py-1 px-2">
+                            <span *ngIf="item.fixedPrice" class="font-mono font-bold bg-blue-100 text-blue-800 px-2 py-1 border-round inline-block" style="font-size: 0.7rem;">
+                                {{ item.fixedPrice | number:'1.0-0' }} ر.ي
+                            </span>
+                            <span *ngIf="item.discountPercentage" class="font-mono font-bold bg-orange-100 text-orange-800 px-2 py-1 border-round inline-block" style="font-size: 0.7rem;">
+                                {{ item.discountPercentage }}% خصم
+                            </span>
+                            <span *ngIf="!item.fixedPrice && !item.discountPercentage" class="font-bold bg-gray-100 text-gray-600 px-2 py-1 border-round inline-block" style="font-size: 0.7rem;">
+                                الخصم العام
+                            </span>
+                        </td>
+                        <td class="text-center py-1 px-2">
+                            <button pButton icon="pi pi-trash" class="p-button-text p-button-sm p-button-danger p-0" style="font-size: 0.75rem; width: 1.5rem; height: 1.5rem;" (click)="removeItem(i)"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+
+    <!-- ═══════════ Actions ═══════════ -->
+    <div class="flex justify-content-end gap-2 mt-2">
+        <button pButton label="إلغاء" icon="pi pi-times" class="p-button-text p-button-sm py-1 px-3" style="font-size: 0.8rem;" (click)="showDialog.set(false)"></button>
+        <button pButton [label]="isEdit() ? 'حفظ التعديلات' : 'إنشاء القائمة'" icon="pi pi-save" class="p-button-sm py-1 px-3" style="font-size: 0.8rem;" [loading]="saving()" (click)="save()"></button>
     </div>
   </div>
-
-  <ng-template pTemplate="footer">
-    <button pButton label="إلغاء" icon="pi pi-times"
-      class="p-button-text" (click)="showDialog.set(false)">
-    </button>
-    <button pButton [label]="isEdit() ? 'حفظ التعديلات' : 'إنشاء القائمة'" icon="pi pi-save"
-      [loading]="saving()" (click)="save()">
-    </button>
-  </ng-template>
 </p-dialog>
+

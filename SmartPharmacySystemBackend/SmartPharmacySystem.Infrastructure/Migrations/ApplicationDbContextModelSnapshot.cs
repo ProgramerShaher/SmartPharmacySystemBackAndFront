@@ -1150,9 +1150,6 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.Property<int?>("DeletedBy")
                         .HasColumnType("int");
 
-                    b.Property<bool>("IsBalanceTransferredToSafe")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1692,7 +1689,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 605, DateTimeKind.Utc).AddTicks(9374),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 162, DateTimeKind.Utc).AddTicks(9214),
                             Description = "رواتب الموظفين والبدلات",
                             IsDeleted = false,
                             Name = "رواتب"
@@ -1700,7 +1697,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(598),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1196),
                             Description = "إيجار مقر الصيدلية والمخازن",
                             IsDeleted = false,
                             Name = "إيجار"
@@ -1708,7 +1705,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(600),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1207),
                             Description = "فواتير الكهرباء",
                             IsDeleted = false,
                             Name = "كهرباء"
@@ -1716,7 +1713,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(601),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1211),
                             Description = "فواتير المياه",
                             IsDeleted = false,
                             Name = "مياه"
@@ -1724,7 +1721,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(603),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1222),
                             Description = "فواتير الهاتف والاشتراكات",
                             IsDeleted = false,
                             Name = "اتصالات وانترنت"
@@ -1732,7 +1729,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(605),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1226),
                             Description = "أدوات مكتبية ومطبوعات",
                             IsDeleted = false,
                             Name = "قرطاسية وأدوات مكتبية"
@@ -1740,7 +1737,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(659),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1519),
                             Description = "صيانة المعدات والمباني",
                             IsDeleted = false,
                             Name = "صيانة"
@@ -1748,7 +1745,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 8,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(661),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1521),
                             Description = "أدوات ومواد نظافة",
                             IsDeleted = false,
                             Name = "نظافة"
@@ -1756,7 +1753,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 9,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 16, 606, DateTimeKind.Utc).AddTicks(662),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 29, 163, DateTimeKind.Utc).AddTicks(1522),
                             Description = "مصاريف متنوعة",
                             IsDeleted = false,
                             Name = "أخرى"
@@ -2293,7 +2290,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Id = 1,
                             AccountId = 1101,
                             BranchId = 1,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 17, 305, DateTimeKind.Utc).AddTicks(6172),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 30, 63, DateTimeKind.Utc).AddTicks(6011),
                             Credit = 0m,
                             Debit = 50000m,
                             Description = "إيداع رصيد افتتاحي",
@@ -2305,7 +2302,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Id = 2,
                             AccountId = 3101,
                             BranchId = 1,
-                            CreatedAt = new DateTime(2026, 8, 19, 16, 47, 17, 305, DateTimeKind.Utc).AddTicks(9585),
+                            CreatedAt = new DateTime(2026, 8, 26, 14, 27, 30, 63, DateTimeKind.Utc).AddTicks(7876),
                             Credit = 50000m,
                             Debit = 0m,
                             Description = "إثبات رأس المال",
@@ -3111,6 +3108,10 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("LicenseKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<string>("LogoUrl")
                         .HasMaxLength(500)
@@ -4788,7 +4789,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "admin@pharmacy.com",
                             FullName = "مدير النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$VG3.M0dpXCxqTduJaNuiYeckc/YqJcul2e1S5ZPRVgScLnqmrl7nm",
+                            PasswordHash = "$2a$11$tieJ1OkzwEKNMrON8CFLe.XkfxRpib/cKQqaN/qWM5hYkJ.2LdfeC",
                             RoleId = 1,
                             Status = 1,
                             Username = "admin"
@@ -4801,7 +4802,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "pharmacist@pharmacy.com",
                             FullName = "صيدلي النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$VG3.M0dpXCxqTduJaNuiYeckc/YqJcul2e1S5ZPRVgScLnqmrl7nm",
+                            PasswordHash = "$2a$11$tieJ1OkzwEKNMrON8CFLe.XkfxRpib/cKQqaN/qWM5hYkJ.2LdfeC",
                             RoleId = 2,
                             Status = 1,
                             Username = "pharmacist"
@@ -4899,9 +4900,6 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
 
                     b.Property<decimal>("ExpectedClosingCash")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<bool>("IsBalanceTransferredToSafe")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");

@@ -95,19 +95,41 @@ public class PricelistService : IPricelistService
         pricelist.UpdatedBy = userId;
         pricelist.UpdatedAt = DateTime.UtcNow;
 
-        // Replace items completely
-        pricelist.Items.Clear();
+        var existingItemsDict = pricelist.Items.ToDictionary(i => i.MedicineId);
+        var newMedicineIds = dto.Items.Select(i => i.MedicineId).ToHashSet();
+
+        // Remove items that are no longer in the dto
+        var itemsToRemove = pricelist.Items.Where(i => !newMedicineIds.Contains(i.MedicineId)).ToList();
+        foreach (var item in itemsToRemove)
+        {
+            pricelist.Items.Remove(item);
+        }
+
+        // Add or Update items
         foreach (var itemDto in dto.Items)
         {
-            pricelist.Items.Add(new PricelistItem
+            if (existingItemsDict.TryGetValue(itemDto.MedicineId, out var existingItem))
             {
-                PricelistId = id,
-                MedicineId = itemDto.MedicineId,
-                FixedPrice = itemDto.FixedPrice,
-                DiscountPercentage = itemDto.DiscountPercentage,
-                CreatedBy = userId,
-                CreatedAt = DateTime.UtcNow
-            });
+                // Update existing item
+                existingItem.FixedPrice = itemDto.FixedPrice;
+                existingItem.DiscountPercentage = itemDto.DiscountPercentage;
+            }
+            else
+            {
+                // Add new item
+                pricelist.Items.Add(new PricelistItem
+                {
+                    PricelistId = id,
+                    MedicineId = itemDto.MedicineId,
+                    FixedPrice = itemDto.FixedPrice,
+                    DiscountPercentage = itemDto.DiscountPercentage,
+                    CreatedBy = userId,
+                    CreatedAt = DateTime.UtcNow
+                });
+                
+                // Add to dictionary to prevent duplicates if dto contains the same medicine twice
+                existingItemsDict[itemDto.MedicineId] = null!; 
+            }
         }
 
         await _unitOfWork.Pricelists.UpdateAsync(pricelist);

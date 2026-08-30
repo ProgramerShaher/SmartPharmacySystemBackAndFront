@@ -1,6 +1,7 @@
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Infrastructure.Data;
 using SmartPharmacySystem.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace SmartPharmacySystem.Infrastructure
 {
@@ -186,6 +187,45 @@ namespace SmartPharmacySystem.Infrastructure
         public async Task RollbackAsync()
         {
             await _context.Database.RollbackTransactionAsync();
+        }
+
+        public async Task ExecuteTransactionAsync(Func<Task> action)
+        {
+            var strategy = _context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    await action();
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
+        }
+
+        public async Task<T> ExecuteTransactionAsync<T>(Func<Task<T>> action)
+        {
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    var result = await action();
+                    await transaction.CommitAsync();
+                    return result;
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            });
         }
 
         public void Dispose()

@@ -266,9 +266,10 @@ public class StockTransferService : IStockTransferService
 
         int? destBranchId = transfer.DestinationBranchId;
 
-        await _unitOfWork.BeginTransactionAsync();
         try
         {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             var sourceStocks = new Dictionary<string, InventoryStock>();
 
             foreach (var item in transfer.Items)
@@ -322,7 +323,7 @@ public class StockTransferService : IStockTransferService
             ClearNavigationProperties(transfer);
             await _unitOfWork.StockTransfers.UpdateAsync(transfer);
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            });
 
             // إشعار فرع الوجهة بأن البضاعة في الطريق
             if (destBranchId.HasValue)
@@ -340,7 +341,6 @@ public class StockTransferService : IStockTransferService
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
             _logger.LogError(ex, "Error dispatching StockTransfer {Id}", id);
             throw;
         }
@@ -368,10 +368,11 @@ public class StockTransferService : IStockTransferService
             ?? transfer.DestinationWarehouseId
             ?? throw new InvalidOperationException("يجب تحديد مخزن الوجهة لإتمام الاستلام");
 
-        await _unitOfWork.BeginTransactionAsync();
+        bool hasVariance = false;
         try
         {
-            bool hasVariance = false;
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             var destinationStocks = new Dictionary<string, InventoryStock>();
 
             if (transfer.DestinationWarehouseId == null)
@@ -448,7 +449,7 @@ public class StockTransferService : IStockTransferService
             ClearNavigationProperties(transfer);
             await _unitOfWork.StockTransfers.UpdateAsync(transfer);
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            });
 
             // إشعار فرع المصدر بتقرير الاستلام
             int? sourceBranchId = transfer.BranchId > 0 ? transfer.BranchId
@@ -473,7 +474,6 @@ public class StockTransferService : IStockTransferService
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
             _logger.LogError(ex, "Error receiving StockTransfer {Id}", id);
             throw;
         }
@@ -549,9 +549,10 @@ public class StockTransferService : IStockTransferService
         if (transfer.DestinationWarehouseId == null)
             throw new InvalidOperationException("المخزن الوجهة غير محدد للتحويل الداخلي");
             
-        await _unitOfWork.BeginTransactionAsync();
         try
         {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             var sourceStocks = new Dictionary<string, InventoryStock>();
             var destinationStocks = new Dictionary<string, InventoryStock>();
 
@@ -654,11 +655,10 @@ public class StockTransferService : IStockTransferService
 
             await _unitOfWork.StockTransfers.UpdateAsync(transfer);
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            });
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
             _logger.LogError(ex, "Error executing internal StockTransfer {Id}", transfer.Id);
             throw;
         }

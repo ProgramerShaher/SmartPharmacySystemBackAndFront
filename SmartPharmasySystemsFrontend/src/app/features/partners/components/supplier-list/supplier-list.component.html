@@ -13,11 +13,9 @@
         </div>
       </div>
       <div class="actions-area">
-        <button pButton label="سندات الصرف" icon="pi pi-wallet"
-          class="imperial-btn p-button-outlined p-button-sm"
+        <button pButton label="سندات الصرف" icon="pi pi-wallet" class="imperial-btn p-button-outlined p-button-sm"
           (click)="openPaymentDialog()"></button>
-        <button pButton label="مورد جديد" icon="pi pi-plus"
-          class="imperial-btn-primary p-button-sm"
+        <button pButton label="مورد جديد" icon="pi pi-plus" class="imperial-btn-primary p-button-sm"
           (click)="openCreateSupplier()"></button>
       </div>
     </div>
@@ -58,11 +56,9 @@
 
   <!-- ═══════════ Table ═══════════ -->
   <div class="table-card">
-    <p-table #dt [value]="suppliers()" [loading]="loading()"
-             [paginator]="true" [rows]="10" [lazy]="true"
-             (onLazyLoad)="loadSuppliers($event)" [totalRecords]="totalRecords()"
-             [rowsPerPageOptions]="[10,25,50]"
-             styleClass="p-datatable-sm imperial-table" [rowHover]="true">
+    <p-table #dt [value]="suppliers()" [loading]="loading()" [paginator]="true" [rows]="10" [lazy]="true"
+      (onLazyLoad)="loadSuppliers($event)" [totalRecords]="totalRecords()" [rowsPerPageOptions]="[10,25,50]"
+      styleClass="p-datatable-sm imperial-table" [rowHover]="true">
 
       <!-- Caption / Search -->
       <ng-template pTemplate="caption">
@@ -72,9 +68,8 @@
           </span>
           <div class="p-input-icon-left search-box">
             <i class="pi pi-search"></i>
-            <input #searchInput pInputText type="text"
-                   (input)="dt.filterGlobal(searchInput.value, 'contains')"
-                   placeholder="بحث بالاسم أو الهاتف..." />
+            <input #searchInput pInputText type="text" (input)="dt.filterGlobal(searchInput.value, 'contains')"
+              placeholder="بحث بالاسم أو الهاتف..." />
           </div>
         </div>
       </ng-template>
@@ -116,8 +111,7 @@
 
           <!-- Balance -->
           <td class="text-center">
-            <div class="balance-cell" [class.is-debt]="supplier.Balance > 0"
-                 style="justify-content: center;">
+            <div class="balance-cell" [class.is-debt]="supplier.Balance > 0" style="justify-content: center;">
               <span class="amount">{{ supplier.Balance | number }}</span>
               <span class="currency">ر.ي</span>
             </div>
@@ -125,15 +119,13 @@
 
           <!-- Status Tag -->
           <td class="text-center">
-            <p-tag [value]="supplier.statusName"
-                   [style]="{
+            <p-tag [value]="supplier.statusName" [style]="{
                      'background-color': supplier.statusColor + '1A',
                      'color': supplier.statusColor,
                      'border': '1px solid ' + supplier.statusColor + '40',
                      'font-weight': '700',
                      'font-size': '0.68rem'
-                   }"
-                   [rounded]="true">
+                   }" [rounded]="true">
             </p-tag>
           </td>
 
@@ -141,31 +133,29 @@
           <td class="text-center">
             <div class="inline-actions" style="display: flex; gap: 4px; justify-content: center; align-items: center;">
               <button pButton pTooltip="الملف الشخصي" tooltipPosition="top" icon="pi pi-id-card"
-                      class="p-button-rounded p-button-text p-button-sm action-btn"
-                      [routerLink]="['/partners/suppliers/detail', supplier.id]"
-                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
-              
+                class="p-button-rounded p-button-text p-button-sm action-btn"
+                [routerLink]="['/partners/suppliers/detail', supplier.id]"
+                style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+
               <button pButton pTooltip="كشف الحساب" tooltipPosition="top" icon="pi pi-file-pdf"
-                      class="p-button-rounded p-button-text p-button-sm action-btn"
-                      [routerLink]="['/partners/suppliers/statement', supplier.id]"
-                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
-              
+                class="p-button-rounded p-button-text p-button-sm action-btn"
+                [routerLink]="['/partners/suppliers/statement', supplier.id]"
+                style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+
               <button pButton pTooltip="سند صرف جديد" tooltipPosition="top" icon="pi pi-wallet"
-                      class="p-button-rounded p-button-text p-button-sm action-btn"
-                      (click)="openPaymentDialog(supplier)"
-                      style="width: 2rem; height: 2rem; padding: 0; color: var(--primary-color);"></button>
-              
-              <div class="action-divider" style="width: 1px; height: 16px; background-color: var(--surface-border); margin: 0 4px;"></div>
+                class="p-button-rounded p-button-text p-button-sm action-btn" (click)="openPaymentDialog(supplier)"
+                style="width: 2rem; height: 2rem; padding: 0; color: var(--primary-color);"></button>
+
+              <div class="action-divider"
+                style="width: 1px; height: 16px; background-color: var(--surface-border); margin: 0 4px;"></div>
 
               <button pButton pTooltip="تعديل" tooltipPosition="top" icon="pi pi-pencil"
-                      class="p-button-rounded p-button-text p-button-sm action-btn"
-                      (click)="openEditSupplier(supplier)"
-                      style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
-              
+                class="p-button-rounded p-button-text p-button-sm action-btn" (click)="openEditSupplier(supplier)"
+                style="width: 2rem; height: 2rem; padding: 0; color: var(--text-color-secondary);"></button>
+
               <button pButton pTooltip="حذف" tooltipPosition="top" icon="pi pi-trash"
-                      class="p-button-rounded p-button-text p-button-sm action-btn"
-                      (click)="deleteSupplier($event, supplier)"
-                      style="width: 2rem; height: 2rem; padding: 0; color: var(--red-500);"></button>
+                class="p-button-rounded p-button-text p-button-sm action-btn" (click)="deleteSupplier($event, supplier)"
+                style="width: 2rem; height: 2rem; padding: 0; color: var(--red-500);"></button>
             </div>
           </td>
         </tr>
@@ -175,12 +165,13 @@
       <ng-template pTemplate="emptymessage">
         <tr>
           <td colspan="5" class="text-center" style="padding: 2.5rem;">
-            <i class="pi pi-inbox" style="font-size: 2rem; color: var(--border-color); display: block; margin-bottom: 0.65rem;"></i>
+            <i class="pi pi-inbox"
+              style="font-size: 2rem; color: var(--border-color); display: block; margin-bottom: 0.65rem;"></i>
             <p style="color: var(--text-color-secondary); font-size: 0.82rem; margin: 0 0 0.75rem;">
               لا توجد بيانات موردين متاحة
             </p>
             <button pButton type="button" label="إضافة مورد جديد" icon="pi pi-plus"
-                    class="imperial-btn-primary p-button-sm" (click)="openCreateSupplier()">
+              class="imperial-btn-primary p-button-sm" (click)="openCreateSupplier()">
             </button>
           </td>
         </tr>
@@ -192,29 +183,22 @@
 </div>
 
 <!-- ═══════════ Add/Edit Dialog ═══════════ -->
-<p-dialog [visible]="addEditDialogVisible()" [modal]="true"
-          [draggable]="false" [resizable]="false"
+<p-dialog [(visible)]="addEditVisible" [modal]="true"
+          [draggable]="false" [resizable]="false" [dismissableMask]="true"
           [style]="{width: '600px', maxWidth: '95vw'}"
           [header]="editSupplierId() ? 'تعديل بيانات المورد' : 'إضافة مورد جديد'"
           (onHide)="closeAddEditDialog()" styleClass="imperial-dialog">
-  <app-supplier-add-edit
-    [dialogMode]="true"
-    [editSupplierId]="editSupplierId()"
-    (saved)="onSupplierSaved()"
+  <app-supplier-add-edit [dialogMode]="true" [editSupplierId]="editSupplierId()" (saved)="onSupplierSaved()"
     (closed)="closeAddEditDialog()">
   </app-supplier-add-edit>
 </p-dialog>
 
 <!-- ═══════════ Payments Dialog ═══════════ -->
-<p-dialog [visible]="paymentsDialogVisible()" [modal]="true"
-          [draggable]="false" [resizable]="false"
-          [style]="{width: '820px', maxWidth: '95vw'}"
-          header="إدارة سندات الصرف للموردين"
+<p-dialog [(visible)]="paymentsVisible" [modal]="true"
+          [draggable]="false" [resizable]="false" [dismissableMask]="true"
+          [style]="{width: '820px', maxWidth: '95vw'}" header="إدارة سندات الصرف للموردين"
           (onHide)="closePaymentsDialog()" styleClass="imperial-dialog">
-  <app-supplier-payments
-    [dialogMode]="true"
-    [autoOpenCreate]="true"
-    [presetSupplierId]="selectedSupplierIdForPayment()"
+  <app-supplier-payments [dialogMode]="true" [autoOpenCreate]="true" [presetSupplierId]="selectedSupplierIdForPayment()"
     (closed)="closePaymentsDialog()">
   </app-supplier-payments>
 </p-dialog>

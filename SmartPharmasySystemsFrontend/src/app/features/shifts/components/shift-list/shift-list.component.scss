@@ -1,168 +1,283 @@
-.movements-container {
-    padding: 1.5rem;
-    animation: fadeIn 0.4s ease-out;
-
-    .page-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-
-        h1 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-color);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-
-            i {
-                color: var(--primary-color);
-            }
-        }
-    }
-
-    .table-card {
-        background: var(--surface-card);
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        overflow: hidden;
-        border: 1px solid var(--surface-border);
-    }
-
-    ::v-deep .p-datatable {
-        .p-datatable-header {
-            background: transparent;
-            border: none;
-        }
-
-        .p-datatable-thead>tr>th {
-            background: var(--surface-ground);
-            color: var(--text-color-secondary);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            padding: 1rem;
-        }
-
-        .p-datatable-tbody>tr {
-            transition: background 0.2s;
-
-            &:hover {
-                background: var(--surface-hover) !important;
-            }
-
-            >td {
-                padding: 1rem;
-            }
-        }
-    }
-
-    .user-cell {
-        display: flex;
-        flex-direction: column;
-
-        .user-name {
-            font-weight: 600;
-            color: var(--text-color);
-        }
-    }
-
-    .amount-cell {
-        font-weight: 700;
-        color: var(--primary-color);
-    }
-
-    .actions-cell {
-        display: flex;
-        gap: 0.5rem;
-        justify-content: center;
-    }
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
+.movement-container {
+  min-height: 100vh;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
+  color: #1e293b;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+.page-header,
+.table-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.icon-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+}
+
+.icon-circle i { font-size: 1rem; }
+
+h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.page-header p {
+  margin: 0.12rem 0 0;
+  color: #64748b;
+  font-size: 0.62rem;
+}
+
+.actions { display: flex; gap: 0.35rem; align-items: center; }
+
+.table-panel {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.user-name {
+  display: block;
+  font-size: 0.65rem;
+  color: #7c3aed;
+  font-weight: 700;
+}
+
+.amount-cell {
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.date-main { display: block; font-size: 0.65rem; color: #0f172a; font-weight: 800; }
+.date-time { display: block; color: #64748b; font-size: 0.55rem; margin-top: 0.1rem; }
+.text-center { text-align: center; }
+
+:host ::ng-deep {
+  .compact-table .p-datatable-thead > tr > th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 0.3rem 0.4rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .compact-table .p-datatable-tbody > tr > td {
+    padding: 0.25rem 0.4rem;
+    border-color: #eef2f7;
+    vertical-align: middle;
+    font-size: 0.75rem;
+  }
+
+  .compact-table .p-datatable-tbody > tr:hover {
+    background: #f8fafc !important;
+  }
+
+  .p-paginator {
+    padding: 0.3rem;
+    background: #f8fafc;
+    border: 0;
+    font-size: 0.65rem;
+  }
+
+  .p-button.p-button-sm,
+  .p-button.p-button-icon-only {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .movement-container {
+    padding: 6px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .actions {
+      display: grid !important;
+      grid-template-columns: repeat(1, 1fr) !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      button, ::ng-deep .p-button {
+        width: 100% !important;
+        height: 32px !important;
+      }
     }
+  }
+
+  /* تحويل جدول الورديات إلى كروت للموبايل */
+  :host ::ng-deep .compact-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &:nth-child(1):before { content: "رقم الوردية:"; font-weight: 700; color: #64748b; }
+      &:nth-child(2):before { content: "المستخدم:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "وقت الفتح:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "وقت الإغلاق:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "الرصيد:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(7) {
+        justify-content: center !important;
+        margin-top: 4px !important;
+        border-top: 1px dashed #e2e8f0 !important;
+        padding-top: 4px !important;
+      }
+    }
+  }
 }
 
 /* =========================================
-   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   Imperial Modal Design for Shift Modals
    ========================================= */
-@media (max-width: 768px) {
-    .movements-container {
-        padding: 6px !important;
+:host ::ng-deep {
+  .imperial-modal {
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      border: none;
 
-        .page-header {
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 8px !important;
-            margin-bottom: 8px !important;
+      .p-dialog-content {
+          padding: 0;
+          background: #f8fafc;
+      }
+  }
+}
 
-            h1 {
-                font-size: 15px !important;
-            }
+.statement-container {
+  padding: 1rem;
+  color: #1e293b;
+}
 
-            button {
-                width: 100% !important;
-                height: 32px !important;
-                font-size: 11px !important;
-            }
-        }
+.imperial-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-bottom: 1rem;
 
-        .table-card {
-            border-radius: 8px !important;
-            border: none !important;
-            box-shadow: none !important;
-            background: transparent !important;
-        }
+  .header-icon-badge {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+  }
+  
+  .header-titles {
+      display: flex;
+      flex-direction: column;
+      
+      .main-title {
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #1e293b;
+          margin: 0;
+      }
+      .sub-title {
+          font-size: 0.85rem;
+          color: #64748b;
+          margin: 0;
+      }
+  }
+}
 
-        /* تحويل الجدول إلى كروت للموبايل */
-        ::v-deep .p-datatable {
-            table, thead, tbody, th, td, tr {
-                display: block !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
-            }
-            thead {
-                display: none !important;
-            }
-            tr {
-                margin-bottom: 8px !important;
-                border: 1px solid #e2e8f0 !important;
-                border-radius: 8px !important;
-                padding: 8px !important;
-                background: #ffffff !important;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-            }
-            td {
-                border-bottom: none !important;
-                padding: 4px 0 !important;
-                display: flex !important;
-                justify-content: space-between !important;
-                align-items: center !important;
-                font-size: 11px !important;
+.modal-form-grid {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
 
-                &:nth-child(1):before { content: "الوردية:"; font-weight: 700; color: #64748b; }
-                &:nth-child(2):before { content: "المستخدم:"; font-weight: 700; color: #64748b; }
-                &:nth-child(3):before { content: "وقت الفتح:"; font-weight: 700; color: #64748b; }
-                &:nth-child(4):before { content: "وقت الإغلاق:"; font-weight: 700; color: #64748b; }
-                &:nth-child(5):before { content: "الرصيد:"; font-weight: 700; color: #64748b; }
-                &:nth-child(6):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
-                &:nth-child(7) {
-                    justify-content: center !important;
-                    margin-top: 6px !important;
-                    border-top: 1px dashed #e2e8f0 !important;
-                    padding-top: 6px !important;
-                }
-            }
-        }
-    }
+  .field {
+    margin-bottom: 1rem;
+    &:last-child { margin-bottom: 0; }
+  }
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #475569;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }

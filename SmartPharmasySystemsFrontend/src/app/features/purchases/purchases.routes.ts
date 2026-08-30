@@ -20,10 +20,7 @@ export const PURCHASES_ROUTES: Routes = [
         path: 'edit/:id',
         loadComponent: () => import('./components/purchase-create/purchase-create.component').then(m => m.PurchaseInvoiceCreateComponent)
     },
-    {
-        path: ':id',
-        loadComponent: () => import('./components/purchase-details/purchase-details.component').then(m => m.PurchaseInvoiceDetailsComponent)
-    },
+
     {
         path: '',
         loadComponent: () => import('./components/purchase-list/purchase-list.component').then(m => m.PurchaseInvoiceListComponent)

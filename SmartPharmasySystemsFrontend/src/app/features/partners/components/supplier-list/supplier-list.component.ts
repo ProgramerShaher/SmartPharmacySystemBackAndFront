@@ -53,6 +53,10 @@ export class SupplierListComponent implements OnInit {
   editSupplierId = signal<number | null>(null);
   selectedSupplierIdForPayment = signal<number | null>(null);
 
+  // Regular booleans for PrimeNG two-way binding [(visible)]
+  addEditVisible = false;
+  paymentsVisible = false;
+
   items: MenuItem[] = [];
 
   constructor(
@@ -91,16 +95,16 @@ export class SupplierListComponent implements OnInit {
 
   openCreateSupplier() {
     this.editSupplierId.set(null);
-    this.addEditDialogVisible.set(true);
+    this.addEditVisible = true;
   }
 
   openEditSupplier(supplier: Supplier) {
     this.editSupplierId.set(supplier.id);
-    this.addEditDialogVisible.set(true);
+    this.addEditVisible = true;
   }
 
   closeAddEditDialog() {
-    this.addEditDialogVisible.set(false);
+    this.addEditVisible = false;
   }
 
   onSupplierSaved() {
@@ -109,11 +113,12 @@ export class SupplierListComponent implements OnInit {
 
   openPaymentDialog(supplier?: Supplier) {
     this.selectedSupplierIdForPayment.set(supplier?.id ?? null);
-    this.paymentsDialogVisible.set(true);
+    this.paymentsVisible = true;
   }
 
   closePaymentsDialog() {
-    this.paymentsDialogVisible.set(false);
+    this.paymentsVisible = false;
+    this.loadSuppliers();
   }
 
   deleteSupplier(event: Event, supplier: Supplier) {

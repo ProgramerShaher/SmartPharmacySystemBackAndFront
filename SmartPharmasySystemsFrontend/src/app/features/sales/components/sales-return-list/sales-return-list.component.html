@@ -118,7 +118,7 @@
                                 <p-button *appHasPermission="['sales.returns.create']" icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
                                     size="small" pTooltip="اعتماد" (onClick)="approveReturn(ret.id)"></p-button>
                                 <p-button *appHasPermission="['sales.returns.create']" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
-                                    size="small" pTooltip="تعديل" (onClick)="viewDetails(ret.id)"></p-button>
+                                    size="small" pTooltip="تعديل" (onClick)="editReturn(ret.id)"></p-button>
                                 <p-button *appHasPermission="['sales.returns.delete']" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
                                     size="small" pTooltip="حذف" (onClick)="deleteReturn(ret.id)"></p-button>
                             </ng-container>
@@ -145,4 +145,9 @@
             </ng-template>
         </p-table>
     </section>
+
+    <!-- Details Modal -->
+    <app-sales-return-details [(visible)]="showDetailsDialog" [invoiceId]="selectedReturnId"
+        (onAction)="loadReturns()">
+    </app-sales-return-details>
 </div>

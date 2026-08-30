@@ -45,11 +45,13 @@ namespace SmartPharmacySystem.Application.Services
             if (dto.Amount > customer.Balance)
                 throw new InvalidOperationException($"لا يمكن تسديد مبلغ ({dto.Amount:N0}) أكبر من المديونية المتبقية على العميل ({customer.Balance:N0}).");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                Core.Entities.CustomerReceipt receipt = null;
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 // 1. Create Receipt Record
-                var receipt = _mapper.Map<Core.Entities.CustomerReceipt>(dto);
+                receipt = _mapper.Map<Core.Entities.CustomerReceipt>(dto);
                 receipt.CreatedBy = userId;
                 receipt.CreatedAt = DateTime.UtcNow;
                 
@@ -127,7 +129,7 @@ namespace SmartPharmacySystem.Application.Services
                     description: $"[نظام قديم] سند قبض: {customer.Name}. مرجع: {dto.ReferenceNo}");
 
                 // 5. Commit
-                await _unitOfWork.CommitAsync();
+                });
 
                 // ==================== إشعارات الواتساب (WhatsApp Notifications) ====================
                 string wCustomerName = string.IsNullOrWhiteSpace(customer.Name) ? "عميلنا العزيز" : customer.Name;
@@ -354,7 +356,6 @@ namespace SmartPharmacySystem.Application.Services
             }
             catch (Exception)
             {
-                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
@@ -367,9 +368,10 @@ namespace SmartPharmacySystem.Application.Services
             if (receipt.IsCancelled)
                 throw new InvalidOperationException("السند ملغى مسبقاً");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 // 1. Mark as Cancelled
                 receipt.IsCancelled = true;
                 receipt.CancelledAt = DateTime.UtcNow;
@@ -388,11 +390,10 @@ namespace SmartPharmacySystem.Application.Services
                     referenceId: receipt.Id,
                     description: $"إلغاء سند قبض للعميل: {receipt.Customer.Name}. رقم السند: {receipt.Id}");
 
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception)
             {
-                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }

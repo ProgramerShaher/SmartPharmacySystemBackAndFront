@@ -51,11 +51,13 @@ namespace SmartPharmacySystem.Application.Services
 
             await _closingValidationService.ValidateDateIsUnlockedAsync(dto.PaymentDate);
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                SupplierPayment payment = null;
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 // 2. Create Payment Record
-                var payment = new SupplierPayment
+                payment = new SupplierPayment
                 {
                     SupplierId = dto.SupplierId,
                     Amount = dto.Amount,
@@ -134,7 +136,7 @@ namespace SmartPharmacySystem.Application.Services
                 );
 
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
 
                 var resultDto = _mapper.Map<SupplierPaymentDto>(payment);
                 resultDto.SupplierName = supplier.Name;
@@ -142,7 +144,6 @@ namespace SmartPharmacySystem.Application.Services
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error creating supplier payment");
                 throw;
             }
@@ -156,9 +157,10 @@ namespace SmartPharmacySystem.Application.Services
             if (payment.IsDeleted)
                 throw new InvalidOperationException("السند ملغى بالفعل.");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 // 1. Logical Delete
                 payment.IsDeleted = true;
                 payment.DeletedAt = DateTime.UtcNow;
@@ -194,11 +196,10 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.SupplierPayments.UpdateAsync(payment);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error cancelling supplier payment {Id}", id);
                 throw;
             }

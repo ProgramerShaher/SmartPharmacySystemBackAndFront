@@ -116,12 +116,15 @@ export class CustomerReceiptsComponent implements OnInit {
         });
 
         if (this.presetCustomerId) {
+            // Fetch the customer first, then open the form with it prefilled
             this.customerService.getById(this.presetCustomerId).subscribe(c => {
                 this.filteredCustomers = [c];
                 this.onCustomerSelect(c);
+                if (this.autoOpenCreate) {
+                    this.openNew(true); // true = keep the customer we just set
+                }
             });
-        }
-        if (this.autoOpenCreate) {
+        } else if (this.autoOpenCreate) {
             setTimeout(() => this.openNew(), 100);
         }
     }
@@ -253,16 +256,26 @@ export class CustomerReceiptsComponent implements OnInit {
         });
     }
 
-    openNew() {
-        this.selectedCustomer = null;
-        this.selectedCustomerObj = null;
+    openNew(keepCustomer = false) {
+        const savedCustomer = keepCustomer ? this.selectedCustomer : null;
+        const savedCustomerObj = keepCustomer ? this.selectedCustomerObj : null;
+        // Reset form fields
         this.receiptForm.reset({
             receiptDate: new Date(),
             paymentMethod: 'Cash',
             amount: 0
         });
+        if (keepCustomer && savedCustomer) {
+            this.selectedCustomer = savedCustomer;
+            this.selectedCustomerObj = savedCustomerObj;
+            this.receiptForm.patchValue({ customerId: savedCustomer });
+        } else {
+            this.selectedCustomer = null;
+            this.selectedCustomerObj = null;
+        }
         this.displayDialog.set(true);
     }
+
 
     saveReceipt() {
         console.log('========================================');
@@ -307,8 +320,8 @@ export class CustomerReceiptsComponent implements OnInit {
         console.log('  isCustomerOk =', isCustomerOk, '(extractedCustomerId =', extractedCustomerId, ')');
         console.log('  isFormValid  =', isFormValid);
         console.log('  amount>=1    =', amountCheck, '(amount=', formVal.amount, ')');
-        console.log('  datePresent  =', dateCheck,  '(date=', formVal.receiptDate, ')');
-        console.log('  payPresent   =', payCheck,   '(pay=', formVal.paymentMethod, ')');
+        console.log('  datePresent  =', dateCheck, '(date=', formVal.receiptDate, ')');
+        console.log('  payPresent   =', payCheck, '(pay=', formVal.paymentMethod, ')');
 
         if (!isCustomerOk || !isFormValid || !amountCheck || !dateCheck || !payCheck) {
             console.warn('❌ [DEBUG SAVE] VALIDATION FAILED — marking all touched and EXITING (no request sent).');
@@ -316,9 +329,9 @@ export class CustomerReceiptsComponent implements OnInit {
 
             let errReason = 'الرجاء تعبئة الحقول المطلوبة:';
             if (!isCustomerOk) errReason += '\n• العميل غير مختار بشكل صحيح (اختره من القائمة المنسدلة)';
-            if (!amountCheck)  errReason += '\n• المبلغ يجب أن يكون أكبر من صفر';
-            if (!dateCheck)    errReason += '\n• تاريخ السند مطلوب';
-            if (!payCheck)     errReason += '\n• طريقة الدفع مطلوبة';
+            if (!amountCheck) errReason += '\n• المبلغ يجب أن يكون أكبر من صفر';
+            if (!dateCheck) errReason += '\n• تاريخ السند مطلوب';
+            if (!payCheck) errReason += '\n• طريقة الدفع مطلوبة';
 
             this.messageService.add({
                 severity: 'warn',

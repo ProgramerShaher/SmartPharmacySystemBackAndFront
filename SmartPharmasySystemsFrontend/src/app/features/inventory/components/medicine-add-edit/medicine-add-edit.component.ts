@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, OnChanges, SimpleChanges, signal, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
@@ -20,18 +20,18 @@ import { UploadService } from '../../../../core/services/upload.service';
     selector: 'app-medicine-add-edit',
     standalone: true,
     imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    SidebarModule,
-    ButtonModule,
-    InputTextModule,
-    DropdownModule,
-    InputNumberModule,
-    CheckboxModule,
-    InputTextareaModule,
-    TagModule,
-    DialogModule
-],
+        CommonModule,
+        ReactiveFormsModule,
+        SidebarModule,
+        ButtonModule,
+        InputTextModule,
+        DropdownModule,
+        InputNumberModule,
+        CheckboxModule,
+        InputTextareaModule,
+        TagModule,
+        DialogModule
+    ],
     templateUrl: './medicine-add-edit.component.html',
     styleUrls: ['./medicine-add-edit.component.scss']
 })
@@ -46,6 +46,22 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
     uploading = signal(false);
     categories = signal<CategoryDto[]>([]);
 
+    unitOptions = [
+        'حبة',
+        'شريط',
+        'علبة',
+        'باكت',
+        'كرتون',
+        'امبولة',
+        'فيال',
+        'قطرة',
+        'مرهم',
+        'كريم',
+        'شراب',
+        'كيس',
+        'مضرب'
+    ];
+
     statusOptions = [
         { label: 'نشط', value: 'Active' },
         { label: 'غير نشط', value: 'Inactive' }
@@ -59,12 +75,12 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
         private uploadService: UploadService
     ) {
         this.medicineForm = this.fb.group({
-            internalCode: [''],
+            internalCode: [''], // Hidden in UI, auto-generated
             name: ['', Validators.required],
-            scientificName: [''],
+            scientificName: [''], // Optional
             activeIngredient: [''],
-            categoryId: [null],
-            manufacturer: [''],
+            categoryId: [null, Validators.required], // Required now
+            manufacturer: [''], // Hidden in UI
             defaultBarcode: [''],
             defaultPurchasePrice: [0, [Validators.required, Validators.min(0)]],
             defaultSalePrice: [0, [Validators.required, Validators.min(0)]],
@@ -103,25 +119,23 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
         const file: File = event.target.files[0];
         if (!file) return;
 
-        // التحقق من الحجم (الحد الأقصى 2 ميجابايت) لمنع تعليق الجهاز
         if (file.size > 2 * 1024 * 1024) {
-            this.messageService.add({ 
-                severity: 'warn', 
-                summary: 'تنبيه', 
-                detail: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت' 
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'تنبيه',
+                detail: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت'
             });
             return;
         }
 
         this.uploading.set(true);
         this.uploadService.uploadMedicineImage(
-            file, 
+            file,
             this.medicineForm.get('categoryId')?.value || 'other',
             'general',
             this.medicineForm.get('name')?.value || 'medicine'
         ).subscribe({
             next: (res: any) => {
-                // نحن نخزن المسار فقط كما طلبت
                 this.medicineForm.patchValue({ imageUrl: res.imageUrl });
                 this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ مسار الصورة بنجاح' });
                 this.uploading.set(false);
@@ -133,6 +147,46 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
         });
     }
 
+    @HostListener('window:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        if (!this.visible) return;
+
+        // F2 to Save
+        if (event.key === 'F2') {
+            event.preventDefault();
+            this.save();
+        }
+
+        // Esc is usually handled by p-dialog, but added for safety
+        if (event.key === 'Escape') {
+            this.close();
+        }
+    }
+
+    focusNext(nextElementId: string, event?: Event) {
+        if (event) {
+            event.preventDefault();
+        }
+
+        setTimeout(() => {
+            const el = document.getElementById(nextElementId);
+            if (el) {
+                // Focus the native input if it's a PrimeNG component wrapper
+                const input = el.querySelector('input') || el;
+                (input as HTMLElement).focus();
+
+                // Trigger select if it's a numeric input
+                if (typeof (input as HTMLInputElement).select === 'function') {
+                    (input as HTMLInputElement).select();
+                }
+            } else {
+                // If the element doesn't exist (e.g. Save button), just focus the save button by id
+                const saveBtn = document.getElementById('saveMedicineBtn');
+                if (saveBtn) saveBtn.focus();
+            }
+        }, 50);
+    }
+
     ngOnInit() {
         this.loadCategories();
     }
@@ -142,19 +196,6 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
             this.medicineUnits.clear();
             if (this.medicine) {
                 this.medicineForm.patchValue(this.medicine);
-                if (this.medicine.medicineUnits) {
-                    this.medicine.medicineUnits.forEach(unit => {
-                        const unitForm = this.fb.group({
-                            id: [unit.id || 0],
-                            name: [unit.name, Validators.required],
-                            conversionFactor: [unit.conversionFactor, [Validators.required, Validators.min(1)]],
-                            defaultPurchasePrice: [unit.defaultPurchasePrice, [Validators.required, Validators.min(0)]],
-                            defaultSalePrice: [unit.defaultSalePrice, [Validators.required, Validators.min(0)]],
-                            barcode: [unit.barcode || '']
-                        });
-                        this.medicineUnits.push(unitForm);
-                    });
-                }
             } else {
                 this.medicineForm.reset({
                     internalCode: this.generateCode(),
@@ -167,6 +208,14 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
                     baseUnitName: 'حبة'
                 });
             }
+
+            // Auto focus on Name after modal animation finishes
+            setTimeout(() => {
+                const nameInput = document.getElementById('medNameInput');
+                if (nameInput) {
+                    nameInput.focus();
+                }
+            }, 300);
         }
     }
 
@@ -203,6 +252,7 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
     save() {
         if (this.medicineForm.invalid) {
             this.medicineForm.markAllAsTouched();
+            this.messageService.add({ severity: 'error', summary: 'تنبيه', detail: 'يرجى إكمال الحقول الأساسية المطلوبة' });
             return;
         }
 
@@ -230,7 +280,7 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
             const createDto: CreateMedicineDto = formValue;
             this.medicineService.create(createDto).subscribe({
                 next: () => {
-                    this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم إضافة الدواء' });
+                    this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم إضافة الدواء بنجاح' });
                     this.onSave.emit();
                     this.close();
                     this.loading.set(false);
@@ -243,3 +293,4 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
         }
     }
 }
+

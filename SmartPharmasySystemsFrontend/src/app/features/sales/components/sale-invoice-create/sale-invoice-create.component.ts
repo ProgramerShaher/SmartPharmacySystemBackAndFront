@@ -25,6 +25,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { MedicineService } from '../../../inventory/services/medicine.service';
 import { MedicineBatchService } from '../../../inventory/services/medicine-batch.service';
 import { CustomerService } from '../../../customers/services/customer.service';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { DropdownModule } from "primeng/dropdown";
 import { BarcodeService } from '../../../../core/services/barcode.service';
 import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
@@ -76,6 +77,7 @@ import { ShiftService } from '../../../../core/services/shift.service';
         DialogModule,
         InputSwitchModule,
         DropdownModule,
+        ProgressSpinnerModule,
         BarcodeSimulatorComponent
     ],
     templateUrl: './sale-invoice-create.component.html',
@@ -101,14 +103,12 @@ export class SaleInvoiceCreateComponent implements OnInit {
     total = computed(() => Math.max(0, this.subtotal() - this.totalDiscount()));
     totalQuantity = computed(() => this.items().reduce((sum, item) => sum + item.quantity, 0));
 
-    // 💡 INLINE LIVE TOTAL (Instant Calculation)
     get inlineLivePrice(): number {
         if (this.inlineBatch) {
-            if (this.inlineUnit && this.inlineUnit.salePrice) {
-                return this.inlineUnit.salePrice;
-            }
             const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
-            const basePrice = this.inlineBatch.retailPrice || this.inlineBatch.unitPurchasePrice || 0;
+            const basePrice = (this.inlineBatch.retailPrice !== undefined && this.inlineBatch.retailPrice !== null && this.inlineBatch.retailPrice !== 0)
+                ? this.inlineBatch.retailPrice
+                : ((this.inlineUnit && this.inlineUnit.salePrice) ? (this.inlineUnit.salePrice / unitFactor) : 0);
             return basePrice * unitFactor;
         }
         return 0;
@@ -129,6 +129,12 @@ export class SaleInvoiceCreateComponent implements OnInit {
             return Math.floor(totalRemaining / unitFactor);
         }
         return 99999;
+    }
+
+    get currentBatchAvailableQuantity(): number {
+        if (!this.inlineBatch) return 0;
+        const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
+        return Math.floor((this.inlineBatch.remainingQuantity || 0) / unitFactor);
     }
 
     // 🛫 OPERATIONAL STATE
@@ -353,8 +359,8 @@ export class SaleInvoiceCreateComponent implements OnInit {
             this.paymentMethod = 'Cash';
             this.selectedPaymentMethod = 1;
         } else {
-            this.paymentMethod = 'Credit'; // Default to credit if selecting a specific customer, can be changed logic
-            this.selectedPaymentMethod = 2;
+            this.paymentMethod = 'Cash'; // Default to cash as requested
+            this.selectedPaymentMethod = 1;
         }
     }
 
@@ -605,18 +611,46 @@ export class SaleInvoiceCreateComponent implements OnInit {
                         next: () => {
                             this.saving = false;
                             this.messageService.add({ severity: 'success', summary: 'تم بنجاح', detail: 'تم اعتماد الفاتورة وترحيل المخزون' });
-                            this.router.navigate(['/sales']);
+                            this.resetFormAfterSave();
                         },
                         error: (err) => this.handleError(err)
                     });
                 } else {
                     this.saving = false;
                     this.messageService.add({ severity: 'success', summary: 'تم الحفظ', detail: 'تم حفظ المسودة بنجاح' });
-                    this.router.navigate(['/sales']);
+                    this.resetFormAfterSave();
                 }
             },
             error: (err) => this.handleError(err)
         });
+    }
+
+    private resetFormAfterSave() {
+        this.items.set([]);
+        this.discount.set(0);
+        this.customerPricelistId.set(null);
+        this.customerPricelistDiscount.set(0);
+        this.activePricelistItems.set([]);
+
+        this.isCashCustomer = true;
+        this.toggleCashCustomer();
+        this.flyingCustomerName = '';
+        this.selectedCustomer = null;
+
+        this.inlineMedicine = null;
+        this.inlineBatch = null;
+        this.inlineQuantity = 1;
+        this.availableBatches = [];
+        this.inlineUnitOptions = [];
+        this.inlineUnit = null;
+        this.editingItemIndex = null;
+
+        if (this.isEditMode) {
+            this.router.navigate(['/sales/create']).then(() => {
+                this.isEditMode = false;
+                this.invoiceId = null;
+            });
+        }
     }
 
     private handleError(err: any) {
@@ -708,43 +742,33 @@ export class SaleInvoiceCreateComponent implements OnInit {
         const saleUnitId = this.inlineUnit ? this.inlineUnit.value : null;
         const unitName = this.inlineUnit ? this.inlineUnit.name : 'أساسية';
 
-        // Price calculations
-        const baseSalePrice = this.inlineBatch.retailPrice || this.inlineBatch.unitPurchasePrice || 0;
-        let salePrice = baseSalePrice * unitFactor;
-
-        if (this.inlineUnit && this.inlineUnit.salePrice) {
-            salePrice = this.inlineUnit.salePrice;
-        }
-
-        const baseUnitCost = this.inlineBatch.unitPurchasePrice || 0;
-        const unitCost = baseUnitCost * unitFactor;
-
         // Validation against stock
-        const requestedBaseUnits = this.inlineQuantity * unitFactor;
+        let requestedBaseUnits = this.inlineQuantity * unitFactor;
         const totalAvailableUnits = this.availableBatches.reduce((sum, b) => sum + (b.remainingQuantity || 0), 0);
 
         if (this.availableBatches.length > 1 && requestedBaseUnits > totalAvailableUnits) {
-            this.messageService.add({ severity: 'error', summary: 'رصيد غير كاف', detail: `إجمالي الكمية المتوفرة للصنف ${totalAvailableUnits} وحدة أساسية فقط.` });
+            this.messageService.add({ severity: 'error', summary: 'رصيد غير كاف', detail: `إجمالي الكمية المتوفرة للصنف ${Math.floor(totalAvailableUnits / unitFactor)} وحدة فقط.` });
             return;
-        } else if (requestedBaseUnits > this.inlineBatch.remainingQuantity) {
-            this.messageService.add({ severity: 'info', summary: 'تنبيه مخزون', detail: `الكمية المطلوبة أكبر من المتوفر في الدفعة المحددة، سيتم السحب من الدفعات الأخرى تلقائياً.` });
         }
 
         if (this.editingItemIndex !== null) {
-            // Update existing item
+            // Update existing item (Single Batch editing logic)
             const item = this.items()[this.editingItemIndex];
 
-            // Check if we changed batch and it conflicts with another existing item (other than the one being edited)
+            // Price calculations for edit
+            const baseSalePrice = this.inlineBatch.retailPrice > 0 ? this.inlineBatch.retailPrice : ((this.inlineUnit && this.inlineUnit.salePrice) ? (this.inlineUnit.salePrice / unitFactor) : 0);
+            const salePrice = baseSalePrice * unitFactor;
+            const baseUnitCost = this.inlineBatch.unitPurchasePrice || 0;
+            const unitCost = baseUnitCost * unitFactor;
+
             const conflictingItemIndex = this.items().findIndex((i, idx) => i.batchId === this.inlineBatch!.id && idx !== this.editingItemIndex);
 
             if (conflictingItemIndex !== -1) {
-                // Merge into the conflicting item and remove the current one
                 const conflictingItem = this.items()[conflictingItemIndex];
                 this.updateItemQuantity(conflictingItem, conflictingItem.quantity + this.inlineQuantity);
                 this.removeItem(this.editingItemIndex);
                 this.messageService.add({ severity: 'success', summary: 'تم الدمج', detail: 'تم دمج الكمية مع الدفعة الموجودة' });
             } else {
-                // Update properties in place
                 item.medicineId = this.inlineMedicine.id;
                 item.medicineName = `${this.inlineMedicine.name} (${unitName})`;
                 item.batchId = this.inlineBatch.id;
@@ -759,61 +783,73 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 item.saleUnitId = saleUnitId;
                 item.unitName = unitName;
 
-                this.items.set([...this.items()]); // Trigger update
+                this.items.set([...this.items()]);
                 this.messageService.add({ severity: 'success', summary: 'تم التعديل', detail: 'تم تعديل الصنف بنجاح' });
             }
         } else {
-            // Add new item
-            const existingItem = this.items().find(i => i.batchId === this.inlineBatch!.id);
-            if (existingItem) {
-                this.updateItemQuantity(existingItem, existingItem.quantity + this.inlineQuantity);
-                this.messageService.add({ severity: 'success', summary: 'تم التحديث', detail: 'تم زيادة الكمية' });
-            } else {
-                const newItem: InvoiceItem = {
-                    medicineId: this.inlineMedicine.id,
-                    medicineName: `${this.inlineMedicine.name} (${unitName})`,
-                    batchId: this.inlineBatch.id,
-                    batchNumber: this.inlineBatch.companyBatchNumber,
-                    quantity: this.inlineQuantity,
-                    salePrice: salePrice,
-                    unitCost: unitCost,
-                    total: this.inlineQuantity * salePrice,
-                    netTotal: this.inlineQuantity * salePrice,
-                    profit: (salePrice - unitCost) * this.inlineQuantity,
-                    expiryDate: new Date(this.inlineBatch.expiryDate),
-                    availableQuantity: Math.floor(this.inlineBatch.remainingQuantity / unitFactor),
-                    saleUnitId: saleUnitId,
-                    unitName: unitName,
-                    discountPercentage: 0,
-                    discountAmount: 0
-                };
+            // Add new item with FEFO Auto-Splitting
+            let startIndex = this.availableBatches.findIndex(b => b.id === this.inlineBatch!.id);
+            if (startIndex === -1) startIndex = 0; // Fallback to first if somehow missing
 
-                // Apply pricelist discount (global or override)
-                const override = this.activePricelistItems().find(p => p.medicineId === newItem.medicineId);
-                let finalDiscountPct = this.customerPricelistDiscount();
+            let remainingUnitsToFulfill = requestedBaseUnits;
+            let currentItems = [...this.items()];
+            let addedCount = 0;
 
-                if (override) {
-                    if (override.fixedPrice !== undefined && override.fixedPrice !== null) {
-                        if (newItem.salePrice > 0 && override.fixedPrice < newItem.salePrice) {
-                            finalDiscountPct = ((newItem.salePrice - override.fixedPrice) / newItem.salePrice) * 100;
-                        } else {
-                            finalDiscountPct = 0;
-                        }
-                    } else if (override.discountPercentage !== undefined && override.discountPercentage !== null) {
-                        finalDiscountPct = override.discountPercentage;
-                    }
+            for (let i = startIndex; i < this.availableBatches.length && remainingUnitsToFulfill > 0; i++) {
+                const batch = this.availableBatches[i];
+                if (batch.remainingQuantity <= 0) continue;
+
+                const takeBaseUnits = Math.min(remainingUnitsToFulfill, batch.remainingQuantity);
+                const takeUnitQty = takeBaseUnits / unitFactor;
+
+                const baseSalePrice = batch.retailPrice > 0 ? batch.retailPrice : ((this.inlineUnit && this.inlineUnit.salePrice) ? (this.inlineUnit.salePrice / unitFactor) : 0);
+                const salePrice = baseSalePrice * unitFactor;
+                const baseUnitCost = batch.unitPurchasePrice || 0;
+                const unitCost = baseUnitCost * unitFactor;
+
+                const existingItemIndex = currentItems.findIndex(item => item.batchId === batch.id && item.saleUnitId === saleUnitId);
+
+                if (existingItemIndex !== -1) {
+                    const existing = currentItems[existingItemIndex];
+                    existing.quantity += takeUnitQty;
+                    existing.total = existing.quantity * existing.salePrice;
+                    existing.profit = (existing.salePrice - existing.unitCost) * existing.quantity;
+                } else {
+                    currentItems.push({
+                        medicineId: this.inlineMedicine.id,
+                        medicineName: `${this.inlineMedicine.name} (${unitName})`,
+                        batchId: batch.id,
+                        batchNumber: batch.companyBatchNumber,
+                        quantity: takeUnitQty,
+                        salePrice: salePrice,
+                        unitCost: unitCost,
+                        total: takeUnitQty * salePrice,
+                        netTotal: takeUnitQty * salePrice,
+                        profit: (salePrice - unitCost) * takeUnitQty,
+                        expiryDate: batch.expiryDate ? new Date(batch.expiryDate) : undefined,
+                        availableQuantity: Math.floor(batch.remainingQuantity / unitFactor),
+                        saleUnitId: saleUnitId,
+                        unitName: unitName,
+                        discountPercentage: 0,
+                        discountAmount: 0
+                    });
                 }
 
-                if (finalDiscountPct > 0) {
-                    newItem.discountPercentage = Math.round(finalDiscountPct * 100) / 100;
-                    newItem.discountAmount = Math.round((newItem.total * newItem.discountPercentage / 100) * 100) / 100;
-                    newItem.netTotal = newItem.total - newItem.discountAmount;
-                }
-
-
-                this.items.update(current => [...current, newItem]);
-                this.messageService.add({ severity: 'success', summary: 'تمت الإضافة', detail: 'تم إضافة الصنف بنجاح' });
+                addedCount++;
+                remainingUnitsToFulfill -= takeBaseUnits;
             }
+
+            if (remainingUnitsToFulfill > 0) {
+                // Should theoretically never hit this due to prior validation, but just in case
+                this.messageService.add({ severity: 'warn', summary: 'نقص في المخزون', detail: 'تم سحب الكمية المتوفرة ولم يتم توفية كامل طلبك' });
+            } else if (addedCount > 1) {
+                this.messageService.add({ severity: 'success', summary: 'سحب آلي متعدد', detail: `تم سحب الكمية وتقسيمها من ${addedCount} دفعات بناءً على FEFO (الأقرب انتهاءً).` });
+            } else {
+                this.messageService.add({ severity: 'success', summary: 'تمت الإضافة', detail: 'تم إضافة الصنف للفاتورة' });
+            }
+
+            this.items.set(currentItems);
+            this.recalculateAllItems(); // Apply active pricelists immediately to new items
         }
 
         this.resetInlineForm();

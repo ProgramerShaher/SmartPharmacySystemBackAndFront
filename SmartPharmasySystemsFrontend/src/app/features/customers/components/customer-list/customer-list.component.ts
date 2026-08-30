@@ -57,8 +57,9 @@ export class CustomerListComponent implements OnInit {
   selectedCustomerId: number | null = null;
   sideBarHeader = signal('إضافة عميل جديد');
 
-  // Receipts Dialog
+  // Receipts Dialog - using regular boolean for PrimeNG two-way binding
   receiptsDialogVisible = signal(false);
+  receiptsVisible = false;  // regular bool for [(visible)]
   selectedCustomerIdForReceipt = signal<number | null>(null);
 
   // Stats
@@ -169,10 +170,12 @@ export class CustomerListComponent implements OnInit {
 
   openReceiptDialog(customerId?: number) {
     this.selectedCustomerIdForReceipt.set(customerId ?? null);
+    this.receiptsVisible = true;
     this.receiptsDialogVisible.set(true);
   }
 
   closeReceiptsDialog() {
+    this.receiptsVisible = false;
     this.receiptsDialogVisible.set(false);
     this.loadCustomers(this.lastTableEvent || undefined);
   }

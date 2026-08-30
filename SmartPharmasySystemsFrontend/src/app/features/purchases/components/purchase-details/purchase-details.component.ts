@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { PurchaseInvoiceService } from '../../services/purchase-invoice.service';
@@ -18,6 +18,8 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
 import { SaleInvoiceActionsDialogComponent } from '../../../sales/components/sale-invoice-actions-dialog/sale-invoice-actions-dialog.component';
 import { StockCardLiteComponent } from '../../../../shared/components/stock-card-lite/stock-card-lite.component';
 
@@ -34,6 +36,8 @@ import { StockCardLiteComponent } from '../../../../shared/components/stock-card
     ConfirmDialogModule,
     TooltipModule,
     ProgressSpinnerModule,
+    ToastModule,
+    DialogModule,
     SaleInvoiceActionsDialogComponent,
     StockCardLiteComponent,
   ],
@@ -41,24 +45,34 @@ import { StockCardLiteComponent } from '../../../../shared/components/stock-card
   styleUrls: ['./purchase-details.component.scss'],
   providers: [ConfirmationService],
 })
-export class PurchaseInvoiceDetailsComponent implements OnInit {
+export class PurchaseInvoiceDetailsComponent implements OnChanges {
+  @Input() visible = false;
+  @Output() visibleChange = new EventEmitter<boolean>();
+  @Input() invoiceId: number | null = null;
+
   readonly DocumentStatus = DocumentStatus;
   invoice: PurchaseInvoice | null = null;
-  loading = true;
+  loading = false;
 
   constructor(
-    private route: ActivatedRoute,
     private router: Router,
     private purchaseService: PurchaseInvoiceService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
   ) {}
 
-  ngOnInit() {
-    const id = this.route.snapshot.params['id'];
-    if (id) {
-      this.loadInvoice(id);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['invoiceId'] && this.invoiceId) {
+      this.loadInvoice(this.invoiceId);
     }
+    if (changes['visible'] && !this.visible) {
+      this.invoice = null;
+    }
+  }
+
+  close() {
+    this.visible = false;
+    this.visibleChange.emit(this.visible);
   }
 
   loadInvoice(id: number) {
@@ -138,6 +152,7 @@ export class PurchaseInvoiceDetailsComponent implements OnInit {
   editInvoice() {
     if (!this.invoice) return;
     this.router.navigate(['/purchases/edit', this.invoice.id]);
+    this.close();
   }
 
   deleteInvoice() {
@@ -158,7 +173,8 @@ export class PurchaseInvoiceDetailsComponent implements OnInit {
               summary: 'تم الحذف',
               detail: 'تم حذف الفاتورة بنجاح',
             });
-            this.router.navigate(['/purchases']);
+            this.close();
+            // Usually we'd want to refresh the parent list here, but closing will trigger visibleChange.
           },
           error: (err) => this.handleError(err),
         });
@@ -171,6 +187,7 @@ export class PurchaseInvoiceDetailsComponent implements OnInit {
     this.router.navigate(['/purchases/returns/create'], {
       queryParams: { invoiceId: this.invoice.id },
     });
+    this.close();
   }
 
   handleError(err: any) {
@@ -181,60 +198,36 @@ export class PurchaseInvoiceDetailsComponent implements OnInit {
     });
   }
 
-  backToList() {
-    this.router.navigate(['/purchases']);
-  }
-
   getStatusLabel(status: any) {
     if (status === undefined || status === null) return 'قيد التدقيق';
-    const statusNum = Number(status);
-
-    switch (statusNum) {
-      case DocumentStatus.Approved:
-        return 'تم التوريد والمراجعة';
-      case DocumentStatus.Draft:
-        return 'مسودة تكميلية';
-      case DocumentStatus.Cancelled:
-        return 'عملية ملغاة';
-      case DocumentStatus.Returned:
-        return 'مرتجع';
-      default:
-        return status;
-    }
+    
+    if (status === 'Approved' || status === 2 || status === DocumentStatus.Approved) return 'تم التوريد والمراجعة';
+    if (status === 'Draft' || status === 1 || status === DocumentStatus.Draft) return 'مسودة تكميلية';
+    if (status === 'Cancelled' || status === 3 || status === DocumentStatus.Cancelled) return 'عملية ملغاة';
+    if (status === 'Returned' || status === 4 || status === DocumentStatus.Returned) return 'مرتجع';
+    
+    return status;
   }
 
   getStatusClass(status: any) {
     if (status === undefined || status === null) return 'draft';
-    const statusNum = Number(status);
-
-    switch (statusNum) {
-      case DocumentStatus.Approved:
-        return 'approved';
-      case DocumentStatus.Cancelled:
-        return 'cancelled';
-      case DocumentStatus.Draft:
-        return 'draft';
-      default:
-        return 'draft';
-    }
+    
+    if (status === 'Approved' || status === 2 || status === DocumentStatus.Approved) return 'approved';
+    if (status === 'Cancelled' || status === 3 || status === DocumentStatus.Cancelled) return 'cancelled';
+    if (status === 'Draft' || status === 1 || status === DocumentStatus.Draft) return 'draft';
+    
+    return 'draft';
   }
 
   getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
     if (status === undefined || status === null) return 'warning';
-    const statusNum = Number(status);
-
-    switch (statusNum) {
-      case DocumentStatus.Approved:
-        return 'success';
-      case DocumentStatus.Draft:
-        return 'warning';
-      case DocumentStatus.Cancelled:
-        return 'danger';
-      case DocumentStatus.Returned:
-        return 'info';
-      default:
-        return 'info';
-    }
+    
+    if (status === 'Approved' || status === 2 || status === DocumentStatus.Approved) return 'success';
+    if (status === 'Draft' || status === 1 || status === DocumentStatus.Draft) return 'warning';
+    if (status === 'Cancelled' || status === 3 || status === DocumentStatus.Cancelled) return 'danger';
+    if (status === 'Returned' || status === 4 || status === DocumentStatus.Returned) return 'info';
+    
+    return 'info';
   }
 
   isExpired(date: any): boolean {

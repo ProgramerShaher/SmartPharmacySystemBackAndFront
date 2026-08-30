@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Pharmacy — مولّد مفاتيح الترخيص</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #050d1a;
+      --card:     rgba(255,255,255,0.04);
+      --border:   rgba(255,255,255,0.09);
+      --accent:   #00d4aa;
+      --accent-d: #00a885;
+      --glow:     rgba(0,212,170,0.22);
+      --danger:   #ff4757;
+      --success:  #2ed573;
+      --text:     #e8eef4;
+      --muted:    #6b7d8e;
+      --input-bg: rgba(255,255,255,0.05);
+      --input-bd: rgba(255,255,255,0.12);
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      font-family: 'Cairo', 'Segoe UI', sans-serif;
+      color: var(--text);
+      padding: 1rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Orbs ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.12;
+      pointer-events: none;
+      animation: floatOrb 14s ease-in-out infinite alternate;
+    }
+    .orb-1 { width:380px;height:380px;background:radial-gradient(circle,#0066ff,transparent);top:-12%;right:-8%;animation-duration:14s; }
+    .orb-2 { width:300px;height:300px;background:radial-gradient(circle,#00d4aa,transparent);bottom:-12%;left:-8%;animation-duration:18s;animation-delay:-6s; }
+    .orb-3 { width:220px;height:220px;background:radial-gradient(circle,#7c3aed,transparent);top:40%;left:35%;animation-duration:22s;animation-delay:-11s; }
+    @keyframes floatOrb {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(30px,-30px) scale(1.07); }
+    }
+
+    /* ── Card ── */
+    .card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 400px;
+      background: var(--card);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.75rem 1.5rem;
+      box-shadow: 0 8px 50px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04);
+      animation: slideUp .45s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(24px) scale(.97); }
+      to   { opacity:1; transform:translateY(0) scale(1); }
+    }
+
+    /* ── Header ── */
+    .header { text-align: center; margin-bottom: 1.25rem; }
+    .icon-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: rgba(0,212,170,.1);
+      border: 2px solid rgba(0,212,170,.3);
+      color: var(--accent);
+      margin-bottom: 0.85rem;
+      box-shadow: 0 0 24px var(--glow);
+      animation: pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { box-shadow: 0 0 16px var(--glow); }
+      50%      { box-shadow: 0 0 36px var(--glow), 0 0 55px rgba(0,212,170,.1); }
+    }
+    .icon-wrap svg { width:26px; height:26px; }
+
+    h1 { font-size:1.2rem; font-weight:700; letter-spacing:-.02em; margin-bottom:.25rem; }
+    .subtitle { font-size:.75rem; color:var(--muted); line-height:1.6; }
+
+    /* ── Warning Banner ── */
+    .warning {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      background: rgba(255,71,87,.07);
+      border: 1px solid rgba(255,71,87,.22);
+      border-radius: 10px;
+      padding: .55rem .8rem;
+      margin-bottom: 1.1rem;
+      font-size: .72rem;
+      color: #ff8fa0;
+    }
+    .warning svg { flex-shrink:0; width:15px; height:15px; color:var(--danger); }
+
+    /* ── Fields ── */
+    .field { margin-bottom: 1rem; }
+    label {
+      display: block;
+      font-size: .7rem;
+      font-weight: 600;
+      color: rgba(232,238,244,.6);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: .35rem;
+    }
+    input[type="text"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--input-bd);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Cairo', sans-serif;
+      font-size: .88rem;
+      padding: .65rem .85rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--glow);
+    }
+    input[type="text"]::placeholder { color: rgba(107,125,142,.45); }
+
+    /* ── Result box ── */
+    .result-wrap { position: relative; }
+    .result-box {
+      width: 100%;
+      background: rgba(0,212,170,.06);
+      border: 1px solid rgba(0,212,170,.22);
+      border-radius: 10px;
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+      font-size: .75rem;
+      line-height: 1.5;
+      padding: .65rem 2.4rem .65rem .85rem;
+      word-break: break-all;
+      min-height: 46px;
+    }
+    .result-empty { color: var(--muted); font-family: 'Cairo', sans-serif; font-size: .78rem; }
+
+    .btn-copy-result {
+      position: absolute;
+      top: .45rem;
+      left: .45rem;
+      background: rgba(0,212,170,.1);
+      border: 1px solid rgba(0,212,170,.2);
+      border-radius: 7px;
+      color: var(--accent);
+      cursor: pointer;
+      padding: .28rem .32rem;
+      transition: background .2s, transform .15s;
+      line-height: 0;
+    }
+    .btn-copy-result:hover { background: rgba(0,212,170,.2); transform: scale(1.05); }
+    .btn-copy-result svg { width:14px; height:14px; }
+
+    /* ── Button ── */
+    .btn-generate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .5rem;
+      width: 100%;
+      padding: .7rem 1.25rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-d) 100%);
+      color: #fff;
+      font-family: 'Cairo', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .02em;
+      transition: transform .15s, box-shadow .2s, opacity .2s;
+      box-shadow: 0 4px 16px rgba(0,212,170,.32);
+      margin-bottom: 1rem;
+    }
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 24px rgba(0,212,170,.48);
+    }
+    .btn-generate:active:not(:disabled) { transform: translateY(0); }
+    .btn-generate:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+    .btn-generate svg { width:17px; height:17px; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: rgba(30,40,55,.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .55rem 1rem;
+      font-size: .78rem;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Footer ── */
+    .card-footer {
+      text-align: center;
+      border-top: 1px solid var(--border);
+      padding-top: .9rem;
+      font-size: .68rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background orbs -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Card -->
+  <div class="card">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z"/>
+        </svg>
+      </div>
+      <h1>مولّد مفاتيح الترخيص</h1>
+      <p class="subtitle">Smart Pharmacy — Developer Keygen<br>أداة حصرية للمطوّر فقط</p>
+    </div>
+
+    <!-- Warning -->
+    <div class="warning">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/>
+      </svg>
+      <span><strong>سري للغاية</strong> — لا ترفعه للإنترنت ولا تشاركه مع العملاء.</span>
+    </div>
+
+    <!-- Input: Machine ID -->
+    <div class="field">
+      <label for="machineId">معرّف الجهاز (Machine ID)</label>
+      <input
+        type="text"
+        id="machineId"
+        placeholder="مثال: DC07-896B-8D39-988C"
+        autocomplete="off"
+        spellcheck="false"
+        oninput="onInput()"
+      />
+    </div>
+
+    <!-- Generate button -->
+    <button class="btn-generate" id="btnGen" onclick="generateKey()" disabled>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 0 1 21.75 8.25Z"/>
+      </svg>
+      توليد مفتاح الترخيص
+    </button>
+
+    <!-- Result -->
+    <div class="field">
+      <label>مفتاح الترخيص — أرسله للعميل</label>
+      <div class="result-wrap">
+        <div class="result-box" id="resultBox">
+          <span class="result-empty" id="resultEmpty">سيظهر المفتاح هنا بعد التوليد...</span>
+          <span id="resultKey" style="display:none"></span>
+        </div>
+        <button class="btn-copy-result" id="btnCopy" onclick="copyKey()" title="نسخ المفتاح" style="display:none">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      Smart Pharmacy &copy; <span id="yr"></span> &nbsp;·&nbsp; Developer Tools
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SECRET_SALT = "SP@SmartPharmacy#2025!SecureKey$";
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    function onInput() {
+      const val = document.getElementById('machineId').value.trim();
+      document.getElementById('btnGen').disabled = val.length < 5;
+    }
+
+    async function generateKey() {
+      const machineId = document.getElementById('machineId').value.trim();
+      if (!machineId) return;
+      try {
+        const enc    = new TextEncoder();
+        const keyMat = await crypto.subtle.importKey(
+          'raw', enc.encode(SECRET_SALT),
+          { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+        );
+        const sig = await crypto.subtle.sign('HMAC', keyMat, enc.encode(machineId));
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(sig)));
+        document.getElementById('resultEmpty').style.display = 'none';
+        document.getElementById('resultKey').style.display   = 'inline';
+        document.getElementById('resultKey').textContent     = b64;
+        document.getElementById('btnCopy').style.display     = 'flex';
+        showToast('✔  تم توليد المفتاح بنجاح');
+      } catch (e) {
+        showToast('❌  خطأ: تعذّر توليد المفتاح', true);
+      }
+    }
+
+    function copyKey() {
+      const key = document.getElementById('resultKey').textContent;
+      navigator.clipboard.writeText(key).then(() => showToast('📋  تم نسخ المفتاح'));
+    }
+
+    function showToast(msg, isErr = false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.borderColor = isErr ? 'rgba(255,71,87,.3)' : 'rgba(0,212,170,.3)';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    document.getElementById('machineId').addEventListener('keydown', e => {
+      if (e.key === 'Enter') generateKey();
+    });
+  </script>
+</body>
+</html>

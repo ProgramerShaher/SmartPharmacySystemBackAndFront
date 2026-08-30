@@ -1,10 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PurchaseInvoiceService } from '../../services/purchase-invoice.service';
 import { SupplierService } from '../../../partners/services/supplier.service';
-import { PurchaseInvoice, Supplier, DocumentStatus, WarehouseDto, WarehouseType } from '../../../../core/models';
+import { PurchaseInvoice, Supplier, DocumentStatus, WarehouseDto, WarehouseType, Medicine } from '../../../../core/models';
 import { WarehouseService } from '../../../warehouses/services/warehouse.service';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -17,14 +17,13 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { CalendarModule } from 'primeng/calendar';
-import { InvoiceItemDialogComponent } from '../../../../shared/components/invoice-item-dialog/invoice-item-dialog.component';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmationDialogComponent } from '../../../../shared/components/confirmation-dialog/confirmation-dialog.component';
 import { BarcodeService } from '../../../../core/services/barcode.service';
 import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
 import { TransactionType } from '../../../../core/models/barcode.interface';
-import { HostListener } from '@angular/core';
 import { InventoryService } from '../../../inventory/services/inventory.service';
-import { Medicine } from '../../../../core/models';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputNumberModule } from 'primeng/inputnumber';
 
@@ -33,6 +32,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
     standalone: true,
     imports: [
         CommonModule,
+        FormsModule,
         ReactiveFormsModule,
         TableModule,
         ButtonModule,
@@ -44,6 +44,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
         TagModule,
         DividerModule,
         CalendarModule,
+        DialogModule,
+        TooltipModule,
         ConfirmationDialogComponent,
         BarcodeSimulatorComponent,
         AutoCompleteModule,
@@ -53,8 +55,12 @@ import { InputNumberModule } from 'primeng/inputnumber';
     styleUrls: ['./purchase-create.component.scss'],
     providers: [ConfirmationService]
 })
+
 export class PurchaseInvoiceCreateComponent implements OnInit {
     @ViewChild('confirmDialog') confirmDialog!: ConfirmationDialogComponent;
+    @ViewChild('medicineAutoComplete') medicineAutoComplete: any;
+    @ViewChild('qtyInputEl') qtyInputEl: any;
+    @ViewChild('paymentDropdown') paymentDropdown: any;
 
     purchaseForm: FormGroup;
     inlineItemForm: FormGroup;
@@ -65,6 +71,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     suppliers: Supplier[] = [];
     warehouses: WarehouseDto[] = [];
     status: DocumentStatus = DocumentStatus.Draft;
+
+    // Modal & Dialog Controls
+    itemModalVisible = false;
+    shortcutsHelpVisible = false;
+    searchQueryText: any = '';
+    minExpiryDate: Date = new Date();
 
     // Inline Entry Properties
     filteredMedicines: Medicine[] = [];
@@ -90,7 +102,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         private inventoryService: InventoryService
     ) {
         this.purchaseForm = this.fb.group({
-            supplierId: [null, Validators.required],
+            supplierId: [null],
             warehouseId: [null, Validators.required],
             supplierInvoiceNumber: ['', null],
             purchaseDate: [new Date(), Validators.required],
@@ -104,19 +116,43 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             medicineId: [null, Validators.required],
             medicineName: [''],
             companyBatchNumber: [''],
-            expiryDate: [null, Validators.required],
+            expiryDate: [this.getDefaultExpiryDate(), Validators.required],
             quantity: [1, [Validators.required, Validators.min(1)]],
             bonusQuantity: [0],
             price: [0, [Validators.required, Validators.min(0)]],
             salePrice: [0],
             selectedUnit: ['base', Validators.required],
-            unitId: [null]
+            unitId: [null],
+            storageLocation: ['']
         });
     }
+
+
+    getDefaultExpiryDate(): Date {
+        const d = new Date();
+        d.setMonth(d.getMonth() + 3);
+        return d;
+    }
+
 
     ngOnInit() {
         this.loadSuppliers();
         this.loadWarehouses();
+
+        // Dynamic validation for Supplier based on Payment Method
+        this.purchaseForm.get('paymentMethod')?.valueChanges.subscribe(method => {
+            const supplierCtrl = this.purchaseForm.get('supplierId');
+            if (method === 2) {
+                // الآجل (Credit) - المورد إلزامي
+                supplierCtrl?.setValidators([Validators.required]);
+            } else {
+                // النقدي (Cash) - المورد اختياري
+                supplierCtrl?.clearValidators();
+            }
+            supplierCtrl?.updateValueAndValidity();
+        });
+        // Trigger initial validation
+        this.purchaseForm.get('paymentMethod')?.updateValueAndValidity();
         const id = this.route.snapshot.params['id'];
         if (id) {
             this.isEditMode = true;
@@ -135,7 +171,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         }
     }
 
-    // 🔍 BARCODE SCANNER ENGINE
+    // 🔍 BARCODE SCANNER & KEYBOARD SHORTCUTS ENGINE
     private barcodeBuffer = '';
     private lastKeyTime = 0;
     simulatorVisible = false;
@@ -143,23 +179,62 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
     @HostListener('window:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
+        // Prevent handling hotkeys when user is typing inside explicit non-modal inputs if needed
         const currentTime = new Date().getTime();
 
         if (currentTime - this.lastKeyTime > 50) {
             this.barcodeBuffer = '';
         }
 
+        // Handle Barcode Scanners (fast sequence ending with Enter)
         if (event.key === 'Enter') {
             if (this.barcodeBuffer.length > 3) {
                 this.processScannedBarcode(this.barcodeBuffer);
                 this.barcodeBuffer = '';
                 event.preventDefault();
+                return;
             }
-        } else if (event.key.length === 1) {
+        } else if (event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
             this.barcodeBuffer += event.key;
         }
 
         this.lastKeyTime = currentTime;
+
+        // Global Function Keys Shortcuts (F1, F2, F3, Esc)
+        if (event.key === 'F1') {
+            event.preventDefault();
+            this.shortcutsHelpVisible = !this.shortcutsHelpVisible;
+            return;
+        }
+
+        if (event.key === 'F2') {
+            event.preventDefault();
+            if (!this.isReadOnly && this.details.length > 0 && !this.saving) {
+                this.approveInvoice();
+            }
+            return;
+        }
+
+        if (event.key === 'F3') {
+            event.preventDefault();
+            if (!this.isReadOnly && !this.saving) {
+                this.saveDraft();
+            }
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            if (this.itemModalVisible) {
+                event.preventDefault();
+                this.closeItemModal();
+                return;
+            }
+            if (this.shortcutsHelpVisible) {
+                event.preventDefault();
+                this.shortcutsHelpVisible = false;
+                return;
+            }
+        }
     }
 
     processScannedBarcode(barcode: string) {
@@ -187,7 +262,6 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     }
 
     private addBarcodeItemToInvoice(data: any) {
-        // Check if item already exists in form
         const existingDetails = this.details.controls;
         const existingIndex = existingDetails.findIndex(ctrl => ctrl.get('medicineId')?.value === data.medicineId && ctrl.get('companyBatchNumber')?.value === data.batchNumber);
 
@@ -207,7 +281,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
                 expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
                 quantity: 1,
                 bonusQuantity: 0,
-                purchasePrice: data.salePrice || 0, // Using sale price as fallback for purchase price
+                purchasePrice: data.salePrice || 0,
                 salePrice: data.salePrice || 0,
                 total: data.salePrice || 0
             };
@@ -236,14 +310,58 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         });
     }
 
+    onSupplierChange() {
+        // Auto focus next field (Payment Method) after picking supplier
+        setTimeout(() => {
+            if (this.paymentDropdown) {
+                this.paymentDropdown.focus();
+            }
+        }, 100);
+    }
+
     get isReadOnly() {
-        const isDraft = (this.status as any) === 'Draft' || this.status === DocumentStatus.Draft || Number(this.status) === 1;
-        return !isDraft;
+        if (!this.status) return false;
+        const s = this.status.toString().toUpperCase();
+        if (s === 'DRAFT' || s === '1' || Number(this.status) === DocumentStatus.Draft) {
+            return false;
+        }
+        return true;
+    }
+
+    getStatusLabel() {
+        if (this.status === undefined || this.status === null) return 'مسودة';
+        const s = this.status.toString().toUpperCase();
+        if (s === 'APPROVED' || s === '2' || Number(this.status) === DocumentStatus.Approved) {
+            return 'تم التوريد';
+        }
+        if (s === 'DRAFT' || s === '1' || Number(this.status) === DocumentStatus.Draft) {
+            return 'مسودة';
+        }
+        if (s === 'CANCELLED' || s === '3' || Number(this.status) === DocumentStatus.Cancelled) {
+            return 'ملغاة';
+        }
+        return 'مسودة';
+    }
+
+    getStatusClass() {
+        if (this.status === undefined || this.status === null) return 'draft';
+        const s = this.status.toString().toUpperCase();
+        if (s === 'APPROVED' || s === '2' || Number(this.status) === DocumentStatus.Approved) {
+            return 'approved';
+        }
+        if (s === 'DRAFT' || s === '1' || Number(this.status) === DocumentStatus.Draft) {
+            return 'draft';
+        }
+        if (s === 'CANCELLED' || s === '3' || Number(this.status) === DocumentStatus.Cancelled) {
+            return 'cancelled';
+        }
+        return 'draft';
     }
 
     get details() {
         return this.purchaseForm.get('purchaseInvoiceDetails') as FormArray;
     }
+
 
     loadInvoice(id: number) {
         this.purchaseService.getById(id).subscribe((data: PurchaseInvoice) => {
@@ -258,8 +376,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             });
             this.status = data.status || DocumentStatus.Draft;
             this.details.clear();
-            
-            // Extract storage location from first item if it exists
+
             if (data.items && data.items.length > 0) {
                 const firstItemWithLocation = data.items.find(i => (i as any).storageLocation);
                 if (firstItemWithLocation) {
@@ -272,7 +389,6 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     }
 
     addDetailToForm(detail: any) {
-        // Use QuantityInPurchaseUnit for UI display if available, otherwise fallback to quantity
         const displayQuantity = detail.quantityInPurchaseUnit || detail.quantity;
 
         const group = this.fb.group({
@@ -292,7 +408,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         this.details.push(group);
     }
 
-    // --- Inline Entry Methods ---
+    // --- Search & Medicine Selection Workflow ---
 
     searchMedicines(event: any) {
         this.inventoryService.searchMedicines({ search: event.query }).subscribe(res => {
@@ -305,7 +421,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         this.baseUnitName = medicine.baseUnitName || 'حبة';
         this.buildUnitOptions(medicine);
 
-        // توليد رقم دفعة تلقائياً بنفس صيغة الباك إند: BAT-YYMMDD-XXXX
+        // Auto-generate batch number: BAT-YYMMDD-XXXX
         const date = new Date();
         const yy = String(date.getFullYear()).slice(-2);
         const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -318,10 +434,22 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             medicineName: medicine.name,
             selectedUnit: 'base',
             companyBatchNumber: autoBatchNumber,
+            expiryDate: this.getDefaultExpiryDate(),
+            quantity: 1,
+            bonusQuantity: 0,
             price: medicine.defaultPurchasePrice || 0,
             salePrice: medicine.defaultSalePrice || 0,
-            unitId: null
+            unitId: null,
+            storageLocation: this.purchaseForm.get('storageLocation')?.value || ''
         });
+
+        // Open modal automatically
+        this.itemModalVisible = true;
+
+        // Auto focus & select text on Quantity input inside modal
+        setTimeout(() => {
+            this.focusAndSelectQtyInput();
+        }, 150);
     }
 
     buildUnitOptions(medicine: Medicine) {
@@ -357,9 +485,9 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         }
     }
 
-    addInlineItem() {
+    confirmModalItem() {
         if (this.inlineItemForm.invalid) {
-            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى إكمال بيانات الصنف' });
+            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى إكمال الحقول المطلوبة' });
             return;
         }
 
@@ -367,14 +495,15 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         const selectedUnitVal = val.selectedUnit;
         const option = this.unitOptions.find(o => o.value === selectedUnitVal);
 
+        let finalName = val.medicineName;
         if (option && selectedUnitVal !== 'base') {
             const unitName = option.label.split(' ')[0];
-            val.medicineName = `${val.medicineName} (${unitName})`;
+            finalName = `${val.medicineName} (${unitName})`;
         }
 
         const detail = {
             medicineId: val.medicineId,
-            medicineName: val.medicineName,
+            medicineName: finalName,
             companyBatchNumber: val.companyBatchNumber,
             expiryDate: val.expiryDate,
             quantity: val.quantity,
@@ -383,25 +512,47 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             purchasePrice: val.price,
             salePrice: val.salePrice,
             total: val.quantity * val.price,
-            storageLocation: this.purchaseForm.get('storageLocation')?.value || null
+            storageLocation: val.storageLocation || this.purchaseForm.get('storageLocation')?.value || null
         };
 
         if (this.editingIndex !== null) {
             this.details.at(this.editingIndex).patchValue(detail);
+            this.messageService.add({ severity: 'success', summary: 'تم التعديل', detail: `تم تعديل ${val.medicineName}` });
             this.editingIndex = null;
         } else {
             this.addDetailToForm(detail);
+            this.messageService.add({ severity: 'success', summary: 'تمت الإضافة', detail: `تم إضافة ${val.medicineName} إلى الفاتورة` });
         }
 
-        this.resetInlineForm();
-        // Focus back to medicine input? (could use a ViewChild for this if desired)
+        this.closeItemModal();
+    }
+
+    closeItemModal() {
+        this.itemModalVisible = false;
+        this.editingIndex = null;
+        this.selectedMedicine = null;
+        this.searchQueryText = null;
+
+        this.inlineItemForm.reset({
+            quantity: 1,
+            bonusQuantity: 0,
+            price: 0,
+            salePrice: 0,
+            selectedUnit: 'base',
+            expiryDate: this.getDefaultExpiryDate(),
+            storageLocation: ''
+        });
+
+        // Focus back to Medicine Search AutoComplete automatically
+        setTimeout(() => {
+            this.focusMedicineSearch();
+        }, 150);
     }
 
     editItem(index: number) {
         const item = this.details.at(index).value;
         this.editingIndex = index;
 
-        // Populate the inline form to edit it
         this.inventoryService.getMedicineById(item.medicineId).subscribe(medicine => {
             this.selectedMedicine = medicine;
             this.baseUnitName = medicine.baseUnitName || 'حبة';
@@ -413,31 +564,55 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
                 companyBatchNumber: item.companyBatchNumber,
                 expiryDate: item.expiryDate ? new Date(item.expiryDate) : null,
                 quantity: item.quantity,
-                bonusQuantity: item.bonusQuantity,
+                bonusQuantity: item.bonusQuantity || 0,
                 price: item.purchasePrice,
                 salePrice: item.salePrice,
                 selectedUnit: item.purchaseUnitId || 'base',
-                unitId: item.purchaseUnitId
+                unitId: item.purchaseUnitId,
+                storageLocation: item.storageLocation || ''
             });
+
+            this.itemModalVisible = true;
+            setTimeout(() => {
+                this.focusAndSelectQtyInput();
+            }, 150);
         });
     }
-
-    resetInlineForm() {
-        this.editingIndex = null;
-        this.selectedMedicine = null;
-        this.inlineItemForm.reset({
-            quantity: 1,
-            bonusQuantity: 0,
-            price: 0,
-            salePrice: 0,
-            selectedUnit: 'base'
-        });
-    }
-
 
     removeItem(index: number) {
         this.details.removeAt(index);
+        this.messageService.add({ severity: 'info', summary: 'حذف صنف', detail: 'تم حذف الصنف من الفاتورة' });
     }
+
+    // Auto Focus Helpers
+    focusAndSelectQtyInput() {
+        if (this.qtyInputEl) {
+            const inputNative = this.qtyInputEl.inputFocusEL?.nativeElement || this.qtyInputEl.el?.nativeElement?.querySelector('input');
+            if (inputNative) {
+                inputNative.focus();
+                inputNative.select();
+            }
+        }
+    }
+
+    focusMedicineSearch() {
+        if (this.medicineAutoComplete) {
+            const inputElem = this.medicineAutoComplete.el?.nativeElement?.querySelector('input');
+            if (inputElem) {
+                inputElem.value = '';
+                inputElem.focus();
+                inputElem.select();
+            }
+        }
+    }
+
+    onInputFocus(event: any) {
+        const target = event?.target || event?.originalEvent?.target;
+        if (target && target.select) {
+            target.select();
+        }
+    }
+
 
     calculateTotal() {
         const rawTotal = this.details.controls.reduce((acc, ctrl) => acc + (ctrl.get('total')?.value || 0), 0);
@@ -453,12 +628,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     }
 
     calculateSubtotal() {
-        return this.calculateTotal(); // Assuming no tax/discount logic yet
+        return this.calculateTotal();
     }
 
     saveDraft() {
         if (this.purchaseForm.invalid) {
-            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى إكمال الحقول المطلوبة' });
+            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'يرجى إكمال الحقول المطلوبة (المورد والبيانات الأساسية)' });
             return;
         }
 
@@ -470,7 +645,6 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         this.saving = true;
         const formValue = this.purchaseForm.getRawValue();
 
-        // Prepare items array
         const items = (formValue.purchaseInvoiceDetails || []).map((d: any) => ({
             medicineId: d.medicineId,
             companyBatchNumber: d.companyBatchNumber,
@@ -481,7 +655,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
             purchasePrice: d.purchasePrice,
             salePrice: d.salePrice,
             storageLocation: d.storageLocation || null,
-            batchBarcode: d.batchBarcode // Optional but good to have if used
+            batchBarcode: d.batchBarcode
         }));
 
         const payload = {
@@ -500,7 +674,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
         obs.subscribe({
             next: (res) => {
-                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ الفاتورة وتفاصيلها بنجاح' });
+                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حفظ الفاتورة كمسودة بنجاح' });
                 this.router.navigate(['/purchases']);
             },
             error: (err) => {
@@ -520,7 +694,6 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         this.saving = true;
         const formValue = this.purchaseForm.getRawValue();
 
-        // Prepare items array
         const items = (formValue.purchaseInvoiceDetails || []).map((d: any) => ({
             medicineId: d.medicineId,
             companyBatchNumber: d.companyBatchNumber,
@@ -550,7 +723,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
         saveObs.subscribe({
             next: (res) => {
                 const invoiceId = (this.isEditMode && this.currentInvoiceId) ? this.currentInvoiceId : res?.id;
-                
+
                 if (!invoiceId) {
                     this.saving = false;
                     this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'تعذر الحصول على رقم الفاتورة' });
@@ -597,32 +770,5 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     backToList() {
         this.router.navigate(['/purchases']);
     }
-
-    getStatusLabel() {
-        if (this.status === undefined || this.status === null) return 'مسودة';
-        const s = this.status.toString().toUpperCase();
-        switch (s) {
-            case 'APPROVED':
-            case '1': return 'تم التوريد';
-            case 'DRAFT':
-            case '0': return 'مسودة';
-            case 'CANCELLED':
-            case '2': return 'ملغاة';
-            default: return this.status;
-        }
-    }
-
-    getStatusClass() {
-        if (this.status === undefined || this.status === null) return 'draft';
-        const s = this.status.toString().toUpperCase();
-        switch (s) {
-            case 'APPROVED':
-            case '1': return 'approved';
-            case 'DRAFT':
-            case '0': return 'draft';
-            case 'CANCELLED':
-            case '2': return 'cancelled';
-            default: return 'draft';
-        }
-    }
 }
+

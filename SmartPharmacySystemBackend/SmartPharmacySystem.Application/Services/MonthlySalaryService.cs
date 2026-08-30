@@ -131,16 +131,16 @@ public class MonthlySalaryService : IMonthlySalaryService
         if (salary.PaymentStatus == PaymentStatus.Paid)
             throw new InvalidOperationException("تم صرف هذا الراتب مسبقاً");
 
-        await _unitOfWork.BeginTransactionAsync();
         try
         {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             await PaySalaryInternalAsync(salary, dto, userId);
-            await _unitOfWork.CommitAsync();
+            });
             return MapToDto(salary);
         }
         catch
         {
-            await _unitOfWork.RollbackAsync();
             throw;
         }
     }
@@ -151,21 +151,21 @@ public class MonthlySalaryService : IMonthlySalaryService
             .Where(s => s.PaymentStatus == PaymentStatus.Pending)
             .ToList();
 
-        await _unitOfWork.BeginTransactionAsync();
         try
         {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             foreach (var salary in salaries)
             {
                 await PaySalaryInternalAsync(salary, dto, userId, saveImmediately: false);
             }
 
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            });
             return salaries.Count;
         }
         catch
         {
-            await _unitOfWork.RollbackAsync();
             throw;
         }
     }

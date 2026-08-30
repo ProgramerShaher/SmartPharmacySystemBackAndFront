@@ -127,9 +127,20 @@ export class SupplierPaymentsComponent implements OnInit {
     });
 
     if (this.dialogMode) {
-      if (this.autoOpenCreate) this.openNew();
       if (this.presetSupplierId) {
-        setTimeout(() => this.prefillSupplier(this.presetSupplierId!), 100);
+        // First prefill the supplier, then open the dialog with it already set
+        this.supplierService.getById(this.presetSupplierId).subscribe({
+          next: supplier => {
+            this.filteredSuppliers = [supplier];
+            this.selectedSupplier = supplier;
+            this.paymentForm.patchValue({ supplierId: supplier });
+            this.loadUnpaidInvoices(supplier.id);
+            this.cdr.markForCheck();
+            if (this.autoOpenCreate) this.openNew(true); // true = keep the supplier
+          }
+        });
+      } else if (this.autoOpenCreate) {
+        this.openNew();
       }
       return;
     }
@@ -275,12 +286,18 @@ export class SupplierPaymentsComponent implements OnInit {
   onInvoiceSelectionChange(event: any) {
   }
 
-  openNew() {
-    this.selectedSupplier = null;
-    this.unpaidInvoices.set([]);
-    this.selectedInvoiceId = null;
-    this.filteredInvoices = [];
+  openNew(keepSupplier = false) {
+    if (!keepSupplier) {
+      this.selectedSupplier = null;
+      this.unpaidInvoices.set([]);
+      this.selectedInvoiceId = null;
+      this.filteredInvoices = [];
+    }
+    const currentSupplier = keepSupplier ? this.selectedSupplier : null;
     this.paymentForm.reset({ paymentDate: new Date(), amount: 0, supplierId: null, referenceNo: '', purchaseInvoiceId: null, notes: '' });
+    if (keepSupplier && currentSupplier) {
+      this.paymentForm.patchValue({ supplierId: currentSupplier });
+    }
     this.displayDialog.set(true);
   }
 

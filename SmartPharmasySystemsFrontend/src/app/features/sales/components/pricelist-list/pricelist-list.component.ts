@@ -17,6 +17,7 @@ import { DividerModule } from 'primeng/divider';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { PricelistService, Pricelist, CreatePricelistDto } from '../../../inventory/services/pricelist.service';
 import { MedicineService } from '../../../inventory/services/medicine.service';
+import { MedicineBatchService } from '../../../inventory/services/medicine-batch.service';
 
 @Component({
   selector: 'app-pricelist-list',
@@ -40,6 +41,9 @@ export class PricelistListComponent implements OnInit {
   editId = signal<number | null>(null);
 
   medicines: any[] = [];
+  batches: any[] = [];
+  selectedBulkBatchId: number | null = null;
+  bulkType: string = 'single';
 
   form: CreatePricelistDto & { id?: number } = {
     name: '',
@@ -54,6 +58,7 @@ export class PricelistListComponent implements OnInit {
   constructor(
     private pricelistService: PricelistService,
     private medicineService: MedicineService,
+    private batchService: MedicineBatchService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
   ) { }
@@ -61,6 +66,21 @@ export class PricelistListComponent implements OnInit {
   ngOnInit() {
     this.loadPricelists();
     this.loadMedicines();
+    this.loadBatches();
+  }
+
+  loadBatches() {
+    this.batchService.getAll().subscribe({
+      next: (res: any) => {
+          const list = res.items || res;
+          this.batches = list.map((b: any) => ({
+              label: `دفعة #${b.batchNumber} - ${b.medicineName} (انتهاء: ${new Date(b.expiryDate).toLocaleDateString()})`,
+              value: b.id,
+              medicineId: b.medicineId
+          }));
+      },
+      error: () => { }
+    });
   }
 
   loadPricelists() {
@@ -115,12 +135,49 @@ export class PricelistListComponent implements OnInit {
     this.newItem = { medicineId: 0, fixedPrice: undefined, discountPercentage: undefined };
   }
 
+  addAllMedicines() {
+    let addedCount = 0;
+    this.medicines.forEach(m => {
+        const exists = this.form.items.some((i: any) => i.medicineId === m.value);
+        if (!exists) {
+            this.form.items.push({ medicineId: m.value, fixedPrice: this.newItem.fixedPrice, discountPercentage: this.newItem.discountPercentage });
+            addedCount++;
+        }
+    });
+    if (addedCount > 0) {
+        this.messageService.add({ severity: 'success', summary: 'نجاح', detail: `تمت إضافة ${addedCount} دواء بنجاح` });
+        this.newItem = { medicineId: 0, fixedPrice: undefined, discountPercentage: undefined };
+    } else {
+        this.messageService.add({ severity: 'info', summary: 'تنبيه', detail: 'كل الأدوية مضافة مسبقاً' });
+    }
+  }
+
+  addMedicinesFromBatch() {
+    if (!this.selectedBulkBatchId) {
+      this.messageService.add({ severity: 'warn', summary: 'تنبيه', detail: 'يرجى اختيار دفعة' });
+      return;
+    }
+    const batch = this.batches.find(b => b.value === this.selectedBulkBatchId);
+    if (batch && batch.medicineId) {
+        this.newItem.medicineId = batch.medicineId;
+        this.addItem();
+    }
+  }
+
   removeItem(index: number) {
     this.form.items.splice(index, 1);
   }
 
   getMedicineName(id: number): string {
     return this.medicines.find(m => m.value === id)?.label || `دواء #${id}`;
+  }
+
+  onInputFocus(event: any) {
+    if (event.target && event.target.select) {
+        event.target.select();
+    } else if (event.originalEvent && event.originalEvent.target && event.originalEvent.target.select) {
+        event.originalEvent.target.select();
+    }
   }
 
   save() {

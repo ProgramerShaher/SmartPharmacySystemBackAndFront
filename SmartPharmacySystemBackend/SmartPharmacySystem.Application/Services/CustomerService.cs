@@ -39,10 +39,12 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task<CustomerDto> CreateAsync(CreateCustomerDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var customer = _mapper.Map<Customer>(dto);
+                Customer customer = null;
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
+                customer = _mapper.Map<Customer>(dto);
                 
                 // 1. إنشاء حساب للعميل في شجرة الحسابات
                 var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
@@ -78,12 +80,11 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.Customers.AddAsync(customer);
                 await _unitOfWork.SaveChangesAsync();
 
-                await _unitOfWork.CommitAsync();
+                });
                 return _mapper.Map<CustomerDto>(customer);
             }
             catch (Exception)
             {
-                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }

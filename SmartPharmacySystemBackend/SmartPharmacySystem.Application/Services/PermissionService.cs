@@ -132,9 +132,10 @@ public class PermissionService : IPermissionService
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null) throw new KeyNotFoundException($"User {userId} not found");
 
-        await _unitOfWork.BeginTransactionAsync();
         try
         {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             var rolePermissionIds = new List<int>();
             if (user.RoleId > 0)
             {
@@ -177,11 +178,10 @@ public class PermissionService : IPermissionService
             }
 
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            });
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
             _logger.LogError(ex, "Error assigning permissions for user {UserId}", userId);
             throw;
         }

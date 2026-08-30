@@ -207,16 +207,35 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        this.loading = false;
-
-        // If Admin and didn't select a branch yet, show branch dialog
+        // If Admin and didn't select a branch yet, show branch dialog or auto-login to Main
         if ((response.roleName === 'Admin' || response.roleName === 'Administrator') && !credentials.branchId) {
           this.pendingCredentials = credentials;
-          this.loadActiveBranches();
-          this.showBranchDialog = true;
+
+          this.branchService.getActive().subscribe({
+            next: (branches) => {
+              const mainBranch = branches.find(b => b.branchType === 1 || b.branchType === 'Main');
+              if (mainBranch) {
+                this.selectedBranchId = mainBranch.id;
+                this.confirmBranchLogin();
+              } else {
+                this.loading = false;
+                this.activeBranches = branches;
+                if (branches.length === 1) {
+                  this.selectedBranchId = branches[0].id;
+                }
+                this.showBranchDialog = true;
+              }
+            },
+            error: (err) => {
+              this.loading = false;
+              console.error('Failed to load branches', err);
+              this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحميل قائمة الفروع' });
+            }
+          });
           return; // Don't navigate yet
         }
 
+        this.loading = false;
         this.messageService.add({
           severity: 'success',
           summary: 'نجاح',
@@ -265,12 +284,14 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(finalCredentials).subscribe({
       next: (response) => {
+        this.loading = false;
         this.loadingBranch = false;
         this.showBranchDialog = false;
         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: `تم الدخول للفرع بنجاح` });
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
+        this.loading = false;
         this.loadingBranch = false;
         this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تسجيل الدخول للفرع المحدد' });
       }

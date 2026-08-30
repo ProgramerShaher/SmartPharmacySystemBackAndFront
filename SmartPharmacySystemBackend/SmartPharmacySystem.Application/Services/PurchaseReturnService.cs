@@ -54,59 +54,56 @@ namespace SmartPharmacySystem.Application.Services
             entity.SupplierId = invoice.SupplierId;
 
             // ✅ بدء Transaction لضمان Atomicity
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                decimal calculatedTotal = 0;
-
-                // ✅ التحقق من صحة كل صنف في المرتجع
-                foreach (var detail in entity.PurchaseReturnDetails)
+                return await _unitOfWork.ExecuteTransactionAsync(async () =>
                 {
-                    // ✅ البحث عن الصنف في الفاتورة الأصلية
-                    var originalLine = invoice.PurchaseInvoiceDetails
-                        .FirstOrDefault(d => d.BatchId == detail.BatchId && d.MedicineId == detail.MedicineId);
+                    decimal calculatedTotal = 0;
 
-                    if (originalLine == null)
-                        throw new InvalidOperationException($"الصنف (MedicineId: {detail.MedicineId}, BatchId: {detail.BatchId}) غير موجود في الفاتورة الأصلية.");
+                    // ✅ التحقق من صحة كل صنف في المرتجع
+                    foreach (var detail in entity.PurchaseReturnDetails)
+                    {
+                        // ✅ البحث عن الصنف في الفاتورة الأصلية
+                        var originalLine = invoice.PurchaseInvoiceDetails
+                            .FirstOrDefault(d => d.BatchId == detail.BatchId && d.MedicineId == detail.MedicineId);
 
-                    // ✅ التحقق من تحميل بيانات Batch (محملة مسبقاً عبر Include)
-                    if (originalLine.Batch == null)
-                        throw new InvalidOperationException($"بيانات الدفعة (BatchId: {detail.BatchId}) غير محملة بشكل صحيح.");
+                        if (originalLine == null)
+                            throw new InvalidOperationException($"الصنف (MedicineId: {detail.MedicineId}, BatchId: {detail.BatchId}) غير موجود في الفاتورة الأصلية.");
 
-                    // ✅ التحقق من الكمية المتوفرة في المخزن
-                    if (originalLine.Batch.RemainingQuantity < detail.Quantity)
-                        throw new InvalidOperationException(
-                            $"عذراً، الكمية المتوفرة في المخزن للصنف '{originalLine.Medicine?.Name ?? "غير معروف"}' " +
-                            $"({originalLine.Batch.RemainingQuantity}) أقل من الكمية المراد إرجاعها ({detail.Quantity}).");
+                        // ✅ التحقق من تحميل بيانات Batch (محملة مسبقاً عبر Include)
+                        if (originalLine.Batch == null)
+                            throw new InvalidOperationException($"بيانات الدفعة (BatchId: {detail.BatchId}) غير محملة بشكل صحيح.");
 
-                    // ✅ التحقق من عدم تجاوز الكمية المشتراة
-                    if (detail.Quantity > originalLine.Quantity)
-                        throw new InvalidOperationException(
-                            $"عذراً، لا يمكن إرجاع كمية ({detail.Quantity}) أكبر من الكمية المشتراة ({originalLine.Quantity}) للصنف '{originalLine.Medicine?.Name ?? "غير معروف"}'.");
+                        // ✅ التحقق من الكمية المتوفرة في المخزن
+                        if (originalLine.Batch.RemainingQuantity < detail.Quantity)
+                            throw new InvalidOperationException(
+                                $"عذراً، الكمية المتوفرة في المخزن للصنف '{originalLine.Medicine?.Name ?? "غير معروف"}' " +
+                                $"({originalLine.Batch.RemainingQuantity}) أقل من الكمية المراد إرجاعها ({detail.Quantity}).");
 
-                    // ✅ حساب إجمالي المرتجع لكل صنف
-                    detail.TotalReturn = detail.Quantity * originalLine.PurchasePrice;
-                    calculatedTotal += detail.TotalReturn;
-                }
+                        // ✅ التحقق من عدم تجاوز الكمية المشتراة
+                        if (detail.Quantity > originalLine.Quantity)
+                            throw new InvalidOperationException(
+                                $"عذراً، لا يمكن إرجاع كمية ({detail.Quantity}) أكبر من الكمية المشتراة ({originalLine.Quantity}) للصنف '{originalLine.Medicine?.Name ?? "غير معروف"}'.");
 
-                // ✅ تعيين المجموع الكلي المحسوب
-                entity.TotalAmount = calculatedTotal;
+                        // ✅ حساب إجمالي المرتجع لكل صنف
+                        detail.TotalReturn = detail.Quantity * originalLine.PurchasePrice;
+                        calculatedTotal += detail.TotalReturn;
+                    }
 
-                // ✅ حفظ المرتجع
-                await _unitOfWork.PurchaseReturns.AddAsync(entity);
-                await _unitOfWork.SaveChangesAsync();
+                    // ✅ تعيين المجموع الكلي المحسوب
+                    entity.TotalAmount = calculatedTotal;
 
-                // ✅ Commit Transaction
-                await _unitOfWork.CommitAsync();
+                    // ✅ حفظ المرتجع
+                    await _unitOfWork.PurchaseReturns.AddAsync(entity);
+                    await _unitOfWork.SaveChangesAsync();
 
-                // ✅ جلب المرتجع المحفوظ
-                var created = await _unitOfWork.PurchaseReturns.GetByIdAsync(entity.Id);
-                return _mapper.Map<PurchaseReturnDto>(created);
+                    // ✅ جلب المرتجع المحفوظ
+                    var created = await _unitOfWork.PurchaseReturns.GetByIdAsync(entity.Id);
+                    return _mapper.Map<PurchaseReturnDto>(created);
+                });
             }
             catch (Exception ex)
             {
-                // ✅ Rollback في حالة حدوث خطأ
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "خطأ أثناء إنشاء مرتجع الشراء للفاتورة {InvoiceId}", dto.PurchaseInvoiceId);
                 throw;
             }
@@ -125,70 +122,69 @@ namespace SmartPharmacySystem.Application.Services
             if (ret.PurchaseReturnDetails == null || !ret.PurchaseReturnDetails.Any())
                 throw new InvalidOperationException("المرتجع لا يحتوي على أصناف. لا يمكن اعتماده.");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                foreach (var detail in ret.PurchaseReturnDetails)
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
                 {
-                    // ✅ استخدام البيانات المحملة مسبقاً من Repository
-                    // PurchaseReturnRepository.GetByIdAsync already includes Batch via ThenInclude
-                    var batch = detail.Batch ?? await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
-
-                    if (batch == null)
-                        throw new KeyNotFoundException($"الدفعة {detail.BatchId} غير موجودة");
-
-                    // Security/Isolation: ensure the batch belongs to the same purchase invoice (and thus branch context) as the return.
-                    if (batch.PurchaseInvoiceId.HasValue && batch.PurchaseInvoiceId.Value != ret.PurchaseInvoiceId)
-                        throw new InvalidOperationException("فشل اعتماد مرتجع الشراء: الدفعة لا تتبع نفس فاتورة الشراء المرتبطة بالمرتجع.");
-
-                    if (batch.RemainingQuantity < detail.Quantity)
-                        throw new InvalidOperationException($"الكمية غير كافية في الدفعة {batch.CompanyBatchNumber}. المتاح: {batch.RemainingQuantity}");
-
-                    // Validating the "No Sale" rule: "لا يسمح بإرجاع دواء قد تم بيعه"
-                    // If SoldQuantity > 0, we check if the return quantity is still available.
-                    // But the specific requirement says if it WAS sold, we block it.
-                    if (batch.SoldQuantity > 0)
-                        throw new InvalidOperationException($"عذراً، لا يمكن إرجاع هذا الصنف '{batch.Medicine?.Name}' للمورد لوجود مبيعات مرتبطة بالدفعة.");
-
-                    batch.RemainingQuantity -= detail.Quantity;
-                    batch.Quantity -= detail.Quantity;
-                    if (batch.RemainingQuantity == 0) batch.Status = "Empty";
-
-                    await _unitOfWork.MedicineBatches.UpdateAsync(batch);
-                }
-
-                ret.Status = DocumentStatus.Approved;
-                ret.ApprovedBy = userId;
-                ret.ApprovedAt = DateTime.UtcNow;
-                await _unitOfWork.PurchaseReturns.UpdateAsync(ret);
-                await _unitOfWork.SaveChangesAsync();
-
-                await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.PurchaseReturn);
-
-                // Financial Integration
-                var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(ret.PurchaseInvoiceId);
-                if (invoice != null)
-                {
-                    if (invoice.PaymentMethod == PaymentType.Cash)
+                    foreach (var detail in ret.PurchaseReturnDetails)
                     {
-                        await _financialService.ProcessTransactionAsync(1, ret.TotalAmount, FinancialTransactionType.Income, ReferenceType.PurchaseReturn, ret.Id, $"مرتجع شراء - استرداد نقدي");
+                        // ✅ استخدام البيانات المحملة مسبقاً من Repository
+                        // PurchaseReturnRepository.GetByIdAsync already includes Batch via ThenInclude
+                        var batch = detail.Batch ?? await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
+
+                        if (batch == null)
+                            throw new KeyNotFoundException($"الدفعة {detail.BatchId} غير موجودة");
+
+                        // Security/Isolation: ensure the batch belongs to the same purchase invoice (and thus branch context) as the return.
+                        if (batch.PurchaseInvoiceId.HasValue && batch.PurchaseInvoiceId.Value != ret.PurchaseInvoiceId)
+                            throw new InvalidOperationException("فشل اعتماد مرتجع الشراء: الدفعة لا تتبع نفس فاتورة الشراء المرتبطة بالمرتجع.");
+
+                        if (batch.RemainingQuantity < detail.Quantity)
+                            throw new InvalidOperationException($"الكمية غير كافية في الدفعة {batch.CompanyBatchNumber}. المتاح: {batch.RemainingQuantity}");
+
+                        // Validating the "No Sale" rule: "لا يسمح بإرجاع دواء قد تم بيعه"
+                        // If SoldQuantity > 0, we check if the return quantity is still available.
+                        // But the specific requirement says if it WAS sold, we block it.
+                        if (batch.SoldQuantity > 0)
+                            throw new InvalidOperationException($"عذراً، لا يمكن إرجاع هذا الصنف '{batch.Medicine?.Name}' للمورد لوجود مبيعات مرتبطة بالدفعة.");
+
+                        batch.RemainingQuantity -= detail.Quantity;
+                        batch.Quantity -= detail.Quantity;
+                        if (batch.RemainingQuantity == 0) batch.Status = "Empty";
+
+                        await _unitOfWork.MedicineBatches.UpdateAsync(batch);
                     }
-                    else
+
+                    ret.Status = DocumentStatus.Approved;
+                    ret.ApprovedBy = userId;
+                    ret.ApprovedAt = DateTime.UtcNow;
+                    await _unitOfWork.PurchaseReturns.UpdateAsync(ret);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.PurchaseReturn);
+
+                    // Financial Integration
+                    var invoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(ret.PurchaseInvoiceId);
+                    if (invoice != null)
                     {
-                        var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId);
-                        if (supplier != null)
+                        if (invoice.PaymentMethod == PaymentType.Cash)
                         {
-                            supplier.Balance -= ret.TotalAmount; // Decrease Debt
-                            await _unitOfWork.Suppliers.UpdateAsync(supplier);
+                            await _financialService.ProcessTransactionAsync(1, ret.TotalAmount, FinancialTransactionType.Income, ReferenceType.PurchaseReturn, ret.Id, $"مرتجع شراء - استرداد نقدي");
+                        }
+                        else
+                        {
+                            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId);
+                            if (supplier != null)
+                            {
+                                supplier.Balance -= ret.TotalAmount; // Decrease Debt
+                                await _unitOfWork.Suppliers.UpdateAsync(supplier);
+                            }
                         }
                     }
-                }
-
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error approving purchase return");
                 throw;
             }
@@ -202,8 +198,7 @@ namespace SmartPharmacySystem.Application.Services
             if (ret.Status == DocumentStatus.Cancelled)
                 throw new InvalidOperationException("المرتجع ملغى بالفعل.");
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
             {
                 var wasApproved = ret.Status == DocumentStatus.Approved;
                 ret.Status = DocumentStatus.Cancelled;
@@ -256,13 +251,7 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.PurchaseReturns.UpdateAsync(ret);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
+            });
         }
 
         public async Task UpdateAsync(int id, UpdatePurchaseReturnDto dto)

@@ -175,16 +175,12 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: 'pi pi-shopping-cart',
       iconClass: 'icon-sales',
       match: '/sales',
-      extraMatches: ['/online-orders', '/pos', '/shifts'],
+      extraMatches: ['/pos'],
       anyPermission: ['sales.invoices.view', 'sales.invoices.create', 'sales.create', 'sales.manage'],
       children: [
         {
           label: 'شاشة الكاشير (POS)', route: '/sales/create', icon: 'pi pi-desktop',
           anyPermission: ['sales.invoices.create', 'sales.create', 'sales.invoices.view', 'sales.manage']
-        },
-        {
-          label: 'إدارة الورديات', route: '/shifts', icon: 'pi pi-briefcase',
-          anyPermission: ['sales.shifts.manage', 'sales.invoices.create']
         },
         {
           label: 'فواتير المبيعات', route: '/sales', icon: 'pi pi-list', exact: true,
@@ -196,14 +192,29 @@ export class SidebarComponent implements OnInit, OnDestroy {
         },
         {
           label: 'قوائم الأسعار والخصومات', route: '/sales/pricelists', icon: 'pi pi-tag',
-        },
+        }
+      ]
+    },
+    {
+      key: 'operations',
+      label: 'إدارة العمليات',
+      icon: 'pi pi-server',
+      iconClass: 'icon-sales',
+      match: '/shifts',
+      extraMatches: ['/online-orders', '/accounting/daily-closing'],
+      anyPermission: ['sales.shifts.manage', 'sales.invoices.create', 'online_orders.manage', 'sales.daily_closing.manage'],
+      children: [
         {
-          label: 'طلبات الأونلاين', route: '/online-orders', icon: 'pi pi-globe',
-          permission: 'online_orders.manage'
+          label: 'إدارة الورديات', route: '/shifts', icon: 'pi pi-briefcase',
+          anyPermission: ['sales.shifts.manage', 'sales.invoices.create']
         },
         {
           label: 'الإقفال اليومي للصناديق', route: '/accounting/daily-closing', icon: 'pi pi-lock',
           permission: 'sales.daily_closing.manage'
+        },
+        {
+          label: 'طلبات الأونلاين', route: '/online-orders', icon: 'pi pi-globe',
+          permission: 'online_orders.manage'
         }
       ]
     },
@@ -233,8 +244,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
       label: 'الأدوية والمخزون',
       icon: 'pi pi-box',
       iconClass: 'icon-inventory',
-      match: '/inventory',
-      extraMatches: ['/warehouses'],
       children: [
         {
           label: 'دليل الأدوية', route: '/inventory/medicines', icon: 'pi pi-list',
@@ -244,6 +253,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
           label: 'تصنيفات الأدوية', route: '/inventory/categories', icon: 'pi pi-tags',
           permission: 'inventory.categories.manage'
         },
+        {
+          label: 'حركات المخزون', route: '/inventory/movements', icon: 'pi pi-history',
+          permission: 'inventory.medicines.view'
+        },
+        {
+          label: 'الدفعات والتواريخ', route: '/inventory/batches', icon: 'pi pi-calendar',
+          permission: 'inventory.medicines.view'
+        }
+      ]
+    },
+    {
+      key: 'warehouses',
+      label: 'المخازن والتحويلات',
+      icon: 'pi pi-building',
+      iconClass: 'icon-inventory',
+      match: '/warehouses',
+      children: [
         {
           label: 'إدارة المخازن', route: '/warehouses', icon: 'pi pi-building', exact: true,
           permission: 'inventory.warehouses.view'
@@ -259,15 +285,17 @@ export class SidebarComponent implements OnInit, OnDestroy {
         {
           label: 'الهوالك والتوالف', route: '/warehouses/damaged', icon: 'pi pi-exclamation-triangle',
           permission: 'inventory.damaged.manage'
-        },
-        {
-          label: 'حركات المخزون', route: '/inventory/movements', icon: 'pi pi-history',
-          permission: 'inventory.medicines.view'
-        },
-        {
-          label: 'الدفعات والتواريخ', route: '/inventory/batches', icon: 'pi pi-calendar',
-          permission: 'inventory.medicines.view'
-        },
+        }
+      ]
+    },
+    {
+      key: 'stock-counts',
+      label: 'جرد المخازن',
+      icon: 'pi pi-clipboard',
+      iconClass: 'icon-inventory',
+      match: '/inventory/stock',
+      extraMatches: ['/inventory/flow-analysis', '/inventory/automated-audits'],
+      children: [
         {
           label: 'جرد المخزون', route: '/inventory/stock-counts', icon: 'pi pi-clipboard',
           permission: 'inventory.stock_counts.create'
@@ -301,6 +329,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
         {
           label: 'إدارة الموردين', route: '/partners/suppliers', icon: 'pi pi-truck',
           permission: 'partners.suppliers.view'
+        },
+        {
+          label: 'سندات القبض', route: '/customers/receipts', icon: 'pi pi-arrow-down-left',
+          permission: 'finance.receipts.create'
+        },
+        {
+          label: 'سندات الصرف', route: '/partners/suppliers/payments', icon: 'pi pi-arrow-up-right',
+          permission: 'finance.payments.create'
         }
       ]
     },
@@ -315,14 +351,6 @@ export class SidebarComponent implements OnInit, OnDestroy {
         {
           label: 'الخزينة والأرصدة', route: '/financial/dashboard', icon: 'pi pi-money-bill', exact: true,
           anyPermission: ['finance.dashboard.view', 'finance.treasury.view']
-        },
-        {
-          label: 'سندات القبض', route: '/customers/receipts', icon: 'pi pi-arrow-down-left',
-          permission: 'finance.receipts.create'
-        },
-        {
-          label: 'سندات الصرف', route: '/partners/suppliers/payments', icon: 'pi pi-arrow-up-right',
-          permission: 'finance.payments.create'
         },
         {
           label: 'المصروفات النثرية', route: '/finance/expenses', icon: 'pi pi-money-bill',

@@ -15,6 +15,7 @@ import { CardModule } from 'primeng/card';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ChartModule } from 'primeng/chart';
 import { ToastModule } from 'primeng/toast';
+import { SalesReturnDetailsComponent } from '../sales-return-details/sales-return-details.component';
 
 @Component({
     selector: 'app-sales-return-list',
@@ -30,7 +31,8 @@ import { ToastModule } from 'primeng/toast';
         CardModule,
         ToolbarModule,
         ChartModule,
-        ToastModule
+        ToastModule,
+        SalesReturnDetailsComponent
     ],
     templateUrl: './sales-return-list.component.html',
     styleUrls: ['./sales-return-list.component.scss'],
@@ -39,6 +41,9 @@ import { ToastModule } from 'primeng/toast';
 export class SalesReturnListComponent implements OnInit {
     returns: SalesReturn[] = [];
     loading = true;
+
+    showDetailsDialog = false;
+    selectedReturnId: number | null = null;
 
     // KPI Signals
     totalReturnsValue = signal(0);
@@ -66,7 +71,6 @@ export class SalesReturnListComponent implements OnInit {
 
     ngOnInit() {
         this.loadReturns();
-        this.loadStats();
     }
 
     loadReturns() {
@@ -84,32 +88,7 @@ export class SalesReturnListComponent implements OnInit {
         });
     }
 
-    loadStats() {
-        // Load live trend data
-        this.statsService.getSalesFlow(7).subscribe({
-            next: (data) => {
-                const labels = data.map(d => {
-                    const date = new Date(d.date);
-                    return date.toLocaleDateString('ar-EG', { day: '2-digit', month: '2-digit' });
-                });
-                const returnsData = data.map(d => d.returns);
-
-                this.returnsTrendData = {
-                    labels: labels,
-                    datasets: [{
-                        label: 'المرتجعات اليومية',
-                        data: returnsData,
-                        borderColor: '#dc3545',
-                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 3,
-                        pointHoverRadius: 5
-                    }]
-                };
-            }
-        });
-    }
+    // loadStats was removed because getSalesFlow returns 0 for returns and overrides local calculation.
 
     calculateLocalStats(data: SalesReturn[]) {
         this.returnsCount.set(data.length);
@@ -184,7 +163,7 @@ export class SalesReturnListComponent implements OnInit {
                 }
             },
             scales: {
-                y: { display: false },
+                y: { display: false, min: 0, suggestedMax: 5 },
                 x: { display: false }
             }
         };
@@ -207,7 +186,12 @@ export class SalesReturnListComponent implements OnInit {
     }
 
     viewDetails(id: number) {
-        this.router.navigate(['/sales/returns', id]); // Or reuse create view in read mode
+        this.selectedReturnId = id;
+        this.showDetailsDialog = true;
+    }
+
+    editReturn(id: number) {
+        this.router.navigate(['/sales/returns/edit', id]);
     }
 
     getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {

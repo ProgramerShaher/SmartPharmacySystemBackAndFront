@@ -72,9 +72,10 @@ namespace SmartPharmacySystem.Application.Services
             if (entity.InvoiceDate == default)
                 entity.InvoiceDate = DateTime.Today;
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 foreach (var item in entity.SaleInvoiceDetails)
                 {
                     if (item.MedicineId <= 0)
@@ -88,11 +89,10 @@ namespace SmartPharmacySystem.Application.Services
                 entity.SaleInvoiceNumber = await _invoiceNumberGenerator.GenerateSaleInvoiceNumberAsync();
                 await _unitOfWork.SaleInvoices.AddAsync(entity);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch
             {
-                await _unitOfWork.RollbackAsync();
                 throw;
             }
 
@@ -112,9 +112,10 @@ namespace SmartPharmacySystem.Application.Services
 
             await _closingValidationService.ValidateDateIsUnlockedAsync(entity.InvoiceDate, entity.BranchId);
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 _mapper.Map(dto, entity);
 
                 if (entity.SaleInvoiceDetails != null)
@@ -146,11 +147,10 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.SaleInvoices.UpdateAsync(entity);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error updating sale invoice {Id}", id);
                 throw;
             }
@@ -166,9 +166,10 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("الفاتورة بالفعل معتمدة أو ملغاة.");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 if (!invoice.CustomerId.HasValue && invoice.PaymentMethod == PaymentType.Credit)
                     throw new InvalidOperationException("لا يمكن البيع بالآجل إلا لعميل مسجل في النظام.");
 
@@ -384,7 +385,7 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
                 await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.SaleInvoice);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
 
                 if (invoice.CustomerId.HasValue)
                 {
@@ -665,7 +666,6 @@ namespace SmartPharmacySystem.Application.Services
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error approving sale invoice {Id}", id);
                 throw;
             }
@@ -687,9 +687,10 @@ namespace SmartPharmacySystem.Application.Services
                 throw new InvalidOperationException("لا يمكن إلغاء اعتماد الفاتورة الأصلية لوجود مردودات مرتبطة بها. يرجى إلغاء المردودات أولاً.");
             }
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 foreach (var detail in invoice.SaleInvoiceDetails)
                 {
                     // ✅ Fix: Use already-tracked Batch instance from invoice details (loaded via ThenInclude)
@@ -735,12 +736,10 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     await _alertService.SyncMedicineAlertsAsync(detail.MedicineId);
                 }
-
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error unapproving sale invoice {Id}", id);
                 throw;
             }
@@ -757,9 +756,10 @@ namespace SmartPharmacySystem.Application.Services
                 throw new InvalidOperationException("لا يمكن إلغاء الفاتورة الأصلية لوجود مردودات مرتبطة بها. يرجى إلغاء المردودات أولاً.");
             }
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 var wasApproved = invoice.Status == DocumentStatus.Approved;
                 invoice.Status = DocumentStatus.Cancelled;
                 invoice.CancelledBy = userId;
@@ -803,11 +803,10 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error cancelling sale invoice {Id}", id);
                 throw;
             }
@@ -859,9 +858,10 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.IsPaid)
                 throw new InvalidOperationException("الفاتورة محصلة مسبقاً");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 await _financialService.ProcessTransactionAsync(
                     accountId: accountId,
                     amount: invoice.TotalAmount,
@@ -874,11 +874,10 @@ namespace SmartPharmacySystem.Application.Services
                 invoice.IsPaid = true;
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error receiving payment for credit sale invoice {InvoiceId}", invoiceId);
                 throw;
             }

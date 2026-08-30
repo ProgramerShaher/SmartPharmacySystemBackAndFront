@@ -19,6 +19,7 @@ import { MessagesModule } from 'primeng/messages';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { CheckboxModule } from 'primeng/checkbox';
     MessagesModule,
     ConfirmDialogModule,
     TabViewModule,
-    CheckboxModule
+    CheckboxModule,
+    ProgressSpinnerModule
   ]
 })
 export class ShiftsModule { }

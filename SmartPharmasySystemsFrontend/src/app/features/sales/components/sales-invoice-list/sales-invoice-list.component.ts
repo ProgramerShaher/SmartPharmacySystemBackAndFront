@@ -24,6 +24,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
+import { SalesInvoiceDetailsComponent } from '../sales-invoice-details/sales-invoice-details.component';
 
 @Component({
     selector: 'app-sales-invoice-list',
@@ -44,7 +45,8 @@ import { CheckboxModule } from 'primeng/checkbox';
         DropdownModule,
         CalendarModule,
         ToastModule,
-        CheckboxModule
+        CheckboxModule,
+        SalesInvoiceDetailsComponent
     ],
     templateUrl: './sales-invoice-list.component.html',
     styleUrls: ['./sales-invoice-list.component.scss'],
@@ -54,6 +56,9 @@ export class SalesInvoiceListComponent implements OnInit {
     invoices = signal<SaleInvoice[]>([]);
     loading = signal(false);
     showFilters = signal(false);
+
+    showDetailsDialog = false;
+    selectedInvoiceId: number | null = null;
 
     DocumentStatus = DocumentStatus;
 
@@ -372,7 +377,8 @@ export class SalesInvoiceListComponent implements OnInit {
     }
 
     viewDetails(id: number) {
-        this.router.navigate(['/sales', id]);
+        this.selectedInvoiceId = id;
+        this.showDetailsDialog = true;
     }
 
     editInvoice(id: number) {

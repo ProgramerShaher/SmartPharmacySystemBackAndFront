@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permissionGuard } from './core/guards/permission.guard';
+import { licenseGuard } from './core/guards/license.guard';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 import { UnauthorizedComponent } from './features/unauthorized/unauthorized.component';
 
@@ -20,9 +21,18 @@ export const routes: Routes = [
         component: UnauthorizedComponent
     },
     {
+        // شاشة التفعيل — متاحة للجميع قبل تسجيل الدخول
+        path: 'lock-screen',
+        loadComponent: () =>
+            import('./features/lock-screen/lock-screen.component')
+            .then(m => m.LockScreenComponent)
+    },
+    {
         path: '',
         component: MainLayoutComponent,
-        canActivate: [authGuard],
+        // licenseGuard runs FIRST — if not activated, redirect to /lock-screen
+        // authGuard runs SECOND  — if not logged in, redirect to /auth/login
+        canActivate: [licenseGuard, authGuard],
         children: [
             // ---- لوحة التحكم (بدون قيد صلاحية — للجميع)
             {

@@ -1,0 +1,115 @@
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Lock Screen — Hardware-Bound License Activation Page
+     Displays Machine ID and accepts a license key to unlock the system.
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="lock-wrapper" dir="rtl">
+
+  <!-- Animated Background Orbs -->
+  <div class="orb orb--1"></div>
+  <div class="orb orb--2"></div>
+  <div class="orb orb--3"></div>
+
+  <!-- Activation Card -->
+  <div class="lock-card" role="main" aria-label="شاشة تفعيل الترخيص">
+
+    <!-- ── Icon & Heading ── -->
+    <div class="card__header">
+      <div class="lock-icon" [class.lock-icon--error]="hasError()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+            clip-rule="evenodd" />
+        </svg>
+      </div>
+
+      <h1 class="card__title">النظام غير مفعّل</h1>
+      <p class="card__subtitle">
+        يرجى إدخال مفتاح الترخيص الخاص بهذا الجهاز لفتح النظام.<br>
+        تواصل مع مزوّد الخدمة للحصول على مفتاح مخصص لجهازك.
+      </p>
+    </div>
+
+    <!-- ── Machine ID Display ── -->
+    <div class="machine-id-section">
+      <label class="field-label" for="machine-id-display">معرّف الجهاز (Machine ID)</label>
+      <div class="machine-id-box">
+        <span id="machine-id-display"
+              class="machine-id-value"
+              [class.machine-id-value--loading]="isFetching()">
+          {{ machineId() }}
+        </span>
+        <button
+          class="btn-copy"
+          type="button"
+          id="btn-copy-machine-id"
+          title="نسخ معرّف الجهاز"
+          [disabled]="isFetching()"
+          (click)="copyMachineId()"
+          aria-label="نسخ معرّف الجهاز إلى الحافظة">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+      </div>
+      <p class="field-hint">
+        أرسل هذا المعرّف إلى المطوّر لإنشاء مفتاح ترخيص مخصص لجهازك.
+      </p>
+    </div>
+
+    <!-- ── License Key Input ── -->
+    <div class="key-input-section">
+      <label class="field-label" for="license-key-input">مفتاح الترخيص</label>
+      <textarea
+        id="license-key-input"
+        class="key-textarea"
+        placeholder="الصق مفتاح الترخيص هنا..."
+        rows="3"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        [value]="licenseKey()"
+        (input)="onKeyInput($event)"
+        [disabled]="isLoading()"
+        aria-required="true"
+        aria-describedby="key-hint">
+      </textarea>
+      <p class="field-hint" id="key-hint">
+        يجب أن يطابق المفتاح معرّف الجهاز أعلاه تمامًا.
+      </p>
+    </div>
+
+    <!-- ── Activate Button ── -->
+    <button
+      id="btn-activate-license"
+      class="btn-activate"
+      type="button"
+      [disabled]="!canSubmit()"
+      [class.btn-activate--loading]="isLoading()"
+      (click)="onActivate()"
+      aria-live="polite">
+
+      @if (isLoading()) {
+        <span class="spinner" aria-hidden="true"></span>
+        <span>جارٍ التفعيل...</span>
+      } @else {
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+             class="btn-icon" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+            clip-rule="evenodd" />
+        </svg>
+        <span>تفعيل النظام</span>
+      }
+    </button>
+
+    <!-- ── Footer ── -->
+    <div class="card__footer">
+      <p>الصيدلية الذكية &copy; {{ currentYear }}</p>
+      <p>لدعم فني تواصل مع المطوّر</p>
+    </div>
+
+  </div><!-- /lock-card -->
+</div><!-- /lock-wrapper -->

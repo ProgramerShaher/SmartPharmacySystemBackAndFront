@@ -1,0 +1,356 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//  Lock Screen Styles — Compact centered card design
+// ═══════════════════════════════════════════════════════════════════════════
+
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
+
+// ── Design Tokens ──────────────────────────────────────────────────────────
+$bg-dark:      #050d1a;
+$glass-bg:     rgba(255, 255, 255, 0.04);
+$glass-border: rgba(255, 255, 255, 0.09);
+$accent:       #00d4aa;
+$accent-dim:   #00a885;
+$accent-glow:  rgba(0, 212, 170, 0.22);
+$danger:       #ff4757;
+$text-primary: #e8eef4;
+$text-muted:   #6b7d8e;
+$input-bg:     rgba(255, 255, 255, 0.05);
+$input-border: rgba(255, 255, 255, 0.12);
+
+// ── Root Wrapper ─────────────────────────────────────────────────────────────
+.lock-wrapper {
+  position:        fixed;
+  inset:           0;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  background:      $bg-dark;
+  overflow:        hidden;
+  font-family:     'Cairo', 'Segoe UI', sans-serif;
+  padding:         1rem;
+  z-index:         9999;
+}
+
+// ── Animated Background Orbs ─────────────────────────────────────────────────
+.orb {
+  position:      absolute;
+  border-radius: 50%;
+  filter:        blur(75px);
+  opacity:       0.13;
+  animation:     floatOrb 12s ease-in-out infinite alternate;
+  pointer-events: none;
+
+  &--1 {
+    width:  380px;
+    height: 380px;
+    background: radial-gradient(circle, #0066ff, transparent);
+    top:  -15%;
+    right: -10%;
+    animation-duration: 14s;
+  }
+
+  &--2 {
+    width:  300px;
+    height: 300px;
+    background: radial-gradient(circle, #00d4aa, transparent);
+    bottom: -15%;
+    left:   -10%;
+    animation-duration: 18s;
+    animation-delay:    -5s;
+  }
+
+  &--3 {
+    width:  220px;
+    height: 220px;
+    background: radial-gradient(circle, #7c3aed, transparent);
+    top:  40%;
+    left: 30%;
+    animation-duration: 22s;
+    animation-delay:    -10s;
+  }
+}
+
+@keyframes floatOrb {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(30px, -30px) scale(1.07); }
+}
+
+// ── Activation Card ───────────────────────────────────────────────────────────
+.lock-card {
+  position:         relative;
+  z-index:          10;
+  width:            100%;
+  max-width:        400px;
+  background:       $glass-bg;
+  backdrop-filter:  blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border:           1px solid $glass-border;
+  border-radius:    20px;
+  padding:          1.75rem 1.5rem;
+  box-shadow:       0 8px 50px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px rgba(255,255,255,0.04);
+
+  animation: slideUp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(22px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+// ── Card Header ───────────────────────────────────────────────────────────────
+.card__header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+
+.lock-icon {
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  center;
+  width:            54px;
+  height:           54px;
+  border-radius:    50%;
+  background:       rgba(0, 212, 170, 0.1);
+  border:           2px solid rgba(0, 212, 170, 0.3);
+  color:            $accent;
+  margin-bottom:    0.85rem;
+  box-shadow:       0 0 22px $accent-glow;
+  animation:        pulseLock 2.5s ease-in-out infinite;
+
+  svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  &--error {
+    background:  rgba(255, 71, 87, 0.1);
+    border-color: rgba(255, 71, 87, 0.3);
+    color:        $danger;
+    box-shadow:   0 0 22px rgba(255, 71, 87, 0.2);
+  }
+}
+
+@keyframes pulseLock {
+  0%, 100% { box-shadow: 0 0 16px $accent-glow; }
+  50%       { box-shadow: 0 0 34px $accent-glow, 0 0 50px rgba(0,212,170,0.1); }
+}
+
+.card__title {
+  font-size:   1.25rem;
+  font-weight: 700;
+  color:       $text-primary;
+  margin:      0 0 0.35rem;
+  letter-spacing: -0.02em;
+}
+
+.card__subtitle {
+  font-size:   0.78rem;
+  color:       $text-muted;
+  line-height: 1.6;
+  margin:      0;
+}
+
+// ── Field Labels ─────────────────────────────────────────────────────────────
+.field-label {
+  display:       block;
+  font-size:     0.7rem;
+  font-weight:   600;
+  color:         rgba($text-primary, 0.65);
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.field-hint {
+  font-size:  0.7rem;
+  color:      $text-muted;
+  margin-top: 0.3rem;
+  line-height: 1.45;
+}
+
+// ── Machine ID Box ────────────────────────────────────────────────────────────
+.machine-id-section {
+  margin-bottom: 1rem;
+}
+
+.machine-id-box {
+  display:       flex;
+  align-items:   center;
+  gap:           0.6rem;
+  background:    rgba(0, 212, 170, 0.06);
+  border:        1px solid rgba(0, 212, 170, 0.2);
+  border-radius: 10px;
+  padding:       0.65rem 0.85rem;
+}
+
+.machine-id-value {
+  flex:          1;
+  font-family:   'Courier New', 'Consolas', monospace;
+  font-size:     0.95rem;
+  font-weight:   700;
+  color:         $accent;
+  letter-spacing: 0.07em;
+  word-break:    break-all;
+
+  &--loading {
+    opacity:   0.5;
+    animation: shimmer 1.5s linear infinite;
+  }
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1;   }
+}
+
+.btn-copy {
+  flex-shrink: 0;
+  background:  transparent;
+  border:      none;
+  color:       $text-muted;
+  cursor:      pointer;
+  padding:     0.2rem;
+  border-radius: 6px;
+  transition:  color 0.2s, background 0.2s;
+
+  svg {
+    width:  16px;
+    height: 16px;
+    display: block;
+  }
+
+  &:hover:not(:disabled) {
+    color:      $accent;
+    background: rgba(0, 212, 170, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor:  not-allowed;
+  }
+}
+
+// ── Key Textarea ──────────────────────────────────────────────────────────────
+.key-input-section {
+  margin-bottom: 1.25rem;
+}
+
+.key-textarea {
+  width:          100%;
+  background:     $input-bg;
+  border:         1px solid $input-border;
+  border-radius:  10px;
+  color:          $text-primary;
+  font-family:    'Courier New', monospace;
+  font-size:      0.8rem;
+  line-height:    1.5;
+  padding:        0.65rem 0.85rem;
+  resize:         vertical;
+  outline:        none;
+  transition:     border-color 0.2s, box-shadow 0.2s;
+  box-sizing:     border-box;
+
+  &::placeholder {
+    color: rgba($text-muted, 0.45);
+  }
+
+  &:focus {
+    border-color: $accent;
+    box-shadow:   0 0 0 3px $accent-glow;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor:  not-allowed;
+  }
+}
+
+// ── Activate Button ───────────────────────────────────────────────────────────
+.btn-activate {
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.5rem;
+  width:           100%;
+  padding:         0.7rem 1.25rem;
+  border:          none;
+  border-radius:   10px;
+  background:      linear-gradient(135deg, $accent 0%, $accent-dim 100%);
+  color:           #fff;
+  font-family:     'Cairo', sans-serif;
+  font-size:       0.92rem;
+  font-weight:     700;
+  cursor:          pointer;
+  letter-spacing:  0.02em;
+  transition:      transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+  box-shadow:      0 4px 16px rgba(0, 212, 170, 0.32);
+  margin-bottom:   1.1rem;
+
+  &:hover:not(:disabled) {
+    transform:  translateY(-2px);
+    box-shadow: 0 7px 24px rgba(0, 212, 170, 0.48);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor:  not-allowed;
+    box-shadow: none;
+  }
+
+  &--loading {
+    pointer-events: none;
+  }
+}
+
+.btn-icon {
+  width:  18px;
+  height: 18px;
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+.spinner {
+  width:  18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Card Footer ───────────────────────────────────────────────────────────────
+.card__footer {
+  text-align: center;
+  border-top: 1px solid $glass-border;
+  padding-top: 0.9rem;
+
+  p {
+    font-size: 0.68rem;
+    color:     $text-muted;
+    margin:    0.1rem 0;
+  }
+}
+
+// ── Responsive ───────────────────────────────────────────────────────────────
+@media (max-width: 440px) {
+  .lock-card {
+    padding:       1.4rem 1.1rem;
+    border-radius: 16px;
+  }
+
+  .card__title {
+    font-size: 1.1rem;
+  }
+
+  .machine-id-value {
+    font-size: 0.85rem;
+  }
+}

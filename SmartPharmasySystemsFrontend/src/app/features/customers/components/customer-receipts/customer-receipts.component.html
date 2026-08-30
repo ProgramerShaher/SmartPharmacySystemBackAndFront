@@ -227,7 +227,7 @@
   </ng-container>
 
   <p-dialog *ngIf="!dialogMode"
-            [visible]="displayDialog()" [modal]="true" appendTo="body"
+            [visible]="displayDialog()" [modal]="true" appendTo="body" [dismissableMask]="true"
             [style]="{ width: '420px', maxWidth: '95vw' }"
             [contentStyle]="{'overflow':'visible'} "
             [draggable]="false" [resizable]="false"

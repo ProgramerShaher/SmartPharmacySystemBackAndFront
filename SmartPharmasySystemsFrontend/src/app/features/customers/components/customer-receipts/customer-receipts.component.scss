@@ -398,6 +398,96 @@
 }
 
 /* =========================================
+   COMPACT VOUCHER MODAL FORM
+   ========================================= */
+.voucher-form {
+  direction: rtl;
+
+  .vf-field {
+    margin-bottom: 0.55rem;
+  }
+
+  .vf-label {
+    display: block;
+    font-size: 0.67rem;
+    font-weight: 700;
+    color: var(--text-color-secondary);
+    margin-bottom: 0.22rem;
+    letter-spacing: 0.04em;
+  }
+
+  .vf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  ::ng-deep {
+    .vf-field .p-inputtext,
+    .vf-field input.p-inputtext,
+    .vf-field .p-inputnumber-input,
+    .vf-field .p-dropdown,
+    .vf-field .p-calendar input.p-inputtext,
+    .vf-field .p-autocomplete-input {
+      height: 32px !important;
+      font-size: 0.78rem !important;
+      padding: 0 0.6rem !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    .vf-field .p-inputnumber,
+    .vf-field .p-calendar,
+    .vf-field .p-autocomplete {
+      width: 100% !important;
+    }
+    .vf-field .p-dropdown .p-dropdown-label {
+      line-height: 30px !important;
+      padding: 0 0.6rem !important;
+    }
+  }
+
+  .entity-row {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+
+    .entity-balance {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 0.55rem;
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(239,68,68,0.06));
+      border: 1px solid rgba(239,68,68,0.28);
+      border-radius: 6px;
+      min-width: 72px;
+
+      .bal-label {
+        font-size: 0.58rem;
+        color: var(--text-color-secondary);
+        font-weight: 600;
+      }
+      .bal-amount {
+        font-size: 0.76rem;
+        font-weight: 800;
+        color: #dc2626;
+      }
+    }
+  }
+
+  .vf-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    padding-top: 0.55rem;
+    margin-top: 0.35rem;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+/* =========================================
    RESPONSIVE DESIGN (MOBILE APP FEEL)
    ========================================= */
 @media (max-width: 768px) {

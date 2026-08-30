@@ -319,6 +319,216 @@ body {
     }
 }
 
+/* ══════════════════════════════════════════════════
+   GLOBAL: Compact Voucher Form inside Dialogs
+   يُصلح تعارض الـ padding الكبير من global styles
+   ══════════════════════════════════════════════════ */
+.voucher-form {
+    direction: rtl;
+
+    .vf-field {
+        margin-bottom: 0.55rem;
+    }
+
+    .vf-label {
+        display: block;
+        font-size: 0.67rem;
+        font-weight: 700;
+        color: var(--text-color-secondary);
+        margin-bottom: 0.22rem;
+        letter-spacing: 0.04em;
+    }
+
+    .vf-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem;
+    }
+
+    .vf-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.4rem;
+        padding-top: 0.55rem;
+        margin-top: 0.35rem;
+        border-top: 1px solid var(--border-color);
+    }
+
+    .entity-row {
+        display: flex;
+        gap: 0.4rem;
+        align-items: center;
+
+        .autocomplete-wrap {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .entity-balance {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+            padding: 0 0.55rem;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.06));
+            border: 1px solid rgba(239, 68, 68, 0.28);
+            border-radius: 6px;
+            min-width: 72px;
+
+            .bal-label {
+                font-size: 0.58rem;
+                color: var(--text-color-secondary);
+                font-weight: 600;
+                line-height: 1;
+            }
+
+            .bal-amount {
+                font-size: 0.76rem;
+                font-weight: 800;
+                color: #dc2626;
+                line-height: 1.2;
+            }
+        }
+    }
+
+    .amount-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.12rem 0.45rem;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 0.68rem;
+        white-space: nowrap;
+
+        &.badge-debt {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.14), rgba(239, 68, 68, 0.07));
+            color: #dc2626;
+            border: 1px solid rgba(239, 68, 68, 0.28);
+        }
+
+        &.badge-credit {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(16, 185, 129, 0.07));
+            color: #059669;
+            border: 1px solid rgba(16, 185, 129, 0.28);
+        }
+    }
+
+    /* Compact inv mini-table */
+    .inv-mini-table {
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        overflow: hidden;
+        max-height: 110px;
+        overflow-y: auto;
+
+        .inv-mini-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            background: linear-gradient(90deg, var(--primary-600), var(--primary-500));
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.64rem;
+            padding: 0.22rem 0.5rem;
+        }
+
+        .inv-mini-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            padding: 0.22rem 0.5rem;
+            border-top: 1px solid var(--border-color);
+            align-items: center;
+
+            .inv-num {
+                font-weight: 700;
+                font-size: 0.72rem;
+                color: var(--primary-color);
+            }
+
+            .inv-rem {
+                font-weight: 800;
+                font-size: 0.7rem;
+                color: #dc2626;
+                background: rgba(239, 68, 68, 0.08);
+                border: 1px solid rgba(239, 68, 68, 0.18);
+                border-radius: 10px;
+                padding: 0.06rem 0.35rem;
+            }
+        }
+    }
+
+    /* Override large global padding for ALL inputs inside voucher-form */
+    .p-inputtext,
+    input.p-inputtext,
+    .p-inputnumber-input {
+        height: 32px !important;
+        font-size: 0.78rem !important;
+        padding: 0 0.6rem !important;
+        border-radius: 6px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .p-inputnumber {
+        width: 100% !important;
+    }
+
+    .p-dropdown {
+        height: 32px !important;
+        width: 100% !important;
+        border-radius: 6px !important;
+        padding: 0 !important;
+
+        .p-dropdown-label {
+            font-size: 0.78rem !important;
+            padding: 0 0.6rem !important;
+            line-height: 30px !important;
+        }
+
+        .p-dropdown-trigger {
+            width: 2rem !important;
+        }
+    }
+
+    .p-calendar {
+        width: 100% !important;
+
+        input.p-inputtext {
+            height: 32px !important;
+            font-size: 0.78rem !important;
+            padding: 0 0.5rem !important;
+            border-radius: 6px 0 0 6px !important;
+        }
+
+        .p-datepicker-trigger {
+            height: 32px !important;
+            width: 2rem !important;
+            padding: 0 !important;
+        }
+    }
+
+    .p-autocomplete {
+        width: 100% !important;
+
+        .p-autocomplete-input {
+            height: 32px !important;
+            font-size: 0.78rem !important;
+            padding: 0 0.6rem !important;
+            border-radius: 6px 0 0 6px !important;
+            width: 100% !important;
+        }
+
+        .p-autocomplete-dropdown {
+            height: 32px !important;
+            width: 2rem !important;
+            padding: 0 !important;
+        }
+    }
+}
+
+
 /* RTL Support */
 [dir="rtl"] {
     .p-input-icon-left>i {

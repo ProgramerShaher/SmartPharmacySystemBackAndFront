@@ -174,4 +174,7 @@
             </ng-template>
         </p-table>
     </section>
+
+    <!-- Details Modal -->
+    <app-purchase-invoice-details [(visible)]="showDetailsDialog" [invoiceId]="selectedInvoiceId"></app-purchase-invoice-details>
 </div>

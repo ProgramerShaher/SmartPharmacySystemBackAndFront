@@ -47,11 +47,6 @@ export const SALES_ROUTES: Routes = [
     {
         path: 'pricelists',
         loadComponent: () => import('./components/pricelist-list/pricelist-list.component').then(m => m.PricelistListComponent)
-    },
-    {
-        path: ':id',
-        canActivate: [permissionGuard],
-        data: { anyPermission: ['sales.invoices.view', 'sales.invoices.create'] },
-        loadComponent: () => import('./components/sales-invoice-details/sales-invoice-details.component').then(m => m.SalesInvoiceDetailsComponent)
     }
+
 ];

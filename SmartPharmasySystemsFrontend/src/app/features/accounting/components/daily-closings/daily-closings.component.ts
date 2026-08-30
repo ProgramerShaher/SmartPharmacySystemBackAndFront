@@ -99,19 +99,15 @@ export class DailyClosingsComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status: string) {
-    switch (status) {
-      case 'Approved': return 'success';
-      case 'Draft': return 'warning';
-      default: return 'info';
-    }
+  getStatusSeverity(status: any) {
+    if (status === 'Approved' || status === 2) return 'success';
+    if (status === 'Draft' || status === 1) return 'warning';
+    return 'info';
   }
 
-  getStatusName(status: string) {
-    switch (status) {
-      case 'Approved': return 'مكتمل / مقفل';
-      case 'Draft': return 'مسودة';
-      default: return status;
-    }
+  getStatusName(status: any) {
+    if (status === 'Approved' || status === 2) return 'مكتمل / مقفل';
+    if (status === 'Draft' || status === 1) return 'مسودة';
+    return status;
   }
 }

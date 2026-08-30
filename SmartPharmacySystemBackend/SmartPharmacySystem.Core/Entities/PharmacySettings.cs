@@ -43,4 +43,12 @@ public class PharmacySettings : BaseEntity
 
     [MaxLength(500)]
     public string? InvoiceWelcomeMessage { get; set; }
+
+    // ── Licensing ──────────────────────────────────────────────────────────
+    /// <summary>
+    /// Stores the HMAC-SHA256 license key that has been validated and activated
+    /// for this machine. Null means the system is not yet activated.
+    /// </summary>
+    [MaxLength(512)]
+    public string? LicenseKey { get; set; }
 }

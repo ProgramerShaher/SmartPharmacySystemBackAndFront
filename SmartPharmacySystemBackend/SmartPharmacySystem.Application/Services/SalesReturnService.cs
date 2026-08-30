@@ -34,9 +34,11 @@ namespace SmartPharmacySystem.Application.Services
             if (dto.Details == null || !dto.Details.Any())
                 throw new InvalidOperationException("يجب إضافة صنف واحد على الأقل للمرتجع.");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                SalesReturn entity = null;
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(dto.SaleInvoiceId)
                     ?? throw new KeyNotFoundException($"فاتورة البيع {dto.SaleInvoiceId} غير موجودة");
 
@@ -54,7 +56,7 @@ namespace SmartPharmacySystem.Application.Services
                 // We use DateTime.UtcNow for the return date
                 // _closingValidationService will be injected later
 
-                var entity = _mapper.Map<SalesReturn>(dto);
+                entity = _mapper.Map<SalesReturn>(dto);
                 entity.CreatedAt = DateTime.UtcNow;
                 entity.CreatedBy = userId;
                 entity.Status = DocumentStatus.Draft;
@@ -87,13 +89,12 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.SalesReturns.AddAsync(entity);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
 
                 return _mapper.Map<SalesReturnDto>(entity);
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error creating sales return drafted");
                 throw;
             }
@@ -110,9 +111,10 @@ namespace SmartPharmacySystem.Application.Services
             var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(ret.SaleInvoiceId)
                 ?? throw new KeyNotFoundException($"فاتورة البيع {ret.SaleInvoiceId} غير موجودة");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 foreach (var detail in ret.SalesReturnDetails)
                 {
                     var originalLine = invoice.SaleInvoiceDetails
@@ -228,11 +230,10 @@ namespace SmartPharmacySystem.Application.Services
                 // 6. Movements History
                 await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.SalesReturn);
 
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error approving sales return {Id}", id);
                 throw;
             }
@@ -246,9 +247,10 @@ namespace SmartPharmacySystem.Application.Services
             if (ret.Status == DocumentStatus.Cancelled)
                 throw new InvalidOperationException("المرتجع ملغى بالفعل.");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 var wasApproved = ret.Status == DocumentStatus.Approved;
                 ret.Status = DocumentStatus.Cancelled;
                 ret.CancelledBy = userId;
@@ -275,10 +277,10 @@ namespace SmartPharmacySystem.Application.Services
                         }
                     }
                 }
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error cancelling sales return {Id}", id);
                 throw;
             }
@@ -292,9 +294,10 @@ namespace SmartPharmacySystem.Application.Services
             if (entity.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("التعديل مسموح فقط لحالة مسودة.");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 _mapper.Map(dto, entity);
 
                 // Clear & Re-insert details
@@ -335,11 +338,10 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.SalesReturns.UpdateAsync(entity);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception)
             {
-                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }

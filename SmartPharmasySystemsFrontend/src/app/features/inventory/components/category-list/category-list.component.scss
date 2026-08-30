@@ -1,12 +1,78 @@
 /* category-list.component.scss */
 :host {
+    .inventory-page {
+        padding: 0.5rem !important;
+        zoom: 0.85; /* تصغير متناسق ومقبول */
+    }
+
+    .inventory-hero {
+        padding: 0.5rem 1rem !important;
+        margin-bottom: 0.5rem !important;
+        gap: 0.5rem !important;
+
+        .inventory-title {
+            h1 {
+                font-size: 1.1rem !important;
+                margin: 0 0 0.25rem 0 !important;
+            }
+
+            p {
+                font-size: 0.8rem !important;
+                margin: 0 !important;
+            }
+
+            .inventory-icon {
+                width: 32px !important;
+                height: 32px !important;
+
+                i {
+                    font-size: 1.1rem !important;
+                }
+            }
+        }
+    }
+
+    .inventory-filter-panel {
+        padding: 0.5rem 1rem !important;
+        margin-bottom: 0.5rem !important;
+
+        .inventory-filter label {
+            font-size: 0.8rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+    }
+
     ::ng-deep {
-        .pi {
-            color: inherit !important;
+        .p-button {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.85rem !important;
+            height: auto !important;
+
+            .p-button-icon {
+                font-size: 0.85rem !important;
+            }
         }
 
-        .p-datatable-thead > tr > th {
-            font-size: 0.75rem !important;
+        .p-inputtext {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.85rem !important;
+            height: auto !important;
+        }
+
+        .pi {
+            color: inherit !important;
+            font-size: inherit !important;
+        }
+
+        .p-datatable-tbody>tr>td {
+            padding: 0.4rem 0.6rem !important;
+            font-size: 0.85rem !important;
+            height: auto !important;
+        }
+
+        .p-datatable-thead>tr>th {
+            font-size: 0.8rem !important;
+            padding: 0.4rem 0.6rem !important;
             text-transform: uppercase;
             letter-spacing: 0.025em;
         }
@@ -32,67 +98,68 @@
 
 :host-context(.dark-theme) {
     ::ng-deep {
+
         /* ========== إصلاح شريط البحث ========== */
         .p-inputtext {
             background-color: var(--input-bg) !important;
             border-color: var(--border-color) !important;
             color: var(--text-color) !important;
         }
-        
-        .p-input-icon-left > i {
+
+        .p-input-icon-left>i {
             color: var(--text-color-secondary) !important;
         }
-        
+
         /* ========== إصلاح الجدول ========== */
         .p-datatable {
-            .p-datatable-thead > tr > th {
+            .p-datatable-thead>tr>th {
                 background-color: var(--table-header-bg) !important;
                 border-color: var(--border-color) !important;
                 color: var(--text-color) !important;
             }
-            
-            .p-datatable-tbody > tr {
+
+            .p-datatable-tbody>tr {
                 background-color: var(--card-bg) !important;
                 color: var(--text-color) !important;
-                
-                > td {
+
+                >td {
                     background-color: inherit !important;
                     color: var(--text-color) !important;
                     border-color: var(--border-color) !important;
                 }
-                
+
                 &:nth-child(even) {
                     background-color: var(--surface-50) !important;
                 }
-                
+
                 &:hover {
                     background-color: var(--surface-hover) !important;
                 }
             }
         }
-        
+
         /* ========== إصلاح Paginator ========== */
         .p-paginator {
             background-color: var(--card-bg) !important;
             border-color: var(--border-color) !important;
             color: var(--text-color) !important;
-            
+
             .p-paginator-pages .p-paginator-page {
                 background-color: transparent !important;
                 border-color: var(--border-color) !important;
                 color: var(--text-color) !important;
-                
+
                 &:hover:not(.p-disabled) {
                     background-color: var(--surface-hover) !important;
                 }
-                
+
                 &.p-highlight {
                     background-color: var(--primary-color) !important;
                     color: white !important;
                     border-color: var(--primary-color) !important;
                 }
             }
-            
+
             .p-paginator-first,
             .p-paginator-prev,
             .p-paginator-next,
@@ -100,23 +167,23 @@
                 background-color: transparent !important;
                 border-color: var(--border-color) !important;
                 color: var(--text-color) !important;
-                
+
                 &:hover:not(.p-disabled) {
                     background-color: var(--surface-hover) !important;
                 }
             }
         }
-        
+
         /* ========== إصلاح الأزرار ========== */
         .p-button.p-button-outlined {
             border-color: var(--border-color) !important;
             color: var(--text-color) !important;
-            
+
             &:hover {
                 background-color: var(--surface-hover) !important;
             }
         }
-        
+
         /* ========== إصلاح شريط الأدوات ========== */
         .p-toolbar {
             background-color: var(--surface-50) !important;
@@ -146,9 +213,11 @@
                 height: 32px !important;
                 font-size: 14px !important;
             }
+
             h1 {
                 font-size: 15px !important;
             }
+
             p {
                 font-size: 10px !important;
             }
@@ -186,22 +255,31 @@
 
     /* تحويل جدول الفئات إلى كروت للموبايل */
     :host ::ng-deep .inventory-table {
-        table, thead, tbody, th, td, tr {
+
+        table,
+        thead,
+        tbody,
+        th,
+        td,
+        tr {
             display: block !important;
             width: 100% !important;
             box-sizing: border-box !important;
         }
+
         thead {
             display: none !important;
         }
+
         tr {
             margin-bottom: 8px !important;
             border: 1px solid #e2e8f0 !important;
             border-radius: 8px !important;
             padding: 8px !important;
             background: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
         }
+
         td {
             border-bottom: none !important;
             padding: 4px 0 !important;
@@ -210,9 +288,24 @@
             align-items: center !important;
             font-size: 11px !important;
 
-            &:nth-child(1):before { content: "رقم الفئة:"; font-weight: 700; color: #64748b; }
-            &:nth-child(2):before { content: "اسم الفئة:"; font-weight: 700; color: #64748b; }
-            &:nth-child(3):before { content: "الوصف:"; font-weight: 700; color: #64748b; }
+            &:nth-child(1):before {
+                content: "رقم الفئة:";
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            &:nth-child(2):before {
+                content: "اسم الفئة:";
+                font-weight: 700;
+                color: #64748b;
+            }
+
+            &:nth-child(3):before {
+                content: "الوصف:";
+                font-weight: 700;
+                color: #64748b;
+            }
+
             &:nth-child(4) {
                 justify-content: center !important;
                 margin-top: 6px !important;

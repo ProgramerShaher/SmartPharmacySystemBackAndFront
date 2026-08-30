@@ -1,23 +1,234 @@
-.shift-details-container {
-    .info-card {
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        border: 1px solid var(--surface-border);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-        
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-    }
-
-    ::v-deep .p-tabview {
+:host ::ng-deep {
+    .imperial-tabs {
         .p-tabview-nav {
+            border-bottom: 2px solid rgba(0, 0, 0, 0.08);
             margin-bottom: 1rem;
+            background: transparent;
+
+            li {
+                .p-tabview-nav-link {
+                    background: transparent;
+                    border: none;
+                    border-bottom: 2px solid transparent;
+                    color: #64748b;
+                    font-weight: 700;
+                    font-size: 0.8rem;
+                    padding: 1rem 1.5rem;
+                    transition: all 0.2s;
+                }
+
+                &:not(.p-highlight):not(.p-disabled):hover .p-tabview-nav-link {
+                    background: rgba(15, 23, 42, 0.03);
+                    border-color: transparent;
+                    color: #475569;
+                }
+
+                &.p-highlight .p-tabview-nav-link {
+                    background: transparent;
+                    border-color: #0d9488;
+                    color: #0d9488;
+                }
+            }
         }
         
         .p-tabview-panels {
             padding: 0;
             background: transparent;
+        }
+    }
+}
+
+.section-header {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    i {
+        color: #0d9488;
+    }
+}
+
+/* ═══════════ Summary Stats Grid ═══════════ */
+.summary-stats-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    @media (max-width: 600px) {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+.statement-stat-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    border-bottom: 3px solid #cbd5e1;
+    transition: transform 0.2s;
+
+    &:hover {
+        transform: translateY(-2px);
+    }
+
+    .stat-icon-wrapper {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748b;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #64748b;
+    }
+
+    .stat-value {
+        font-size: 1rem;
+        font-weight: 900;
+        color: #1e293b;
+    }
+
+    /* Specific Card Colors */
+    &.card-teal {
+        border-bottom-color: #10b981;
+        .stat-icon-wrapper { background: rgba(16,185,129,0.1); color: #10b981; }
+    }
+    &.card-blue {
+        border-bottom-color: #3b82f6;
+        .stat-icon-wrapper { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    }
+    &.card-purple {
+        border-bottom-color: #8b5cf6;
+        .stat-icon-wrapper { background: rgba(139,92,246,0.1); color: #8b5cf6; }
+    }
+    &.card-red {
+        border-bottom-color: #ef4444;
+        .stat-icon-wrapper { background: rgba(239,68,68,0.1); color: #ef4444; }
+    }
+    &.card-orange {
+        border-bottom-color: #f97316;
+        .stat-icon-wrapper { background: rgba(249,115,22,0.1); color: #f97316; }
+    }
+}
+
+/* ═══════════ Ledger Table Wrapper ═══════════ */
+.ledger-card-wrapper {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    margin-bottom: 1rem;
+}
+
+::ng-deep .imperial-statement-table {
+    .p-datatable-thead > tr > th {
+        background: #f4f6f9 !important;
+        color: #475569 !important;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 0.6rem 1rem;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .p-datatable-tbody > tr > td {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+        border-bottom: 1px solid rgba(0,0,0,0.04) !important;
+        color: #1e293b;
+        vertical-align: middle;
+    }
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+
+    &.draft { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+    &.approved { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+}
+
+@media (max-width: 768px) {
+    .statement-container {
+        padding: 6px !important;
+    }
+
+    .summary-stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 6px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .statement-stat-card {
+        padding: 6px 8px !important;
+        border-radius: 8px !important;
+        gap: 6px !important;
+
+        .stat-icon-wrapper {
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 14px !important;
+            border-radius: 6px !important;
+        }
+    }
+
+    .ledger-card-wrapper {
+        border-radius: 8px !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+    }
+
+    ::ng-deep .imperial-statement-table {
+        table, thead, tbody, th, td, tr {
+            display: block !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        thead {
+            display: none !important;
+        }
+        tr {
+            margin-bottom: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            padding: 8px !important;
+            background: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+        }
+        td {
+            border-bottom: none !important;
+            padding: 4px 0 !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            font-size: 11px !important;
         }
     }
 }

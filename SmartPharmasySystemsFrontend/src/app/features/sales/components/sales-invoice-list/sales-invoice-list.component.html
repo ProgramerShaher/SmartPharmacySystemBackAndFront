@@ -158,7 +158,7 @@
                                     pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>
                                 <p-button icon="pi pi-print" [rounded]="true" [text]="true" severity="secondary"
                                     size="small" pTooltip="طباعة" (onClick)="printInvoice(invoice.id)"></p-button>
-                                <p-button icon="pi pi-replay" [rounded]="true" [text]="true" severity="warning"
+                                <p-button *ngIf="!isClosed(invoice)" icon="pi pi-replay" [rounded]="true" [text]="true" severity="warning"
                                     size="small" pTooltip="مرتجع" (onClick)="navigateToReturn(invoice.id)"></p-button>
                             </ng-container>
 
@@ -182,4 +182,7 @@
             </ng-template>
         </p-table>
     </section>
+
+    <!-- Details Modal -->
+    <app-sales-invoice-details [(visible)]="showDetailsDialog" [invoiceId]="selectedInvoiceId"></app-sales-invoice-details>
 </div>

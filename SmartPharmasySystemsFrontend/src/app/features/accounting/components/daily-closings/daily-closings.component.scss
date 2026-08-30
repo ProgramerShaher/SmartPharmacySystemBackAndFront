@@ -1,47 +1,180 @@
 :host {
-    display: block;
-    width: 100%;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-.card {
-    background: var(--surface-card);
-    padding: 1.5rem;
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    box-shadow: 0 4px 20px -2px rgba(0,0,0,0.05);
+.movement-container {
+  min-height: 100vh;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
+  color: #1e293b;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
-.custom-table {
-    :host ::ng-deep {
-        .p-datatable-header {
-            background-color: var(--surface-50);
-            border: 1px solid var(--surface-border);
-            border-bottom: 0;
-            padding: 1rem;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
-        }
+.page-header,
+.table-panel {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+}
 
-        .p-datatable-thead > tr > th {
-            background-color: var(--surface-50);
-            color: var(--text-color);
-            font-weight: 600;
-            padding: 1rem;
-            border: 1px solid var(--surface-border);
-        }
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
 
-        .p-datatable-tbody > tr > td {
-            padding: 1rem;
-            border: 1px solid var(--surface-border);
-            color: var(--text-color-secondary);
-        }
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
 
-        .p-datatable-tbody > tr:nth-child(even) {
-            background-color: var(--surface-50);
-        }
+.icon-circle {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background: linear-gradient(135deg, #0f766e, #2563eb);
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
+}
 
-        .p-datatable-tbody > tr:hover {
-            background-color: var(--surface-hover);
-        }
+.icon-circle i { font-size: 1.1rem; }
+
+h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.page-header p {
+  margin: 0.12rem 0 0;
+  color: #64748b;
+  font-size: 0.62rem;
+}
+
+.actions { display: flex; gap: 0.35rem; align-items: center; }
+
+.table-panel {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.text-center { text-align: center; }
+
+:host ::ng-deep {
+  .compact-table .p-datatable-thead > tr > th {
+    background: #f8fafc;
+    color: #475569;
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .compact-table .p-datatable-tbody > tr > td {
+    padding: 0.35rem 0.5rem;
+    border-color: #eef2f7;
+    vertical-align: middle;
+    font-size: 0.75rem;
+  }
+
+  .compact-table .p-datatable-tbody > tr:hover {
+    background: #f8fafc !important;
+  }
+
+  .p-paginator {
+    padding: 0.3rem;
+    background: #f8fafc;
+    border: 0;
+    font-size: 0.65rem;
+  }
+
+  .p-button.p-button-sm,
+  .p-button.p-button-icon-only {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .movement-container {
+    padding: 6px !important;
+  }
+
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-radius: 8px !important;
+
+    .actions {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 6px !important;
+      width: 100% !important;
+
+      .action-item {
+        width: 100%;
+        margin-bottom: 6px;
+      }
+      
+      button, ::ng-deep .p-button {
+        width: 100% !important;
+        height: 32px !important;
+      }
     }
+  }
+
+  /* تحويل الجدول إلى كروت للموبايل */
+  :host ::ng-deep .compact-table {
+    table, thead, tbody, th, td, tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    thead {
+      display: none !important;
+    }
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 8px !important;
+      padding: 8px !important;
+      background: #ffffff !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+    }
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+
+      &:nth-child(1):before { content: "التاريخ:"; font-weight: 700; color: #64748b; }
+      &:nth-child(2):before { content: "المستخدم المُقفل:"; font-weight: 700; color: #64748b; }
+      &:nth-child(3):before { content: "المبيعات:"; font-weight: 700; color: #64748b; }
+      &:nth-child(4):before { content: "المرتجعات:"; font-weight: 700; color: #64748b; }
+      &:nth-child(5):before { content: "المصروفات:"; font-weight: 700; color: #64748b; }
+      &:nth-child(6):before { content: "العجز/الزيادة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(7):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+    }
+  }
 }

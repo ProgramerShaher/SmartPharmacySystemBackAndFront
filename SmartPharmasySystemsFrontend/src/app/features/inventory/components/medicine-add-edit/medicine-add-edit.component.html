@@ -1,17 +1,17 @@
 <p-dialog [(visible)]="visible" (onHide)="close()" [modal]="true" [draggable]="false" [resizable]="false"
-    [style]="{ width: 'min(98vw, 1280px)' }" styleClass="medicine-dialog"
-    [breakpoints]="{'1300px': '96vw', '640px': '98vw'}" [showHeader]="false" [closable]="true"
+    [style]="{ width: 'min(98vw, 1100px)' }" styleClass="medicine-dialog"
+    [breakpoints]="{'900px': '96vw', '640px': '98vw'}" [showHeader]="false" [closable]="true"
     maskStyleClass="backdrop-blur-sm bg-black-alpha-40">
 
     <div class="modal-shell" dir="rtl">
         <div class="modal-header">
             <div class="modal-title">
                 <span class="modal-icon">
-                    <i class="pi" [ngClass]="medicine ? 'pi-pencil' : 'pi-plus'"></i>
+                    <i class="pi" [ngClass]="medicine ? 'pi-pencil' : 'pi-bolt'"></i>
                 </span>
                 <div>
                     <h2>{{ medicine ? 'تعديل الدواء' : 'إضافة دواء جديد' }}</h2>
-                    <p>بيانات المنتج والتسعير والمخزون في شاشة واحدة</p>
+                    <p>إدخال سريع باستخدام لوحة المفاتيح (اختصارات F2 للحفظ)</p>
                 </div>
             </div>
 
@@ -19,186 +19,172 @@
                 (click)="close()"></button>
         </div>
 
-        <form [formGroup]="medicineForm" class="modal-body p-fluid">
-            <aside class="media-panel">
-                <div class="image-frame">
-                    <img *ngIf="medicineForm.get('imageUrl')?.value" [src]="medicineForm.get('imageUrl')?.value"
-                        class="w-full h-full object-cover" />
-                    <div *ngIf="!medicineForm.get('imageUrl')?.value" class="image-empty">
-                        <i class="pi pi-image"></i>
-                        <span>صورة المنتج</span>
-                    </div>
-                    <label for="imageUpload" class="upload-btn">
-                        <i class="pi" [ngClass]="uploading() ? 'pi-spin pi-spinner' : 'pi-camera'"></i>
-                    </label>
-                    <input type="file" id="imageUpload" class="hidden" accept="image/*"
-                        (change)="onFileSelected($event)" [disabled]="uploading()" />
-                </div>
-
-                <div class="side-note">
-                    <i class="pi pi-info-circle"></i>
-                    <span>املأ الحقول المهمة فقط، ويمكن تعديل البقية لاحقاً.</span>
-                </div>
-
-                <div class="unit-check">
-                    <p-checkbox formControlName="soldByUnit" [binary]="true" inputId="soldByUnit"
-                        styleClass="p-checkbox-sm"></p-checkbox>
-                    <label for="soldByUnit">يباع بالوحدة</label>
-                </div>
-            </aside>
+        <form [formGroup]="medicineForm" class="modal-body p-fluid compact-layout">
 
             <section class="fields-panel">
-                <div class="section-label">المعلومات الأساسية</div>
-
                 <div class="form-grid">
+
+                    <!-- 1. الاسم التجاري -->
                     <div class="form-field">
                         <label class="required-star">الاسم التجاري</label>
-                        <input pInputText formControlName="name"
+                        <input pInputText id="medNameInput" formControlName="name"
+                            (keydown.enter)="focusNext('categoryIdInput', $event)"
                             [ngClass]="{'ng-invalid ng-dirty': medicineForm.get('name')?.invalid && medicineForm.get('name')?.touched}" />
                     </div>
 
+                    <!-- 2. التصنيف -->
                     <div class="form-field">
-                        <label>الاسم العلمي</label>
-                        <input pInputText formControlName="scientificName" />
+                        <label class="required-star">التصنيف</label>
+                        <p-dropdown id="categoryIdInput" [options]="categories()" formControlName="categoryId"
+                            optionLabel="name" optionValue="id" placeholder="ابحث واختر..." [filter]="true"
+                            [showClear]="true" appendTo="body"
+                            (keydown.enter)="focusNext('scientificNameInput', $event)" styleClass="w-full"></p-dropdown>
                     </div>
 
+                    <!-- 3. الاسم العلمي (اختياري) -->
                     <div class="form-field">
-                        <label>التصنيف</label>
-                        <p-dropdown [options]="categories()" formControlName="categoryId" optionLabel="name"
-                            optionValue="id" placeholder="اختر..." [filter]="true" [showClear]="true" appendTo="body"
+                        <label>الاسم العلمي <span class="text-hint">(اختياري)</span></label>
+                        <input pInputText id="scientificNameInput" formControlName="scientificName"
+                            (keydown.enter)="focusNext('baseUnitNameInput', $event)" />
+                    </div>
+
+                    <!-- 4. الوحدة الأساسية -->
+                    <div class="form-field">
+                        <label class="required-star">الوحدة الأساسية</label>
+                        <p-dropdown id="baseUnitNameInput" [options]="unitOptions" formControlName="baseUnitName"
+                            [editable]="true" placeholder="اختر أو اكتب..." appendTo="body"
+                            (keydown.enter)="focusNext('defaultPurchasePriceInput', $event)"
                             styleClass="w-full"></p-dropdown>
                     </div>
 
-                    <div class="form-field">
-                        <label>الكود</label>
-                        <input pInputText formControlName="internalCode" placeholder="تلقائي" />
-                    </div>
+                    <div class="section-divider span-4">التسعير والمخزون</div>
 
-                    <div class="form-field">
-                        <label>الباركود</label>
-                        <div class="amount-group">
-                            <input pInputText formControlName="defaultBarcode" class="barcode-input" />
-                            <span class="currency-badge"><i class="pi pi-barcode"></i></span>
-                        </div>
-                    </div>
-
-                    <div class="form-field">
-                        <label>الشركة</label>
-                        <input pInputText formControlName="manufacturer" />
-                    </div>
-
-                    <div class="form-field">
-                        <label class="required-star">اسم الوحدة الصغرى (مثل حبة - علبة - شريط)</label>
-                        <input pInputText formControlName="baseUnitName" placeholder="حبة، أمبول..." />
-                    </div>
-
-                    <div class="form-field" *ngIf="medicine">
-                        <label>الحالة</label>
-                        <p-dropdown [options]="statusOptions" formControlName="status" optionLabel="label"
-                            optionValue="value" appendTo="body" styleClass="w-full"></p-dropdown>
-                    </div>
-                </div>
-
-                <div class="section-label">التسعير والمخزون</div>
-
-                <div class="form-grid compact">
+                    <!-- 5. سعر الشراء -->
                     <div class="form-field">
                         <label class="required-star">سعر الشراء</label>
                         <div class="amount-group">
-                            <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal" [minFractionDigits]="0"
-                                [maxFractionDigits]="2" class="w-full" (onFocus)="selectText($event)"></p-inputNumber>
+                            <p-inputNumber id="defaultPurchasePriceInput" formControlName="defaultPurchasePrice"
+                                mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2" class="w-full"
+                                (onFocus)="selectText($event)"
+                                (keydown.enter)="focusNext('defaultSalePriceInput', $event)"></p-inputNumber>
                             <span class="currency-badge">ر.ي</span>
                         </div>
                     </div>
 
+                    <!-- 6. سعر البيع -->
                     <div class="form-field">
                         <label class="required-star">سعر البيع</label>
                         <div class="amount-group">
-                            <p-inputNumber formControlName="defaultSalePrice" mode="decimal" [minFractionDigits]="0"
-                                [maxFractionDigits]="2" class="w-full" (onFocus)="selectText($event)"></p-inputNumber>
+                            <p-inputNumber id="defaultSalePriceInput" formControlName="defaultSalePrice" mode="decimal"
+                                [minFractionDigits]="0" [maxFractionDigits]="2" class="w-full"
+                                (onFocus)="selectText($event)"
+                                (keydown.enter)="focusNext('minAlertQuantityInput', $event)"></p-inputNumber>
                             <span class="currency-badge">ر.ي</span>
                         </div>
                     </div>
 
+                    <!-- 7. الحد الأدنى -->
                     <div class="form-field">
-                        <label>الحد الأدنى</label>
-                        <p-inputNumber formControlName="minAlertQuantity" [min]="0" class="w-full"
-                            (onFocus)="selectText($event)"></p-inputNumber>
+                        <label>الحد الأدنى للمخزون <span class="text-hint">(اختياري)</span></label>
+                        <p-inputNumber id="minAlertQuantityInput" formControlName="minAlertQuantity" [min]="0"
+                            class="w-full" (onFocus)="selectText($event)"
+                            (keydown.enter)="focusNext('reorderLevelInput', $event)"></p-inputNumber>
                     </div>
 
+                    <!-- 8. إعادة الطلب -->
                     <div class="form-field">
-                        <label>إعادة الطلب</label>
-                        <p-inputNumber formControlName="reorderLevel" [min]="0" class="w-full"
-                            (onFocus)="selectText($event)"></p-inputNumber>
+                        <label>إعادة الطلب عند <span class="text-hint">(اختياري)</span></label>
+                        <p-inputNumber id="reorderLevelInput" formControlName="reorderLevel" [min]="0" class="w-full"
+                            (onFocus)="selectText($event)" (keydown.enter)="save()"></p-inputNumber>
                     </div>
 
+                </div>
 
+                <!-- 9. الباركود -->
+                <div class="form-field">
+                    <label>الباركود <span class="text-hint">(اختياري)</span></label>
+                    <div class="amount-group">
+                        <input pInputText formControlName="defaultBarcode" class="barcode-input" />
+                        <span class="currency-badge"><i class="pi pi-barcode"></i></span>
+                    </div>
+                </div>
 
-                    <div class="span-5 medicine-units-section" formArrayName="medicineUnits">
-                        <div class="units-header flex justify-content-between align-items-center mb-3">
-                            <span class="font-bold text-700">الوحدات والتعبئة المتعددة (أشرطة، علب، كراتين)</span>
-                            <button pButton type="button" label="إضافة وحدة جديدة" icon="pi pi-plus"
-                                class="p-button-sm p-button-success p-button-outlined add-unit-btn"
-                                (click)="addUnit()"></button>
-                        </div>
+                <!-- 10. الحالة -->
+                <div class="form-field" *ngIf="medicine">
+                    <label>الحالة</label>
+                    <p-dropdown [options]="statusOptions" formControlName="status" optionLabel="label"
+                        optionValue="value" appendTo="body" styleClass="w-full"></p-dropdown>
+                </div>
 
-                        <div *ngFor="let unit of medicineUnits.controls; let i=index" [formGroupName]="i"
-                            class="unit-card">
-                            <div class="unit-field">
-                                <label class="required-star">اسم الوحدة</label>
-                                <input pInputText formControlName="name" placeholder="علبة، شريط..." />
-                            </div>
-                            <div class="unit-field">
-                                <label class="required-star">معامل التحويل (كم حبة)</label>
-                                <p-inputNumber formControlName="conversionFactor" [min]="1"
-                                    (onFocus)="selectText($event)"></p-inputNumber>
-                            </div>
-                            <div class="unit-field">
-                                <label class="required-star">سعر الشراء</label>
-                                <div class="amount-group">
-                                    <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal"
-                                        (onFocus)="selectText($event)"></p-inputNumber>
-                                    <span class="currency-badge">ر.ي</span>
-                                </div>
-                            </div>
-                            <div class="unit-field">
-                                <label class="required-star">سعر البيع</label>
-                                <div class="amount-group">
-                                    <p-inputNumber formControlName="defaultSalePrice" mode="decimal"
-                                        (onFocus)="selectText($event)"></p-inputNumber>
-                                    <span class="currency-badge">ر.ي</span>
-                                </div>
-                            </div>
-                            <div class="unit-field barcode-field">
-                                <div class="barcode-input-wrapper" style="width: 100%;">
-                                    <label>باركود الوحدة</label>
-                                    <div class="amount-group w-full">
-                                        <input pInputText formControlName="barcode" placeholder="باركود خاص..."
-                                            class="barcode-input" />
-                                        <span class="currency-badge"><i class="pi pi-barcode"></i></span>
-                                    </div>
-                                </div>
-                                <button pButton type="button" icon="pi pi-trash"
-                                    class="p-button-danger p-button-text p-button-sm remove-unit-btn"
-                                    (click)="removeUnit(i)"></button>
-                            </div>
+                <!-- 11. ملاحظات وصورة -->
+                <div class="form-field span-2" [ngClass]="{'span-3': !medicine}">
+                    <label>ملاحظات إضافية وصورة <span class="text-hint">(اختياري)</span></label>
+                    <div class="flex gap-2">
+                        <input pInputText formControlName="notes" placeholder="أي ملاحظات حول الدواء..."
+                            class="flex-1" />
+
+                        <div class="image-frame flex align-items-center gap-2 border-1 surface-border border-round px-2"
+                            style="background: #f8fafc; height: 34px;">
+                            <img *ngIf="medicineForm.get('imageUrl')?.value" [src]="medicineForm.get('imageUrl')?.value"
+                                class="w-2rem h-2rem object-cover border-round shadow-1" />
+                            <label for="imageUpload"
+                                class="text-primary cursor-pointer text-sm font-bold m-0 flex align-items-center">
+                                <i class="pi mr-1" [ngClass]="uploading() ? 'pi-spin pi-spinner' : 'pi-camera'"></i>
+                                <span>صورة</span>
+                            </label>
+                            <input type="file" id="imageUpload" class="hidden" accept="image/*"
+                                (change)="onFileSelected($event)" [disabled]="uploading()" />
                         </div>
                     </div>
+                </div>
 
-                    <div class="form-field span-5">
-                        <label>ملاحظات</label>
-                        <textarea pInputTextarea formControlName="notes" rows="2"></textarea>
+                <!-- وحدات متعددة -->
+                <div class="section-divider span-4 flex justify-content-between align-items-center mt-2">
+                    <span>الوحدات الإضافية (أشرطة، علب) <span class="text-hint font-normal">(اختياري)</span></span>
+                    <button pButton type="button" label="إضافة وحدة جديدة" icon="pi pi-plus"
+                        class="p-button-sm p-button-text p-button-success py-0 h-auto" (click)="addUnit()"></button>
+                </div>
+
+                <div class="span-4" formArrayName="medicineUnits">
+                    <div *ngFor="let unit of medicineUnits.controls; let i=index" [formGroupName]="i"
+                        class="unit-card flex gap-2 align-items-end mb-2">
+                        <div class="form-field flex-1">
+                            <label class="required-star">الاسم</label>
+                            <input pInputText formControlName="name" placeholder="علبة..." />
+                        </div>
+                        <div class="form-field flex-1">
+                            <label class="required-star">التحويل</label>
+                            <p-inputNumber formControlName="conversionFactor" [min]="1"
+                                (onFocus)="selectText($event)"></p-inputNumber>
+                        </div>
+                        <div class="form-field flex-1">
+                            <label class="required-star">الشراء</label>
+                            <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal"
+                                (onFocus)="selectText($event)"></p-inputNumber>
+                        </div>
+                        <div class="form-field flex-1">
+                            <label class="required-star">البيع</label>
+                            <p-inputNumber formControlName="defaultSalePrice" mode="decimal"
+                                (onFocus)="selectText($event)"></p-inputNumber>
+                        </div>
+                        <div class="form-field flex-1">
+                            <label>باركود</label>
+                            <input pInputText formControlName="barcode" />
+                        </div>
+                        <button pButton type="button" icon="pi pi-trash"
+                            class="p-button-danger p-button-text h-2rem w-2rem p-0" (click)="removeUnit(i)"></button>
                     </div>
                 </div>
             </section>
         </form>
 
         <div class="modal-footer">
-            <span><i class="pi pi-shield"></i> يتم حفظ البيانات بعد التحقق من الحقول المطلوبة</span>
+            <span class="text-hint"><i class="pi pi-info-circle"></i> يمكنك إضافة הדواء فوراً بالضغط على F2 في أي
+                وقت.</span>
             <div class="footer-actions">
-                <button pButton label="إلغاء" class="p-button-text p-button-secondary" (click)="close()"></button>
-                <button pButton [label]="medicine ? 'حفظ التعديل' : 'إضافة الدواء'" icon="pi pi-check" iconPos="right"
-                    class="save-btn" [loading]="loading()" (click)="save()" [disabled]="medicineForm.invalid"></button>
+                <button pButton label="إلغاء [Esc]" class="p-button-text p-button-secondary" (click)="close()"></button>
+                <button pButton id="saveMedicineBtn" [label]="medicine ? 'حفظ التعديل [F2]' : 'إضافة الدواء [F2]'"
+                    icon="pi pi-check" iconPos="right" class="save-btn" [loading]="loading()" (click)="save()"></button>
             </div>
         </div>
     </div>

@@ -228,8 +228,7 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("الفاتورة يجب أن تكون مسودة للاعتماد.");
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
             {
                 invoice.Status = DocumentStatus.Approved;
                 invoice.ApprovedBy = userId;
@@ -363,14 +362,7 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
                 await _unitOfWork.SaveChangesAsync();
                 await _stockMovementService.ProcessDocumentMovementsAsync(id, ReferenceType.PurchaseInvoice);
-
-                await _unitOfWork.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
+            });
         }
 
         public async Task CancelAsync(int id, int userId)
@@ -392,8 +384,7 @@ namespace SmartPharmacySystem.Application.Services
                 }
             }
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
             {
                 bool wasApproved = invoice.Status == DocumentStatus.Approved;
                 invoice.Status = DocumentStatus.Cancelled;
@@ -441,13 +432,7 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
+            });
         }
 
         public async Task UnapproveAsync(int id)
@@ -477,8 +462,7 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.Status != DocumentStatus.Approved || invoice.PaymentMethod != PaymentType.Credit || invoice.IsPaid)
                 throw new InvalidOperationException("الفاتورة غير قابلة للسداد.");
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
             {
                 await _financialService.ProcessTransactionAsync(accountId, invoice.TotalAmount, FinancialTransactionType.Expense, ReferenceType.PurchaseInvoice, invoice.Id, $"سداد فاتورة: {invoice.PurchaseInvoiceNumber}");
 
@@ -492,13 +476,7 @@ namespace SmartPharmacySystem.Application.Services
                 invoice.IsPaid = true;
                 await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
-            }
-            catch (Exception)
-            {
-                await _unitOfWork.RollbackAsync();
-                throw;
-            }
+            });
         }
 
         public async Task<DTOs.Dashboard.PurchasesDashboardStatsDto> GetDashboardStatsAsync()
@@ -578,11 +556,12 @@ namespace SmartPharmacySystem.Application.Services
             if (dto.SalePrice < dto.PurchasePrice)
                 throw new InvalidOperationException($"عذراً، سعر البيع ({dto.SalePrice}) أقل من سعر الشراء ({dto.PurchasePrice}).");
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var invoice = new PurchaseInvoice
+                return await _unitOfWork.ExecuteTransactionAsync(async () =>
                 {
+                    var invoice = new PurchaseInvoice
+                    {
                     SupplierId = dto.SupplierId,
                     PurchaseDate = DateTime.UtcNow,
                     PaymentMethod = dto.PaymentMethod,
@@ -711,8 +690,6 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.SaveChangesAsync();
                 await _stockMovementService.ProcessDocumentMovementsAsync(invoice.Id, ReferenceType.PurchaseInvoice);
 
-                await _unitOfWork.CommitAsync();
-
                 try
                 {
                     await _alertService.SyncMedicineAlertsAsync(dto.MedicineId);
@@ -724,10 +701,10 @@ namespace SmartPharmacySystem.Application.Services
 
                 var finalInvoice = await _unitOfWork.PurchaseInvoices.GetByIdAsync(invoice.Id);
                 return _mapper.Map<PurchaseInvoiceDto>(finalInvoice);
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error during Quick Purchase for medicine {MedicineId}", dto.MedicineId);
                 throw;
             }

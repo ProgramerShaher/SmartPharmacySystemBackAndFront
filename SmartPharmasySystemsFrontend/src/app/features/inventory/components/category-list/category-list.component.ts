@@ -35,7 +35,8 @@ import { CategoryAddEditComponent } from '../category-add-edit/category-add-edit
         TooltipModule,
         CategoryAddEditComponent
     ],
-    templateUrl: './category-list.component.html'
+    templateUrl: './category-list.component.html',
+    styleUrls: ['./category-list.component.scss']
 })
 export class CategoryListComponent implements OnInit {
     categories: Category[] = [];

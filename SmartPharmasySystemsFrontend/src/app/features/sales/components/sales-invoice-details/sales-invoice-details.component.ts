@@ -1,6 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { SaleInvoiceService } from '../../services/sales-invoice.service';
@@ -12,6 +11,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DialogModule } from 'primeng/dialog';
 import { PrintService } from '../../../../core/services/print.service';
 
 @Component({
@@ -25,30 +25,40 @@ import { PrintService } from '../../../../core/services/print.service';
     ConfirmDialogModule,
     TooltipModule,
     ProgressSpinnerModule,
+    DialogModule
   ],
   templateUrl: './sales-invoice-details.component.html',
   styleUrls: ['./sales-invoice-details.component.scss'],
   providers: [ConfirmationService],
 })
-export class SalesInvoiceDetailsComponent implements OnInit {
+export class SalesInvoiceDetailsComponent implements OnChanges {
+  @Input() visible = false;
+  @Output() visibleChange = new EventEmitter<boolean>();
+  @Input() invoiceId: number | null = null;
+
   readonly DocumentStatus = DocumentStatus;
   invoice: SaleInvoice | null = null;
-  loading = true;
+  loading = false;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
     private salesService: SaleInvoiceService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private printService: PrintService
   ) {}
 
-  ngOnInit() {
-    const id = this.route.snapshot.params['id'];
-    if (id) {
-      this.loadInvoice(id);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['invoiceId'] && this.invoiceId) {
+      this.loadInvoice(this.invoiceId);
     }
+    if (changes['visible'] && !this.visible) {
+      this.invoice = null;
+    }
+  }
+
+  close() {
+    this.visible = false;
+    this.visibleChange.emit(this.visible);
   }
 
   loadInvoice(id: number) {
@@ -133,10 +143,6 @@ export class SalesInvoiceDetailsComponent implements OnInit {
     });
   }
 
-  backToList() {
-    this.router.navigate(['/sales']);
-  }
-
   printInvoice() {
     if (!this.invoice) return;
     this.printService.printInvoice(this.invoice.id);
@@ -144,7 +150,7 @@ export class SalesInvoiceDetailsComponent implements OnInit {
 
   getStatusSeverity(status: string) {
     if (!status) return 'info';
-    switch (status.toUpperCase()) {
+    switch (status.toString().toUpperCase()) {
       case 'APPROVED':
       case '2':
         return 'success';
@@ -160,7 +166,7 @@ export class SalesInvoiceDetailsComponent implements OnInit {
   }
 
   getStatusLabel(status: any) {
-    if (!status) return 'غير معروف';
+    if (status === undefined || status === null) return 'غير معروف';
 
     if (typeof status === 'number') {
       if (status === 2) return 'معتمدة';
@@ -196,7 +202,7 @@ export class SalesInvoiceDetailsComponent implements OnInit {
   }
 
   getStatusClass(status: any) {
-    if (!status) return 'draft';
+    if (status === undefined || status === null) return 'draft';
 
     if (typeof status === 'number') {
       if (status === 2) return 'approved';
@@ -224,3 +230,4 @@ export class SalesInvoiceDetailsComponent implements OnInit {
     }
   }
 }
+

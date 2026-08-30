@@ -54,9 +54,10 @@ namespace SmartPharmacySystem.Application.Services
 
             await _closingValidationService.ValidateDateIsUnlockedAsync(expense.ExpenseDate, expense.BranchId);
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 await _unitOfWork.Expenses.AddAsync(expense);
                 await _unitOfWork.SaveChangesAsync();
 
@@ -112,7 +113,7 @@ namespace SmartPharmacySystem.Application.Services
                     expense.IsPaid = false;
                 }
 
-                await _unitOfWork.CommitAsync();
+                });
 
                 var result = _mapper.Map<ExpenseDto>(expense);
                 result.CategoryName = category.Name;
@@ -120,7 +121,6 @@ namespace SmartPharmacySystem.Application.Services
             }
             catch
             {
-                await _unitOfWork.RollbackAsync();
                 throw;
             }
         }
@@ -142,9 +142,10 @@ namespace SmartPharmacySystem.Application.Services
             decimal oldAmount = expense.Amount;
             var oldMethod = expense.PaymentMethod;
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 _mapper.Map(dto, expense);
 
                 // Professional Sync: Sync IsPaid with PaymentMethod
@@ -255,11 +256,10 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _unitOfWork.Expenses.UpdateAsync(expense);
                 await _unitOfWork.SaveChangesAsync();
-                await _unitOfWork.CommitAsync();
+                });
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "خطأ أثناء تحديث المصروف {Id}", id);
                 throw;
             }
@@ -274,9 +274,10 @@ namespace SmartPharmacySystem.Application.Services
 
             var category = await _unitOfWork.ExpenseCategories.GetByIdAsync(expense.CategoryId);
 
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
                 if (expense.IsPaid && expense.PaymentMethod == PaymentType.Cash)
                 {
                     // 1. إلغاء القيد المحاسبي
@@ -296,12 +297,11 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.Expenses.SoftDeleteAsync(id);
                 await _unitOfWork.SaveChangesAsync();
 
-                await _unitOfWork.CommitAsync();
+                });
                 _logger.LogInformation("تم حذف المصروف {Id} وعكس حركته المالية بنجاح", id);
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "خطأ أثناء حذف المصروف {Id}", id);
                 throw;
             }

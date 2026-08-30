@@ -29,10 +29,12 @@ namespace SmartPharmacySystem.Application.Services
 
         public async Task<SupplierDto> CreateAsync(CreateSupplierDto dto)
         {
-            await _unitOfWork.BeginTransactionAsync();
             try
             {
-                var supplier = _mapper.Map<Supplier>(dto);
+                Supplier supplier = null;
+                await _unitOfWork.ExecuteTransactionAsync(async () =>
+                {
+                supplier = _mapper.Map<Supplier>(dto);
                 supplier.CreatedAt = DateTime.UtcNow;
                 supplier.IsDeleted = false;
 
@@ -65,12 +67,11 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.Suppliers.AddAsync(supplier);
                 await _unitOfWork.SaveChangesAsync();
 
-                await _unitOfWork.CommitAsync();
+                });
                 return _mapper.Map<SupplierDto>(supplier);
             }
             catch (Exception ex)
             {
-                await _unitOfWork.RollbackAsync();
                 _logger.LogError(ex, "Error creating supplier with account");
                 throw;
             }

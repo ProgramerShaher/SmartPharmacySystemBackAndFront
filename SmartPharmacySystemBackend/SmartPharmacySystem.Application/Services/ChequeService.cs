@@ -70,9 +70,10 @@ public class ChequeService(
         if (!Enum.TryParse<ChequeStatus>(status, out var newStatus))
             throw new ArgumentException("حالة الشيك غير صالحة");
 
-        await _unitOfWork.BeginTransactionAsync();
         try
         {
+            await _unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             // منطق خاص عند التحصيل (Collected)
             if (newStatus == ChequeStatus.Collected && cheque.Status != ChequeStatus.Collected)
             {
@@ -89,11 +90,10 @@ public class ChequeService(
             }
 
             await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.CommitAsync();
+            });
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackAsync();
             _logger.LogError(ex, "خطأ أثناء تحديث حالة الشيك {Id}", id);
             throw;
         }

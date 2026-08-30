@@ -28,6 +28,19 @@ public class AccountService(
         var lookup = dtos.ToDictionary(a => a.Id);
         var rootNodes = new List<AccountDto>();
 
+        // مسح الأبناء لتجنب التكرار إذا كان AutoMapper قد قام بربطهم مسبقاً
+        foreach (var dto in dtos)
+        {
+            if (dto.Children != null)
+            {
+                dto.Children.Clear();
+            }
+            else
+            {
+                dto.Children = new List<AccountDto>();
+            }
+        }
+
         foreach (var dto in dtos)
         {
             if (dto.ParentId.HasValue && lookup.TryGetValue(dto.ParentId.Value, out var parent))

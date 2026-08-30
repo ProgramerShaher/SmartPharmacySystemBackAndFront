@@ -49,9 +49,10 @@ public class MedicineBatchService(
             throw new InvalidOperationException($"Barcode '{dto.BatchBarcode}' already exists | الباركود موجود بالفعل");
         }
 
-        await unitOfWork.BeginTransactionAsync();
         try
         {
+            return await unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             // 1. Calculate Total Cost
             var totalCost = dto.Quantity * dto.UnitPurchasePrice;
 
@@ -120,9 +121,6 @@ public class MedicineBatchService(
             await unitOfWork.InventoryMovements.AddAsync(initialMovement);
             await unitOfWork.SaveChangesAsync();
 
-            // 7. Commit Transaction
-            await unitOfWork.CommitAsync();
-
             // 8. SignalR Notification (Vault Update)
             await notificationService.SendNotificationAsync(
                 "خصم مالي (شراء)",
@@ -133,10 +131,10 @@ public class MedicineBatchService(
 
             var result = await batchRepository.GetByIdAsync(batch.Id);
             return MapToResponseDto(result!, medicine);
+            });
         }
         catch (Exception ex)
         {
-            await unitOfWork.RollbackAsync();
             logger.LogError(ex, "Error creating batch for medicine {MedicineId}", dto.MedicineId);
             throw;
         }
@@ -153,9 +151,10 @@ public class MedicineBatchService(
         var oldRemainingQuantity = batch.RemainingQuantity;
         var oldExpiryDate = batch.ExpiryDate;
 
-        await unitOfWork.BeginTransactionAsync();
         try
         {
+            return await unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             // ========== RULE 1: Adjustment Logic (Inventory <-> Vault Sync) ==========
             if (dto.RemainingQuantity.HasValue && dto.RemainingQuantity.Value != oldRemainingQuantity)
             {
@@ -250,14 +249,13 @@ public class MedicineBatchService(
 
             await batchRepository.UpdateAsync(batch);
             await unitOfWork.SaveChangesAsync();
-            await unitOfWork.CommitAsync();
 
             logger.LogInformation("Batch {BatchId} updated successfully.", batchId);
             return MapToResponseDto(batch, batch.Medicine);
+            });
         }
         catch (Exception ex)
         {
-            await unitOfWork.RollbackAsync();
             logger.LogError(ex, "Error updating batch {BatchId}", batchId);
             throw;
         }
@@ -271,9 +269,10 @@ public class MedicineBatchService(
         var batch = await batchRepository.GetByIdAsync(batchId);
         if (batch == null) throw new KeyNotFoundException($"Batch {batchId} not found");
 
-        await unitOfWork.BeginTransactionAsync();
         try
         {
+            return await unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             var residualValue = batch.RemainingQuantity * batch.UnitPurchasePrice;
 
             // MODIFIED: نرد المال فقط إذا كان الدواء غير منتهي الصلاحية
@@ -334,13 +333,12 @@ public class MedicineBatchService(
             });
 
             await unitOfWork.SaveChangesAsync();
-            await unitOfWork.CommitAsync();
 
             return true;
+            });
         }
         catch (Exception ex)
         {
-            await unitOfWork.RollbackAsync();
             logger.LogError(ex, "Error deleting batch {BatchId}", batchId);
             throw;
         }
@@ -642,9 +640,10 @@ public class MedicineBatchService(
         if (batch.RemainingQuantity <= 0)
             throw new InvalidOperationException("لا يوجد مخزون متبقي للإعدام");
 
-        await unitOfWork.BeginTransactionAsync();
         try
         {
+            await unitOfWork.ExecuteTransactionAsync(async () =>
+            {
             var price = batch.UnitPurchasePrice > 0 ? batch.UnitPurchasePrice : 0;
             var lossAmount = batch.RemainingQuantity * price;
 
@@ -681,13 +680,12 @@ public class MedicineBatchService(
             await batchRepository.UpdateAsync(batch);
 
             await unitOfWork.SaveChangesAsync();
-            await unitOfWork.CommitAsync();
 
             logger.LogInformation("Batch {BatchId} scrapped successfully. Financial loss: {LossAmount}", batchId, lossAmount);
+            });
         }
         catch (Exception ex)
         {
-            await unitOfWork.RollbackAsync();
             logger.LogError(ex, "Error scrapping batch {BatchId}", batchId);
             throw;
         }
@@ -704,8 +702,7 @@ public class MedicineBatchService(
 
         if (batch.RemainingQuantity <= 0) return;
 
-        await unitOfWork.BeginTransactionAsync();
-        try
+        await unitOfWork.ExecuteTransactionAsync(async () =>
         {
             var lossAmount = batch.RemainingQuantity * batch.UnitPurchasePrice;
 
@@ -749,19 +746,13 @@ public class MedicineBatchService(
             });
 
             await unitOfWork.SaveChangesAsync();
-            await unitOfWork.CommitAsync();
 
             // 5. SignalR Notification
             var msg = $"تنبيه: تم إعدام الدفعة {batch.BatchBarcode} وخصم قيمتها ({lossAmount:N2} ريال) من الخزينة.";
             await notificationService.SendNotificationAsync("خسارة مالية (تالف)", msg, "Warning");
 
             logger.LogInformation("Batch {BatchId} scrapped. Financial impact: {Amount}", batchId, lossAmount);
-        }
-        catch (Exception ex)
-        {
-            await unitOfWork.RollbackAsync();
-            throw;
-        }
+        });
     }
 
     /// <inheritdoc/>

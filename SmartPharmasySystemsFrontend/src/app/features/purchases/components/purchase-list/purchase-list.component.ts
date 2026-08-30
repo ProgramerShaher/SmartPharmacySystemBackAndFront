@@ -21,6 +21,7 @@ import { ChartModule } from 'primeng/chart';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
 import { ToastModule } from 'primeng/toast';
+import { PurchaseInvoiceDetailsComponent } from '../purchase-details/purchase-details.component';
 
 @Component({
     selector: 'app-purchase-invoice-list',
@@ -38,7 +39,8 @@ import { ToastModule } from 'primeng/toast';
         ChartModule,
         DropdownModule,
         CalendarModule,
-        ToastModule
+        ToastModule,
+        PurchaseInvoiceDetailsComponent
     ],
     templateUrl: './purchase-list.component.html',
     styleUrls: ['./purchase-list.component.scss'],
@@ -48,6 +50,9 @@ export class PurchaseInvoiceListComponent implements OnInit {
     invoices = signal<PurchaseInvoice[]>([]);
     loading = signal(false);
     showFilters = signal(false);
+    
+    showDetailsDialog = false;
+    selectedInvoiceId: number | null = null;
 
     // KPI Stats (from backend)
     totalPurchases = signal(0);
@@ -221,7 +226,8 @@ export class PurchaseInvoiceListComponent implements OnInit {
     }
 
     viewDetails(id: number) {
-        this.router.navigate(['/purchases', id]);
+        this.selectedInvoiceId = id;
+        this.showDetailsDialog = true;
     }
 
     editInvoice(id: number) {

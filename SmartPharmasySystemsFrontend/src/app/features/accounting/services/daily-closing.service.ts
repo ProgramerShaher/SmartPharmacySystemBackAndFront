@@ -12,15 +12,18 @@ export class DailyClosingService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<any> {
-    return this.http.get<any>(this.apiUrl);
-  }
-
-  getById(id: number): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${id}`);
+    // Calling the endpoint for branch 1
+    return this.http.get<any>(`${this.apiUrl}/branch/1`);
   }
 
   closeDay(date: Date, transferToMainSafe: boolean = false): Observable<any> {
     const formattedDate = date.toISOString().split('T')[0];
-    return this.http.post<any>(`${this.apiUrl}/close-day`, { closingDate: formattedDate, transferToMainSafe });
+    return this.http.post<any>(`${this.apiUrl}`, { 
+      branchId: 1, 
+      closingDate: formattedDate, 
+      openingCash: 0, 
+      actualCash: 0, 
+      transferToMainSafe 
+    });
   }
 }

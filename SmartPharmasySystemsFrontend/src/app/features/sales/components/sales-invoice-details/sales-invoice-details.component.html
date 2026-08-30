@@ -1,97 +1,120 @@
-<div class="details-container" dir="rtl">
-  <div *ngIf="loading" class="loading-state flex justify-content-center p-5">
-    <p-progressSpinner></p-progressSpinner>
-  </div>
+<p-dialog [(visible)]="visible" [modal]="true" [style]="{width: '60vw'}" [breakpoints]="{'960px': '95vw'}"
+    [draggable]="false" [resizable]="false" [showHeader]="false" styleClass="imperial-modal" [dismissableMask]="true" (onHide)="close()">
 
-  <ng-container *ngIf="!loading && invoice">
-    <div class="page-header">
-      <div class="title-wrap">
-        <p-button icon="pi pi-arrow-right" [rounded]="true" [text]="true" severity="secondary" (onClick)="backToList()"></p-button>
-        <div class="icon-circle bg-gradient-sales">
-          <i class="pi pi-dollar"></i>
+    <div class="statement-container fadein p-3" dir="rtl">
+        <!-- Loading State -->
+        <div *ngIf="loading" class="flex flex-column align-items-center justify-content-center p-5 gap-3">
+            <p-progressSpinner strokeWidth="4" animationDuration=".8s"></p-progressSpinner>
+            <span class="text-teal-600 font-bold text-lg">جاري استرجاع تفاصيل الفاتورة...</span>
         </div>
-        <div>
-          <h1>تفاصيل عملية البيع</h1>
-          <p>رقم الفاتورة: {{ invoice.saleInvoiceNumber || '#' + invoice.id }}</p>
+
+        <!-- Data Content -->
+        <div *ngIf="!loading && invoice">
+            <!-- Header -->
+            <div class="imperial-header-bar p-3 mb-3">
+                <div class="flex align-items-center gap-2">
+                    <div class="header-icon-badge bg-blue-100 text-blue-700" style="width: 35px; height: 35px;">
+                        <i class="pi pi-file-invoice text-lg"></i>
+                    </div>
+                    <div class="header-titles">
+                        <h2 class="main-title m-0 text-xl">فاتورة رقم {{invoice.saleInvoiceNumber || '#' + invoice.id}}</h2>
+                        <span class="sub-title text-xs">تاريخ الفاتورة: {{invoice.invoiceDate | date:'dd/MM/yyyy'}}</span>
+                    </div>
+                </div>
+                <div class="flex align-items-center gap-2">
+                    <span class="status-badge text-xs" [ngClass]="getStatusClass(invoice.status)">
+                        {{getStatusLabel(invoice.status)}}
+                    </span>
+                    <button pButton icon="pi pi-print" class="p-button-rounded p-button-text p-button-secondary p-button-sm" (click)="printInvoice()"></button>
+                    <button pButton icon="pi pi-times" class="p-button-rounded p-button-text p-button-secondary p-button-sm" (click)="close()"></button>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div class="summary-stats-grid gap-2 mb-3">
+                <!-- Customer -->
+                <div class="statement-stat-card card-blue p-2">
+                    <div class="stat-icon-wrapper" style="width: 30px; height: 30px;"><i class="pi pi-user text-sm"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-label text-xs">العميل</span>
+                        <span class="stat-value text-sm font-bold">{{invoice.customerName || 'مبيعات نقدية'}}</span>
+                    </div>
+                </div>
+                <!-- Payment Method -->
+                <div class="statement-stat-card card-teal p-2">
+                    <div class="stat-icon-wrapper" style="width: 30px; height: 30px;"><i class="pi pi-wallet text-sm"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-label text-xs">طريقة الدفع</span>
+                        <span class="stat-value text-sm font-bold">{{getPaymentMethodLabel(invoice.paymentMethod)}}</span>
+                    </div>
+                </div>
+                <!-- Total Amount -->
+                <div class="statement-stat-card card-purple p-2">
+                    <div class="stat-icon-wrapper" style="width: 30px; height: 30px;"><i class="pi pi-money-bill text-sm"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-label text-xs">إجمالي الفاتورة</span>
+                        <span class="stat-value font-mono text-sm font-bold">{{(invoice.totalAmount || 0) | number:'1.0-2'}} ر.ي</span>
+                    </div>
+                </div>
+                <!-- Profit -->
+                <div class="statement-stat-card card-orange p-2">
+                    <div class="stat-icon-wrapper" style="width: 30px; height: 30px;"><i class="pi pi-chart-line text-sm"></i></div>
+                    <div class="stat-content">
+                        <span class="stat-label text-xs">الربح</span>
+                        <span class="stat-value font-mono text-sm font-bold text-green-600">{{(invoice.totalProfit || 0) | number:'1.0-2'}} ر.ي</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="flex justify-content-between align-items-center mt-3 mb-2">
+                <h4 class="section-header m-0 text-sm"><i class="pi pi-list"></i> الأصناف</h4>
+            </div>
+
+            <div class="ledger-card-wrapper mb-3">
+                <p-table [value]="invoice.items || []" styleClass="p-datatable-sm imperial-statement-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="text-xs py-2">الصنف</th>
+                            <th class="text-center text-xs py-2">الكمية</th>
+                            <th class="text-center text-xs py-2">السعر</th>
+                            <th class="text-center text-xs py-2">الربح</th>
+                            <th class="text-center text-xs py-2">الإجمالي</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr class="border-bottom-1 border-200">
+                            <td class="py-2">
+                                <div class="font-bold text-700 text-xs">{{item.medicineName || item.medicine?.scientificName || 'غير معروف'}}</div>
+                                <div class="text-500" style="font-size: 0.65rem;">{{item.unitName || item.saleUnit?.name || 'وحدة'}} | دفعة: {{item.batchNumber || item.companyBatchNumber || '---'}}</div>
+                            </td>
+                            <td class="text-center font-mono font-bold text-700 text-xs py-2">{{item.quantity}}</td>
+                            <td class="text-center font-mono font-bold text-blue-600 text-xs py-2">{{item.salePrice || item.unitPrice | number:'1.0-2'}}</td>
+                            <td class="text-center font-mono font-bold text-orange-600 text-xs py-2">{{item.profit || 0 | number:'1.0-2'}}</td>
+                            <td class="text-center font-mono font-bold text-teal-600 text-xs py-2">{{item.totalLineAmount || item.totalPrice | number:'1.0-2'}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="5" class="text-center p-4">
+                                <span class="text-500 font-bold text-xs">لا توجد أصناف</span>
+                            </td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </div>
+
+            <!-- Notes -->
+            <div *ngIf="invoice.notes" class="mt-3 p-2 bg-yellow-50 border-round-lg border-1 border-yellow-200">
+                <div class="font-bold text-yellow-800 mb-1 text-xs"><i class="pi pi-info-circle"></i> ملاحظات</div>
+                <div class="text-xs text-yellow-900 line-height-3">{{ invoice.notes }}</div>
+            </div>
+
+            <!-- Actions (only if draft) -->
+            <div *ngIf="invoice.status === 1 || invoice.status?.toString()?.toUpperCase() === 'DRAFT'" class="flex justify-content-end gap-2 mt-3 pt-3 border-top-1 border-300">
+                <button pButton label="إلغاء الفاتورة" icon="pi pi-times" class="p-button-danger p-button-sm p-button-outlined" (click)="cancelInvoice()"></button>
+                <button pButton label="اعتماد الفاتورة" icon="pi pi-check" class="p-button-success p-button-sm" (click)="approveInvoice()"></button>
+            </div>
         </div>
-      </div>
-      
-      <div class="actions no-print">
-        <p-tag [severity]="getStatusSeverity(invoice.status.toString())" [value]="getStatusLabel(invoice.status)" styleClass="mr-2 px-3 py-2 text-sm shadow-1"></p-tag>
-        <p-button icon="pi pi-print" label="طباعة" severity="info" [outlined]="true" size="small" (onClick)="printInvoice()"></p-button>
-        <p-button *ngIf="invoice.status === DocumentStatus.Draft" label="اعتماد" icon="pi pi-check" severity="success" size="small" (onClick)="approveInvoice()"></p-button>
-        <p-button *ngIf="invoice.status === DocumentStatus.Approved" label="إلغاء" icon="pi pi-times" severity="danger" [outlined]="true" size="small" (onClick)="cancelInvoice()"></p-button>
-      </div>
     </div>
-
-    <div class="kpi-grid">
-      <div class="kpi-card blue">
-        <span class="kpi-label">العميل</span>
-        <strong>{{ invoice.customerName || 'نقدي' }}</strong>
-        <small>عميل الفاتورة</small>
-      </div>
-      <div class="kpi-card purple">
-        <span class="kpi-label">طريقة الدفع</span>
-        <strong>{{ getPaymentMethodLabel(invoice.paymentMethod) }}</strong>
-        <small>التحصيل</small>
-      </div>
-      <div class="kpi-card green">
-        <span class="kpi-label">إجمالي الفاتورة</span>
-        <strong>{{ invoice.totalAmount | number:'1.2-2' }}</strong>
-        <small>ر.ي</small>
-      </div>
-      <div class="kpi-card orange">
-        <span class="kpi-label">تاريخ وتوقيت العملية</span>
-        <strong>{{ invoice.invoiceDate | date:'dd/MM/yyyy' }}</strong>
-        <small>{{ invoice.invoiceDate | date:'HH:mm' }} | منشئ: {{ invoice.createdByName || invoice.createdBy }}</small>
-      </div>
-    </div>
-
-    <div class="table-panel">
-      <div class="panel-head">
-        <h3><i class="pi pi-list mr-2 text-primary"></i> الأصناف المباعة</h3>
-      </div>
-      <p-table [value]="invoice.items || []" styleClass="compact-table" responsiveLayout="scroll">
-        <ng-template pTemplate="header">
-          <tr>
-            <th>الصنف الدوائي</th>
-            <th class="text-center">رقم الدفعة</th>
-            <th class="text-center">الكمية</th>
-            <th class="text-right">سعر البيع</th>
-            <th class="text-right">الإجمالي</th>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-item>
-          <tr>
-            <td>
-              <strong class="text-blue-700">{{ item.medicineName }}</strong>
-            </td>
-            <td class="text-center">
-              <span class="batch-chip">{{ item.batchNumber || item.companyBatchNumber || '-' }}</span>
-            </td>
-            <td class="text-center">
-              <span class="qty-pill">{{ item.quantity }}</span>
-            </td>
-            <td class="text-right price-text">{{ item.salePrice | number:'1.2-2' }}</td>
-            <td class="text-right price-text text-green-700 font-bold">{{ (item.quantity * item.salePrice) | number:'1.2-2' }}</td>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="5" class="text-center p-4 text-500">لا توجد أصناف في هذه الفاتورة</td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </div>
-  </ng-container>
-
-  <div *ngIf="!loading && !invoice" class="empty-state">
-    <i class="pi pi-exclamation-triangle"></i>
-    <h3>لم يتم العثور على الفاتورة</h3>
-    <p-button label="العودة للقائمة" icon="pi pi-arrow-right" [text]="true" (onClick)="backToList()"></p-button>
-  </div>
-</div>
-
-<p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
+</p-dialog>

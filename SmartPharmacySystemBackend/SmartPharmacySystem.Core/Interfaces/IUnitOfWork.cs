@@ -68,4 +68,6 @@ public interface IUnitOfWork
     Task BeginTransactionAsync();
     Task CommitAsync();
     Task RollbackAsync();
+    Task ExecuteTransactionAsync(Func<Task> action);
+    Task<T> ExecuteTransactionAsync<T>(Func<Task<T>> action);
 }

@@ -184,49 +184,31 @@ export class PurchaseReturnDetailsComponent implements OnChanges {
 
   getStatusLabel(status: any) {
     if (status === undefined || status === null) return 'قيد التدقيق';
-    const statusNum = Number(status);
-
-    switch (statusNum) {
-      case DocumentStatus.Approved:
-        return 'معتمد';
-      case DocumentStatus.Draft:
-        return 'مسودة';
-      case DocumentStatus.Cancelled:
-        return 'عملية ملغاة';
-      default:
-        return status;
-    }
+    
+    if (status === 'Approved' || status === 2 || status === DocumentStatus.Approved) return 'معتمد';
+    if (status === 'Draft' || status === 1 || status === DocumentStatus.Draft) return 'مسودة';
+    if (status === 'Cancelled' || status === 3 || status === DocumentStatus.Cancelled) return 'عملية ملغاة';
+    
+    return status;
   }
 
   getStatusClass(status: any) {
     if (status === undefined || status === null) return 'draft';
-    const statusNum = Number(status);
-
-    switch (statusNum) {
-      case DocumentStatus.Approved:
-        return 'approved';
-      case DocumentStatus.Cancelled:
-        return 'cancelled';
-      case DocumentStatus.Draft:
-        return 'draft';
-      default:
-        return 'draft';
-    }
+    
+    if (status === 'Approved' || status === 2 || status === DocumentStatus.Approved) return 'approved';
+    if (status === 'Cancelled' || status === 3 || status === DocumentStatus.Cancelled) return 'cancelled';
+    if (status === 'Draft' || status === 1 || status === DocumentStatus.Draft) return 'draft';
+    
+    return 'draft';
   }
 
   getStatusSeverity(status: any): 'success' | 'warning' | 'danger' | 'info' {
     if (status === undefined || status === null) return 'warning';
-    const statusNum = Number(status);
-
-    switch (statusNum) {
-      case DocumentStatus.Approved:
-        return 'success';
-      case DocumentStatus.Draft:
-        return 'warning';
-      case DocumentStatus.Cancelled:
-        return 'danger';
-      default:
-        return 'info';
-    }
+    
+    if (status === 'Approved' || status === 2 || status === DocumentStatus.Approved) return 'success';
+    if (status === 'Draft' || status === 1 || status === DocumentStatus.Draft) return 'warning';
+    if (status === 'Cancelled' || status === 3 || status === DocumentStatus.Cancelled) return 'danger';
+    
+    return 'info';
   }
 }

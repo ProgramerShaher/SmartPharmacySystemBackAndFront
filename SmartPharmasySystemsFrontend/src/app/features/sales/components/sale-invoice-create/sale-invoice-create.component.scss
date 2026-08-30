@@ -1063,3 +1063,145 @@
         padding: 0.35rem 0.75rem !important;
     }
 }
+
+/* ═══════════ Imperial Modal for Drawer ═══════════ */
+:host ::ng-deep {
+    .imperial-modal {
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        border: none;
+
+        .p-dialog-content {
+            padding: 0;
+            background: var(--surface-ground, #f8fafc);
+        }
+    }
+}
+
+.statement-container {
+    padding: 1rem;
+    color: var(--text-color, #1e293b);
+}
+
+.imperial-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg, #ffffff);
+    padding: 1rem;
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+
+    .header-icon-badge {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 10px;
+        background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
+        color: var(--primary-color, #10b981);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .header-titles {
+        display: flex;
+        flex-direction: column;
+        
+        .main-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-color);
+            margin: 0;
+        }
+        .sub-title {
+            font-size: 0.85rem;
+            color: var(--text-color-secondary);
+            margin: 0;
+        }
+    }
+}
+
+.summary-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.statement-stat-card {
+    background: var(--card-bg, #ffffff);
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0,0,0,0.08));
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    border-bottom: 3px solid var(--border-color, #cbd5e1);
+
+    .stat-icon-wrapper {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748b;
+    }
+
+    .stat-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--text-color-secondary);
+    }
+
+    .stat-value {
+        font-size: 1rem;
+        font-weight: 900;
+        color: var(--text-color);
+    }
+
+    &.card-teal { border-bottom-color: #10b981; .stat-icon-wrapper { background: rgba(16,185,129,0.1); color: #10b981; } }
+    &.card-blue { border-bottom-color: #3b82f6; .stat-icon-wrapper { background: rgba(59,130,246,0.1); color: #3b82f6; } }
+    &.card-purple { border-bottom-color: #8b5cf6; .stat-icon-wrapper { background: rgba(139,92,246,0.1); color: #8b5cf6; } }
+    &.card-red { border-bottom-color: #ef4444; .stat-icon-wrapper { background: rgba(239,68,68,0.1); color: #ef4444; } }
+    &.card-orange { border-bottom-color: #f97316; .stat-icon-wrapper { background: rgba(249,115,22,0.1); color: #f97316; } }
+}
+
+.ledger-card-wrapper {
+    background: var(--card-bg, #ffffff);
+    border-radius: 12px;
+    border: var(--card-border, 1px solid rgba(0,0,0,0.08));
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1rem;
+}
+
+::ng-deep .imperial-statement-table {
+    .p-datatable-thead > tr > th {
+        background: var(--table-header-bg, var(--surface-hover, #f4f6f9)) !important;
+        color: var(--text-color-secondary) !important;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 0.6rem 1rem;
+        border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
+    }
+
+    .p-datatable-tbody > tr > td {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+        border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.04)) !important;
+        color: var(--text-color);
+        vertical-align: middle;
+    }
+}

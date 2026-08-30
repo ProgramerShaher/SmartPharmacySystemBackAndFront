@@ -4,20 +4,46 @@
         <div class="header-left">
             <span class="status-badge" [ngClass]="getStatusClass()">{{ getStatusLabel() }}</span>
             <h1 class="header-title">فاتورة توريد مشتريات</h1>
+
+            <!-- حقل اختيار الدواء بجانب العنوان مباشرة -->
+            <div class="header-medicine-search p-fluid" *ngIf="!isReadOnly">
+                <div class="input-with-icon">
+                    <p-autoComplete #medicineAutoComplete [suggestions]="filteredMedicines"
+                        (completeMethod)="searchMedicines($event)" field="name" [(ngModel)]="searchQueryText"
+                        [ngModelOptions]="{standalone: true}" (onSelect)="onMedicineSelect($event.value)"
+                        placeholder="ابحث عن الدواء بالاسم أو امسح الباركود..." appendTo="body" [forceSelection]="true"
+                        styleClass="custom-p-input header-search-input"></p-autoComplete>
+                    <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
+                        <i class="pi pi-camera"></i>
+                    </span>
+                </div>
+            </div>
         </div>
-        <button class="btn-close" (click)="backToList()" pTooltip="إغلاق">
-            <i class="pi pi-times"></i>
-        </button>
+        <div class="header-actions-top">
+            <button type="button" class="btn-top-action" (click)="shortcutsHelpVisible = true"
+                pTooltip="اختصارات لوحة المفاتيح [F1]" tooltipPosition="bottom">
+                <i class="pi pi-key"></i>
+                <span class="kbd-badge">F1</span>
+            </button>
+            <button type="button" class="btn-top-action" (click)="toggleSimulator()" pTooltip="محاكاة الباركود"
+                tooltipPosition="bottom">
+                <i class="pi pi-camera"></i>
+            </button>
+            <button class="btn-close" (click)="backToList()" pTooltip="إغلاق [Esc]">
+                <i class="pi pi-times"></i>
+            </button>
+        </div>
     </div>
 
-    <!-- القسم الأول: البيانات الأساسية -->
+    <!-- البيانات الأساسية للفاتورة -->
     <form [formGroup]="purchaseForm">
         <div class="grid-container p-fluid">
             <div class="input-group">
-                <label>المورد <span class="text-red-500">*</span></label>
+                <label>المورد <span class="text-red-500" *ngIf="purchaseForm.get('paymentMethod')?.value === 2">*</span><span class="text-hint" *ngIf="purchaseForm.get('paymentMethod')?.value === 1"> (اختياري)</span></label>
                 <p-dropdown [options]="suppliers" formControlName="supplierId" optionLabel="name" optionValue="id"
                     placeholder="اختر المورد..." [filter]="true" filterBy="name" [disabled]="isReadOnly"
-                    [showClear]="true" appendTo="body" styleClass="custom-p-input"></p-dropdown>
+                    [showClear]="true" appendTo="body" styleClass="custom-p-input"
+                    (onChange)="onSupplierChange()"></p-dropdown>
             </div>
 
             <div class="input-group">
@@ -28,15 +54,15 @@
 
             <div class="input-group">
                 <label>طريقة الدفع <span class="text-red-500">*</span></label>
-                <p-dropdown [options]="paymentMethods" formControlName="paymentMethod" optionLabel="label"
-                    optionValue="value" placeholder="اختر طريقة الدفع..." [disabled]="isReadOnly" appendTo="body"
-                    styleClass="custom-p-input"></p-dropdown>
+                <p-dropdown #paymentDropdown [options]="paymentMethods" formControlName="paymentMethod"
+                    optionLabel="label" optionValue="value" placeholder="اختر طريقة الدفع..." [disabled]="isReadOnly"
+                    appendTo="body" styleClass="custom-p-input"></p-dropdown>
             </div>
 
             <div class="input-group">
-                <label>رقم فاتورة المورد</label>
+                <label>رقم فاتورة المورد <span class="text-hint">(اختياري)</span></label>
                 <input type="text" formControlName="supplierInvoiceNumber" placeholder="رقم الفاتورة..."
-                    [readonly]="isReadOnly" class="custom-native-input" />
+                    [readonly]="isReadOnly" (focus)="onInputFocus($event)" class="custom-native-input" />
             </div>
 
             <div class="input-group">
@@ -46,111 +72,89 @@
                     styleClass="custom-p-input"></p-dropdown>
             </div>
 
-            <div class="input-group">
+            <div class="input-group full-width-sm">
                 <label>موقع التخزين بالمخزن</label>
                 <input type="text" formControlName="storageLocation" placeholder="مثل: رف أ - قسم 1"
-                    [readonly]="isReadOnly" class="custom-native-input" />
+                    [readonly]="isReadOnly" (focus)="onInputFocus($event)" class="custom-native-input" />
             </div>
         </div>
     </form>
 
-    <!-- القسم الثاني: إضافة صنف جديد -->
-    <form [formGroup]="inlineItemForm" (ngSubmit)="addInlineItem()" *ngIf="!isReadOnly">
-        <div class="grid-container-items p-fluid">
-            <div class="input-group">
-                <label>الصنف / الدواء <span class="text-red-500">*</span></label>
-                <div class="input-with-icon">
-                    <p-autoComplete [suggestions]="filteredMedicines" (completeMethod)="searchMedicines($event)"
-                        field="name" formControlName="medicineName" (onSelect)="onMedicineSelect($event.value)"
-                        placeholder="بحث..." appendTo="body" [forceSelection]="true"
-                        styleClass="custom-p-input"></p-autoComplete>
-                    <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="محاكاة الباركود">
-                        <i class="pi pi-camera"></i>
-                    </span>
-                </div>
-            </div>
-            <div class="input-group">
-                <label>الوحدة</label>
-                <p-dropdown [options]="unitOptions" formControlName="selectedUnit" (onChange)="onUnitSelect($event)"
-                    appendTo="body" [disabled]="!selectedMedicine" styleClass="custom-p-input"></p-dropdown>
-            </div>
-            <div class="input-group">
-                <label>رقم الدفعة</label>
-                <input type="text" formControlName="companyBatchNumber" placeholder="اختياري"
-                    class="custom-native-input" />
-            </div>
-            <div class="input-group">
-                <label>تاريخ الانتهاء <span class="text-red-500">*</span></label>
-                <p-calendar formControlName="expiryDate" dateFormat="dd/mm/yy" appendTo="body" placeholder="DD/MM/YY"
-                    [showIcon]="false" styleClass="custom-p-input"></p-calendar>
-            </div>
-            <div class="input-group">
-                <label>الكمية <span class="text-red-500">*</span></label>
-                <p-inputNumber formControlName="quantity" [min]="1" [showButtons]="false"
-                    styleClass="custom-p-input"></p-inputNumber>
-            </div>
-            <div class="input-group">
-                <label>سعر الشراء <span class="text-red-500">*</span></label>
-                <p-inputNumber formControlName="price" [min]="0" mode="decimal" [minFractionDigits]="2"
-                    styleClass="custom-p-input"></p-inputNumber>
-            </div>
-            <div class="input-group" style="justify-content: flex-end; flex-direction: row; gap: 8px;">
-                <button type="submit" class="btn-add" [disabled]="inlineItemForm.invalid">
-                    <i class="pi" [ngClass]="editingIndex !== null ? 'pi-check' : 'pi-plus'"></i>
-                    {{ editingIndex !== null ? 'تعديل' : 'إضافة' }}
-                </button>
-                <button type="button" *ngIf="editingIndex !== null" class="btn-add"
-                    style="background: white; border-color: #d0d5dd; color: #344054;" (click)="resetInlineForm()">
-                    <i class="pi pi-times"></i>
-                </button>
+    <!-- حقل إضافة / اختيار الدواء الرئيسي فوق الجدول -->
+
+    <div class="search-medicine-bar p-fluid" *ngIf="!isReadOnly">
+        <div class="input-group search-group">
+            <label class="search-label">
+                <i class="pi pi-search"></i> اختيار الدواء / الصنف
+                <span class="search-tip">(اختر الدواء بالاسم أو امسح الباركود ليظهر المودال تلقائياً)</span>
+            </label>
+            <div class="input-with-icon">
+                <p-autoComplete [suggestions]="filteredMedicines" (completeMethod)="searchMedicines($event)"
+                    field="name" [(ngModel)]="searchQueryText" [ngModelOptions]="{standalone: true}"
+                    (onSelect)="onMedicineSelect($event.value)"
+                    placeholder="اكتب اسم الدواء أو قم بمسح الباركود مباشرة..." appendTo="body" [forceSelection]="true"
+                    styleClass="custom-p-input main-search-input"></p-autoComplete>
+                <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
+                    <i class="pi pi-camera"></i>
+                </span>
             </div>
         </div>
-    </form>
+    </div>
 
-    <!-- الجدول والقائمة الفارغة -->
+    <!-- الجدول والقائمة الفارغة للأصناف -->
     <div class="table-container">
+
         <p-table [value]="details.value" responsiveLayout="scroll" styleClass="custom-p-table">
             <ng-template pTemplate="header">
                 <tr>
-                    <th>الصنف المورد</th>
-                    <th style="text-align: center;">رقم الدفعة</th>
-                    <th style="text-align: center;">الموقع</th>
-                    <th style="text-align: center;">الكمية</th>
-                    <th style="text-align: left;">سعر الشراء</th>
-                    <th style="text-align: left;">الإجمالي</th>
-                    <th *ngIf="!isReadOnly"></th>
+                    <th style="width: 30%;">الصنف المورد</th>
+                    <th style="text-align: center; width: 18%;">رقم الدفعة</th>
+                    <th style="text-align: center; width: 14%;">الموقع</th>
+                    <th style="text-align: center; width: 12%;">الكمية</th>
+                    <th style="text-align: left; width: 12%;">سعر الشراء</th>
+                    <th style="text-align: left; width: 14%;">الإجمالي</th>
+                    <th style="width: 80px; text-align: center;" *ngIf="!isReadOnly">الإجراءات</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item let-i="rowIndex">
-                <tr (click)="!isReadOnly && editItem(i)" style="cursor: pointer;">
-                    <td style="font-weight: 500;">{{ item.medicineName }}</td>
-                    <td style="text-align: center;">{{ item.companyBatchNumber || '-' }}</td>
+                <tr (click)="!isReadOnly && editItem(i)" class="table-row-item">
+                    <td style="font-weight: 700; color: #0f172a;">{{ item.medicineName }}</td>
+                    <td style="text-align: center;">
+                        <span class="badge-batch">{{ item.companyBatchNumber || '-' }}</span>
+                    </td>
                     <td style="text-align: center; color: #64748b;">
                         <i class="pi pi-map-marker" *ngIf="item.storageLocation"
                             style="font-size: 11px; margin-left: 4px;"></i>
                         {{ item.storageLocation || '-' }}
                     </td>
                     <td style="text-align: center;">
-                        <span style="font-weight: 700;">{{ item.quantity }}</span>
-                        <span *ngIf="item.bonusQuantity > 0"
-                            style="color: #039855; font-size: 11px; margin-right: 4px;">+{{item.bonusQuantity}}</span>
+                        <span style="font-weight: 800; font-size: 14px; color: #0f172a;">{{ item.quantity }}</span>
+                        <span *ngIf="item.bonusQuantity > 0" class="bonus-tag">+{{item.bonusQuantity}} مجاني</span>
                     </td>
-                    <td style="text-align: left;">{{ item.purchasePrice | number : '1.0-0' }}</td>
-                    <td style="text-align: left; font-weight: 700; color: #008080;">{{ item.total | number : '1.0-2' }}
-                    </td>
+                    <td style="text-align: left; font-weight: 600; color: #334155;">{{ item.purchasePrice | number :
+                        '1.2-2' }}</td>
+                    <td style="text-align: left; font-weight: 800; color: #0d9488;">{{ item.total | number : '1.2-2' }}
+                        ر.ي</td>
                     <td style="text-align: center;" *ngIf="!isReadOnly">
-                        <button class="btn-close" style="font-size: 14px; color: #f04438;"
-                            (click)="$event.stopPropagation(); removeItem(i)">
-                            <i class="pi pi-trash"></i>
-                        </button>
+                        <div class="row-actions" (click)="$event.stopPropagation()">
+                            <button type="button" class="btn-action btn-action-edit" (click)="editItem(i)"
+                                pTooltip="تعديل">
+                                <i class="pi pi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn-action btn-action-delete" (click)="removeItem(i)"
+                                pTooltip="حذف">
+                                <i class="pi pi-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="6" class="empty-state">
-                        <span class="empty-icon"><i class="pi pi-box" style="font-size: 2rem;"></i></span>
-                        القائمة فارغة، قم بإضافة الأصناف من الأعلى
+                    <td colspan="7" class="empty-state">
+                        <span class="empty-icon"><i class="pi pi-box"></i></span>
+                        <div>لا توجد أصناف في الفاتورة بعد</div>
+                        <div class="empty-sub">استخدم حقل "اختيار الدواء" بالأعلى لإضافة الأصناف بسرعة</div>
                     </td>
                 </tr>
             </ng-template>
@@ -160,31 +164,160 @@
     <!-- التذييل والإجراءات -->
     <div class="footer">
         <div class="footer-stats">
-            <span class="stat-badge stat-items">إجمالي البنود: <span class="stat-number">{{ details.length
-                    }}</span></span>
-            <span class="stat-badge stat-qty">القطع: <span class="stat-number">{{ calculateTotalQuantity()
-                    }}</span></span>
-            <span class="stat-badge stat-total">الإجمالي النهائي: <span class="stat-number">{{ calculateTotal() | number
-                    : '1.0-0' }} ر.ي</span></span>
+            <span class="stat-badge stat-items">
+                <i class="pi pi-list"></i>
+                عدد الأصناف: <span class="stat-number">{{ details.length }}</span>
+            </span>
+            <span class="stat-badge stat-qty">
+                <i class="pi pi-box"></i>
+                إجمالي القطع: <span class="stat-number">{{ calculateTotalQuantity() }}</span>
+            </span>
+            <span class="stat-badge stat-total">
+                <i class="pi pi-calculator"></i>
+                الإجمالي النهائي: <span class="stat-number">{{ calculateTotal() | number : '1.2-2' }} ر.ي</span>
+            </span>
         </div>
         <div class="footer-actions">
-            <button *ngIf="!isReadOnly" type="button" class="btn btn-danger" (click)="details.clear()">
+            <button *ngIf="!isReadOnly" type="button" class="btn btn-danger" (click)="details.clear()"
+                [disabled]="details.length === 0">
                 <i class="pi pi-trash"></i> تفريغ
             </button>
             <button *ngIf="!isReadOnly" type="button" class="btn btn-outline" (click)="saveDraft()" [disabled]="saving">
-                <i class="pi pi-save"></i> حفظ مسودة
+                <i class="pi pi-save"></i> حفظ مسودة <span class="btn-kbd">F3</span>
             </button>
             <button *ngIf="isReadOnly" type="button" class="btn btn-outline">
                 <i class="pi pi-print"></i> طباعة
             </button>
             <button *ngIf="!isReadOnly" type="button" class="btn btn-primary" (click)="approveInvoice()"
                 [disabled]="details.length === 0 || saving">
-                <i class="pi pi-check"></i> اعتماد وتحويل
+                <i class="pi pi-check-circle"></i> حفظ واعتماد <span class="btn-kbd">F2</span>
             </button>
         </div>
     </div>
 </div>
 
+<!-- ==========================================
+     مودال إدخال تفاصيل الدواء (Item Details Modal)
+     ========================================== -->
+<p-dialog [(visible)]="itemModalVisible" [modal]="true" [style]="{width: '520px', maxWidth: '95vw'}" [draggable]="false"
+    [resizable]="false" [closable]="true" (onHide)="closeItemModal()" appendTo="body" styleClass="item-details-dialog"
+    dir="rtl">
+
+    <ng-template pTemplate="header">
+        <div class="dialog-header-custom">
+            <div class="header-main-info">
+                <h3 class="item-title">{{ selectedMedicine?.name }}</h3>
+                <div class="item-meta-badges">
+                    <span class="badge-batch-info">رقم الدفعة: {{ inlineItemForm.get('companyBatchNumber')?.value
+                        }}</span>
+                    <span class="badge-price-info">سعر الشراء الافتراضي: {{ inlineItemForm.get('price')?.value | number:
+                        '1.2-2' }} ر.ي</span>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+
+    <form [formGroup]="inlineItemForm" (ngSubmit)="confirmModalItem()">
+        <div class="modal-form-grid p-fluid">
+            <!-- الكمية (تأخذ Focus تلقائياً + Select All) -->
+            <div class="input-group">
+                <label>الكمية <span class="text-red-500">*</span></label>
+                <p-inputNumber #qtyInputEl formControlName="quantity" [min]="1" [showButtons]="false"
+                    (onFocus)="onInputFocus($event)" (keyup.enter)="confirmModalItem()"
+                    styleClass="custom-p-input modal-input-highlight"></p-inputNumber>
+            </div>
+
+            <!-- الوحدة -->
+            <div class="input-group">
+                <label>الوحدة <span class="text-red-500">*</span></label>
+                <p-dropdown [options]="unitOptions" formControlName="selectedUnit" (onChange)="onUnitSelect($event)"
+                    appendTo="body" styleClass="custom-p-input"></p-dropdown>
+            </div>
+
+            <!-- تاريخ الانتهاء (افتراضي 3 أشهر، ولا يمكن اختيار تاريخ سابق) -->
+            <div class="input-group">
+                <label>تاريخ الانتهاء <span class="text-red-500">*</span></label>
+                <p-calendar formControlName="expiryDate" dateFormat="dd/mm/yy" appendTo="body" placeholder="DD/MM/YY"
+                    [showIcon]="false" [minDate]="minExpiryDate" styleClass="custom-p-input"></p-calendar>
+            </div>
+
+
+            <!-- سعر الشراء -->
+            <div class="input-group">
+                <label>سعر الشراء للوحدة <span class="text-red-500">*</span></label>
+                <p-inputNumber formControlName="price" [min]="0" mode="decimal" [minFractionDigits]="2"
+                    (onFocus)="onInputFocus($event)" styleClass="custom-p-input"></p-inputNumber>
+            </div>
+
+            <!-- سعر البيع -->
+            <div class="input-group">
+                <label>سعر البيع المقترح</label>
+                <p-inputNumber formControlName="salePrice" [min]="0" mode="decimal" [minFractionDigits]="2"
+                    (onFocus)="onInputFocus($event)" styleClass="custom-p-input"></p-inputNumber>
+            </div>
+
+            <!-- كمية البونص / المجاني -->
+            <div class="input-group">
+                <label>كمية المجاني (Bonus)</label>
+                <p-inputNumber formControlName="bonusQuantity" [min]="0" (onFocus)="onInputFocus($event)"
+                    styleClass="custom-p-input"></p-inputNumber>
+            </div>
+
+            <!-- موقع التخزين بالرف لهذه الدفعة -->
+            <div class="input-group full-width-grid">
+                <label>موقع التخزين بالرف <span class="text-hint">(اختياري لهذه الدفعة)</span></label>
+                <input type="text" formControlName="storageLocation" placeholder="مثال: رف أ - قسم 1"
+                    (focus)="onInputFocus($event)" (keyup.enter)="confirmModalItem()" class="custom-native-input" />
+            </div>
+        </div>
+
+
+        <div class="dialog-footer-custom">
+            <button type="button" class="btn btn-outline" (click)="closeItemModal()">
+                إلغاء <span class="btn-kbd">Esc</span>
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="inlineItemForm.invalid">
+                <i class="pi pi-check"></i> {{ editingIndex !== null ? 'تعديل الصنف' : 'إضافة للفاتورة' }} <span
+                    class="btn-kbd">Enter</span>
+            </button>
+        </div>
+    </form>
+</p-dialog>
+
+<!-- ==========================================
+     مودال دليل اختصارات لوحة المفاتيح [F1]
+     ========================================== -->
+<p-dialog [(visible)]="shortcutsHelpVisible" [modal]="true" [style]="{width: '450px'}" [draggable]="false"
+    [resizable]="false" [closable]="true" appendTo="body" header="دليل اختصارات لوحة المفاتيح" dir="rtl">
+    <div class="shortcuts-guide-list">
+        <div class="shortcut-item">
+            <span class="kbd-key">Enter</span>
+            <span class="shortcut-desc">الانتقال بين الحقول / تأكيد إضافة الصنف بالمودال</span>
+        </div>
+        <div class="shortcut-item">
+            <span class="kbd-key">F1</span>
+            <span class="shortcut-desc">عرض/إغلاق نافذة اختصارات لوحة المفاتيح</span>
+        </div>
+        <div class="shortcut-item">
+            <span class="kbd-key">F2</span>
+            <span class="shortcut-desc">حفظ واعتماد الفاتورة مباشرة</span>
+        </div>
+        <div class="shortcut-item">
+            <span class="kbd-key">F3</span>
+            <span class="shortcut-desc">حفظ الفاتورة كمسودة</span>
+        </div>
+        <div class="shortcut-item">
+            <span class="kbd-key">Esc</span>
+            <span class="shortcut-desc">إغلاق المودال النشط أو العودة لقائمة الفواتير</span>
+        </div>
+        <div class="shortcut-item">
+            <span class="kbd-key">Tab</span>
+            <span class="shortcut-desc">التنقل السلس للحقل التالي</span>
+        </div>
+    </div>
+</p-dialog>
+
+<!-- Confirmation Dialog -->
 <app-confirmation-dialog #confirmDialog [header]="'تأكيد المراجعة والترحيل'"
     (accept)="onConfirmApprove()"></app-confirmation-dialog>
 

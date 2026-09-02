@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
 import { CustomerStatement, CustomerTransaction } from '../../../../core/models/customer.models';
 import { MessageService } from 'primeng/api';
@@ -13,6 +13,7 @@ import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { ToastModule } from 'primeng/toast';
+import { DialogModule } from 'primeng/dialog';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -28,7 +29,8 @@ import { FormsModule } from '@angular/forms';
     CardModule,
     TagModule,
     TooltipModule,
-    ToastModule
+    ToastModule,
+    DialogModule
   ],
   providers: [MessageService],
   templateUrl: './customer-statement.component.html',
@@ -37,6 +39,7 @@ import { FormsModule } from '@angular/forms';
 export class CustomerStatementComponent implements OnInit {
   statement = signal<CustomerStatement | null>(null);
   loading = signal(false);
+  displayModal = signal(true);
   customerId: number | null = null;
 
   dateFrom: Date | null = null;
@@ -48,9 +51,14 @@ export class CustomerStatementComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private customerService: CustomerService,
     private messageService: MessageService
   ) { }
+
+  back() {
+    this.router.navigate(['/customers']);
+  }
 
   ngOnInit() {
     this.customerId = Number(this.route.snapshot.paramMap.get('id'));

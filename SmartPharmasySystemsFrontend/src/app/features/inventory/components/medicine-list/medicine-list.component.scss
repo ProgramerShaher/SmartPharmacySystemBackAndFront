@@ -107,6 +107,7 @@
     border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
     vertical-align: bottom;
     line-height: 1.2;
+    text-align: right !important;
 
     .header-subtext {
       font-size: 0.6rem;
@@ -122,6 +123,12 @@
     border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.04)) !important;
     vertical-align: middle;
     color: var(--text-color);
+    text-align: right !important;
+  }
+
+  .p-datatable-thead > tr > th.text-center,
+  .p-datatable-tbody > tr > td.text-center {
+    text-align: center !important;
   }
 
   /* Table column colors */

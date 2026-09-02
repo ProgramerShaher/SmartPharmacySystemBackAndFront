@@ -140,7 +140,7 @@
           <label class="vf-label">المورد المستفيد <span style="color:#ef4444">*</span></label>
           <div class="entity-row">
             <div class="autocomplete-wrap">
-              <p-autoComplete [ngModel]="selectedSupplierObj" [ngModelOptions]="{standalone: true}"
+              <p-autoComplete id="vp-1" (keydown.enter)="focusNext($event, 'vp-2')" [ngModel]="selectedSupplierObj" [ngModelOptions]="{standalone: true}"
                 [suggestions]="filteredSuppliers" (completeMethod)="searchSuppliers($event)" field="name"
                 (onSelect)="onSupplierSelect($event)" [dropdown]="true" [forceSelection]="true"
                 placeholder="اختر المورد..." appendTo="body" styleClass="w-full">
@@ -157,11 +157,11 @@
         <div class="vf-row">
           <div class="vf-field">
             <label class="vf-label">تاريخ السند <span style="color:#ef4444">*</span></label>
-            <p-calendar formControlName="paymentDate" [showIcon]="true" dateFormat="yy/mm/dd" appendTo="body" styleClass="w-full"></p-calendar>
+            <p-calendar id="vp-2" (keydown.enter)="focusNext($event, 'vp-3')" formControlName="paymentDate" [showIcon]="true" dateFormat="yy/mm/dd" appendTo="body" styleClass="w-full"></p-calendar>
           </div>
           <div class="vf-field">
             <label class="vf-label">المبلغ المصروف <span style="color:#ef4444">*</span></label>
-            <p-inputNumber formControlName="amount" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0"
+            <p-inputNumber id="vp-3" (keydown.enter)="focusNext($event, 'vp-4')" formControlName="amount" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0"
               [min]="0" [useGrouping]="true" placeholder="0" suffix=" ر.ي" styleClass="w-full">
             </p-inputNumber>
           </div>
@@ -177,7 +177,7 @@
             </span>
             <span style="font-weight:400;color:var(--text-color-secondary)">(اختياري)</span>
           </label>
-          <p-autoComplete formControlName="referenceNo" [suggestions]="filteredInvoices"
+          <p-autoComplete id="vp-4" (keydown.enter)="focusNext($event, 'vp-5')" formControlName="referenceNo" [suggestions]="filteredInvoices"
             (completeMethod)="searchInvoices($event)" field="displayText" (onSelect)="onInvoiceSelect($event)"
             [dropdown]="true" [placeholder]="selectedSupplier ? 'اختر فاتورة...' : 'اختر المورد أولاً'"
             [disabled]="!selectedSupplier" appendTo="body" styleClass="w-full">
@@ -219,7 +219,7 @@
         <!-- Notes -->
         <div class="vf-field">
           <label class="vf-label">البيان / الملاحظات</label>
-          <input pInputText formControlName="notes" placeholder="سداد كامل، دفعة جزئية..." />
+          <input id="vp-5" (keydown.enter)="focusNext($event)" pInputText formControlName="notes" placeholder="سداد كامل، دفعة جزئية..." />
         </div>
 
         <!-- Footer -->
@@ -242,11 +242,11 @@
   </ng-container>
 
   <p-dialog *ngIf="!dialogMode"
-            [visible]="displayDialog()" [modal]="true" appendTo="body" [dismissableMask]="true"
-            [style]="{ width: '420px', maxWidth: '95vw' }"
+            [visible]="displayDialog()" (visibleChange)="displayDialog.set($event)" [modal]="true" appendTo="body" [dismissableMask]="true"
+            [style]="{ width: '600px', maxWidth: '95vw' }"
             [contentStyle]="{'overflow':'visible'}"
             [draggable]="false" [resizable]="false"
-            styleClass="imperial-dialog"
+            styleClass="imperial-dialog imperial-modal-dialog"
             header="إصدار سند صرف مالي للمورد"
             (onHide)="closeModal()">
     <ng-container *ngTemplateOutlet="paymentFormTemplate"></ng-container>

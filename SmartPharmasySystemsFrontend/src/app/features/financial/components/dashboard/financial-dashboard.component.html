@@ -111,10 +111,11 @@
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 15%">التاريخ</th>
-                            <th style="width: 35%">الوصف</th>
-                            <th style="width: 15%">رقم المرجع</th>
-                            <th style="width: 15%">النوع</th>
-                            <th style="width: 20%;">المبلغ</th>
+                            <th style="width: 25%">الوصف</th>
+                            <th style="width: 12%">رقم المرجع</th>
+                            <th style="width: 13%">النوع</th>
+                            <th style="width: 17%;">المبلغ</th>
+                            <th style="width: 18%;">الرصيد بعد العملية</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-tx>
@@ -135,11 +136,17 @@
                                     {{ isExpense(tx.type) ? '-' : '+' }} {{ tx.amount | number:'1.0-0' }}
                                 </span>
                             </td>
+                            <td style="text-align: right; vertical-align: middle;">
+                                <span class="font-bold" style="color: #0f172a; font-size: 0.88rem;">
+                                    {{ (tx.balanceAfterTransaction !== undefined && tx.balanceAfterTransaction !== null ? tx.balanceAfterTransaction : 0) | number:'1.0-0' }}
+                                </span>
+                                <small style="color: #64748b; margin-right: 0.25rem; font-size: 0.7rem;">ر.ي</small>
+                            </td>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="emptydata">
                         <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: #64748b;">
+                            <td colspan="6" style="text-align: center; padding: 2rem; color: #64748b;">
                                 <i class="pi pi-receipt" style="font-size: 1.5rem; color: #e2e8f0; display: block; margin-bottom: 0.5rem;"></i>
                                 <span style="font-weight: 700; color: #1e293b;">لا توجد حركات مالية</span>
                                 <small style="display: block; margin-top: 0.25rem;">لم يتم العثور على بيانات تطابق بحثك</small>

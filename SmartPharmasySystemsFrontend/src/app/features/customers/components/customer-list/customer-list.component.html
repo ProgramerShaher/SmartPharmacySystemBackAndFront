@@ -203,7 +203,7 @@
 </div>
 
 <!-- ═══════════ Add/Edit Dialog ═══════════ -->
-<p-dialog [visible]="displayAddEditSidebar()" [modal]="true"
+<p-dialog [visible]="displayAddEditSidebar()" (visibleChange)="displayAddEditSidebar.set($event)" [modal]="true" appendTo="body"
           [draggable]="false" [resizable]="false" [dismissableMask]="true"
           [style]="{width: '600px', maxWidth: '95vw'}"
           [header]="sideBarHeader()"
@@ -216,11 +216,11 @@
 </p-dialog>
 
 <!-- ═══════════ Receipts Dialog ═══════════ -->
-<p-dialog [(visible)]="receiptsVisible" [modal]="true"
+<p-dialog [(visible)]="receiptsVisible" [modal]="true" appendTo="body"
           [draggable]="false" [resizable]="false" [dismissableMask]="true"
-          [style]="{width: '820px', maxWidth: '95vw'}"
+          [style]="{width: '640px', maxWidth: '95vw'}"
           header="إدارة سندات القبض للعملاء"
-          (onHide)="closeReceiptsDialog()" styleClass="imperial-dialog">
+          (onHide)="closeReceiptsDialog()" styleClass="imperial-dialog imperial-modal-dialog">
   <app-customer-receipts *ngIf="receiptsVisible"
     [dialogMode]="true"
     [autoOpenCreate]="true"

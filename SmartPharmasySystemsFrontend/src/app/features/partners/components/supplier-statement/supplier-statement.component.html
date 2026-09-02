@@ -1,9 +1,19 @@
+<p-dialog [visible]="displayModal()" (visibleChange)="displayModal.set($event)" [modal]="true" [dismissableMask]="true" appendTo="body"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '1220px', maxWidth: '95vw'}"
+          [contentStyle]="{'padding': '0', 'overflow': 'hidden', 'max-height': '90vh', 'border-radius': '16px'}"
+          [showHeader]="false" [blockScroll]="true"
+          (onHide)="goBack()" styleClass="imperial-modal-dialog">
+
 <div class="statement-container fadein" dir="rtl">
 
   <!-- ═══════════ Imperial Search & Actions Bar (no-print) ═══════════ -->
   <div class="imperial-search-bar no-print mb-3">
     <div class="search-content">
       <div class="flex-align">
+        <button pButton icon="pi pi-arrow-right" (click)="goBack()"
+                class="p-button-rounded p-button-text p-button-secondary back-btn ml-1"
+                pTooltip="الرجوع إلى القائمة" tooltipPosition="top"></button>
         <div class="search-icon-badge">
           <i class="pi pi-search"></i>
         </div>
@@ -17,9 +27,12 @@
           </p-autoComplete>
         </div>
       </div>
-      <div class="action-buttons" *ngIf="statement()">
-        <button pButton label="طباعة الكشف المالي" icon="pi pi-print" (click)="print()"
+      <div class="action-buttons gap-2">
+        <button pButton label="طباعة الكشف المالي" icon="pi pi-print" (click)="print()" *ngIf="statement()"
           class="imperial-btn-primary p-button-sm px-4"></button>
+        <button pButton icon="pi pi-times" (click)="goBack()"
+                class="p-button-rounded p-button-text p-button-secondary"
+                pTooltip="إغلاق النافذة (Esc)" tooltipPosition="top"></button>
       </div>
     </div>
   </div>
@@ -145,7 +158,7 @@
     <!-- ── Ledger Table / Statement Sheet ── -->
     <div class="ledger-card-wrapper">
       <p-table [value]="statement()?.transactions!" styleClass="p-datatable-sm imperial-statement-table"
-        responsiveLayout="scroll" [rowHover]="true">
+        responsiveLayout="scroll" [rowHover]="true" [scrollable]="true" scrollHeight="calc(90vh - 285px)">
 
         <ng-template pTemplate="header">
           <tr>
@@ -363,3 +376,4 @@
   </div>
 
 </div>
+</p-dialog>

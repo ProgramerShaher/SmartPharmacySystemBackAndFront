@@ -20,6 +20,7 @@
 
 /* ---------- Micro Header ---------- */
 .imperial-header {
+  margin-bottom: 0.85rem;
   .header-content {
     display: flex;
     justify-content: space-between;
@@ -93,6 +94,7 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.4rem;
+  margin-bottom: 0.85rem;
 
   .stat-card {
     background: var(--card-bg);
@@ -570,31 +572,39 @@
     // Calendar
     .vf-field .p-calendar {
       width: 100% !important;
+      display: inline-flex !important;
     }
     .vf-field .p-calendar input.p-inputtext {
       height: 32px !important;
       font-size: 0.78rem !important;
       padding: 0 0.5rem !important;
+      flex: 1 1 auto !important;
+      width: 1% !important;
     }
     .vf-field .p-calendar .p-datepicker-trigger {
       height: 32px !important;
-      width: 2rem !important;
+      width: 2.2rem !important;
+      flex: 0 0 auto !important;
       padding: 0 !important;
     }
 
     // AutoComplete
     .vf-field .p-autocomplete {
       width: 100% !important;
+      display: inline-flex !important;
     }
     .vf-field .p-autocomplete-input {
       height: 32px !important;
       font-size: 0.78rem !important;
       padding: 0 0.6rem !important;
-      width: 100% !important;
+      flex: 1 1 auto !important;
+      width: 1% !important;
     }
+    .vf-field .p-autocomplete-dropdown,
     .vf-field .p-autocomplete-dd .p-autocomplete-dropdown {
       height: 32px !important;
-      width: 2rem !important;
+      width: 2.2rem !important;
+      flex: 0 0 auto !important;
       padding: 0 !important;
     }
   }

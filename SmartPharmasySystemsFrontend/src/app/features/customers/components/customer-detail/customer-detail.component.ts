@@ -45,6 +45,7 @@ import { CustomerAddEditComponent } from '../customer-add-edit/customer-add-edit
 export class CustomerDetailComponent implements OnInit {
   customer = signal<Customer | null>(null);
   loading = signal(false);
+  displayModal = signal(true);
 
   // Sidebar Modal Drawer Support
   displayAddEditSidebar = signal(false);

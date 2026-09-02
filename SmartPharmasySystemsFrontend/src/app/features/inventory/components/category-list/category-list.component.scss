@@ -68,6 +68,7 @@
             padding: 0.4rem 0.6rem !important;
             font-size: 0.85rem !important;
             height: auto !important;
+            text-align: right;
         }
 
         .p-datatable-thead>tr>th {
@@ -75,6 +76,12 @@
             padding: 0.4rem 0.6rem !important;
             text-transform: uppercase;
             letter-spacing: 0.025em;
+            text-align: right;
+        }
+
+        .p-datatable-thead>tr>th.text-center,
+        .p-datatable-tbody>tr>td.text-center {
+            text-align: center !important;
         }
 
         .p-button-teal {

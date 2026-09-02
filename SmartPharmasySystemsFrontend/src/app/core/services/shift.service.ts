@@ -56,4 +56,8 @@ export class ShiftService {
         map(res => res.data)
     );
   }
+
+  sweepUntransferredShifts(): Observable<ApiResponse<number>> {
+    return this.http.post<ApiResponse<number>>(`${this.apiUrl}/SweepUntransferred`, {});
+  }
 }

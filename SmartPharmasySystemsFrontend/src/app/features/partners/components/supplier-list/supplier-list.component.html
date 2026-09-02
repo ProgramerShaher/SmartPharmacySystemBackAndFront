@@ -183,21 +183,18 @@
 </div>
 
 <!-- ═══════════ Add/Edit Dialog ═══════════ -->
-<p-dialog [(visible)]="addEditVisible" [modal]="true"
-          [draggable]="false" [resizable]="false" [dismissableMask]="true"
-          [style]="{width: '600px', maxWidth: '95vw'}"
-          [header]="editSupplierId() ? 'تعديل بيانات المورد' : 'إضافة مورد جديد'"
-          (onHide)="closeAddEditDialog()" styleClass="imperial-dialog">
+<p-dialog [(visible)]="addEditVisible" [modal]="true" appendTo="body" [draggable]="false" [resizable]="false" [dismissableMask]="true"
+  [style]="{width: '600px', maxWidth: '95vw'}" [header]="editSupplierId() ? 'تعديل بيانات المورد' : 'إضافة مورد جديد'"
+  (onHide)="closeAddEditDialog()" styleClass="imperial-dialog">
   <app-supplier-add-edit [dialogMode]="true" [editSupplierId]="editSupplierId()" (saved)="onSupplierSaved()"
     (closed)="closeAddEditDialog()">
   </app-supplier-add-edit>
 </p-dialog>
 
 <!-- ═══════════ Payments Dialog ═══════════ -->
-<p-dialog [(visible)]="paymentsVisible" [modal]="true"
-          [draggable]="false" [resizable]="false" [dismissableMask]="true"
-          [style]="{width: '820px', maxWidth: '95vw'}" header="إدارة سندات الصرف للموردين"
-          (onHide)="closePaymentsDialog()" styleClass="imperial-dialog">
+<p-dialog [(visible)]="paymentsVisible" [modal]="true" appendTo="body" [draggable]="false" [resizable]="false" [dismissableMask]="true"
+  [style]="{width: '640px', maxWidth: '95vw'}" header="إدارة سندات الصرف للموردين" (onHide)="closePaymentsDialog()"
+  styleClass="imperial-dialog imperial-modal-dialog">
   <app-supplier-payments [dialogMode]="true" [autoOpenCreate]="true" [presetSupplierId]="selectedSupplierIdForPayment()"
     (closed)="closePaymentsDialog()">
   </app-supplier-payments>

@@ -70,6 +70,8 @@ export class MedicineListComponent implements OnInit {
     selectedMedicineIdForBatch = 0;
     selectedMedicineNameForBatch = '';
 
+    @ViewChild('dt') dt!: Table;
+
     statusOptions = [
         { label: 'الكل', value: null },
         { label: 'نشط', value: 'Active' },
@@ -93,7 +95,12 @@ export class MedicineListComponent implements OnInit {
             distinctUntilChanged()
         ).subscribe(term => {
             this.searchTerm.set(term);
-            this.loadMedicines(this.lastLazyEvent);
+            if (this.dt) {
+                this.dt.reset(); // This will trigger onLazyLoad with first: 0
+            } else {
+                this.lastLazyEvent.first = 0;
+                this.loadMedicines(this.lastLazyEvent);
+            }
         });
     }
 

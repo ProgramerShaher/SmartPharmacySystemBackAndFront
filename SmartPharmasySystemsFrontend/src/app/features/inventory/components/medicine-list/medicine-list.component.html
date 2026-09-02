@@ -46,10 +46,10 @@
 
     <!-- ═══════════ Ledger Table Wrapper ═══════════ -->
     <div class="ledger-card-wrapper">
-        <p-table [value]="medicines()" [lazy]="true" (onLazyLoad)="loadMedicines($event)" [paginator]="true"
+        <p-table #dt [value]="medicines()" [lazy]="true" (onLazyLoad)="loadMedicines($event)" [paginator]="true"
             [rows]="10" [totalRecords]="totalRecords()" [loading]="loading()" [rowHover]="true"
             [(selection)]="selectedMedicines" dataKey="id"
-            responsiveLayout="scroll" styleClass="p-datatable-sm imperial-statement-table">
+            responsiveLayout="scroll" styleClass="p-datatable-sm imperial-statement-table" dir="rtl">
             
             <ng-template pTemplate="header">
                 <tr>

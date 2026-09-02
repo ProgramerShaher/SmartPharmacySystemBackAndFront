@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { TabViewModule } from 'primeng/tabview';
+import { DialogModule } from 'primeng/dialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { SupplierService } from '../../services/supplier.service';
 import { Supplier } from '../../../../core/models/supplier.models';
@@ -34,6 +35,7 @@ import { of } from 'rxjs';
     TooltipModule,
     TableModule,
     TabViewModule,
+    DialogModule,
   ],
   templateUrl: './supplier-detail.component.html',
   styleUrl: './supplier-detail.component.scss',
@@ -44,6 +46,7 @@ export class SupplierDetailComponent implements OnInit {
   loading: boolean = true;
   showInvoices: boolean = false;
   showReturns: boolean = false;
+  displayModal: boolean = true;
 
   constructor(
     private supplierService: SupplierService,

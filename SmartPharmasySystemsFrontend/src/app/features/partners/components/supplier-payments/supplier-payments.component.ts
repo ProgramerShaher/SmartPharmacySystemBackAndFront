@@ -306,6 +306,20 @@ export class SupplierPaymentsComponent implements OnInit {
     if (this.dialogMode) this.closed.emit();
   }
 
+  focusNext(event: Event, nextFieldId?: string) {
+    event.preventDefault();
+    if (nextFieldId) {
+      const el = document.getElementById(nextFieldId);
+      if (el) {
+        const inputEl = el.querySelector('input') || el.querySelector('button') || el;
+        (inputEl as HTMLElement).focus();
+        return;
+      }
+    } else {
+      this.savePayment();
+    }
+  }
+
   private recomputeAllocations() {
     const amountRaw = this.paymentForm.get('amount')?.value;
     const amount = Number(amountRaw || 0);

@@ -1,3 +1,10 @@
+<p-dialog [visible]="displayModal()" (visibleChange)="displayModal.set($event)" [modal]="true" [dismissableMask]="true" appendTo="body"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '1200px', maxWidth: '95vw'}"
+          [contentStyle]="{'padding': '0', 'overflow-y': 'auto', 'max-height': '90vh', 'border-radius': '16px'}"
+          [showHeader]="false" [blockScroll]="true"
+          (onHide)="back()" styleClass="imperial-modal-dialog">
+
 <!-- Add/Edit Dialog Modal -->
 <p-dialog [(visible)]="displayAddEditSidebar" [header]="'تعديل بيانات العميل'" [modal]="true" [style]="{width: '780px', 'max-height': '92vh'}"
     styleClass="premium-dialog border-round-2xl overflow-hidden" [draggable]="false" [resizable]="false">
@@ -14,7 +21,8 @@
     <div class="header-content">
       <div class="flex-align">
         <button pButton icon="pi pi-arrow-right" (click)="back()"
-                class="p-button-rounded p-button-text p-button-secondary back-btn"></button>
+                class="p-button-rounded p-button-text p-button-secondary back-btn"
+                pTooltip="الرجوع إلى القائمة" tooltipPosition="top"></button>
         <div>
           <h1 class="page-title">ملف العميل المالي والشخصي</h1>
           <p class="page-subtitle">العميل: <span class="highlight-text">{{ c.name }}</span> <span class="badge-code font-mono">#CUST-{{ c.id }}</span></p>
@@ -23,6 +31,9 @@
       <div class="header-actions">
         <button pButton label="تعديل البيانات" icon="pi pi-pencil" (click)="openEdit(c.id)"
                 class="imperial-btn-warning p-button-sm"></button>
+        <button pButton icon="pi pi-times" (click)="back()"
+                class="p-button-rounded p-button-text p-button-secondary ml-2"
+                pTooltip="إغلاق النافذة (Esc)" tooltipPosition="top"></button>
       </div>
     </div>
   </div>
@@ -257,3 +268,4 @@
 
 <!-- Global Helpers -->
 <p-toast position="top-left"></p-toast>
+</p-dialog>

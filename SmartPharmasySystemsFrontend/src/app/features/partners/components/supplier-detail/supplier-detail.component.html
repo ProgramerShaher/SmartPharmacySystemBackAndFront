@@ -1,3 +1,10 @@
+<p-dialog [visible]="displayModal" (visibleChange)="displayModal = $event" [modal]="true" [dismissableMask]="true" appendTo="body"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '1200px', maxWidth: '95vw'}"
+          [contentStyle]="{'padding': '0', 'overflow': 'hidden', 'max-height': '90vh', 'border-radius': '16px'}"
+          [showHeader]="false" [blockScroll]="true"
+          (onHide)="goBack()" styleClass="imperial-modal-dialog">
+
 <div class="supplier-detail-page fadein" dir="rtl" *ngIf="supplier && !loading">
 
   <!-- ═══════════ Imperial Header / Breadcrumb / Actions ═══════════ -->
@@ -5,7 +12,8 @@
     <div class="header-content">
       <div class="flex-align">
         <button pButton icon="pi pi-arrow-right" (click)="goBack()"
-                class="p-button-rounded p-button-text p-button-secondary back-btn"></button>
+                class="p-button-rounded p-button-text p-button-secondary back-btn"
+                pTooltip="الرجوع إلى القائمة" tooltipPosition="top"></button>
         <div>
           <h1 class="page-title">ملف المورد المالي والشخصي</h1>
           <p class="page-subtitle">المورد: <span class="highlight-text">{{ supplier.name }}</span> <span class="badge-code font-mono">#SUP-{{ supplier.id }}</span></p>
@@ -16,6 +24,9 @@
                 class="imperial-btn-warning p-button-sm"></button>
         <button pButton label="حذف المورد" icon="pi pi-trash" (click)="deleteSupplier($event)"
                 class="imperial-btn-danger-text p-button-sm"></button>
+        <button pButton icon="pi pi-times" (click)="goBack()"
+                class="p-button-rounded p-button-text p-button-secondary ml-2"
+                pTooltip="إغلاق النافذة (Esc)" tooltipPosition="top"></button>
       </div>
     </div>
   </div>
@@ -189,6 +200,7 @@
               <p-table [value]="supplier.purchaseInvoices || []"
                        styleClass="p-datatable-sm imperial-compact-table"
                        [rows]="10" [paginator]="true" [rowHover]="true"
+                       [scrollable]="true" scrollHeight="calc(90vh - 380px)"
                        responsiveLayout="scroll">
                 <ng-template pTemplate="header">
                   <tr>
@@ -259,7 +271,8 @@
             <div class="tab-content-box">
               <p-table [value]="supplier.purchaseReturns || []"
                        styleClass="p-datatable-sm imperial-compact-table"
-                       [rows]="10" [paginator]="true" [rowHover]="true">
+                       [rows]="10" [paginator]="true" [rowHover]="true"
+                       [scrollable]="true" scrollHeight="calc(90vh - 380px)">
                 <ng-template pTemplate="header">
                   <tr>
                     <th style="width:3rem;" class="text-center">#</th>
@@ -344,3 +357,5 @@
 <!-- Global Helpers -->
 <p-confirmDialog [rtl]="true" styleClass="imperial-confirm-dialog" [style]="{width: '450px'}"></p-confirmDialog>
 <p-toast position="top-left"></p-toast>
+</p-dialog>
+

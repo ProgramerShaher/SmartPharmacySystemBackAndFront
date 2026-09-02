@@ -6,8 +6,11 @@
 
 .statement-container {
   padding: 0.75rem;
-  background: transparent; /* Transparent so body gradient shows through nicely */
-  min-height: calc(100vh - 70px);
+  background: transparent;
+  max-height: 90vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
   color: var(--text-color, #1e293b);
   transition: background 0.3s ease, color 0.3s ease;
 }
@@ -816,6 +819,49 @@
     .signature-line {
       font-size: 0.65rem;
       color: #000;
+    }
+  }
+}
+
+/* ═══════════ Imperial Modal Dialog Glass Theme ═══════════ */
+::ng-deep .imperial-modal-dialog {
+  .p-dialog {
+    border-radius: 16px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+    overflow: hidden !important;
+    border: var(--card-border, 1px solid rgba(255, 255, 255, 0.12)) !important;
+    background: var(--modal-bg, #ffffff) !important;
+  }
+
+  .p-dialog-content {
+    background: var(--body-bg, var(--surface-card, #f8fafc)) !important;
+    padding: 0.85rem !important;
+    border-radius: 16px !important;
+  }
+
+  .p-dialog-mask {
+    background-color: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(8px) !important;
+    transition: background-color 0.3s ease !important;
+  }
+}
+
+@media print {
+  ::ng-deep {
+    .p-dialog-mask,
+    .p-dialog {
+      position: static !important;
+      background: transparent !important;
+      box-shadow: none !important;
+      border: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      transform: none !important;
+    }
+    .p-dialog-content {
+      background: transparent !important;
+      padding: 0 !important;
+      overflow: visible !important;
     }
   }
 }

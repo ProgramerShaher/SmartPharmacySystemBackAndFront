@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SupplierService } from '../../services/supplier.service';
 import { SupplierStatement, StatementItemDto } from '../../../../core/models/supplier.models';
 import { MessageService } from 'primeng/api';
@@ -15,6 +15,8 @@ import { CardModule } from 'primeng/card';
 import { TagModule } from 'primeng/tag';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { DialogModule } from 'primeng/dialog';
+import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 
 @Component({
@@ -29,7 +31,9 @@ import { FormsModule } from '@angular/forms';
         CardModule,
         TagModule,
         ProgressSpinnerModule,
-        AutoCompleteModule
+        AutoCompleteModule,
+        DialogModule,
+        TooltipModule
     ],
     providers: [MessageService],
     templateUrl: './supplier-statement.component.html',
@@ -38,6 +42,7 @@ import { FormsModule } from '@angular/forms';
 export class SupplierStatementComponent implements OnInit {
     statement = signal<SupplierStatement | null>(null);
     loading = signal(false);
+    displayModal = signal(true);
     selectedSupplierId: number | null = null;
 
     pharmacySettings = signal<PharmacySettings>({
@@ -59,6 +64,7 @@ export class SupplierStatementComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
+        private router: Router,
         private supplierService: SupplierService,
         private messageService: MessageService,
         private settingsService: SettingsService,
@@ -113,6 +119,10 @@ export class SupplierStatementComponent implements OnInit {
                 this.loading.set(false);
             }
         });
+    }
+
+    goBack(): void {
+        this.router.navigate(['/partners/suppliers']);
     }
 
     print() {

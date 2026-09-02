@@ -185,10 +185,12 @@ export class LoginComponent implements OnInit {
       next: (settings: PharmacySettings) => {
         this.pharmacyName = settings.pharmacyName || this.pharmacyName;
         this.pharmacyLogoUrl = settings.logoUrl ? `${this.serverUrl}${settings.logoUrl}` : null;
+      },
+      error: () => {
+        // Silent fallback to default pharmacy name if settings endpoint fails
       }
     });
   }
-
 
   onSubmit() {
     if (this.loginForm.invalid) {
@@ -247,10 +249,16 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
+        const errorDetail =
+          (typeof error.error === 'string' ? error.error : null) ||
+          error.error?.message ||
+          error.error?.Message ||
+          'اسم المستخدم أو كلمة المرور غير صحيحة';
+
         this.messageService.add({
           severity: 'error',
           summary: 'خطأ في تسجيل الدخول',
-          detail: error.error?.message || 'اسم المستخدم أو كلمة المرور غير صحيحة',
+          detail: errorDetail,
           life: 5000
         });
       }

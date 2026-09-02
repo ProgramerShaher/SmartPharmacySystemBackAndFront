@@ -1,19 +1,30 @@
+<p-dialog [visible]="displayModal()" (visibleChange)="displayModal.set($event)" [modal]="true" [dismissableMask]="true" appendTo="body"
+          [draggable]="false" [resizable]="false"
+          [style]="{width: '1220px', maxWidth: '95vw'}"
+          [contentStyle]="{'padding': '0', 'overflow': 'hidden', 'max-height': '90vh', 'border-radius': '16px'}"
+          [showHeader]="false" [blockScroll]="true"
+          (onHide)="back()" styleClass="imperial-modal-dialog">
+
 <div class="statement-container fadein" dir="rtl" *ngIf="statement() as s">
 
   <!-- ═══════════ Imperial Header / Breadcrumb / Actions (No Print) ═══════════ -->
   <div class="imperial-header mb-3 no-print">
     <div class="header-content">
       <div class="flex-align">
-        <button pButton icon="pi pi-arrow-right" [routerLink]="['/customers/detail', customerId]"
-                class="p-button-rounded p-button-text p-button-secondary back-btn"></button>
+        <button pButton icon="pi pi-arrow-right" (click)="back()"
+                class="p-button-rounded p-button-text p-button-secondary back-btn"
+                pTooltip="الرجوع إلى القائمة" tooltipPosition="top"></button>
         <div>
           <h1 class="page-title">كشف الحساب المالي التفصيلي</h1>
           <p class="page-subtitle">العميل: <span class="highlight-text">{{ s.customerName }}</span> <span class="badge-code font-mono">#CUST-{{ customerId }}</span></p>
         </div>
       </div>
-      <div class="header-actions">
+      <div class="header-actions flex align-items-center gap-2">
         <button pButton label="طباعة الكشف المالي" icon="pi pi-print" (click)="printStatement()"
                 class="imperial-btn-primary p-button-sm"></button>
+        <button pButton icon="pi pi-times" (click)="back()"
+                class="p-button-rounded p-button-text p-button-secondary ml-2"
+                pTooltip="إغلاق النافذة (Esc)" tooltipPosition="top"></button>
       </div>
     </div>
   </div>
@@ -125,7 +136,7 @@
     <!-- ═══════════ Detailed Account Ledger Table ═══════════ -->
     <div class="ledger-card-wrapper mb-3">
       <p-table [value]="s.items" [loading]="loading()" styleClass="p-datatable-striped p-datatable-sm imperial-statement-table"
-                responsiveLayout="scroll" [tableStyle]="{'min-width': '60rem'}">
+                responsiveLayout="scroll" [tableStyle]="{'min-width': '60rem'}" [scrollable]="true" scrollHeight="calc(90vh - 310px)">
         <ng-template pTemplate="header">
           <tr>
             <th class="col-num text-center">#</th>
@@ -244,3 +255,4 @@
 </div>
 
 <p-toast position="top-left"></p-toast>
+</p-dialog>

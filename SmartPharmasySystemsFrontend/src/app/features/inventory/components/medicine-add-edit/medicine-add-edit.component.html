@@ -1,7 +1,7 @@
 <p-dialog [(visible)]="visible" (onHide)="close()" [modal]="true" [draggable]="false" [resizable]="false"
     [style]="{ width: 'min(98vw, 1100px)' }" styleClass="medicine-dialog"
     [breakpoints]="{'900px': '96vw', '640px': '98vw'}" [showHeader]="false" [closable]="true"
-    maskStyleClass="backdrop-blur-sm bg-black-alpha-40">
+    [dismissableMask]="true" maskStyleClass="backdrop-blur-sm bg-black-alpha-40">
 
     <div class="modal-shell" dir="rtl">
         <div class="modal-header">
@@ -10,7 +10,11 @@
                     <i class="pi" [ngClass]="medicine ? 'pi-pencil' : 'pi-bolt'"></i>
                 </span>
                 <div>
-                    <h2>{{ medicine ? 'تعديل الدواء' : 'إضافة دواء جديد' }}</h2>
+                    <div class="flex align-items-center gap-3">
+                        <h2 class="m-0">{{ medicine ? 'تعديل الدواء' : 'إضافة دواء جديد' }}</h2>
+                        <button pButton type="button" label="وحدة إضافية [F3]" icon="pi pi-plus"
+                            class="p-button-sm p-button-outlined p-button-success py-1 px-2" (click)="openUnitModal()"></button>
+                    </div>
                     <p>إدخال سريع باستخدام لوحة المفاتيح (اختصارات F2 للحفظ)</p>
                 </div>
             </div>
@@ -28,6 +32,7 @@
                     <div class="form-field">
                         <label class="required-star">الاسم التجاري</label>
                         <input pInputText id="medNameInput" formControlName="name"
+                            (focus)="selectText($event)"
                             (keydown.enter)="focusNext('categoryIdInput', $event)"
                             [ngClass]="{'ng-invalid ng-dirty': medicineForm.get('name')?.invalid && medicineForm.get('name')?.touched}" />
                     </div>
@@ -37,7 +42,8 @@
                         <label class="required-star">التصنيف</label>
                         <p-dropdown id="categoryIdInput" [options]="categories()" formControlName="categoryId"
                             optionLabel="name" optionValue="id" placeholder="ابحث واختر..." [filter]="true"
-                            [showClear]="true" appendTo="body"
+                            [editable]="true" [showClear]="true" appendTo="body"
+                            (onFocus)="selectText($event)"
                             (keydown.enter)="focusNext('scientificNameInput', $event)" styleClass="w-full"></p-dropdown>
                     </div>
 
@@ -45,6 +51,7 @@
                     <div class="form-field">
                         <label>الاسم العلمي <span class="text-hint">(اختياري)</span></label>
                         <input pInputText id="scientificNameInput" formControlName="scientificName"
+                            (onFocus)="selectText($event)"
                             (keydown.enter)="focusNext('baseUnitNameInput', $event)" />
                     </div>
 
@@ -53,6 +60,7 @@
                         <label class="required-star">الوحدة الأساسية</label>
                         <p-dropdown id="baseUnitNameInput" [options]="unitOptions" formControlName="baseUnitName"
                             [editable]="true" placeholder="اختر أو اكتب..." appendTo="body"
+                            (onFocus)="selectText($event)"
                             (keydown.enter)="focusNext('defaultPurchasePriceInput', $event)"
                             styleClass="w-full"></p-dropdown>
                     </div>
@@ -95,7 +103,7 @@
                     <div class="form-field">
                         <label>إعادة الطلب عند <span class="text-hint">(اختياري)</span></label>
                         <p-inputNumber id="reorderLevelInput" formControlName="reorderLevel" [min]="0" class="w-full"
-                            (onFocus)="selectText($event)" (keydown.enter)="save()"></p-inputNumber>
+                            (onFocus)="selectText($event)" (keydown.enter)="focusNext('defaultBarcodeInput', $event)"></p-inputNumber>
                     </div>
 
                 </div>
@@ -104,7 +112,7 @@
                 <div class="form-field">
                     <label>الباركود <span class="text-hint">(اختياري)</span></label>
                     <div class="amount-group">
-                        <input pInputText formControlName="defaultBarcode" class="barcode-input" />
+                        <input pInputText id="defaultBarcodeInput" formControlName="defaultBarcode" class="barcode-input" (focus)="selectText($event)" (keydown.enter)="focusNext('notesInput', $event)" />
                         <span class="currency-badge"><i class="pi pi-barcode"></i></span>
                     </div>
                 </div>
@@ -120,8 +128,8 @@
                 <div class="form-field span-2" [ngClass]="{'span-3': !medicine}">
                     <label>ملاحظات إضافية وصورة <span class="text-hint">(اختياري)</span></label>
                     <div class="flex gap-2">
-                        <input pInputText formControlName="notes" placeholder="أي ملاحظات حول الدواء..."
-                            class="flex-1" />
+                        <input pInputText id="notesInput" formControlName="notes" placeholder="أي ملاحظات حول الدواء..."
+                            class="flex-1" (focus)="selectText($event)" (keydown.enter)="focusNext('saveMedicineBtn', $event)" />
 
                         <div class="image-frame flex align-items-center gap-2 border-1 surface-border border-round px-2"
                             style="background: #f8fafc; height: 34px;">
@@ -139,40 +147,21 @@
                 </div>
 
                 <!-- وحدات متعددة -->
-                <div class="section-divider span-4 flex justify-content-between align-items-center mt-2">
-                    <span>الوحدات الإضافية (أشرطة، علب) <span class="text-hint font-normal">(اختياري)</span></span>
-                    <button pButton type="button" label="إضافة وحدة جديدة" icon="pi pi-plus"
-                        class="p-button-sm p-button-text p-button-success py-0 h-auto" (click)="addUnit()"></button>
+                <div class="section-divider span-4 mt-2" *ngIf="medicineUnits.length > 0">
+                    الوحدات الإضافية المضافة
                 </div>
-
-                <div class="span-4" formArrayName="medicineUnits">
-                    <div *ngFor="let unit of medicineUnits.controls; let i=index" [formGroupName]="i"
-                        class="unit-card flex gap-2 align-items-end mb-2">
-                        <div class="form-field flex-1">
-                            <label class="required-star">الاسم</label>
-                            <input pInputText formControlName="name" placeholder="علبة..." />
+                
+                <div class="span-4 flex flex-wrap gap-2" *ngIf="medicineUnits.length > 0">
+                    <div *ngFor="let unit of medicineUnits.controls; let i=index" class="surface-100 border-round p-2 flex align-items-center gap-3 border-1 surface-border">
+                        <div>
+                            <span class="font-bold text-primary">{{ unit.get('name')?.value }}</span>
+                            <span class="text-sm text-500 ml-2">(تحتوي {{ unit.get('conversionFactor')?.value }} {{ medicineForm.get('baseUnitName')?.value }})</span>
                         </div>
-                        <div class="form-field flex-1">
-                            <label class="required-star">التحويل</label>
-                            <p-inputNumber formControlName="conversionFactor" [min]="1"
-                                (onFocus)="selectText($event)"></p-inputNumber>
+                        <div class="flex gap-3 text-sm font-semibold">
+                            <span class="text-orange-500">ش: {{ unit.get('defaultPurchasePrice')?.value }}</span>
+                            <span class="text-green-500">ب: {{ unit.get('defaultSalePrice')?.value }}</span>
                         </div>
-                        <div class="form-field flex-1">
-                            <label class="required-star">الشراء</label>
-                            <p-inputNumber formControlName="defaultPurchasePrice" mode="decimal"
-                                (onFocus)="selectText($event)"></p-inputNumber>
-                        </div>
-                        <div class="form-field flex-1">
-                            <label class="required-star">البيع</label>
-                            <p-inputNumber formControlName="defaultSalePrice" mode="decimal"
-                                (onFocus)="selectText($event)"></p-inputNumber>
-                        </div>
-                        <div class="form-field flex-1">
-                            <label>باركود</label>
-                            <input pInputText formControlName="barcode" />
-                        </div>
-                        <button pButton type="button" icon="pi pi-trash"
-                            class="p-button-danger p-button-text h-2rem w-2rem p-0" (click)="removeUnit(i)"></button>
+                        <button pButton icon="pi pi-times" class="p-button-rounded p-button-danger p-button-text p-button-sm ml-auto" (click)="removeUnit(i)"></button>
                     </div>
                 </div>
             </section>
@@ -184,8 +173,50 @@
             <div class="footer-actions">
                 <button pButton label="إلغاء [Esc]" class="p-button-text p-button-secondary" (click)="close()"></button>
                 <button pButton id="saveMedicineBtn" [label]="medicine ? 'حفظ التعديل [F2]' : 'إضافة الدواء [F2]'"
-                    icon="pi pi-check" iconPos="right" class="save-btn" [loading]="loading()" (click)="save()"></button>
+                    icon="pi pi-check" iconPos="right" class="save-btn" [disabled]="medicineForm.invalid || loading()" [loading]="loading()" (click)="save()"></button>
             </div>
         </div>
+    </div>
+</p-dialog>
+
+<p-dialog [(visible)]="unitModalVisible" [modal]="true" [style]="{ width: '450px' }" header="إضافة وحدة جديدة" [closable]="false" styleClass="unit-dialog" dir="rtl" [draggable]="false" [resizable]="false" [dismissableMask]="true">
+    <div class="p-3 bg-white">
+        <form [formGroup]="newUnitForm" class="form-grid compact-layout">
+            <div class="form-field span-4">
+                <label class="required-star">الاسم (علبة، كرتون...)</label>
+                <input pInputText id="unitNameInput" formControlName="name" (focus)="selectText($event)" (keydown.enter)="focusNextUnit('unitConversionInput', $event)" />
+            </div>
+            
+            <div class="form-field span-2">
+                <label class="required-star">التحويل (كم {{ medicineForm.get('baseUnitName')?.value || 'حبة' }}؟)</label>
+                <p-inputNumber id="unitConversionInput" formControlName="conversionFactor" [min]="1" (onFocus)="selectText($event)" (keydown.enter)="focusNextUnit('unitBarcodeInput', $event)"></p-inputNumber>
+            </div>
+            
+            <div class="form-field span-2">
+                <label>الباركود</label>
+                <input pInputText id="unitBarcodeInput" formControlName="barcode" (focus)="selectText($event)" (keydown.enter)="focusNextUnit('unitPurchaseInput', $event)" />
+            </div>
+
+            <div class="form-field span-2">
+                <label class="required-star">سعر الشراء</label>
+                <div class="amount-group">
+                    <p-inputNumber id="unitPurchaseInput" formControlName="defaultPurchasePrice" mode="decimal" (onFocus)="selectText($event)" (keydown.enter)="focusNextUnit('unitSaleInput', $event)"></p-inputNumber>
+                    <span class="currency-badge">ر.ي</span>
+                </div>
+            </div>
+            
+            <div class="form-field span-2">
+                <label class="required-star">سعر البيع</label>
+                <div class="amount-group">
+                    <p-inputNumber id="unitSaleInput" formControlName="defaultSalePrice" mode="decimal" (onFocus)="selectText($event)" (keydown.enter)="focusNextUnit('saveUnitBtn', $event)"></p-inputNumber>
+                    <span class="currency-badge">ر.ي</span>
+                </div>
+            </div>
+
+            <div class="span-4 flex justify-content-end gap-2 mt-2 pt-3 border-top-1 surface-border">
+                <button pButton label="إلغاء [Esc]" class="p-button-text p-button-secondary" (click)="unitModalVisible = false"></button>
+                <button pButton id="saveUnitBtn" label="إضافة [Enter]" class="p-button-success font-bold px-4 save-btn" (click)="saveUnit()" [disabled]="newUnitForm.invalid"></button>
+            </div>
+        </form>
     </div>
 </p-dialog>

@@ -30,7 +30,7 @@ import { DropdownModule } from "primeng/dropdown";
 import { BarcodeService } from '../../../../core/services/barcode.service';
 import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
 import { TransactionType } from '../../../../core/models/barcode.interface';
-import { HostListener, ChangeDetectorRef } from '@angular/core';
+import { HostListener, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 
 interface InvoiceItem {
@@ -170,10 +170,17 @@ export class SaleInvoiceCreateComponent implements OnInit {
     isEditMode = false;
     invoiceId: number | null = null;
 
-    // 💰 DRAWER STATUS
+    // 💰 DRAWER & DIALOG STATES
     drawerLedgerVisible = false;
     drawerLedger: any = null;
     loadingDrawer = false;
+    shortcutsHelpVisible = false;
+    itemModalVisible = false;
+    searchQueryText = '';
+
+    // 🎯 VIEWCHILD REFERENCES
+    @ViewChild('medicineAutoComplete') medicineAutoComplete: any;
+    @ViewChild('qtyInputEl') qtyInputEl: any;
 
     constructor(
         private salesService: SaleInvoiceService,
@@ -234,7 +241,15 @@ export class SaleInvoiceCreateComponent implements OnInit {
         });
     }
 
-    // 🔍 BARCODE SCANNER ENGINE
+    getStatusClass(): string {
+        return this.isEditMode ? 'status-draft' : 'status-completed';
+    }
+
+    getStatusLabel(): string {
+        return this.isEditMode ? 'تعديل فاتورة' : 'فاتورة جديدة';
+    }
+
+    // 🔍 BARCODE SCANNER & HOTKEY ENGINE
     private barcodeBuffer = '';
     private lastKeyTime = 0;
     simulatorVisible = false;
@@ -242,9 +257,54 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
     @HostListener('window:keydown', ['$event'])
     handleKeyboardEvent(event: KeyboardEvent) {
-        const currentTime = new Date().getTime();
+        // 1. Hotkeys Handling
+        if (event.key === 'F1') {
+            event.preventDefault();
+            this.shortcutsHelpVisible = !this.shortcutsHelpVisible;
+            return;
+        }
+        if (event.key === 'F2') {
+            event.preventDefault();
+            if (this.items().length > 0 && !this.saving) {
+                this.approveInvoice();
+            }
+            return;
+        }
+        if (event.key === 'F3') {
+            event.preventDefault();
+            if (!this.saving) {
+                this.saveDraft();
+            }
+            return;
+        }
+        if (event.key === 'F4') {
+            event.preventDefault();
+            this.isCashCustomer = !this.isCashCustomer;
+            this.toggleCashCustomer();
+            return;
+        }
+        if (event.key === 'Escape') {
+            if (this.shortcutsHelpVisible) {
+                this.shortcutsHelpVisible = false;
+                event.preventDefault();
+                return;
+            }
+            if (this.itemModalVisible) {
+                this.closeItemModal();
+                event.preventDefault();
+                return;
+            }
+            if (this.drawerLedgerVisible) {
+                this.drawerLedgerVisible = false;
+                event.preventDefault();
+                return;
+            }
+            this.goBack();
+            return;
+        }
 
-        // If typing is very fast (< 30ms between keys), it's likely a scanner
+        // 2. Barcode scanner buffer handling
+        const currentTime = new Date().getTime();
         if (currentTime - this.lastKeyTime > 50) {
             this.barcodeBuffer = '';
         }
@@ -255,7 +315,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 this.barcodeBuffer = '';
                 event.preventDefault();
             }
-        } else if (event.key.length === 1) {
+        } else if (event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
             this.barcodeBuffer += event.key;
         }
 
@@ -287,7 +347,16 @@ export class SaleInvoiceCreateComponent implements OnInit {
     }
 
     private addBarcodeItemToInvoice(data: any) {
-        // بدلاً من إضافة الصنف مباشرة للجدول، نضعه في حقول الإدخال بالأعلى ونحدد حقل الكمية ليقوم المستخدم بإدخالها
+        if (!data.availableQuantity || data.availableQuantity <= 0) {
+            this.itemModalVisible = false;
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'لا توجد دفعة متوفرة',
+                detail: `عفواً، لا توجد أي دفعة متوفرة بالمخزون لدواء (${data.tradeName})`
+            });
+            setTimeout(() => this.focusSearchInput(), 100);
+            return;
+        }
 
         // 1. تجهيز الدواء
         this.inlineMedicine = {
@@ -328,22 +397,22 @@ export class SaleInvoiceCreateComponent implements OnInit {
         this.inlineQuantity = 1;
         this.editingItemIndex = null;
 
-        this.messageService.add({ severity: 'success', summary: 'تم استدعاء الصنف', detail: `تم إدراج ${data.tradeName} أدخل الكمية` });
-
-        // 4. الانتقال التلقائي لحقل الكمية وتظليل النص
-        setTimeout(() => {
-            const qtyInput = document.getElementById('inlineQty');
-            if (qtyInput) {
-                qtyInput.focus();
-                (qtyInput as HTMLInputElement).select();
-            }
-        }, 100);
+        this.itemModalVisible = true;
+        setTimeout(() => this.focusQtyInput(), 100);
     }
 
     selectText(event: any) {
         if (event && event.originalEvent && event.originalEvent.target) {
             event.originalEvent.target.select();
         } else if (event && event.target) {
+            event.target.select();
+        }
+    }
+
+    onInputFocus(event: any) {
+        if (event && event.originalEvent && event.originalEvent.target) {
+            event.originalEvent.target.select();
+        } else if (event && event.target && typeof event.target.select === 'function') {
             event.target.select();
         }
     }
@@ -687,7 +756,40 @@ export class SaleInvoiceCreateComponent implements OnInit {
         }
     }
 
-    // 🎭 INLINE FORM METHODS
+    // 🎭 INLINE FORM & MODAL CONTROL METHODS
+    focusQtyInput() {
+        if (this.qtyInputEl) {
+            const inputEl = this.qtyInputEl.el?.nativeElement?.querySelector('input');
+            if (inputEl) {
+                inputEl.focus();
+                inputEl.select();
+            }
+        }
+    }
+
+    focusSearchInput() {
+        if (this.medicineAutoComplete) {
+            const inputEl = this.medicineAutoComplete.el?.nativeElement?.querySelector('input');
+            if (inputEl) {
+                inputEl.focus();
+            }
+        }
+    }
+
+    closeItemModal() {
+        this.itemModalVisible = false;
+        this.resetInlineForm();
+        setTimeout(() => this.focusSearchInput(), 100);
+    }
+
+    confirmModalItem() {
+        if (!this.inlineMedicine || !this.inlineBatch || !this.inlineQuantity) return;
+        this.addItemInline();
+        this.itemModalVisible = false;
+        this.searchQueryText = '';
+        setTimeout(() => this.focusSearchInput(), 100);
+    }
+
     onMedicineSelectInline(medicine: Medicine) {
         this.inlineMedicine = medicine;
         this.inlineBatch = null;
@@ -720,11 +822,27 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 // Auto-select first batch (FEFO)
                 if (this.availableBatches.length > 0) {
                     this.inlineBatch = this.availableBatches[0];
+                    // Open modal automatically for smooth quantity confirmation
+                    this.itemModalVisible = true;
+                    setTimeout(() => this.focusQtyInput(), 100);
                 } else {
-                    this.messageService.add({ severity: 'warn', summary: 'نفاذ المخزون', detail: 'لا توجد دفعات متاحة لهذا الصنف' });
+                    // DO NOT open modal! Show warning toast notification
+                    this.itemModalVisible = false;
+                    this.resetInlineForm();
+                    this.messageService.add({
+                        severity: 'warn',
+                        summary: 'لا توجد دفعة متوفرة',
+                        detail: `عفواً، لا توجد أي دفعة متوفرة بالمخزون لدواء (${medicine.name})`
+                    });
+                    setTimeout(() => this.focusSearchInput(), 100);
                 }
             },
-            error: () => this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل الدفعات' })
+            error: () => {
+                this.itemModalVisible = false;
+                this.resetInlineForm();
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل تحميل بيانات الصنف' });
+                setTimeout(() => this.focusSearchInput(), 100);
+            }
         });
     }
 
@@ -840,7 +958,6 @@ export class SaleInvoiceCreateComponent implements OnInit {
             }
 
             if (remainingUnitsToFulfill > 0) {
-                // Should theoretically never hit this due to prior validation, but just in case
                 this.messageService.add({ severity: 'warn', summary: 'نقص في المخزون', detail: 'تم سحب الكمية المتوفرة ولم يتم توفية كامل طلبك' });
             } else if (addedCount > 1) {
                 this.messageService.add({ severity: 'success', summary: 'سحب آلي متعدد', detail: `تم سحب الكمية وتقسيمها من ${addedCount} دفعات بناءً على FEFO (الأقرب انتهاءً).` });
@@ -863,6 +980,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
         this.inlineUnitOptions = [];
         this.inlineUnit = null;
         this.editingItemIndex = null;
+        this.searchQueryText = '';
     }
 
     editItemInline(item: InvoiceItem, index: number) {
@@ -903,6 +1021,10 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
         this.availableBatches = [this.inlineBatch];
         this.inlineQuantity = item.quantity;
+
+        // Open modal for editing item
+        this.itemModalVisible = true;
+        setTimeout(() => this.focusQtyInput(), 100);
     }
 
     // 💰 DRAWER LOGIC

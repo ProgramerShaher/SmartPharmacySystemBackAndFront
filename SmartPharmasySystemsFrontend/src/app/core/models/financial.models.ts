@@ -30,6 +30,7 @@ export interface FinancialTransaction {
     description: string;
     transactionDate: string; // ISO Date
     relatedInvoiceId?: number | null;
+    balanceAfterTransaction?: number;
 }
 
 export interface FinancialTransactionQueryDto {

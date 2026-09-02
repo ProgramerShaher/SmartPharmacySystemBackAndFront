@@ -18,7 +18,7 @@
   <section class="table-panel">
     <p-table [value]="entries" [loading]="loading" [paginator]="true" [rows]="10" 
              [totalRecords]="totalRecords" [lazy]="true" (onLazyLoad)="loadEntries($event.first! / 10 + 1)"
-             styleClass="p-datatable-sm compact-table">
+             styleClass="p-datatable-sm compact-table" dir="rtl">
       <ng-template pTemplate="header">
         <tr>
           <th style="width: 10%">رقم القيد</th>
@@ -158,7 +158,7 @@
 
     <!-- Double Entry Table -->
     <section class="table-panel">
-      <p-table [value]="selectedEntry.lines" styleClass="p-datatable-sm compact-table">
+      <p-table [value]="selectedEntry.lines" styleClass="p-datatable-sm compact-table" dir="rtl">
         <ng-template pTemplate="header">
           <tr>
             <th style="width: 22%" class="text-center">مدين (Debit)</th>

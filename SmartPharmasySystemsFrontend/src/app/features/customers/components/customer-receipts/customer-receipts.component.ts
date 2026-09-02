@@ -276,6 +276,20 @@ export class CustomerReceiptsComponent implements OnInit {
         this.displayDialog.set(true);
     }
 
+    focusNext(event: Event, nextFieldId?: string) {
+        event.preventDefault();
+        if (nextFieldId) {
+            const el = document.getElementById(nextFieldId);
+            if (el) {
+                const inputEl = el.querySelector('input') || el.querySelector('button') || el;
+                (inputEl as HTMLElement).focus();
+                return;
+            }
+        } else {
+            this.saveReceipt();
+        }
+    }
+
 
     saveReceipt() {
         console.log('========================================');

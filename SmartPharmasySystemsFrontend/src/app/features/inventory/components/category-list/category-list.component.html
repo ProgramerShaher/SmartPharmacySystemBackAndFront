@@ -45,7 +45,7 @@
         <p-table [value]="categories" [lazy]="true" (onLazyLoad)="loadCategories($event)" [paginator]="true" [rows]="10"
             [totalRecords]="totalRecords" [loading]="loading" [showCurrentPageReport]="true"
             [(selection)]="selectedCategories" dataKey="id" currentPageReportTemplate="{first}-{last} من {totalRecords}"
-            responsiveLayout="scroll" styleClass="p-datatable-sm inventory-table" [rowsPerPageOptions]="[10, 25, 50]">
+            responsiveLayout="scroll" styleClass="p-datatable-sm inventory-table" [rowsPerPageOptions]="[10, 25, 50]" dir="rtl">
             <ng-template pTemplate="header">
                 <tr [style]="{'background': 'var(--table-header-bg)'}">
                     <th style="width: 4rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>

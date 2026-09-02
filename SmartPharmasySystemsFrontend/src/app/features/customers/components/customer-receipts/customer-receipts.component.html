@@ -13,8 +13,7 @@
         </div>
       </div>
       <div class="actions-area">
-        <button pButton label="سند قبض جديد" icon="pi pi-plus"
-          class="imperial-btn-primary p-button-sm"
+        <button pButton label="سند قبض جديد" icon="pi pi-plus" class="imperial-btn-primary p-button-sm"
           (click)="openNew()"></button>
       </div>
     </div>
@@ -65,10 +64,8 @@
           </span>
           <div class="p-input-icon-left search-box">
             <i class="pi pi-search"></i>
-            <input #searchInput pInputText type="text"
-                   [ngModel]="searchQuery()"
-                   (ngModelChange)="onSearchChange($event)"
-                   placeholder="بحث باسم العميل أو رقم السند..." />
+            <input #searchInput pInputText type="text" [ngModel]="searchQuery()"
+              (ngModelChange)="onSearchChange($event)" placeholder="بحث باسم العميل أو رقم السند..." />
           </div>
         </div>
       </ng-template>
@@ -138,11 +135,14 @@
         <div class="vf-field">
           <label class="vf-label">العميل <span style="color:#ef4444">*</span></label>
           <div class="entity-row">
-            <p-autoComplete [ngModel]="selectedCustomerObj" [ngModelOptions]="{standalone: true}"
-              [suggestions]="filteredCustomers" (completeMethod)="searchCustomers($event)" field="name"
-              (onSelect)="onCustomerSelect($event)" [dropdown]="true" [forceSelection]="true"
-              placeholder="اختر العميل..." appendTo="body" styleClass="w-full">
-            </p-autoComplete>
+            <div class="autocomplete-wrap">
+              <p-autoComplete id="vr-1" (keydown.enter)="focusNext($event, 'vr-2')" [ngModel]="selectedCustomerObj"
+                [ngModelOptions]="{standalone: true}" [suggestions]="filteredCustomers"
+                (completeMethod)="searchCustomers($event)" field="name" (onSelect)="onCustomerSelect($event)"
+                [dropdown]="true" [forceSelection]="true" placeholder="اختر العميل..." appendTo="body"
+                styleClass="w-full">
+              </p-autoComplete>
+            </div>
             <div class="entity-balance" *ngIf="selectedCustomer">
               <span class="bal-label">المديونية</span>
               <span class="bal-amount">{{ selectedCustomer.balance | number }}</span>
@@ -154,12 +154,14 @@
         <div class="vf-row">
           <div class="vf-field">
             <label class="vf-label">تاريخ السند <span style="color:#ef4444">*</span></label>
-            <p-calendar formControlName="receiptDate" [showIcon]="true" dateFormat="yy/mm/dd" appendTo="body" styleClass="w-full"></p-calendar>
+            <p-calendar id="vr-2" (keydown.enter)="focusNext($event, 'vr-3')" formControlName="receiptDate"
+              [showIcon]="true" dateFormat="yy/mm/dd" appendTo="body" styleClass="w-full"></p-calendar>
           </div>
           <div class="vf-field">
             <label class="vf-label">المبلغ المقبوض <span style="color:#ef4444">*</span></label>
-            <p-inputNumber formControlName="amount" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="0"
-              [min]="0" [useGrouping]="true" placeholder="0" suffix=" ر.ي" styleClass="w-full">
+            <p-inputNumber id="vr-3" (keydown.enter)="focusNext($event, 'vr-4')" formControlName="amount" mode="decimal"
+              [minFractionDigits]="0" [maxFractionDigits]="0" [min]="0" [useGrouping]="true" placeholder="0"
+              suffix=" ر.ي" styleClass="w-full">
             </p-inputNumber>
           </div>
         </div>
@@ -168,13 +170,14 @@
         <div class="vf-row">
           <div class="vf-field">
             <label class="vf-label">طريقة الدفع <span style="color:#ef4444">*</span></label>
-            <p-dropdown formControlName="paymentMethod" [options]="paymentMethods" optionLabel="label" optionValue="value"
-              appendTo="body" styleClass="w-full">
+            <p-dropdown id="vr-4" (keydown.enter)="focusNext($event, 'vr-5')" formControlName="paymentMethod"
+              [options]="paymentMethods" optionLabel="label" optionValue="value" appendTo="body" styleClass="w-full">
             </p-dropdown>
           </div>
           <div class="vf-field">
             <label class="vf-label">المرجع</label>
-            <input pInputText formControlName="referenceNo" placeholder="رقم الشيك / الحوالة..." />
+            <input id="vr-5" (keydown.enter)="focusNext($event, 'vr-6')" pInputText formControlName="referenceNo"
+              placeholder="رقم الشيك / الحوالة..." />
           </div>
         </div>
 
@@ -182,16 +185,18 @@
         <div class="vf-field">
           <label class="vf-label">
             ربط بفاتورة
-            <span *ngIf="receiptForm.get('amount')?.value > 0" class="amount-badge badge-credit" style="margin-right:0.5rem;">
+            <span *ngIf="receiptForm.get('amount')?.value > 0" class="amount-badge badge-credit"
+              style="margin-right:0.5rem;">
               <i class="pi pi-arrow-down" style="font-size:0.55rem;"></i>
               {{ receiptForm.get('amount')?.value | number }} ر.ي
             </span>
             <span style="font-weight:400;color:var(--text-color-secondary)">(اختياري)</span>
           </label>
-          <p-autoComplete formControlName="saleInvoiceId" [suggestions]="filteredInvoices"
-            (completeMethod)="searchInvoices($event)" field="displayText" (onSelect)="onInvoiceSelect($event)"
-            [dropdown]="true" [placeholder]="selectedCustomer ? 'اختر فاتورة...' : 'اختر العميل أولاً'"
-            [disabled]="!selectedCustomer" appendTo="body" styleClass="w-full">
+          <p-autoComplete id="vr-6" (keydown.enter)="focusNext($event, 'vr-7')" formControlName="saleInvoiceId"
+            [suggestions]="filteredInvoices" (completeMethod)="searchInvoices($event)" field="displayText"
+            (onSelect)="onInvoiceSelect($event)" [dropdown]="true"
+            [placeholder]="selectedCustomer ? 'اختر فاتورة...' : 'اختر العميل أولاً'" [disabled]="!selectedCustomer"
+            appendTo="body" styleClass="w-full">
             <ng-template let-inv pTemplate="item">
               <div style="display:flex;justify-content:space-between;align-items:center;gap:0.5rem;font-size:0.75rem;">
                 <span style="font-weight:700;color:var(--primary-color);">#{{ inv.saleInvoiceNumber || inv.id }}</span>
@@ -204,7 +209,8 @@
         <!-- Notes -->
         <div class="vf-field">
           <label class="vf-label">البيان / الملاحظات</label>
-          <input pInputText formControlName="notes" placeholder="سداد كامل، دفعة جزئية..." />
+          <input id="vr-7" (keydown.enter)="focusNext($event)" pInputText formControlName="notes"
+            placeholder="سداد كامل، دفعة جزئية..." />
         </div>
 
         <!-- Footer -->
@@ -212,8 +218,8 @@
           <button pButton type="button" label="إلغاء" icon="pi pi-times"
             class="p-button-text p-button-secondary p-button-sm" (click)="closeModal()">
           </button>
-          <button pButton type="button" label="حفظ السند" icon="pi pi-check"
-            class="p-button-primary p-button-sm" (click)="saveReceipt()" [loading]="saving()">
+          <button pButton type="button" label="حفظ السند" icon="pi pi-check" class="p-button-primary p-button-sm"
+            (click)="saveReceipt()" [loading]="saving()">
           </button>
         </div>
 
@@ -226,14 +232,10 @@
     <ng-container *ngTemplateOutlet="receiptFormTemplate"></ng-container>
   </ng-container>
 
-  <p-dialog *ngIf="!dialogMode"
-            [visible]="displayDialog()" [modal]="true" appendTo="body" [dismissableMask]="true"
-            [style]="{ width: '420px', maxWidth: '95vw' }"
-            [contentStyle]="{'overflow':'visible'} "
-            [draggable]="false" [resizable]="false"
-            styleClass="imperial-dialog"
-            header="إصدار سند قبض مالي من عميل"
-            (onHide)="closeModal()">
+  <p-dialog *ngIf="!dialogMode" [visible]="displayDialog()" (visibleChange)="displayDialog.set($event)" [modal]="true" appendTo="body" [dismissableMask]="true"
+    [style]="{ width: '600px', maxWidth: '95vw' }" [contentStyle]="{'overflow':'visible'}" [draggable]="false"
+    [resizable]="false" styleClass="imperial-dialog imperial-modal-dialog" header="إصدار سند قبض مالي من عميل"
+    (onHide)="closeModal()">
     <ng-container *ngTemplateOutlet="receiptFormTemplate"></ng-container>
   </p-dialog>
 

@@ -44,9 +44,26 @@
                 <textarea pInputTextarea id="notes" formControlName="notes" rows="3"></textarea>
             </div>
             
-            <div class="field-checkbox mt-3" *ngIf="mode === 'close'">
-                <p-checkbox formControlName="transferToMainSafe" [binary]="true" inputId="transferCash"></p-checkbox>
-                <label for="transferCash" class="ml-2 font-bold" style="margin-right: 0.5rem; cursor: pointer;">ترحيل الرصيد إلى الصندوق الرئيسي وإفراغ الدرج</label>
+            <div class="field mt-3" *ngIf="mode === 'close'">
+                <label class="font-bold block mb-2">إجراء معالجة النقدية عند تسليم الوردية (Shift Handoff)</label>
+                
+                <div class="handoff-options flex flex-column gap-2 p-2 border-1 surface-border border-round bg-gray-50">
+                    <label class="flex align-items-start gap-2 p-2 border-round cursor-pointer hover:bg-white transition-colors" [ngClass]="{'border-primary bg-primary-50': shiftForm.value.transferToMainSafe}">
+                        <input type="radio" [value]="true" formControlName="transferToMainSafe" class="mt-1">
+                        <div>
+                            <span class="font-bold block text-900">🏦 ترحيل النقدية إلى الخزينة الرئيسية (Main Safe)</span>
+                            <span class="text-xs text-600 block">نقل رصيد الوردية بالكامل فوراً إلى الصندوق الرئيسي وتفريغ درج الكاشير.</span>
+                        </div>
+                    </label>
+
+                    <label class="flex align-items-start gap-2 p-2 border-round cursor-pointer hover:bg-white transition-colors" [ngClass]="{'border-primary bg-primary-50': !shiftForm.value.transferToMainSafe}">
+                        <input type="radio" [value]="false" formControlName="transferToMainSafe" class="mt-1">
+                        <div>
+                            <span class="font-bold block text-900">📥 إبقاء النقدية في درج الكاشير (Leave in Drawer)</span>
+                            <span class="text-xs text-600 block">ترك المبالغ بالدرج للكاشير التالي. سيتم عزل بيانات الوردية الحالية محاسبياً بالـ (ShiftId).</span>
+                        </div>
+                    </label>
+                </div>
             </div>
         </ng-container>
     </div>

@@ -10,8 +10,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { FormsModule } from '@angular/forms';
 import { DailyClosingService } from '../../services/daily-closing.service';
 import { Title } from '@angular/platform-browser';
-
-import { CheckboxModule } from 'primeng/checkbox';
+import { ToastModule } from 'primeng/toast';
 
 @Component({
   selector: 'app-daily-closings',
@@ -25,7 +24,7 @@ import { CheckboxModule } from 'primeng/checkbox';
     TagModule,
     ConfirmDialogModule,
     FormsModule,
-    CheckboxModule
+    ToastModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './daily-closings.component.html',
@@ -65,7 +64,11 @@ export class DailyClosingsComponent implements OnInit {
 
   confirmCloseDay() {
     this.confirmationService.confirm({
-      message: `هل أنت متأكد من إقفال يوم ${this.selectedDate.toLocaleDateString('ar-SA')}؟ لن يتمكن أي مستخدم من إجراء أو تعديل أي حركة مالية في هذا اليوم بعد الإقفال.`,
+      message: `هل أنت متأكد من إقفال يوم ${this.selectedDate.toLocaleDateString('ar-SA')}؟
+سيتم تلقائياً:
+• حساب جميع مبيعات ومصروفات اليوم
+• ترحيل رصيد الدرج بالكامل إلى الخزينة الرئيسية
+• اعتماد الإقفال فوراً`,
       header: 'تأكيد الإقفال اليومي',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'تأكيد الإقفال',
@@ -78,14 +81,17 @@ export class DailyClosingsComponent implements OnInit {
     });
   }
 
-  transferToMainSafe = false;
-
   processClosing() {
     this.loading = true;
-    this.dailyClosingService.closeDay(this.selectedDate, this.transferToMainSafe).subscribe({
+    // إرسال التاريخ فقط — الـ backend يحسب كل شيء تلقائياً
+    this.dailyClosingService.closeDay(this.selectedDate).subscribe({
       next: (res: any) => {
-        if (res.success || !res.message?.includes('Error')) {
-          this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم الإقفال اليومي بنجاح' });
+        if (res.success !== false) {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'تم الإقفال',
+            detail: 'تم الإقفال اليومي واعتماده بنجاح — رصيد الدرج رُحّل للخزينة الرئيسية'
+          });
           this.loadClosings();
         } else {
           this.messageService.add({ severity: 'error', summary: 'خطأ', detail: res.message || 'حدث خطأ أثناء الإقفال' });
@@ -99,15 +105,18 @@ export class DailyClosingsComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status: any) {
-    if (status === 'Approved' || status === 2) return 'success';
-    if (status === 'Draft' || status === 1) return 'warning';
+  getStatusSeverity(status: any): 'success' | 'secondary' | 'info' | 'warning' | 'danger' | 'contrast' | undefined {
+    // status يُرسل من الـ backend كـ integer: Draft=1, PendingApproval=2, Approved=3
+    if (status === 3 || status === 'Approved') return 'success';
+    if (status === 2 || status === 'PendingApproval') return 'warning';
+    if (status === 1 || status === 'Draft') return 'secondary';
     return 'info';
   }
 
-  getStatusName(status: any) {
-    if (status === 'Approved' || status === 2) return 'مكتمل / مقفل';
-    if (status === 'Draft' || status === 1) return 'مسودة';
-    return status;
+  getStatusName(status: any): string {
+    if (status === 3 || status === 'Approved') return 'معتمد';
+    if (status === 2 || status === 'PendingApproval') return 'بانتظار الاعتماد';
+    if (status === 1 || status === 'Draft') return 'مسودة';
+    return String(status);
   }
 }

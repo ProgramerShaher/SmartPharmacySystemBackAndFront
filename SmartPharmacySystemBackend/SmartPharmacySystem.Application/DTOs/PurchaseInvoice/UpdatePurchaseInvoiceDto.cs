@@ -1,11 +1,12 @@
-using SmartPharmacySystem.Core.Enums;
 using System.ComponentModel.DataAnnotations;
+using SmartPharmacySystem.Core.Enums;
+using System;
+using System.Collections.Generic;
 
-namespace SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
+namespace SmartPharmacySystem.Application.DTOs.PurchaseInvoice;
 
 /// <summary>
-/// كائن نقل البيانات لتحديث فاتورة شراء.
-/// يحتوي على البيانات القابلة للتحديث لفاتورة الشراء.
+/// كائن نقل البيانات لتحديث فاتورة شراء حالية.
 /// </summary>
 public class UpdatePurchaseInvoiceDto
 {
@@ -18,15 +19,13 @@ public class UpdatePurchaseInvoiceDto
     /// <summary>
     /// معرف المورد
     /// </summary>
-    [Required]
-    public int SupplierId { get; set; }
+    public int? SupplierId { get; set; }
 
     /// <summary>
     /// رقم فاتورة المورد
     /// </summary>
-    [Required]
     [StringLength(100, MinimumLength = 1, ErrorMessage = "رقم فاتورة المورد يجب أن يكون بين 1 و 100 حرف")]
-    public string SupplierInvoiceNumber { get; set; } = string.Empty;
+    public string? SupplierInvoiceNumber { get; set; }
 
     /// <summary>
     /// تاريخ الشراء
@@ -50,12 +49,9 @@ public class UpdatePurchaseInvoiceDto
     public string Notes { get; set; } = string.Empty;
 
     /// <summary>
-    /// تفاصيل الفاتورة (الأصناف)
+    /// قائمة أصناف الفاتورة
     /// </summary>
-    public List<SmartPharmacySystem.Application.DTOs.PurchaseInvoiceDetails.CreatePurchaseInvoiceDetailDto> Items { get; set; } = new();
-    
-    /// <summary>
-    /// إجمالي الفاتورة (اختياري، يتم حسابه في الباك إند)
-    /// </summary>
-    public decimal TotalAmount { get; set; }
+    [Required]
+    [MinLength(1, ErrorMessage = "يجب إضافة صنف واحد على الأقل للفاتورة")]
+    public List<SmartPharmacySystem.Application.DTOs.PurchaseInvoiceDetails.UpdatePurchaseInvoiceDetailDto> Items { get; set; } = new();
 }

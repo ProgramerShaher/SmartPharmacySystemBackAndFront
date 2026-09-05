@@ -29,19 +29,21 @@ public class ClosingValidationService : IClosingValidationService
 
     public async Task ValidateDateIsUnlockedAsync(DateTime date, int? branchId = null)
     {
-        var isClosed = await IsDateClosedAsync(date, branchId);
+        var localDate = date.Kind == DateTimeKind.Utc ? date.ToLocalTime() : date;
+        var isClosed = await IsDateClosedAsync(localDate, branchId);
         if (isClosed)
         {
-            throw new InvalidOperationException($"التاريخ {date:yyyy-MM-dd} مقفل محاسبياً (إقفال يومي أو فتري). لا يمكن إجراء أو تعديل أي عملية في تاريخ مقفل.");
+            throw new InvalidOperationException($"التاريخ {localDate:yyyy-MM-dd} مقفل محاسبياً (إقفال يومي أو فتري). لا يمكن إجراء أو تعديل أي عملية في تاريخ مقفل.");
         }
     }
 
     public async Task<bool> IsDateClosedAsync(DateTime date, int? branchId = null)
     {
-        var dateOnly = date.Date;
+        var localDate = date.Kind == DateTimeKind.Utc ? date.ToLocalTime() : date;
+        var dateOnly = localDate.Date;
 
         // 1. Check Financial Period Lock (Month/Year)
-        var financialPeriod = await _unitOfWork.FinancialPeriods.GetByDateAsync(date);
+        var financialPeriod = await _unitOfWork.FinancialPeriods.GetByDateAsync(localDate);
         if (financialPeriod != null && financialPeriod.IsClosed)
         {
             _logger.LogWarning("Validation Failed: Attempted to post in closed financial period {PeriodName}", financialPeriod.PeriodName);
@@ -49,7 +51,6 @@ public class ClosingValidationService : IClosingValidationService
         }
 
         // 2. Check Daily Closing Lock
-        // Using DbContext directly for complex queries if needed, or _unitOfWork.
         var dailyClosingQuery = _context.DailyClosings.AsNoTracking().Where(d => d.ClosingDate.Date == dateOnly && d.Status == ClosingStatus.Approved);
         
         if (branchId.HasValue)

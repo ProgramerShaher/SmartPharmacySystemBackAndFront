@@ -18,6 +18,7 @@ public class FinancialTransactionDto
     public string Description { get; set; } = string.Empty;
     public DateTime TransactionDate { get; set; }
     public int? RelatedInvoiceId { get; set; }
+    public decimal BalanceAfterTransaction { get; set; }
 }
 
 public class FinancialInvoiceDto

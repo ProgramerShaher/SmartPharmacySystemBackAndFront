@@ -7,15 +7,21 @@
 
             <!-- حقل اختيار الدواء بجانب العنوان مباشرة -->
             <div class="header-medicine-search p-fluid">
-                <div class="input-with-icon">
-                    <p-autoComplete #medicineAutoComplete [suggestions]="filteredMedicines"
-                        (completeMethod)="searchMedicine($event)" field="name" [(ngModel)]="searchQueryText"
-                        [ngModelOptions]="{standalone: true}" (onSelect)="onMedicineSelectInline($event.value)"
-                        placeholder="ابحث عن الدواء بالاسم أو امسح الباركود..." appendTo="body" [forceSelection]="true"
-                        styleClass="custom-p-input header-search-input"></p-autoComplete>
-                    <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
-                        <i class="pi pi-camera"></i>
-                    </span>
+                <div class="search-row-flex">
+                    <div class="input-with-icon">
+                        <p-autoComplete #medicineAutoComplete [suggestions]="filteredMedicines"
+                            (completeMethod)="searchMedicine($event)" field="name" [(ngModel)]="searchQueryText"
+                            [ngModelOptions]="{standalone: true}" (onSelect)="onMedicineSelectInline($event.value)"
+                            placeholder="ابحث عن الدواء بالاسم أو امسح الباركود..." appendTo="body" [forceSelection]="true"
+                            styleClass="custom-p-input header-search-input"></p-autoComplete>
+                        <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
+                            <i class="pi pi-camera"></i>
+                        </span>
+                    </div>
+                    <div class="barcode-readonly-badge">
+                        <i class="pi pi-barcode"></i>
+                        <span class="barcode-text">{{ selectedMedicineBarcode || '----' }}</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -46,60 +52,42 @@
         <!-- تبديل نوع العميل -->
         <div class="input-group">
             <label>نوع العميل <span class="kbd-badge-inline">F4</span></label>
-            <div class="flying-toggle-container">
-                <span class="toggle-label">عميل نقدي (طيار) ✈️</span>
-                <p-inputSwitch [(ngModel)]="isCashCustomer" (onChange)="toggleCashCustomer()"></p-inputSwitch>
-            </div>
+            <p-dropdown [options]="customerTypeOptions" [(ngModel)]="selectedCustomerType" optionLabel="label" optionValue="value"
+                (onChange)="onCustomerTypeChange($event.value)" id="customerTypeInput"
+                (keydown.enter)="focusNext(isCashCustomer ? 'flyingCustomerInput' : 'registeredCustomerInput', $event)"
+                appendTo="body" styleClass="custom-p-input"></p-dropdown>
         </div>
 
         <!-- إدخال اسم العميل أو اختيار العميل المسجل -->
         <div class="input-group" *ngIf="isCashCustomer">
             <label>اسم العميل النقدي <span class="text-hint">(اختياري)</span></label>
-            <input pInputText [(ngModel)]="flyingCustomerName" placeholder="أدخل اسم العميل..."
-                class="custom-native-input" (focus)="onInputFocus($event)" />
+            <input pInputText id="flyingCustomerInput" [(ngModel)]="flyingCustomerName" placeholder="أدخل اسم العميل..."
+                class="custom-native-input" (focus)="onInputFocus($event)"
+                (keydown.enter)="focusNext('invoiceDateInput', $event)" />
         </div>
 
         <div class="input-group" *ngIf="!isCashCustomer">
             <label>اختر العميل المسجل <span class="text-red-500">*</span></label>
-            <p-dropdown [options]="customers" [(ngModel)]="selectedCustomer" optionLabel="name"
+            <p-dropdown [options]="customers" id="registeredCustomerInput" [(ngModel)]="selectedCustomer" optionLabel="name"
                 placeholder="ابحث عن العميل..." [filter]="true" filterBy="name" [showClear]="true" appendTo="body"
-                styleClass="custom-p-input" (onChange)="onCustomerChange($event.value)">
+                styleClass="custom-p-input" (onChange)="onCustomerChange($event.value)"
+                (keydown.enter)="focusNext('invoiceDateInput', $event)">
             </p-dropdown>
         </div>
 
         <!-- تاريخ الفاتورة -->
         <div class="input-group">
             <label>تاريخ الفاتورة <span class="text-red-500">*</span></label>
-            <p-calendar [(ngModel)]="invoiceDate" [showIcon]="false" dateFormat="dd/mm/yy" appendTo="body"
-                styleClass="custom-p-input"></p-calendar>
+            <p-calendar id="invoiceDateInput" [(ngModel)]="invoiceDate" [showIcon]="false" dateFormat="dd/mm/yy" appendTo="body"
+                styleClass="custom-p-input" (keydown.enter)="focusNext('paymentMethodInput', $event)"></p-calendar>
         </div>
 
         <!-- طريقة السداد -->
         <div class="input-group">
             <label>طريقة السداد <span class="text-red-500">*</span></label>
-            <p-dropdown [options]="paymentMethods" [(ngModel)]="selectedPaymentMethod" optionLabel="label"
+            <p-dropdown id="paymentMethodInput" [options]="paymentMethods" [(ngModel)]="selectedPaymentMethod" optionLabel="label"
                 optionValue="value" appendTo="body" styleClass="custom-p-input"
-                [disabled]="isCashCustomer"></p-dropdown>
-        </div>
-    </div>
-
-    <!-- حقل اختيار الدواء الرئيسي فوق الجدول -->
-    <div class="search-medicine-bar p-fluid">
-        <div class="input-group search-group">
-            <label class="search-label">
-                <i class="pi pi-search"></i> اختيار الدواء / الصنف للبيع
-                <span class="search-tip">(اختر الصنف بالاسم أو امسح الباركود ليتم تحضير دفعة FEFO وتحديد الكمية فوراً)</span>
-            </label>
-            <div class="input-with-icon">
-                <p-autoComplete [suggestions]="filteredMedicines" (completeMethod)="searchMedicine($event)"
-                    field="name" [(ngModel)]="searchQueryText" [ngModelOptions]="{standalone: true}"
-                    (onSelect)="onMedicineSelectInline($event.value)"
-                    placeholder="اكتب اسم الدواء أو قم بمسح الباركود مباشرة..." appendTo="body" [forceSelection]="true"
-                    styleClass="custom-p-input main-search-input"></p-autoComplete>
-                <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
-                    <i class="pi pi-camera"></i>
-                </span>
-            </div>
+                [disabled]="isCashCustomer" (keydown.enter)="focusNext('medicineAutoComplete', $event)"></p-dropdown>
         </div>
     </div>
 
@@ -108,32 +96,32 @@
         <p-table [value]="items()" dataKey="batchId" responsiveLayout="scroll" styleClass="custom-p-table">
             <ng-template pTemplate="header">
                 <tr>
-                    <th style="width: 28%;">الصنف</th>
+                    <th style="width: 28%; text-align: right;">الصنف</th>
                     <th style="text-align: center; width: 14%;">الدفعة (FEFO)</th>
                     <th style="text-align: center; width: 12%;">الكمية</th>
-                    <th style="text-align: left; width: 12%;">سعر البيع</th>
+                    <th style="text-align: right; width: 12%;">سعر البيع</th>
                     <th style="text-align: center; width: 10%;">الخصم %</th>
-                    <th style="text-align: left; width: 12%;">الإجمالي الصافي</th>
+                    <th style="text-align: right; width: 12%;">الإجمالي الصافي</th>
                     <th style="text-align: center; width: 10%;">الربح المتوقع</th>
                     <th style="width: 80px; text-align: center;">الإجراءات</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item let-i="rowIndex">
                 <tr (click)="editItemInline(item, i)" class="table-row-item">
-                    <td style="font-weight: 700; color: #0f172a;">
+                    <td style="font-weight: 700; color: #0f172a; text-align: right;">
                         {{ item.medicineName }}
                         <div *ngIf="item.expiryDate" class="expiry-subtext">
-                            <i class="pi pi-calendar"></i> اننهاء: {{ item.expiryDate | date:'MM/yy' }}
+                            <i class="pi pi-calendar"></i> انتهاء: {{ item.expiryDate | date:'MM/yy' }}
                         </div>
                     </td>
                     <td style="text-align: center;">
                         <span class="badge-batch">{{ item.batchNumber || '-' }}</span>
                     </td>
                     <td style="text-align: center;">
-                        <span style="font-weight: 800; font-size: 14px; color: #0f172a;">{{ item.quantity }}</span>
+                        <span style="font-weight: 800; font-size: 13px; color: #0f172a;">{{ item.quantity }}</span>
                         <span class="unit-tag">{{ item.unitName || 'حبة' }}</span>
                     </td>
-                    <td style="text-align: left; font-weight: 600; color: #334155;">
+                    <td style="text-align: right; font-weight: 600; color: #334155;">
                         {{ item.salePrice | number : '1.2-2' }}
                     </td>
                     <td style="text-align: center;" (click)="$event.stopPropagation()">
@@ -142,7 +130,7 @@
                             styleClass="custom-p-input discount-input" inputStyleClass="discount-input-field">
                         </p-inputNumber>
                     </td>
-                    <td style="text-align: left; font-weight: 800; color: #0d9488;">
+                    <td style="text-align: right; font-weight: 800; color: #0d9488;">
                         {{ item.netTotal | number : '1.2-2' }} ر.ي
                         <div *ngIf="item.discountAmount > 0" class="strikethrough-original">
                             {{ item.total | number : '1.2-2' }}

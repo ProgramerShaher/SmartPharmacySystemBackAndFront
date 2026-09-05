@@ -269,6 +269,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  hasCashierPerformanceData(): boolean {
+    return (this.cashierPerformanceChartData?.labels?.length ?? 0) > 0;
+  }
+
+  hasHourlyActivityData(): boolean {
+    return (this.hourlyActivityChartData?.labels?.length ?? 0) > 0;
+  }
+
   private initializeCharts(): void {
     const labelFont = { family: 'Cairo, sans-serif', size: 10, weight: '700' as const };
     const axisColor = '#94a3b8';
@@ -402,7 +410,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const inboundByDate = this.toAmountMap(inbound);
     const outboundByDate = this.toAmountMap(outbound);
     const dateKeys = Array.from(new Set([...inboundByDate.keys(), ...outboundByDate.keys()])).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    
+
     return {
       labels: dateKeys.map((date) => {
         const d = new Date(date);

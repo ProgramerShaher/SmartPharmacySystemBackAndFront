@@ -45,4 +45,35 @@ public class UpdatePurchaseInvoiceDetailDto
     [Required]
     [Range(0.01, double.MaxValue, ErrorMessage = "سعر الشراء يجب أن يكون أكبر من صفر")]
     public decimal PurchasePrice { get; set; }
+
+    /// <summary>
+    /// سعر البيع المقترح للوحدة
+    /// </summary>
+    [Required]
+    [Range(0.01, double.MaxValue, ErrorMessage = "سعر البيع يجب أن يكون أكبر من صفر")]
+    public decimal SalePrice { get; set; }
+
+    /// <summary>
+    /// تاريخ انتهاء الصلاحية
+    /// </summary>
+    [Required]
+    public DateTime ExpiryDate { get; set; }
+
+    /// <summary>
+    /// باركود الدفعة
+    /// </summary>
+    public string? BatchBarcode { get; set; }
+
+    /// <summary>
+    /// رقم تشغيلة الشركة المصنعة
+    /// </summary>
+    public string? CompanyBatchNumber { get; set; }
+
+    /// <summary>
+    /// موقع التخزين (اختياري)
+    /// </summary>
+    public string? StorageLocation { get; set; }
+
+    public int? PurchaseUnitId { get; set; }
+    public int BonusQuantity { get; set; }
 }

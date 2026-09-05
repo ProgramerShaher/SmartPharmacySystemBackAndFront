@@ -43,9 +43,8 @@ public class AuthService : IAuthService
     {
         _logger.LogInformation("Login attempt for user: {Username}", request.Username);
 
-        // البحث عن المستخدم
-        var users = await _unitOfWork.Users.GetAllAsync();
-        var user = users.FirstOrDefault(u => u.Username == request.Username && !u.IsDeleted);
+        // البحث عن المستخدم بشرط اسم المستخدم مباشرة لتسريع عملية الاستعلام
+        var user = await _unitOfWork.Users.GetByUsernameAsync(request.Username);
 
         if (user == null)
         {
@@ -60,9 +59,6 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("الحساب غير نشط. يرجى التواصل مع المدير");
         }
 
-        // سطر مؤقت للفحص
-        _logger.LogInformation("Password from Request: {Pass}", request.Password);
-        _logger.LogInformation("Hash from DB: {Hash}", user.PasswordHash);
         // التحقق من كلمة المرور
         if (!VerifyPassword(request.Password, user.PasswordHash))
         {
@@ -256,6 +252,31 @@ public class AuthService : IAuthService
 
         // الحصول على الصلاحيات الفعلية للمستخدم
         var permissions = await _permissionService.GetUserEffectivePermissionsAsync(user.Id);
+        
+        // --- ضمان إعطاء الصلاحيات الأساسية للصيدلاني حتى لو لم تتحدث قاعدة البيانات ---
+        if (roleName == "Pharmacist")
+        {
+            var essentialPharmacistPermissions = new[] 
+            { 
+                "sales.shifts.manage", 
+                "sales.daily_closing.manage",
+                "sales.invoices.view",
+                "sales.invoices.create",
+                "sales.invoices.edit",
+                "sales.returns.view",
+                "sales.returns.create",
+                "inventory.medicines.view"
+            };
+            
+            foreach (var perm in essentialPharmacistPermissions)
+            {
+                if (!permissions.Contains(perm))
+                {
+                    permissions.Add(perm);
+                }
+            }
+        }
+
         if (permissions.Any())
         {
             claims.Add(new Claim("Permissions", string.Join(",", permissions)));

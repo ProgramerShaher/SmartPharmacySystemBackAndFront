@@ -10,13 +10,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
             if (error.status === 401) {
-                // Auto logout if 401 Unauthorized
+                // Do not intercept or swallow 401 for login endpoints - let the login component handle the error message
+                const isAuthEndpoint = req.url.toLowerCase().includes('/auth/login') || req.url.toLowerCase().includes('/login');
+                if (isAuthEndpoint) {
+                    return throwError(() => error);
+                }
+
+                // Auto logout if 401 Unauthorized for authenticated session requests
                 authService.logout();
                 return EMPTY;
-            }
-            if (error.status === 403) {
-                // Return error to be handled by the component or a global error handler instead of logging out
-                return throwError(() => error);
             }
             return throwError(() => error);
         })

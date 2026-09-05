@@ -162,7 +162,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: 'pi pi-home',
       iconClass: 'icon-dashboard',
       children: [
-        { label: 'لوحة التحكم', route: '/dashboard', icon: 'pi pi-chart-pie', exact: true },
+        { label: 'الرئيسية (الوصول السريع)', route: '/dashboard', icon: 'pi pi-th-large', exact: true },
+        { label: 'تحليلات وإحصائيات لوحة التحكم', route: '/dashboard/analytics', icon: 'pi pi-chart-pie' },
         {
           label: 'لوحة التحكم الشاملة', route: '/dashboard/master', icon: 'pi pi-chart-line',
           permission: 'dashboard.master'
@@ -577,7 +578,32 @@ export class SidebarComponent implements OnInit, OnDestroy {
     if (this.isCollapsed) {
       this.collapseChange.emit(false);
     }
-    this.openMenus[key] = !this.openMenus[key];
+
+    const isCurrentlyOpen = !!this.openMenus[key];
+
+    if (isCurrentlyOpen) {
+      this.openMenus[key] = false;
+    } else {
+      const isTopSection = this.menuSections.some(section => section.key === key);
+
+      if (isTopSection) {
+        // سلوك الأكورديون للأقسام الرئيسية: إغلاق كافة الأقسام الأخرى وفتح القسم المحدد فقط
+        this.openMenus = { [key]: true };
+      } else {
+        const parentSection = this.menuSections.find(s =>
+          s.children?.some(child => child.key === key)
+        );
+
+        if (parentSection) {
+          this.openMenus = {
+            [parentSection.key]: true,
+            [key]: true
+          };
+        } else {
+          this.openMenus[key] = true;
+        }
+      }
+    }
   }
 
   isMenuOpen(key: string): boolean {
@@ -596,16 +622,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   private openActiveMenus() {
+    const activeMenus: Record<string, boolean> = {};
     this.menuSections.forEach((section) => {
       if (this.isSectionActive(section)) {
-        this.openMenus[section.key] = true;
+        activeMenus[section.key] = true;
       }
       section.children?.forEach((item) => {
         if (item.key && this.isItemActive(item)) {
-          this.openMenus[item.key] = true;
+          activeMenus[item.key] = true;
         }
       });
     });
+    this.openMenus = activeMenus;
   }
 
   private routeMatches(section: SidebarSection): boolean {

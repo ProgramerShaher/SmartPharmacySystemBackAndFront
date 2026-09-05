@@ -1,4 +1,4 @@
 export const environment = {
-    production: false,
+    production: true,
     // apiUrl: 'https://pharmacy-backend-api-cdahfea5fnfmgmer.eastasia-01.azurewebsites.net/api'
 };

@@ -603,9 +603,9 @@ export class SalesInvoiceListComponent implements OnInit {
         if (status === undefined || status === null) return 'info';
 
         const statusStr = status.toString();
-        if (statusStr === 'Approved' || status === DocumentStatus.Approved) return 'success';
-        if (statusStr === 'Draft' || status === DocumentStatus.Draft) return 'warning';
-        if (statusStr === 'Cancelled' || status === DocumentStatus.Cancelled) return 'danger';
+        if (statusStr === 'Approved' || statusStr === '2' || status === DocumentStatus.Approved) return 'success';
+        if (statusStr === 'Draft' || statusStr === '1' || status === DocumentStatus.Draft) return 'warning';
+        if (statusStr === 'Cancelled' || statusStr === '3' || status === DocumentStatus.Cancelled) return 'danger';
 
         return 'info';
     }
@@ -614,27 +614,35 @@ export class SalesInvoiceListComponent implements OnInit {
         if (status === undefined || status === null) return 'غير محدد';
 
         const statusStr = status.toString();
-        if (statusStr === 'Approved' || status === DocumentStatus.Approved) return 'معتمدة';
-        if (statusStr === 'Draft' || status === DocumentStatus.Draft) return 'مسودة';
-        if (statusStr === 'Cancelled' || status === DocumentStatus.Cancelled) return 'ملغاة';
+        if (statusStr === 'Approved' || statusStr === '2' || status === DocumentStatus.Approved) return 'معتمدة';
+        if (statusStr === 'Draft' || statusStr === '1' || status === DocumentStatus.Draft) return 'مسودة';
+        if (statusStr === 'Cancelled' || statusStr === '3' || status === DocumentStatus.Cancelled) return 'ملغاة';
 
         return 'غير محدد';
     }
 
     isDraft(invoice: SaleInvoice): boolean {
-        return invoice.status === DocumentStatus.Draft || invoice.status?.toString() === 'Draft' || invoice.status?.toString() === '0';
+        if (!invoice || invoice.status === undefined || invoice.status === null) return false;
+        const s = invoice.status.toString();
+        return s === 'Draft' || s === '1' || invoice.status === DocumentStatus.Draft;
     }
 
     isApproved(invoice: SaleInvoice): boolean {
-        return invoice.status === DocumentStatus.Approved || invoice.status?.toString() === 'Approved' || invoice.status?.toString() === '1';
+        if (!invoice || invoice.status === undefined || invoice.status === null) return false;
+        const s = invoice.status.toString();
+        return s === 'Approved' || s === '2' || invoice.status === DocumentStatus.Approved;
     }
 
     isCancelled(invoice: SaleInvoice): boolean {
-        return invoice.status === DocumentStatus.Cancelled || invoice.status?.toString() === 'Cancelled' || invoice.status?.toString() === '2';
+        if (!invoice || invoice.status === undefined || invoice.status === null) return false;
+        const s = invoice.status.toString();
+        return s === 'Cancelled' || s === '3' || invoice.status === DocumentStatus.Cancelled;
     }
 
     isClosed(invoice: SaleInvoice): boolean {
-        return invoice.status === DocumentStatus.Closed || invoice.status?.toString() === 'Closed' || invoice.status?.toString() === '3';
+        if (!invoice || invoice.status === undefined || invoice.status === null) return false;
+        const s = invoice.status.toString();
+        return s === 'Closed' || s === '5' || invoice.status === DocumentStatus.Closed;
     }
 
     // Helper methods

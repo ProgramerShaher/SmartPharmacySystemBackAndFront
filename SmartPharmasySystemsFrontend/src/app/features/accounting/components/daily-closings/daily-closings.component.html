@@ -1,4 +1,5 @@
 <div class="movement-container" dir="rtl">
+    <p-toast></p-toast>
     <p-confirmDialog></p-confirmDialog>
 
     <div class="page-header">
@@ -6,7 +7,7 @@
             <div class="icon-circle"><i class="pi pi-lock"></i></div>
             <div>
                 <h1>الإقفال اليومي للصناديق</h1>
-                <p>إدارة الأيام المقفلة محاسبياً ومنع التعديل على الحركات السابقة</p>
+                <p>إدارة الأيام المقفلة محاسبياً — ترحيل رصيد الدرج تلقائياً إلى الخزينة الرئيسية</p>
             </div>
         </div>
         
@@ -16,10 +17,6 @@
                     <i class="pi pi-calendar"></i>
                     <p-calendar [(ngModel)]="selectedDate" dateFormat="yy-mm-dd" [readonlyInput]="true" placeholder="اختر يوم للإقفال" styleClass="w-full"></p-calendar>
                 </span>
-            </div>
-            <div class="action-item flex align-items-center ml-2 mr-2">
-                <p-checkbox [(ngModel)]="transferToMainSafe" [binary]="true" inputId="transferToMainSafeDay"></p-checkbox>
-                <label for="transferToMainSafeDay" class="ml-2 mb-0" style="font-size: 0.75rem; font-weight: 700;">ترحيل النقدية</label>
             </div>
             <div class="action-item">
                 <button pButton type="button" label="تنفيذ إقفال يومي" icon="pi pi-check-circle" class="p-button-danger p-button-sm" [rounded]="true"
@@ -33,15 +30,16 @@
         <p-table #dt [value]="closings" [loading]="loading"
                  [rows]="10" [paginator]="true" responsiveLayout="scroll"
                  [rowHover]="true" styleClass="p-datatable-sm compact-table"
-                 [globalFilterFields]="['closingDate', 'closedByName']">
+                 [globalFilterFields]="['closingDate', 'submittedByName']">
             
             <ng-template pTemplate="header">
                 <tr>
                     <th>تاريخ الإقفال</th>
                     <th>المستخدم المُقفل</th>
                     <th class="text-center">المبيعات (كاش)</th>
-                    <th class="text-center">المرتجعات (كاش)</th>
+                    <th class="text-center">المرتجعات</th>
                     <th class="text-center">المصروفات</th>
+                    <th class="text-center">الرصيد المرحّل</th>
                     <th class="text-center">العجز/الزيادة</th>
                     <th class="text-center">الحالة</th>
                 </tr>
@@ -53,6 +51,7 @@
                     <td class="text-center text-teal-600 font-bold">{{ closing.totalCashSales | number:'1.0-2' }}</td>
                     <td class="text-center text-pink-600 font-bold">{{ closing.totalCashReturns | number:'1.0-2' }}</td>
                     <td class="text-center text-orange-600 font-bold">{{ closing.totalExpenses | number:'1.0-2' }}</td>
+                    <td class="text-center text-blue-600 font-bold">{{ closing.actualCash | number:'1.0-2' }}</td>
                     <td class="text-center">
                         <span class="font-bold" [ngClass]="{'text-green-500': closing.cashVariance >= 0, 'text-red-500': closing.cashVariance < 0}" dir="ltr">
                             {{ closing.cashVariance | number:'1.0-2' }}
@@ -65,7 +64,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="7" class="text-center py-5 text-500">
+                    <td colspan="8" class="text-center py-5 text-500">
                         <i class="pi pi-inbox text-4xl mb-3 block text-300"></i>
                         لا توجد إقفالات يومية مسجلة بعد.
                     </td>

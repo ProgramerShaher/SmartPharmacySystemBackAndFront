@@ -17,24 +17,26 @@ public class FinancialRepository : IFinancialRepository
 
     public async Task<PharmacyAccount> GetMainAccountAsync()
     {
+        return await GetMainSafeAccountAsync();
+    }
+
+    public async Task<PharmacyAccount> GetMainSafeAccountAsync()
+    {
         int branchId = _context.CurrentBranchId ?? 1;
 
-        // Try to find an active account for this branch first
         var account = await _context.PharmacyAccounts
             .OrderBy(a => a.Id)
-            .FirstOrDefaultAsync(a => a.IsActive && a.BranchId == branchId);
+            .FirstOrDefaultAsync(a => a.IsActive && a.BranchId == branchId && !a.IsDrawerAccount);
         
         if (account == null)
         {
             var accountName = "الخزينة الرئيسية - فرع " + branchId;
 
-            // Try to find ANY account (even inactive) by name and branch to avoid duplicate key error
             account = await _context.PharmacyAccounts.IgnoreQueryFilters()
-                .FirstOrDefaultAsync(a => a.Name == accountName && a.BranchId == branchId);
+                .FirstOrDefaultAsync(a => a.Name == accountName && a.BranchId == branchId && !a.IsDrawerAccount);
 
             if (account != null)
             {
-                // If found but inactive, reactivate it
                 if (!account.IsActive)
                 {
                     account.IsActive = true;
@@ -44,12 +46,57 @@ public class FinancialRepository : IFinancialRepository
             }
             else
             {
-                // Auto-create a default account for this branch to prevent crashes
                 account = new PharmacyAccount
                 {
                     Name = accountName,
                     Balance = 0,
                     IsActive = true,
+                    IsDrawerAccount = false,
+                    BranchId = branchId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+                
+                await _context.PharmacyAccounts.AddAsync(account);
+                await _context.SaveChangesAsync();
+            }
+        }
+        
+        return account;
+    }
+
+    public async Task<PharmacyAccount> GetDrawerAccountAsync()
+    {
+        int branchId = _context.CurrentBranchId ?? 1;
+
+        var account = await _context.PharmacyAccounts
+            .OrderBy(a => a.Id)
+            .FirstOrDefaultAsync(a => a.IsActive && a.BranchId == branchId && a.IsDrawerAccount);
+        
+        if (account == null)
+        {
+            var accountName = "درج الكاشير - فرع " + branchId;
+
+            account = await _context.PharmacyAccounts.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(a => a.Name == accountName && a.BranchId == branchId && a.IsDrawerAccount);
+
+            if (account != null)
+            {
+                if (!account.IsActive)
+                {
+                    account.IsActive = true;
+                    _context.PharmacyAccounts.Update(account);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            else
+            {
+                account = new PharmacyAccount
+                {
+                    Name = accountName,
+                    Balance = 0,
+                    IsActive = true,
+                    IsDrawerAccount = true,
                     BranchId = branchId,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow
@@ -183,6 +230,19 @@ public class FinancialRepository : IFinancialRepository
             .Where(t => t.AccountId == accountId
                      && t.TransactionDate >= start
                      && t.TransactionDate <= end)
+            .OrderByDescending(t => t.TransactionDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<FinancialTransaction>> GetTransactionsByAccountAndDayAsync(int accountId, DateTime date)
+    {
+        var startDate = date.Date;
+        var endDate = startDate.AddDays(1);
+        
+        return await _context.FinancialTransactions
+            .Where(t => t.AccountId == accountId
+                     && t.TransactionDate >= startDate
+                     && t.TransactionDate < endDate)
             .OrderByDescending(t => t.TransactionDate)
             .ToListAsync();
     }

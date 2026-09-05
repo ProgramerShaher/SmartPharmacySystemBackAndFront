@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { CustomerService } from '../../services/customer.service';
 import { Customer, CustomerReceipt, CreateCustomerReceiptDto } from '../../../../core/models/customer.models';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -85,7 +86,8 @@ export class CustomerReceiptsComponent implements OnInit {
         private customerService: CustomerService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private settingsService: SettingsService
+        private settingsService: SettingsService,
+        private route: ActivatedRoute
     ) {
         this.receiptForm = this.fb.group({
             customerId: [null, Validators.required],
@@ -115,17 +117,19 @@ export class CustomerReceiptsComponent implements OnInit {
             }
         });
 
+        const autoCreate = this.route.snapshot.queryParamMap.get('create') === 'true';
+
         if (this.presetCustomerId) {
             // Fetch the customer first, then open the form with it prefilled
             this.customerService.getById(this.presetCustomerId).subscribe(c => {
                 this.filteredCustomers = [c];
                 this.onCustomerSelect(c);
-                if (this.autoOpenCreate) {
+                if (this.autoOpenCreate || autoCreate) {
                     this.openNew(true); // true = keep the customer we just set
                 }
             });
-        } else if (this.autoOpenCreate) {
-            setTimeout(() => this.openNew(), 100);
+        } else if (this.autoOpenCreate || autoCreate) {
+            setTimeout(() => this.openNew(), 150);
         }
     }
 

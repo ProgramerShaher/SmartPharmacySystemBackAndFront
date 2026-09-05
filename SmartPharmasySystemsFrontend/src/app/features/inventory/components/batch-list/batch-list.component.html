@@ -151,11 +151,11 @@
 
                     <td class="text-center">
                         <span class="status-badge cursor-pointer" style="transition: all 0.2s"
-                            [ngClass]="batch.isSellable ? 'sellable' : 'unsellable'" (click)="toggleSellable(batch)"
-                            pTooltip="انقر لتغيير الحالة">
-                            <i class="pi" [ngClass]="batch.isSellable ? 'pi-check-circle' : 'pi-ban'"
+                            [ngClass]="batch.status === 'Active' ? 'sellable' : 'unsellable'" (click)="toggleStatus(batch)"
+                            pTooltip="انقر لتغيير حالة الدفعة (نشط / موقوف)">
+                            <i class="pi" [ngClass]="batch.status === 'Active' ? 'pi-check-circle' : 'pi-ban'"
                                 style="font-size: 0.7rem"></i>
-                            {{ batch.isSellable ? 'نشط' : 'موقوف' }}
+                            {{ batch.status === 'Active' ? 'نشط' : 'موقوف' }}
                         </span>
                     </td>
 

@@ -13,4 +13,5 @@ public interface IShiftService
     Task<ApiResponse<ShiftDto>> CloseShiftAsync(CloseShiftDto request);
     Task<ApiResponse<ShiftSummaryDto>> GetShiftSummaryAsync(int shiftId);
     Task<ApiResponse<ShiftDetailsDto>> GetShiftDetailsAsync(int shiftId);
+    Task<ApiResponse<int>> SweepUntransferredShiftsToMainSafeAsync(int branchId);
 }

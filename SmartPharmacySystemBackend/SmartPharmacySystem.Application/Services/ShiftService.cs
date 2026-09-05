@@ -82,13 +82,16 @@ public class ShiftService : IShiftService
         if (existingShift != null)
             return ApiResponse<ShiftDto>.Failed("You already have an open shift.");
 
+        var drawerPharmacyAccount = await _unitOfWork.Financials.GetDrawerAccountAsync();
+        var drawerBalance = await _unitOfWork.Financials.CalculateBalanceAsync(drawerPharmacyAccount.Id);
+
         var shift = new UserShift
         {
             UserId = userId.Value,
             BranchId = branchId.Value,
             StartTime = DateTime.UtcNow,
-            OpeningCash = request.OpeningCash,
-            ExpectedClosingCash = request.OpeningCash, // Will be updated by sales/returns logic later if needed
+            OpeningCash = drawerBalance,
+            ExpectedClosingCash = drawerBalance, // Will be updated by sales/returns logic later if needed
             Status = "Open",
             Notes = request.Notes
         };
@@ -167,45 +170,11 @@ public class ShiftService : IShiftService
         await _context.SaveChangesAsync();
 
         // ----------------------------------------------------
-        // إنشاء قيد يومية آلي لترحيل النقدية للصندوق الرئيسي
+        // ملاحظة: تم إلغاء الترحيل عند إغلاق الوردية بناءً على طلب المستخدم
+        // الترحيل يتم فقط عند الإغلاق اليومي
         // ----------------------------------------------------
-        if (request.TransferToMainSafe && request.ActualClosingCash > 0)
-        {
-            var drawerCode = $"11101-{userId.Value}";
-            var drawerAccount = await _unitOfWork.Accounts.GetByCodeAsync(drawerCode);
-            var mainSafe = await _unitOfWork.Accounts.GetByCodeAsync("11101") ?? await _unitOfWork.Accounts.GetByCodeAsync("11100");
-
-            if (drawerAccount != null && mainSafe != null)
-            {
-                var journalEntry = new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryDto
-                {
-                    EntryDate = DateTime.UtcNow,
-                    VoucherNumber = $"SH-{shift.Id}",
-                    Description = $"ترحيل نقدية إغلاق وردية رقم {shift.Id} - كاشير: {shift.User?.FullName ?? shift.User?.Username}",
-                    Type = SmartPharmacySystem.Core.Enums.VoucherType.JournalEntry,
-                    Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>
-                    {
-                        new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
-                        {
-                            AccountId = mainSafe.Id,
-                            Debit = request.ActualClosingCash,
-                            Credit = 0,
-                            Description = "استلام نقدية الوردية"
-                        },
-                        new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
-                        {
-                            AccountId = drawerAccount.Id,
-                            Debit = 0,
-                            Credit = request.ActualClosingCash,
-                            Description = "ترحيل نقدية الوردية"
-                        }
-                    }
-                };
-                
-                var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId.Value);
-                await _journalEntryService.ApproveAsync(createdEntry.Id, userId.Value);
-            }
-        }
+        shift.IsCashTransferredToMainSafe = false;
+        await _context.SaveChangesAsync();
 
         return ApiResponse<ShiftDto>.Succeeded(MapToDto(shift), "Success");
     }
@@ -296,9 +265,9 @@ public class ShiftService : IShiftService
         var startTime = shift.StartTime;
         var userId = shift.UserId;
 
-        // Sales (Cash = 1, Visa = 2, Credit = 3 assuming Core.Enums.PaymentMethod)
+        // Sales (Cash = 1, Visa = 3, Credit = 2 depending on PaymentType enum)
         var sales = await _context.SaleInvoices
-            .Where(s => s.CreatedBy == userId && s.CreatedAt >= startTime && s.CreatedAt <= endTime && (s.Status == Core.Enums.DocumentStatus.Approved || s.Status == Core.Enums.DocumentStatus.Closed))
+            .Where(s => s.UserShiftId == shift.Id && (s.Status == Core.Enums.DocumentStatus.Approved || s.Status == Core.Enums.DocumentStatus.Closed))
             .ToListAsync();
 
         var salesReturns = await _context.SalesReturns
@@ -318,11 +287,11 @@ public class ShiftService : IShiftService
             .Where(s => s.CreatedBy == userId && s.PaymentDate >= startTime && s.PaymentDate <= endTime)
             .ToListAsync();
 
-        var totalSalesCash = sales.Where(s => (int)s.PaymentMethod == 1).Sum(s => s.TotalAmount); // Cash
-        var totalSalesNetwork = sales.Where(s => (int)s.PaymentMethod == 2).Sum(s => s.TotalAmount); // Visa/Mada
-        var totalSalesCredit = sales.Where(s => (int)s.PaymentMethod == 3).Sum(s => s.TotalAmount); // Credit
+        var totalSalesCash = sales.Where(s => s.PaymentMethod == Core.Enums.PaymentType.Cash).Sum(s => s.TotalAmount); // Cash
+        var totalSalesNetwork = sales.Where(s => s.PaymentMethod == Core.Enums.PaymentType.BankTransfer).Sum(s => s.TotalAmount); // Visa/Mada
+        var totalSalesCredit = sales.Where(s => s.PaymentMethod == Core.Enums.PaymentType.Credit).Sum(s => s.TotalAmount); // Credit
 
-        var totalReturnsCash = salesReturns.Where(s => s.SaleInvoice != null && (int)s.SaleInvoice.PaymentMethod == 1).Sum(s => s.TotalAmount);
+        var totalReturnsCash = salesReturns.Where(s => s.SaleInvoice != null && s.SaleInvoice.PaymentMethod == Core.Enums.PaymentType.Cash).Sum(s => s.TotalAmount);
 
         // Assume expenses are cash if not specified differently, or paid from drawer
         var totalExpensesCash = expenses.Sum(e => e.Amount);
@@ -355,6 +324,14 @@ public class ShiftService : IShiftService
         };
     }
 
+    public async Task<ApiResponse<int>> SweepUntransferredShiftsToMainSafeAsync(int branchId)
+    {
+        // ملاحظة: تم نقل منطق التحويل المالي الحقيقي إلى DailyClosingService.CreateAsync
+        // الإغلاق اليومي هو الذي يُنفّذ: Expense على الدرج + Income على الخزينة الرئيسية
+        // هذه الدالة لا تعود ضرورية ولكن تُبقى للتوافق مع الكود المستدعي القديم
+        return await Task.FromResult(ApiResponse<int>.Succeeded(0, "لا يوجد ترحيل مطلوب — الترحيل يتم عند تنفيذ الإغلاق اليومي."));
+    }
+
     private ShiftDto MapToDto(UserShift shift)
     {
         return new ShiftDto
@@ -370,7 +347,11 @@ public class ShiftService : IShiftService
             ExpectedClosingCash = shift.ExpectedClosingCash,
             Difference = shift.Difference,
             Status = shift.Status,
-            Notes = shift.Notes
+            Notes = shift.Notes,
+            IsCashTransferredToMainSafe = shift.IsCashTransferredToMainSafe,
+            CashTransferredAt = shift.CashTransferredAt,
+            TransferredCashAmount = shift.TransferredCashAmount,
+            TransferReferenceNumber = shift.TransferReferenceNumber
         };
     }
 }

@@ -234,16 +234,15 @@ public class MedicineBatchService(
             if (!string.IsNullOrEmpty(dto.Status))
             {
                 if (dto.Status == "Active" && batch.IsExpired)
-                    throw new InvalidOperationException("Cannot activate expired batch | لا يمكن تفعيل دفعة منتهية");
+                    throw new InvalidOperationException("Cannot activate expired batch | لا يمكن تفعيل دفعة منتهية الصلاحية");
                 batch.Status = dto.Status;
             }
-
-            // Auto-Correct Status (Dynamic Sellable)
-            if (batch.ExpiryDate < DateTime.UtcNow.Date || batch.RemainingQuantity == 0)
+            else
             {
-                if (batch.Status == "Active")
+                // Auto-Correct Status only if no explicit status was provided
+                if (batch.ExpiryDate < DateTime.UtcNow.Date && batch.Status == "Active")
                 {
-                    batch.Status = batch.ExpiryDate < DateTime.UtcNow.Date ? "Expired" : "OutOfStock";
+                    batch.Status = "Expired";
                 }
             }
 

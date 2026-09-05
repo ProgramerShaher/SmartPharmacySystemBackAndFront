@@ -125,7 +125,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
-            .Where(b => b.MedicineId == medicineId);
+            .Where(b => b.MedicineId == medicineId && b.Status != "Incoming");
 
         if (!includeDeleted)
             query = query.Where(b => !b.IsDeleted);
@@ -184,6 +184,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
             .Where(b => !b.IsDeleted
+                        && b.Status != "Incoming"
                         && b.ExpiryDate.Date > now
                         && b.ExpiryDate.Date <= thresholdDate
                         && b.RemainingQuantity > 0)  // ✅ Optimized
@@ -200,7 +201,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
-            .Where(b => !b.IsDeleted && b.ExpiryDate.Date <= now)
+            .Where(b => !b.IsDeleted && b.Status != "Incoming" && b.ExpiryDate.Date <= now)
             .OrderBy(b => b.ExpiryDate)
             .ToListAsync();
     }
@@ -226,6 +227,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
+            .Where(b => b.Status != "Incoming")
             .AsQueryable();
 
         if (!includeDeleted)
@@ -357,7 +359,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
             .AsNoTracking()
             .Include(b => b.Medicine)
             .Include(b => b.CreatedByUser)
-            .Where(b => !b.IsDeleted)
+            .Where(b => !b.IsDeleted && b.Status != "Incoming")
             .OrderBy(b => b.ExpiryDate)
             .ToListAsync();
     }

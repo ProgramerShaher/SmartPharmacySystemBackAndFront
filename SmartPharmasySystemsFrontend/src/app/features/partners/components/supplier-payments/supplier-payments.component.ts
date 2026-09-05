@@ -146,9 +146,13 @@ export class SupplierPaymentsComponent implements OnInit {
     }
 
     const supplierId = this.route.snapshot.queryParamMap.get('supplierId');
+    const autoCreate = this.route.snapshot.queryParamMap.get('create') === 'true';
+
     if (supplierId) {
       this.openNew();
       this.prefillSupplier(+supplierId);
+    } else if (autoCreate) {
+      setTimeout(() => this.openNew(), 150);
     }
   }
 

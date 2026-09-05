@@ -246,23 +246,42 @@
         }
     }
 
-    /* تنسيق الحقول لتشمل PrimeNG والمحلية */
+    /* تنسيق الحقول لتشمل PrimeNG والمحلية (مطابق لمودال إضافة الدواء بالضبط) */
     .custom-native-input,
     .custom-p-input>.p-inputtext,
     .custom-p-input.p-dropdown,
     .custom-p-input .p-inputtext,
     .custom-p-input.p-calendar .p-inputtext {
         width: 100%;
-        height: 36px !important;
-        padding: 0 10px !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 0 0.55rem !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
-        font-size: 13px !important;
-        background: #f8fafc !important;
+        font-size: 0.8rem !important;
+        font-weight: 500;
+        background: #ffffff !important;
         color: #0f172a !important;
-        transition: all 0.15s ease-in-out !important;
+        box-shadow: none !important;
+        transition: all 0.2s ease !important;
         font-family: 'Tajawal', sans-serif !important;
         align-items: center;
+    }
+
+    .custom-p-input.p-dropdown {
+        padding: 0 !important;
+    }
+
+    .custom-p-input.p-dropdown .p-dropdown-label {
+        padding: 0 0.55rem !important;
+        padding-left: 2.2rem !important;
+        display: flex;
+        align-items: center;
+        height: 100%;
+        background: transparent !important;
+        border: none !important;
+        font-size: 0.8rem !important;
+        font-weight: 500;
     }
 
     .custom-native-input:focus,
@@ -274,37 +293,40 @@
         outline: none !important;
         background: #ffffff !important;
         border-color: #0d9488 !important;
-        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.2) !important;
+        box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
     }
 
-    /* شريط البحث عن الدواء الرئيسي (Search Medicine Bar) */
-    .search-medicine-bar {
-        background: linear-gradient(135deg, #f0fdfa 0%, #f8fafc 100%);
-        border: 1.5px solid #0d9488;
-        border-radius: 8px;
-        padding: 12px 16px;
-        box-shadow: 0 2px 6px rgba(13, 148, 136, 0.06);
+    .search-row-flex {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
 
-        .search-label {
-            font-size: 13px !important;
-            font-weight: 800 !important;
-            color: #0f766e !important;
-            margin-bottom: 6px !important;
+    .barcode-readonly-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        height: 34px;
+        padding: 0 10px;
+        font-size: 0.8rem;
+        color: #475569;
+        font-weight: 600;
+        white-space: nowrap;
 
-            .search-tip {
-                font-weight: 500;
-                color: #64748b;
-                font-size: 11px;
-                margin-right: 6px;
-            }
+        i {
+            color: #0d9488;
+            font-size: 15px;
         }
 
-        .main-search-input .p-inputtext {
-            height: 40px !important;
-            font-size: 14px !important;
-            font-weight: 600 !important;
-            background: #ffffff !important;
-            border-color: #0d9488 !important;
+        .barcode-text {
+            font-family: monospace, sans-serif;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: 0.5px;
         }
     }
 
@@ -345,32 +367,47 @@
     background: #ffffff;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
-    overflow: hidden;
     margin-top: 4px;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    max-height: calc(100vh - 360px);
+    min-height: 220px;
+    overflow-y: auto;
+    position: relative;
 }
 
 .custom-p-table {
     table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 13px;
+        font-size: 11px;
+    }
+
+    .p-datatable-thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f8fafc;
     }
 
     .p-datatable-thead>tr>th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
         background: #f8fafc !important;
         color: #475569 !important;
         font-weight: 700 !important;
-        padding: 10px 14px !important;
+        padding: 6px 10px !important;
         border-bottom: 1px solid #e2e8f0 !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
+        text-align: right !important;
     }
 
     .p-datatable-tbody>tr>td {
-        padding: 10px 14px !important;
+        padding: 6px 10px !important;
         color: #0f172a !important;
         border-bottom: 1px solid #f1f5f9 !important;
         background: #ffffff !important;
+        font-size: 11px !important;
     }
 
     .table-row-item {
@@ -445,6 +482,7 @@
 
     &.btn-action-edit {
         color: #0284c7;
+
         &:hover {
             background: #e0f2fe;
             border-color: #bae6fd;
@@ -453,6 +491,7 @@
 
     &.btn-action-delete {
         color: #ef4444;
+
         &:hover {
             background: #fef2f2;
             border-color: #fecaca;
@@ -575,14 +614,22 @@
     background: #eff6ff;
     color: #1e40af;
     border: 1px solid #bfdbfe;
-    .stat-number { color: #1d4ed8; font-weight: 800; }
+
+    .stat-number {
+        color: #1d4ed8;
+        font-weight: 800;
+    }
 }
 
 .stat-qty {
     background: #f0fdf4;
     color: #166534;
     border: 1px solid #bbf7d0;
-    .stat-number { color: #15803d; font-weight: 800; }
+
+    .stat-number {
+        color: #15803d;
+        font-weight: 800;
+    }
 }
 
 .stat-total {
@@ -590,15 +637,68 @@
     color: #ffffff;
     border: 1px solid #3730a3;
     box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
-    .stat-number { color: #ffffff; font-weight: 800; font-size: 15px; }
+
+    .stat-number {
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 15px;
+    }
 }
 
-/* =========================================
-   مودال إدخال تفاصيل الدواء (Item Details Modal)
-   ========================================= */
-::ng-deep {
-    .item-details-dialog {
+/* ==========    .item-details-dialog {
         font-family: 'Tajawal', sans-serif !important;
+
+        .p-inputtext,
+        .p-inputnumber-input,
+        .p-dropdown,
+        .custom-native-input,
+        .p-calendar .p-inputtext {
+            width: 100%;
+            height: 34px !important;
+            min-height: 34px !important;
+            padding: 0 0.55rem !important;
+            border: 1px solid #cbd5e1 !important;
+            border-radius: 6px !important;
+            font-size: 0.8rem !important;
+            font-weight: 500;
+            background: #ffffff !important;
+            color: #0f172a !important;
+            box-shadow: none !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .p-dropdown {
+            padding: 0 !important;
+
+            .p-dropdown-label {
+                padding: 0 0.55rem !important;
+                padding-left: 2.2rem !important;
+                display: flex;
+                align-items: center;
+                height: 100%;
+                background: transparent !important;
+                border: none !important;
+                font-size: 0.8rem !important;
+                font-weight: 500;
+            }
+        }
+
+        .p-inputtext:focus,
+        .p-inputnumber-input:focus,
+        .custom-native-input:focus,
+        .p-dropdown.p-focus,
+        .p-calendar .p-inputtext:focus {
+            outline: none !important;
+            border-color: #0d9488 !important;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15) !important;
+        }
+
+        .input-group label {
+            font-size: 0.8rem !important;
+            font-weight: 700 !important;
+            color: #334155;
+            margin-bottom: 0.4rem;
+        }
 
         .p-dialog {
             border-radius: 12px !important;
@@ -609,19 +709,19 @@
         .p-dialog-header {
             background: #f8fafc !important;
             border-bottom: 1px solid #e2e8f0 !important;
-            padding: 16px 20px !important;
+            padding: 14px 18px !important;
         }
 
         .dialog-header-custom {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             width: 100%;
         }
 
         .item-title {
             margin: 0;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 800;
             color: #0f172a;
             display: flex;
@@ -635,12 +735,12 @@
         }
 
         .badge-price-info {
-            background: #f0fdf4;
+            background: #f0fdfa;
             color: #15803d;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 6px;
+            padding: 2px 8px;
+            border-radius: 4px;
             border: 1px solid #bbf7d0;
             display: inline-flex;
             align-items: center;
@@ -650,10 +750,10 @@
         .badge-stock-info {
             background: #e0f2fe;
             color: #0369a1;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 6px;
+            padding: 2px 8px;
+            border-radius: 4px;
             border: 1px solid #bae6fd;
             display: inline-flex;
             align-items: center;
@@ -661,14 +761,14 @@
         }
 
         .p-dialog-content {
-            padding: 20px !important;
+            padding: 16px 18px !important;
             background: #ffffff !important;
         }
 
         .modal-form-body {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 14px;
         }
 
         .form-row-two-col {
@@ -681,7 +781,7 @@
             border-color: #0d9488 !important;
             background: #f0fdfa !important;
             font-weight: 800 !important;
-            font-size: 16px !important;
+            font-size: 15px !important;
             color: #0f766e !important;
             text-align: center;
         }
@@ -690,7 +790,7 @@
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 14px 16px;
+            padding: 12px 14px;
 
             .total-row-summary {
                 display: flex;
@@ -698,18 +798,18 @@
                 align-items: center;
 
                 .label {
-                    font-size: 14px;
+                    font-size: 13px;
                     font-weight: 700;
                     color: #475569;
                 }
 
                 .value {
-                    font-size: 18px;
+                    font-size: 16px;
                     font-weight: 800;
                     color: #0d9488;
 
                     small {
-                        font-size: 12px;
+                        font-size: 11px;
                         color: #64748b;
                     }
                 }
@@ -720,49 +820,124 @@
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 20px;
-            padding-top: 14px;
+            margin-top: 16px;
+            padding-top: 12px;
             border-top: 1px solid #f1f5f9;
         }
     }
 
-    /* نافذة الاختصارات */
-    .shortcuts-guide-list {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        padding: 8px 0;
+    /* تصميم قوائم الخيارات المنسدلة والتقويم بحجم أصغر ومدمج */
+.p-dropdown-panel,
+.p-autocomplete-panel {
+    font-family: 'Tajawal', sans-serif !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #cbd5e1 !important;
+
+    .p-dropdown-items,
+    .p-autocomplete-items {
+        padding: 4px !important;
+
+        .p-dropdown-item,
+        .p-autocomplete-item {
+            padding: 5px 10px !important;
+            font-size: 0.8rem !important;
+            font-weight: 600 !important;
+            border-radius: 4px !important;
+        }
     }
 
-    .shortcut-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 8px 12px;
-        background: #f8fafc;
-        border-radius: 6px;
-        border: 1px solid #e2e8f0;
+    .p-dropdown-filter-container {
+        padding: 6px !important;
 
-        .kbd-key {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-weight: 800;
-            font-size: 12px;
-            color: #0f172a;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .shortcut-desc {
-            font-size: 13px;
-            color: #334155;
-            font-weight: 600;
+        .p-dropdown-filter {
+            height: 30px !important;
+            font-size: 0.8rem !important;
+            padding: 0 8px !important;
+            border-radius: 4px !important;
         }
     }
 }
+
+.p-datepicker {
+    font-family: 'Tajawal', sans-serif !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+
+    .p-datepicker-header {
+        padding: 4px 6px !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+    }
+
+    table {
+        font-size: 0.75rem !important;
+
+        th {
+            padding: 3px !important;
+            font-size: 0.75rem !important;
+        }
+
+        td {
+            padding: 2px !important;
+
+            >span {
+                width: 1.8rem !important;
+                height: 1.8rem !important;
+                font-size: 0.75rem !important;
+                border-radius: 4px !important;
+            }
+        }
+    }
+}
+
+/* نافذة الاختصارات */
+.shortcuts-guide-list {
+    margin-top: 20px;
+    padding-top: 14px;
+    border-top: 1px solid #f1f5f9;
+}
+
+
+/* نافذة الاختصارات */
+.shortcuts-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px 0;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+
+    .kbd-key {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-weight: 800;
+        font-size: 12px;
+        color: #0f172a;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .shortcut-desc {
+        font-size: 13px;
+        color: #334155;
+        font-weight: 600;
+    }
+}
+
 
 /* Responsive (الشاشات الصغيرة) */
 @media (max-width: 992px) {
@@ -772,7 +947,10 @@
 
     .modal-form-grid {
         grid-template-columns: 1fr !important;
-        .full-width-grid { grid-column: span 1 !important; }
+
+        .full-width-grid {
+            grid-column: span 1 !important;
+        }
     }
 }
 
@@ -789,6 +967,10 @@
     .footer-stats {
         flex-direction: column;
         width: 100%;
-        .stat-badge { width: 100%; justify-content: space-between; }
+
+        .stat-badge {
+            width: 100%;
+            justify-content: space-between;
+        }
     }
 }

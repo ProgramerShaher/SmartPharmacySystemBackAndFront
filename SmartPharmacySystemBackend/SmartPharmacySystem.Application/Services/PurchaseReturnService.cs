@@ -51,7 +51,9 @@ namespace SmartPharmacySystem.Application.Services
             entity.CreatedAt = DateTime.UtcNow;
             entity.CreatedBy = userId;
             entity.Status = DocumentStatus.Draft;
-            entity.SupplierId = invoice.SupplierId;
+            if (!invoice.SupplierId.HasValue)
+                throw new InvalidOperationException("لا يمكن إنشاء مرتجع لفاتورة شراء لا تحتوي على مورد.");
+            entity.SupplierId = invoice.SupplierId.Value;
 
             // ✅ بدء Transaction لضمان Atomicity
             try
@@ -173,7 +175,7 @@ namespace SmartPharmacySystem.Application.Services
                         }
                         else
                         {
-                            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId);
+                            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value);
                             if (supplier != null)
                             {
                                 supplier.Balance -= ret.TotalAmount; // Decrease Debt
@@ -239,7 +241,7 @@ namespace SmartPharmacySystem.Application.Services
                         }
                         else
                         {
-                            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId);
+                            var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value);
                             if (supplier != null)
                             {
                                 supplier.Balance += ret.TotalAmount; // Increase Debt back

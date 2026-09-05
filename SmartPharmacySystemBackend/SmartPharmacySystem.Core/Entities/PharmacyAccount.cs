@@ -27,4 +27,10 @@ public class PharmacyAccount : BaseMultiBranchEntity
     /// </summary>
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// هل هذا حساب درج الكاشير (Cashier Drawer) أم الخزينة الرئيسية (Main Safe)
+    /// True = Cashier Drawer, False = Main Safe
+    /// </summary>
+    public bool IsDrawerAccount { get; set; } = false;
+
 }

@@ -119,6 +119,21 @@ export class FinancialDashboardComponent implements OnInit {
         this.financialService.balance$.subscribe(bal => {
             this.currentBalance = bal;
             this.loadingBalance = false;
+            if (this.transactions && this.transactions.length > 0) {
+                const hasBackendBalance = this.transactions.some(t => t.balanceAfterTransaction !== undefined && t.balanceAfterTransaction !== null && t.balanceAfterTransaction !== 0);
+                if (!hasBackendBalance) {
+                    let running = bal || 0;
+                    for (let i = 0; i < this.transactions.length; i++) {
+                        this.transactions[i].balanceAfterTransaction = running;
+                        const amt = this.transactions[i].amount || 0;
+                        if (this.transactions[i].type === FinancialTransactionType.Income) {
+                            running -= amt;
+                        } else {
+                            running += amt;
+                        }
+                    }
+                }
+            }
         });
 
         this.refreshAll();
@@ -178,7 +193,25 @@ export class FinancialDashboardComponent implements OnInit {
 
         this.financialService.getTransactions(query).subscribe({
             next: (data) => {
-                this.transactions = data.items;
+                const items = data.items || [];
+                // Check if balanceAfterTransaction is already calculated by backend
+                const hasBackendBalance = items.some(t => t.balanceAfterTransaction !== undefined && t.balanceAfterTransaction !== null && t.balanceAfterTransaction !== 0);
+                
+                if (!hasBackendBalance && items.length > 0) {
+                    // Smart client-side backward calculation from current balance (since items are sorted newest first)
+                    let running = this.currentBalance || 0;
+                    for (let i = 0; i < items.length; i++) {
+                        items[i].balanceAfterTransaction = running;
+                        const amt = items[i].amount || 0;
+                        if (items[i].type === FinancialTransactionType.Income) {
+                            running -= amt;
+                        } else {
+                            running += amt;
+                        }
+                    }
+                }
+
+                this.transactions = items;
                 this.loadingTransactions = false;
             },
             error: () => this.loadingTransactions = false

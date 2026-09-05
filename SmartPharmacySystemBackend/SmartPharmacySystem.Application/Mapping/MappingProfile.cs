@@ -15,6 +15,7 @@ using SmartPharmacySystem.Application.DTOs.PurchaseReturns;
 using SmartPharmacySystem.Application.DTOs.PurchaseReturnDetails;
 using SmartPharmacySystem.Application.DTOs.SalesReturns;
 using SmartPharmacySystem.Application.DTOs.SalesReturnDetails;
+using SmartPharmacySystem.Application.DTOs.PurchaseInvoice;
 using SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 using SmartPharmacySystem.Application.Helpers;
 using SmartPharmacySystem.Application.DTOs.Financial;
@@ -762,6 +763,29 @@ namespace SmartPharmacySystem.Application.Mapping
             // ==================== Customer & Finance Mappings ====================
 
             // CustomerLedger Mappings
+            CreateMap<CreateCustomerLedgerDto, CustomerLedger>();
+
+            // SalaryDeductionItem Mappings
+            CreateMap<SalaryDeductionItem, SalaryDeductionItemDto>()
+                .ForMember(dest => dest.DeductionTypeName, opt => opt.MapFrom(src =>
+                    src.DeductionType == Core.Enums.DeductionType.Absence ? "غياب" :
+                    src.DeductionType == Core.Enums.DeductionType.LateArrival ? "تأخير" :
+                    src.DeductionType == Core.Enums.DeductionType.LoanInstalment ? "قسط سلفة" :
+                    src.DeductionType == Core.Enums.DeductionType.Insurance ? "تأمين" :
+                    src.DeductionType == Core.Enums.DeductionType.Tax ? "ضريبة" : "أخرى"));
+
+            // EmployeeLoan Mappings
+            CreateMap<CreateEmployeeLoanDto, EmployeeLoan>();
+            CreateMap<UpdateEmployeeLoanDto, EmployeeLoan>()
+                .ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
+            CreateMap<EmployeeLoan, EmployeeLoanDto>()
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.FullName : string.Empty))
+                .ForMember(dest => dest.InstalmentsPaid, opt => opt.Ignore())
+                .ForMember(dest => dest.TotalInstalments, opt => opt.Ignore());
+
+            // ==================== Customer & Finance Mappings ====================
+
+            // CustomerLedger Mappings
             CreateMap<CreateCustomerLedgerDto, CustomerLedger>()
                 .ForMember(dest => dest.Debit, opt => opt.MapFrom(src =>
                     src.TransactionType == Core.Enums.CustomerTransactionType.Invoice ? src.Amount : 0))
@@ -789,13 +813,18 @@ namespace SmartPharmacySystem.Application.Mapping
             // DailyClosing Mappings
             CreateMap<CreateDailyClosingDto, DailyClosing>()
                 .ForMember(dest => dest.BranchId, opt => opt.Ignore())
+                .ForMember(dest => dest.OpeningCash, opt => opt.Ignore())
+                .ForMember(dest => dest.ActualCash, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCashSales, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCreditSales, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCardSales, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCollections, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalCashReturns, opt => opt.Ignore())
                 .ForMember(dest => dest.TotalExpenses, opt => opt.Ignore())
-                .ForMember(dest => dest.SubmittedByUserId, opt => opt.Ignore());
+                .ForMember(dest => dest.Status, opt => opt.Ignore())
+                .ForMember(dest => dest.SubmittedByUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.ApprovedByUserId, opt => opt.Ignore())
+                .ForMember(dest => dest.ApprovedAt, opt => opt.Ignore());
             CreateMap<DailyClosing, DailyClosingDto>()
                 .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src =>

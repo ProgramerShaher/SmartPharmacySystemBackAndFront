@@ -1,0 +1,71 @@
+<div class="home-hub-container" dir="rtl">
+  <!-- ====== INLINE TOP CONTROL BAR (SINGLE SLIM ROW) ====== -->
+  <header class="hub-hero-bar">
+    <div class="user-greeting-inline">
+      <i class="pi pi-user-edit avatar-icon"></i>
+      <span class="greeting-text">مرحباً، <strong>{{ userName() }}</strong></span>
+      <span class="badge-branch"><i class="pi pi-building"></i> {{ branchName() }}</span>
+      <span class="date-chip">{{ getCurrentDateFormatted() }}</span>
+    </div>
+
+    <!-- Live Filter Search Box -->
+    <div class="hub-search-box-inline">
+      <i class="pi pi-search search-icon"></i>
+      <input type="text" [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" placeholder="ابحث عن الشاشة أو العملية (كاشير، سند صرف، تقرير...)" />
+      <button *ngIf="searchQuery()" (click)="searchQuery.set('')" class="clear-btn">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <button pButton label="تحليلات لوحة التحكم" icon="pi pi-chart-pie" class="p-button-outlined p-button-sm analytics-btn-inline" (click)="navigateToAnalytics()"></button>
+  </header>
+
+  <!-- ====== COMPACT ANALYTICS PORTAL STRIP ====== -->
+  <section class="analytics-shortcut-strip" (click)="navigateToAnalytics()" pRipple>
+    <div class="strip-left">
+      <i class="pi pi-desktop portal-icon"></i>
+      <div class="portal-meta">
+        <strong>مركز التحليلات والإحصائيات الشاملة (Dashboard)</strong>
+        <span>عرض الرسوم البيانية، التدفق النقدي، المبيعات والمشتريات، وتنبيهات المخزون</span>
+      </div>
+    </div>
+    <div class="strip-right">
+      <span>لوحة التحكم</span>
+      <i class="pi pi-arrow-left"></i>
+    </div>
+  </section>
+
+  <!-- ====== STRICT EQUAL-HEIGHT 5-COL GRID (ZERO SCROLL FIT) ====== -->
+  <main class="hub-main-grid-viewport">
+    <div class="actions-grid-equal" *ngIf="filteredActions().length > 0">
+      <div
+        *ngFor="let action of filteredActions()"
+        class="action-card-equal"
+        [ngClass]="action.colorTheme"
+        (click)="navigateToAction(action)"
+        pRipple
+      >
+        <div class="card-inner-equal">
+          <div class="action-icon-equal">
+            <i [class]="action.icon"></i>
+          </div>
+          <div class="card-content-equal">
+            <div class="card-header-line">
+              <h4 class="action-title-equal">{{ action.title }}</h4>
+              <span *ngIf="action.badge" class="action-badge-equal">{{ action.badge }}</span>
+            </div>
+            <p class="action-desc-equal">{{ action.subtitle }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty Search State -->
+    <div *ngIf="filteredActions().length === 0" class="empty-search-state">
+      <i class="pi pi-search-minus"></i>
+      <h3>لم يتم العثور على أزرار تطابق "{{ searchQuery() }}"</h3>
+      <p>جرب البحث بكلمات مثل "كاشير"، "صرف"، "مبيعات" أو "أدوية"</p>
+      <button pButton label="عرض جميع الأزرار" icon="pi pi-refresh" class="p-button-text p-button-sm mt-1" (click)="searchQuery.set('')"></button>
+    </div>
+  </main>
+</div>

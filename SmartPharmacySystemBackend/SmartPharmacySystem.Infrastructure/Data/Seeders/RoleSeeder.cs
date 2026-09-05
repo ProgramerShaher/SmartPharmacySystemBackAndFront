@@ -48,5 +48,55 @@ public static class RoleSeeder
                 await context.SaveChangesAsync();
             }
         }
+
+        // إعطاء صلاحيات محددة للصيدلاني
+        var pharmacistRole = await context.Roles.FirstOrDefaultAsync(r => r.Name == "Pharmacist");
+        if (pharmacistRole != null)
+        {
+            var pharmacistPermissionCodes = new List<string>
+            {
+                "sales.invoices.view",
+                "sales.invoices.create",
+                "sales.invoices.edit",
+                "sales.invoices.add_discount",
+                "sales.returns.view",
+                "sales.returns.create",
+                "sales.shifts.manage",
+                "sales.daily_closing.manage",
+                "inventory.medicines.view",
+                "inventory.movements.view",
+                "partners.customers.view",
+                "partners.customers.manage",
+                "finance.treasury.view",
+                "finance.receipts.create",
+                "finance.expenses.create",
+                "dashboard.master"
+            };
+
+            var pharmacistPermissionIds = await context.Permissions
+                .Where(p => pharmacistPermissionCodes.Contains(p.Code))
+                .Select(p => p.Id)
+                .ToListAsync();
+
+            var existingPharmacistPermissions = await context.RolePermissions
+                .Where(rp => rp.RoleId == pharmacistRole.Id)
+                .Select(rp => rp.PermissionId)
+                .ToListAsync();
+
+            var newPharmacistPermissionIds = pharmacistPermissionIds.Except(existingPharmacistPermissions).ToList();
+
+            if (newPharmacistPermissionIds.Any())
+            {
+                var rolePermissions = newPharmacistPermissionIds.Select(pid => new RolePermission
+                {
+                    RoleId = pharmacistRole.Id,
+                    PermissionId = pid,
+                    CreatedAt = DateTime.UtcNow
+                });
+
+                await context.RolePermissions.AddRangeAsync(rolePermissions);
+                await context.SaveChangesAsync();
+            }
+        }
     }
 }

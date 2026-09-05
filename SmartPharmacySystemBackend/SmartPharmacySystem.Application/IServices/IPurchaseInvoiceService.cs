@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using SmartPharmacySystem.Application.DTOs.Barcode;
 using SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
+using SmartPharmacySystem.Application.DTOs.PurchaseInvoice;
 
 namespace SmartPharmacySystem.Application.Interfaces
 {

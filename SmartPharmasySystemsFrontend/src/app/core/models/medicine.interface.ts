@@ -26,6 +26,7 @@ export interface Medicine {
     categoryName?: string;
     manufacturer?: string;
     defaultBarcode?: string;
+    barcode?: string;
     movingAverageCost: number;
     defaultPurchasePrice: number;
     defaultSalePrice: number;

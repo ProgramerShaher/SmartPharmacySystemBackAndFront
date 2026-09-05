@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -85,7 +85,7 @@ import { ShiftService } from '../../../../core/services/shift.service';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [MessageService]
 })
-export class SaleInvoiceCreateComponent implements OnInit {
+export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
     // 🚀 COCKPIT SIGNALS
     items = signal<InvoiceItem[]>([]);
     discount = signal<number>(0);
@@ -140,9 +140,16 @@ export class SaleInvoiceCreateComponent implements OnInit {
     // 🛫 OPERATIONAL STATE
     invoiceDate = new Date();
     selectedCustomer: any = null;
-    isCashCustomer = false; // "Flying Customer" Mode
+    isCashCustomer = true; // "Flying Customer" Mode
     flyingCustomerName: string = ''; // Name for flying customer
     paymentMethod: 'Cash' | 'Credit' = 'Cash';
+    selectedMedicineBarcode: string | null = null;
+
+    customerTypeOptions = [
+        { label: 'عميل نقدي (طيار) ✈️', value: 'cash' },
+        { label: 'عميل مسجل 👤', value: 'registered' }
+    ];
+    selectedCustomerType: 'cash' | 'registered' = 'cash';
 
     // 🔍 SEARCH ENGINES
     filteredMedicines: Medicine[] = [];
@@ -218,6 +225,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
             } else {
                 // Default to Flying Customer for new invoices for speed
                 this.isCashCustomer = true;
+                this.selectedCustomerType = 'cash';
                 this.toggleCashCustomer();
             }
         });
@@ -239,6 +247,31 @@ export class SaleInvoiceCreateComponent implements OnInit {
                 });
             }
         });
+    }
+
+    ngAfterViewInit() {
+        setTimeout(() => {
+            this.focusSearchInput();
+        }, 300);
+    }
+
+    onCustomerTypeChange(type: 'cash' | 'registered') {
+        this.selectedCustomerType = type;
+        this.isCashCustomer = (type === 'cash');
+        this.toggleCashCustomer();
+    }
+
+    focusNext(elementId: string, event?: Event) {
+        if (event) {
+            event.preventDefault();
+        }
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.focus();
+            if (el instanceof HTMLInputElement) {
+                el.select();
+            }
+        }
     }
 
     getStatusClass(): string {
@@ -652,9 +685,25 @@ export class SaleInvoiceCreateComponent implements OnInit {
         }
     }
 
+    private formatToLocalISO(date: Date | string | null | undefined): string {
+        if (!date) {
+            date = new Date();
+        }
+        const d = date instanceof Date ? date : new Date(date);
+        if (isNaN(d.getTime())) {
+            return new Date().toISOString();
+        }
+        const pad = (n: number) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
     private createInvoiceWithCustomer(approve: boolean, customerId: number | null, customerName: string) {
-        const payload: CreateSaleInvoiceDto = {
-            invoiceDate: this.invoiceDate.toISOString(),
+        const formattedDate = this.formatToLocalISO(this.invoiceDate);
+        const payload: any = {
+            id: this.isEditMode ? (this.invoiceId || 0) : 0,
+            Id: this.isEditMode ? (this.invoiceId || 0) : 0,
+            invoiceDate: formattedDate,
+            saleInvoiceDate: formattedDate,
             paymentMethod: this.selectedPaymentMethod,
             customerId: customerId,
             customerName: customerName,
@@ -792,6 +841,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
     onMedicineSelectInline(medicine: Medicine) {
         this.inlineMedicine = medicine;
+        this.selectedMedicineBarcode = medicine.defaultBarcode || medicine.barcode || null;
         this.inlineBatch = null;
         this.inlineQuantity = 1;
 
@@ -974,6 +1024,7 @@ export class SaleInvoiceCreateComponent implements OnInit {
 
     resetInlineForm() {
         this.inlineMedicine = null;
+        this.selectedMedicineBarcode = null;
         this.inlineBatch = null;
         this.inlineQuantity = 1;
         this.availableBatches = [];

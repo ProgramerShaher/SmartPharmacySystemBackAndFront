@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -56,7 +56,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
     providers: [ConfirmationService]
 })
 
-export class PurchaseInvoiceCreateComponent implements OnInit {
+export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
     @ViewChild('confirmDialog') confirmDialog!: ConfirmationDialogComponent;
     @ViewChild('medicineAutoComplete') medicineAutoComplete: any;
     @ViewChild('qtyInputEl') qtyInputEl: any;
@@ -71,6 +71,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
     suppliers: Supplier[] = [];
     warehouses: WarehouseDto[] = [];
     status: DocumentStatus = DocumentStatus.Draft;
+    selectedMedicineBarcode: string | null = null;
 
     // Modal & Dialog Controls
     itemModalVisible = false;
@@ -167,6 +168,25 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
                         this.onMedicineSelect(medicine);
                     }
                 });
+            }
+        }
+    }
+
+    ngAfterViewInit() {
+        setTimeout(() => {
+            this.focusMedicineSearch();
+        }, 300);
+    }
+
+    focusNext(nextElementId: string, event?: Event) {
+        if (event) {
+            event.preventDefault();
+        }
+        const nextElem = document.getElementById(nextElementId);
+        if (nextElem) {
+            nextElem.focus();
+            if ((nextElem as any).select) {
+                (nextElem as any).select();
             }
         }
     }
@@ -418,6 +438,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit {
 
     onMedicineSelect(medicine: Medicine) {
         this.selectedMedicine = medicine;
+        this.selectedMedicineBarcode = medicine.defaultBarcode || (medicine as any).barcode || null;
         this.baseUnitName = medicine.baseUnitName || 'حبة';
         this.buildUnitOptions(medicine);
 

@@ -7,6 +7,8 @@ public interface IFinancialRepository
 {
     // Account operations
     Task<PharmacyAccount> GetMainAccountAsync();
+    Task<PharmacyAccount> GetDrawerAccountAsync();
+    Task<PharmacyAccount> GetMainSafeAccountAsync();
     Task<PharmacyAccount?> GetAccountByIdAsync(int id);
     Task UpdateAccountAsync(PharmacyAccount account);
 
@@ -24,6 +26,9 @@ public interface IFinancialRepository
     // Transaction queries by account
     Task<IEnumerable<FinancialTransaction>> GetTransactionsByAccountAsync(int accountId);
     Task<IEnumerable<FinancialTransaction>> GetTransactionsByAccountAndDateRangeAsync(int accountId, DateTime start, DateTime end);
+
+    // Transactions for an account on a specific day
+    Task<IEnumerable<FinancialTransaction>> GetTransactionsByAccountAndDayAsync(int accountId, DateTime date);
 
     // Detailed reporting
     Task<Dictionary<ReferenceType, decimal>> GetIncomeBreakdownAsync(DateTime? start, DateTime? end);

@@ -442,10 +442,11 @@ export class PurchaseInvoiceListComponent implements OnInit {
     }
 
     handleError(err: any) {
+        const detailMsg = err.error?.message || err.error?.Message || err.error?.detail || err.message || 'فشل الاتصال بالخادم';
         this.messageService.add({
             severity: 'error',
             summary: 'فشل العملية',
-            detail: err.error?.message || 'فشل الاتصال بالخادم'
+            detail: detailMsg
         });
     }
 

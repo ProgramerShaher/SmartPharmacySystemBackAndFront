@@ -1,0 +1,503 @@
+.home-hub-container {
+  padding: 0.4rem 0.85rem;
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-sizing: border-box;
+  font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+  }
+}
+
+/* ====== INLINE TOP CONTROL BAR (SINGLE SLIM ROW) ====== */
+.hub-hero-bar {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 0.3rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-wrap: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+
+  .user-greeting-inline {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #f8fafc;
+    font-size: 0.82rem;
+    white-space: nowrap;
+
+    .avatar-icon {
+      color: #2dd4bf;
+      font-size: 0.95rem;
+    }
+
+    .greeting-text strong {
+      color: #2dd4bf;
+    }
+
+    .badge-branch {
+      background: rgba(13, 148, 136, 0.2);
+      color: #5eead4;
+      border: 1px solid rgba(45, 212, 191, 0.3);
+      padding: 0.1rem 0.45rem;
+      border-radius: 6px;
+      font-size: 0.72rem;
+
+      i { margin-left: 0.2rem; }
+    }
+
+    .date-chip {
+      color: #94a3b8;
+      font-size: 0.72rem;
+
+      @media (max-width: 992px) {
+        display: none;
+      }
+    }
+  }
+
+  .hub-search-box-inline {
+    position: relative;
+    flex: 1;
+    max-width: 480px;
+
+    .search-icon {
+      position: absolute;
+      right: 0.65rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #0d9488;
+      font-size: 0.85rem;
+    }
+
+    input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 0.25rem 2rem 0.25rem 1.6rem;
+      color: #f8fafc;
+      font-size: 0.78rem;
+      font-weight: 600;
+
+      &::placeholder {
+        color: #64748b;
+      }
+
+      &:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #2dd4bf;
+      }
+    }
+
+    .clear-btn {
+      position: absolute;
+      left: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+  }
+
+  .analytics-btn-inline {
+    border-color: rgba(45, 212, 191, 0.4) !important;
+    color: #2dd4bf !important;
+    border-radius: 6px !important;
+    padding: 0.2rem 0.65rem !important;
+    font-size: 0.72rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap;
+
+    &:hover {
+      background: rgba(45, 212, 191, 0.15) !important;
+      border-color: #2dd4bf !important;
+    }
+  }
+}
+
+/* ====== COMPACT ANALYTICS PORTAL STRIP ====== */
+.analytics-shortcut-strip {
+  background: linear-gradient(135deg, #1e1b4b, #311b92);
+  border: 1px solid rgba(129, 140, 248, 0.3);
+  border-radius: 8px;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: #818cf8;
+
+    .strip-right i {
+      transform: translateX(-3px);
+    }
+  }
+
+  .strip-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+
+    .portal-icon {
+      color: #a5b4fc;
+      font-size: 0.95rem;
+    }
+
+    .portal-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+
+      strong {
+        color: #f8fafc;
+        font-size: 0.78rem;
+        font-weight: 800;
+      }
+
+      span {
+        color: #c7d2fe;
+        font-size: 0.7rem;
+
+        @media (max-width: 992px) {
+          display: none;
+        }
+      }
+    }
+  }
+
+  .strip-right {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #e0e7ff;
+    font-size: 0.7rem;
+    font-weight: 700;
+
+    i {
+      transition: transform 0.2s ease;
+    }
+  }
+}
+
+/* ====== VIEWPORT GRID ====== */
+.hub-main-grid-viewport {
+  display: flex;
+  flex-direction: column;
+}
+
+.actions-grid-equal {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.45rem;
+  align-content: start;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ====== STRICT EQUAL HEIGHT CARDS (SLIGHTLY LARGER) ====== */
+.action-card-equal {
+  border-radius: 10px;
+  padding: 0.5rem 0.75rem;
+  height: 72px;
+  max-height: 72px;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid var(--border-color, #e2e8f0);
+  background: var(--card-bg, #ffffff);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -4px rgba(0, 0, 0, 0.12);
+  }
+
+  .card-inner-equal {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    overflow: hidden;
+
+    .action-icon-equal {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+
+    .card-content-equal {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+
+      .card-header-line {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.25rem;
+        margin-bottom: 0.08rem;
+
+        .action-title-equal {
+          margin: 0;
+          font-size: 0.85rem;
+          font-weight: 800;
+          color: var(--text-color, #0f172a);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          line-height: 1.25;
+        }
+
+        .action-badge-equal {
+          font-size: 0.62rem;
+          font-weight: 800;
+          padding: 0.08rem 0.35rem;
+          border-radius: 5px;
+          flex-shrink: 0;
+          line-height: 1;
+        }
+      }
+
+      .action-desc-equal {
+        margin: 0;
+        font-size: 0.72rem;
+        color: var(--text-color-secondary, #64748b);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.25;
+      }
+    }
+  }
+
+  /* ====== 20 DISTINCT COLOR THEMES FOR EQUAL CARDS ====== */
+
+  /* 1. Emerald (POS Cashier) */
+  &.box-emerald {
+    border-right: 3.5px solid #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #d1fae5; color: #047857; }
+    .action-badge-equal { background: #10b981; color: white; }
+    &:hover { border-color: #10b981; }
+  }
+
+  /* 2. Cyan Ocean (Sales List) */
+  &.box-cyan {
+    border-right: 3.5px solid #06b6d4;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #cffaff; color: #0891b2; }
+    &:hover { border-color: #06b6d4; }
+  }
+
+  /* 3. Rose Crimson (Sales Return) */
+  &.box-rose {
+    border-right: 3.5px solid #f43f5e;
+    background: linear-gradient(135deg, rgba(244, 63, 94, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #ffe4e6; color: #e11d48; }
+    &:hover { border-color: #f43f5e; }
+  }
+
+  /* 4. Amber Gold (Daily Closing) */
+  &.box-amber {
+    border-right: 3.5px solid #f59e0b;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #fef3c7; color: #b45309; }
+    .action-badge-equal { background: #d97706; color: white; }
+    &:hover { border-color: #f59e0b; }
+  }
+
+  /* 5. Sky Breeze (Purchase Create) */
+  &.box-sky {
+    border-right: 3.5px solid #0284c7;
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #e0f2fe; color: #0369a1; }
+    .action-badge-equal { background: #0284c7; color: white; }
+    &:hover { border-color: #0284c7; }
+  }
+
+  /* 6. Royal Indigo (Purchase List) */
+  &.box-indigo {
+    border-right: 3.5px solid #6366f1;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #e0e7ff; color: #4338ca; }
+    &:hover { border-color: #6366f1; }
+  }
+
+  /* 7. Grape Purple (Purchase Return) */
+  &.box-purple {
+    border-right: 3.5px solid #8b5cf6;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #ede9fe; color: #6d28d9; }
+    &:hover { border-color: #8b5cf6; }
+  }
+
+  /* 8. Ruby Red (Payment Voucher) */
+  &.box-ruby {
+    border-right: 3.5px solid #dc2626;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #fee2e2; color: #991b1b; }
+    .action-badge-equal { background: #dc2626; color: white; }
+    &:hover { border-color: #dc2626; }
+  }
+
+  /* 9. Sapphire Blue (Receipt Voucher) */
+  &.box-sapphire {
+    border-right: 3.5px solid #2563eb;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #dbeafe; color: #1e40af; }
+    .action-badge-equal { background: #2563eb; color: white; }
+    &:hover { border-color: #2563eb; }
+  }
+
+  /* 10. Fuchsia Pink (Expense Add) */
+  &.box-fuchsia {
+    border-right: 3.5px solid #d946ef;
+    background: linear-gradient(135deg, rgba(217, 70, 239, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #fae8ff; color: #a21caf; }
+    &:hover { border-color: #d946ef; }
+  }
+
+  /* 11. Deep Teal (Ledger) */
+  &.box-teal {
+    border-right: 3.5px solid #0f766e;
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #ccfbf1; color: #115e59; }
+    &:hover { border-color: #0f766e; }
+  }
+
+  /* 12. Forest Green (Chart of Accounts) */
+  &.box-forest {
+    border-right: 3.5px solid #047857;
+    background: linear-gradient(135deg, rgba(4, 120, 87, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #d1fae5; color: #065f46; }
+    &:hover { border-color: #047857; }
+  }
+
+  /* 13. Vibrant Orange (Medicines) */
+  &.box-orange {
+    border-right: 3.5px solid #ea580c;
+    background: linear-gradient(135deg, rgba(234, 88, 12, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #ffedd5; color: #9a3412; }
+    &:hover { border-color: #ea580c; }
+  }
+
+  /* 14. Bronze Gold (Valuation) */
+  &.box-bronze {
+    border-right: 3.5px solid #ca8a04;
+    background: linear-gradient(135deg, rgba(202, 138, 4, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #fef9c3; color: #854d0e; }
+    &:hover { border-color: #ca8a04; }
+  }
+
+  /* 15. Fiery Coral (Alerts) */
+  &.box-coral {
+    border-right: 3.5px solid #ff5722;
+    background: linear-gradient(135deg, rgba(255, 87, 34, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #fbe9e7; color: #d84315; }
+    .action-badge-equal { background: #ff5722; color: white; }
+    &:hover { border-color: #ff5722; }
+  }
+
+  /* 16. Electric Cyan (Transfers) */
+  &.box-cyan-electric {
+    border-right: 3.5px solid #00bcd4;
+    background: linear-gradient(135deg, rgba(0, 188, 212, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #e0f7fa; color: #00838f; }
+    &:hover { border-color: #00bcd4; }
+  }
+
+  /* 17. Jade Mint (Daily Sales Report) */
+  &.box-mint {
+    border-right: 3.5px solid #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #ecfdf5; color: #047857; }
+    &:hover { border-color: #10b981; }
+  }
+
+  /* 18. Amethyst Violet (Net Profit Report) */
+  &.box-violet {
+    border-right: 3.5px solid #9c27b0;
+    background: linear-gradient(135deg, rgba(156, 39, 176, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #f3e5f5; color: #6a1b9a; }
+    &:hover { border-color: #9c27b0; }
+  }
+
+  /* 19. Cerulean Blue (Customers) */
+  &.box-cerulean {
+    border-right: 3.5px solid #0288d1;
+    background: linear-gradient(135deg, rgba(2, 136, 209, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #e1f5fe; color: #01579b; }
+    &:hover { border-color: #0288d1; }
+  }
+
+  /* 20. Slate Steel (Suppliers) */
+  &.box-slate {
+    border-right: 3.5px solid #475569;
+    background: linear-gradient(135deg, rgba(71, 85, 105, 0.06), var(--card-bg, #ffffff));
+    .action-icon-equal { background: #f1f5f9; color: #334155; }
+    &:hover { border-color: #475569; }
+  }
+}
+
+/* Empty Search State */
+.empty-search-state {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  background: var(--surface-hover, #f8fafc);
+  border-radius: 10px;
+  border: 1px dashed var(--border-color, #cbd5e1);
+
+  i {
+    font-size: 2rem;
+    color: var(--text-color-secondary, #94a3b8);
+    margin-bottom: 0.35rem;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-color, #1e293b);
+    margin: 0 0 0.2rem 0;
+  }
+
+  p {
+    color: var(--text-color-secondary, #64748b);
+    font-size: 0.75rem;
+    margin: 0;
+  }
+}

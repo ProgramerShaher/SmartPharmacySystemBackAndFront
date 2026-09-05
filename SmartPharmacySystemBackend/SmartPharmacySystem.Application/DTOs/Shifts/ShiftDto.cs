@@ -16,4 +16,8 @@ public class ShiftDto
     public decimal Difference { get; set; }
     public string Status { get; set; } = string.Empty;
     public string? Notes { get; set; }
+    public bool IsCashTransferredToMainSafe { get; set; }
+    public DateTime? CashTransferredAt { get; set; }
+    public decimal? TransferredCashAmount { get; set; }
+    public string? TransferReferenceNumber { get; set; }
 }

@@ -69,8 +69,16 @@ namespace SmartPharmacySystem.Application.Services
             entity.Status = DocumentStatus.Draft;
             entity.UserShiftId = currentShiftResponse.Data.Id;
 
-            if (entity.InvoiceDate == default)
-                entity.InvoiceDate = DateTime.Today;
+            if (entity.InvoiceDate == default || entity.InvoiceDate.Year < 2000)
+            {
+                entity.InvoiceDate = DateTime.Now;
+            }
+            else if (entity.InvoiceDate.Kind == DateTimeKind.Utc)
+            {
+                entity.InvoiceDate = entity.InvoiceDate.ToLocalTime();
+            }
+
+            await _closingValidationService.ValidateDateIsUnlockedAsync(entity.InvoiceDate, entity.BranchId);
 
             try
             {
@@ -110,12 +118,25 @@ namespace SmartPharmacySystem.Application.Services
                 throw new InvalidOperationException("لا يمكن تعديل فاتورة معتمدة أو ملغاة. التعديل مسموح فقط لحالة مسودة (Draft).");
             }
 
+            if (dto.SaleInvoiceDate != default && dto.SaleInvoiceDate.Year > 2000)
+            {
+                entity.InvoiceDate = dto.SaleInvoiceDate.Kind == DateTimeKind.Utc ? dto.SaleInvoiceDate.ToLocalTime() : dto.SaleInvoiceDate;
+            }
+            else if (entity.InvoiceDate.Kind == DateTimeKind.Utc)
+            {
+                entity.InvoiceDate = entity.InvoiceDate.ToLocalTime();
+            }
+
             await _closingValidationService.ValidateDateIsUnlockedAsync(entity.InvoiceDate, entity.BranchId);
 
             try
             {
                 await _unitOfWork.ExecuteTransactionAsync(async () =>
                 {
+                if (dto.SaleInvoiceDate != default)
+                {
+                    entity.InvoiceDate = dto.SaleInvoiceDate;
+                }
                 _mapper.Map(dto, entity);
 
                 if (entity.SaleInvoiceDetails != null)

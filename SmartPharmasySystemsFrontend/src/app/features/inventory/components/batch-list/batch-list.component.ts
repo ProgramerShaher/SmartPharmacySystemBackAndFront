@@ -130,20 +130,33 @@ export class BatchListComponent implements OnInit {
         this.displayActionDialog = true;
     }
 
-    toggleSellable(batch: MedicineBatch) {
+    toggleStatus(batch: MedicineBatch) {
+        const isActive = batch.status === 'Active';
+        const newStatus = isActive ? 'Quarantine' : 'Active';
+        const originalStatus = batch.status;
+        const originalIsSellable = batch.isSellable;
+
         // Optimistic update
-        const originalStatus = batch.isSellable;
-        batch.isSellable = !batch.isSellable;
-        const newStatus = batch.isSellable ? 'Active' : 'Quarantine';
-        
+        batch.status = newStatus;
+
         this.inventoryService.updateBatchStatus(batch.id, newStatus).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم تحديث حالة الدفعة بنجاح' });
+            next: (response: any) => {
+                const updatedBatch = response?.data || response;
+                if (updatedBatch && updatedBatch.status) {
+                    batch.status = updatedBatch.status;
+                    batch.isSellable = updatedBatch.isSellable;
+                }
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'نجاح',
+                    detail: `تم تغيير حالة الدفعة إلى (${batch.status === 'Active' ? 'نشط' : 'موقوف'}) بنجاح`
+                });
             },
             error: (err: any) => {
-                // Revert on error
-                batch.isSellable = originalStatus;
-                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل في تحديث حالة الدفعة' });
+                batch.status = originalStatus;
+                batch.isSellable = originalIsSellable;
+                const errorMsg = err?.error?.message || 'فشل في تحديث حالة الدفعة';
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: errorMsg });
             }
         });
     }

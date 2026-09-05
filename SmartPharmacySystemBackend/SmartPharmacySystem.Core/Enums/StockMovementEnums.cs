@@ -26,5 +26,6 @@ public enum ReferenceType
     SupplierPayment = 9,
     CustomerReceipt = 10,
     BranchTransfer = 11,
-    MonthlySalary = 12
+    MonthlySalary = 12,
+    DailyClosing = 13
 }

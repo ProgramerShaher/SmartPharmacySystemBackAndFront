@@ -54,190 +54,207 @@
         </div>
       </div>
 
-      <!-- ====== MAIN GRID: Charts Left | Side Right ====== -->
-      <div class="main-columns">
+      <!-- ====== MAIN CONTENT AREA (FULL WIDTH) ====== -->
+      <div class="main-content-area">
 
-        <!-- Charts Column -->
-        <div class="col-main">
-
-          <!-- Row 1: Six-Month Trend + Weekly Docs -->
-          <div class="charts-row">
-            <div class="panel chart-panel chart-wide">
-              <div class="panel-head">
-                <div><h3>تحليل المبيعات والمشتريات</h3><p>المقارنة الشهرية خلال آخر 6 أشهر</p></div>
-              </div>
-              <p-chart type="line" [data]="sixMonthChartData" [options]="sixMonthChartOptions" height="120px"></p-chart>
+        <!-- Row 1: Six-Month Trend + Weekly Docs -->
+        <div class="charts-row">
+          <div class="panel chart-panel chart-wide">
+            <div class="panel-head">
+              <div><h3>تحليل المبيعات والمشتريات</h3><p>المقارنة الشهرية خلال آخر 6 أشهر</p></div>
             </div>
-            <div class="panel chart-panel">
-              <div class="panel-head">
-                <div><h3>أداء الأسبوع</h3><p>مبيعات/مشتريات/مردودات آخر 7 أيام</p></div>
-              </div>
-              <p-chart type="bar" [data]="weeklyChartData" [options]="weeklyChartOptions" height="120px"></p-chart>
-            </div>
+            <p-chart type="line" [data]="sixMonthChartData" [options]="sixMonthChartOptions" height="120px"></p-chart>
           </div>
-
-          <!-- Row 2: Cash Flow + Hourly Activity -->
-          <div class="charts-row">
-            <div class="panel chart-panel chart-wide">
-              <div class="panel-head">
-                <div><h3>التدفق النقدي</h3><p>السيولة الداخلة والخارجة خلال 30 يوم</p></div>
-              </div>
-              <p-chart type="line" [data]="cashFlowChartData" [options]="cashFlowChartOptions" height="110px"></p-chart>
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div><h3>أداء الأسبوع</h3><p>مبيعات/مشتريات/مردودات آخر 7 أيام</p></div>
             </div>
-            <div class="panel chart-panel">
-              <div class="panel-head">
-                <div><h3>زخم العمليات</h3><p>الفواتير المعتمدة حسب الساعة (اليوم)</p></div>
-              </div>
-              <p-chart type="bar" [data]="hourlyActivityChartData" [options]="hourlyActivityChartOptions" height="110px"></p-chart>
-            </div>
+            <p-chart type="bar" [data]="weeklyChartData" [options]="weeklyChartOptions" height="120px"></p-chart>
           </div>
-
-          <!-- Row 3: Category Inventory + Cashier Performance -->
-          <div class="charts-row">
-            <div class="panel chart-panel">
-              <div class="panel-head">
-                <div><h3>توزيع المخزون حسب الصنف</h3><p>قيمة المخزون موزعة على التصنيفات</p></div>
-              </div>
-              <p-chart type="doughnut" [data]="categoryInventoryData" [options]="categoryInventoryOptions" height="130px"></p-chart>
-            </div>
-            <div class="panel chart-panel">
-              <div class="panel-head">
-                <div><h3>أداء الموظفين</h3><p>إجمالي مبيعات كل موظف اليوم</p></div>
-              </div>
-              <p-chart type="bar" [data]="cashierPerformanceChartData" [options]="cashierPerformanceChartOptions" height="130px"></p-chart>
-            </div>
-          </div>
-
-          <!-- Row 4: Top Medicines + Warehouse Stock -->
-          <div class="charts-row">
-            <!-- Top Medicines -->
-            <div class="panel table-card">
-              <div class="panel-head">
-                <h3>أكثر الأدوية مبيعاً</h3>
-                <span class="badge-pill emerald">آخر 30 يوم</span>
-              </div>
-              <p-table [value]="topMedicines()" styleClass="p-datatable-sm compact-table">
-                <ng-template pTemplate="header">
-                  <tr>
-                    <th>#</th>
-                    <th>الدواء</th>
-                    <th>الكمية</th>
-                    <th>الإيراد</th>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-item let-i="rowIndex">
-                  <tr class="clickable-row" (click)="navigateToRoute('/inventory/medicines/details/' + item.medicineId)">
-                    <td><span class="rank-badge" [ngClass]="i < 3 ? 'rank-top' : 'rank-normal'">{{ i + 1 }}</span></td>
-                    <td><div class="medicine-name">{{ item.medicineName }}</div></td>
-                    <td><strong style="font-family: Consolas; color: #10b981;">{{ item.totalQuantitySold }}</strong></td>
-                    <td><span class="rev-value">{{ formatCurrency(item.totalRevenue) }}</span></td>
-                  </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                  <tr><td colspan="4" class="empty-msg"><i class="pi pi-info-circle"></i> لا توجد بيانات مبيعات بعد</td></tr>
-                </ng-template>
-              </p-table>
-            </div>
-
-            <!-- Warehouse Stock -->
-            <div class="panel table-card">
-              <div class="panel-head">
-                <h3>المخزون في كل مخزن</h3>
-                <span class="badge-pill gold">المستودعات</span>
-              </div>
-              @if (warehouseStock().length > 0) {
-                <div class="warehouse-list">
-                  @for (w of warehouseStock(); track w.warehouseId) {
-                    <div class="warehouse-item">
-                      <div class="warehouse-info">
-                        <i class="pi pi-building"></i>
-                        <div>
-                          <div class="warehouse-name">{{ w.warehouseName }}</div>
-                          <small>{{ formatNumber(w.totalItems) }} صنف</small>
-                        </div>
-                      </div>
-                      <div class="warehouse-value">{{ formatCurrency(w.totalValue) }}</div>
-                    </div>
-                  }
-                </div>
-              } @else {
-                <div class="empty-msg"><i class="pi pi-building"></i> لا توجد مستودعات محددة</div>
-              }
-            </div>
-          </div>
-
         </div>
 
-        <!-- Side Column -->
-        <div class="col-side">
-
-          <!-- Financial Snapshot -->
-          <div class="panel side-panel">
-            <div class="panel-head"><h3>المشهد المالي</h3></div>
-            <div class="mini-list">
-              @for (item of financeSnapshot(); track item.label) {
-                <div class="mini-item" [ngClass]="item.tone">
-                  <span>{{ item.label }}</span>
-                  <strong>{{ item.value }}</strong>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Expiry Radar -->
-          <div class="panel side-panel">
-            <div class="panel-head"><h3>حالة الصلاحية</h3></div>
-            <div class="mini-list">
-              @for (item of inventoryHealth(); track item.label) {
-                <div class="mini-item" [ngClass]="item.tone">
-                  <span>{{ item.label }}</span>
-                  <strong>{{ item.value }}</strong>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Critical Stock Alerts -->
-          <div class="panel side-panel alerts-panel">
+        <!-- Row 2: Cash Flow + Hourly Activity -->
+        <div class="charts-row">
+          <div class="panel chart-panel chart-wide">
             <div class="panel-head">
-              <h3>تنبيهات المخزون</h3>
-              <i class="pi pi-bell" style="color:#f43f5e;font-size:.85rem"></i>
+              <div><h3>التدفق النقدي</h3><p>السيولة الداخلة والخارجة خلال 30 يوم</p></div>
             </div>
-            <p-table [value]="criticalStockPreview()" styleClass="p-datatable-sm compact-table">
-              <ng-template pTemplate="body" let-item>
-                <tr class="clickable-row" (click)="navigateToRoute('/inventory/medicines/details/' + item.medicineId)">
-                  <td>
-                    <div class="stock-name">{{ item.medicineName }}</div>
-                    <div class="muted">حد الطلب: {{ item.reorderPoint }}</div>
-                  </td>
-                  <td style="text-align:left">
-                    <span class="severity-badge" [ngClass]="stockSeverityClass(item)">{{ item.currentStock }}</span>
-                  </td>
+            <p-chart type="line" [data]="cashFlowChartData" [options]="cashFlowChartOptions" height="110px"></p-chart>
+          </div>
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div><h3>زخم العمليات</h3><p>الفواتير المعتمدة حسب الساعة (اليوم)</p></div>
+            </div>
+            <p-chart type="bar" [data]="hourlyActivityChartData" [options]="hourlyActivityChartOptions" height="110px"></p-chart>
+          </div>
+        </div>
+
+        <!-- Row 3: Category Inventory + Cashier Performance -->
+        <div class="charts-row">
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div><h3>توزيع المخزون حسب الصنف</h3><p>قيمة المخزون موزعة على التصنيفات</p></div>
+            </div>
+            <p-chart type="doughnut" [data]="categoryInventoryData" [options]="categoryInventoryOptions" height="130px"></p-chart>
+          </div>
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <div><h3>أداء الموظفين</h3><p>إجمالي مبيعات كل موظف اليوم</p></div>
+            </div>
+            <p-chart type="bar" [data]="cashierPerformanceChartData" [options]="cashierPerformanceChartOptions" height="130px"></p-chart>
+          </div>
+        </div>
+
+        <!-- Row 4: Top Medicines + Warehouse Stock -->
+        <div class="charts-row">
+          <!-- Top Medicines -->
+          <div class="panel table-card">
+            <div class="panel-head">
+              <h3>أكثر الأدوية مبيعاً</h3>
+              <span class="badge-pill emerald">آخر 30 يوم</span>
+            </div>
+            <p-table [value]="topMedicines()" styleClass="p-datatable-sm compact-table">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>#</th>
+                  <th>الدواء</th>
+                  <th>الكمية</th>
+                  <th>الإيراد</th>
                 </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-item let-i="rowIndex">
+                <tr class="clickable-row" (click)="navigateToRoute('/inventory/medicines/details/' + item.medicineId)">
+                  <td><span class="rank-badge" [ngClass]="i < 3 ? 'rank-top' : 'rank-normal'">{{ i + 1 }}</span></td>
+                  <td><div class="medicine-name">{{ item.medicineName }}</div></td>
+                  <td><strong style="font-family: Consolas; color: #10b981;">{{ item.totalQuantitySold }}</strong></td>
+                  <td><span class="rev-value">{{ formatCurrency(item.totalRevenue) }}</span></td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="4" class="empty-msg"><i class="pi pi-info-circle"></i> لا توجد بيانات مبيعات بعد</td></tr>
               </ng-template>
             </p-table>
           </div>
 
-          <!-- Activity Stream -->
-          <div class="panel side-panel activity-panel">
-            <div class="panel-head"><h3>آخر العمليات</h3></div>
-            <div class="activity-list">
-              @for (activity of activityPreview(); track activity.timestamp) {
-                <button type="button" class="act-item"
-                  (click)="activity.sourceRoute ? navigateToRoute(activity.sourceRoute) : navigateToDocument(activity.operationType, activity.referenceId)">
-                  <div class="act-icon" [style.color]="getActivityColor(activity.operationType)">
-                    <i [class]="'pi ' + getActivityIcon(activity.operationType)"></i>
-                  </div>
-                  <div class="act-body">
-                    <strong>{{ activity.description }}</strong>
-                    <small>{{ activity.username }} · {{ formatTime(activity.timestamp) }}</small>
-                  </div>
-                </button>
-              }
+          <!-- Warehouse Stock -->
+          <div class="panel table-card">
+            <div class="panel-head">
+              <h3>المخزون في كل مخزن</h3>
+              <span class="badge-pill gold">المستودعات</span>
             </div>
+            @if (warehouseStock().length > 0) {
+              <div class="warehouse-list">
+                @for (w of warehouseStock(); track w.warehouseId) {
+                  <div class="warehouse-item">
+                    <div class="warehouse-info">
+                      <i class="pi pi-building"></i>
+                      <div>
+                        <div class="warehouse-name">{{ w.warehouseName }}</div>
+                        <small>{{ formatNumber(w.totalItems) }} صنف</small>
+                      </div>
+                    </div>
+                    <div class="warehouse-value">{{ formatCurrency(w.totalValue) }}</div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="empty-msg"><i class="pi pi-building"></i> لا توجد مستودعات محددة</div>
+            }
           </div>
-
         </div>
+
+      </div>
+
+      <!-- ====== BOTTOM ROW: 4 WIDGETS ====== -->
+      <div class="bottom-widgets-grid">
+
+        <!-- Financial Snapshot -->
+        <div class="panel bottom-panel">
+          <div class="panel-head">
+            <div class="head-title">
+              <i class="pi pi-wallet text-emerald-500"></i>
+              <h3>المشهد المالي</h3>
+            </div>
+            <span class="badge-pill emerald">ملخص الإيرادات</span>
+          </div>
+          <div class="mini-list">
+            @for (item of financeSnapshot(); track item.label) {
+              <div class="mini-item" [ngClass]="item.tone">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Expiry Radar -->
+        <div class="panel bottom-panel">
+          <div class="panel-head">
+            <div class="head-title">
+              <i class="pi pi-shield text-indigo-500"></i>
+              <h3>حالة الصلاحية</h3>
+            </div>
+            <span class="badge-pill indigo">مراقبة الصلاحيات</span>
+          </div>
+          <div class="mini-list">
+            @for (item of inventoryHealth(); track item.label) {
+              <div class="mini-item" [ngClass]="item.tone">
+                <span>{{ item.label }}</span>
+                <strong>{{ item.value }}</strong>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Critical Stock Alerts -->
+        <div class="panel bottom-panel alerts-panel">
+          <div class="panel-head">
+            <div class="head-title">
+              <i class="pi pi-bell text-rose-500"></i>
+              <h3>تنبيهات المخزون</h3>
+            </div>
+            <span class="badge-pill rose">أصناف تحت حد الطلب</span>
+          </div>
+          <p-table [value]="criticalStockPreview()" styleClass="p-datatable-sm compact-table">
+            <ng-template pTemplate="body" let-item>
+              <tr class="clickable-row" (click)="navigateToRoute('/inventory/medicines/details/' + item.medicineId)">
+                <td>
+                  <div class="stock-name">{{ item.medicineName }}</div>
+                  <div class="muted">حد الطلب: {{ item.reorderPoint }}</div>
+                </td>
+                <td style="text-align:left">
+                  <span class="severity-badge" [ngClass]="stockSeverityClass(item)">{{ item.currentStock }}</span>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+
+        <!-- Activity Stream -->
+        <div class="panel bottom-panel activity-panel">
+          <div class="panel-head">
+            <div class="head-title">
+              <i class="pi pi-history text-indigo-500"></i>
+              <h3>آخر العمليات</h3>
+            </div>
+            <span class="badge-pill gold">تحديث مباشر</span>
+          </div>
+          <div class="activity-list">
+            @for (activity of activityPreview(); track activity.timestamp) {
+              <button type="button" class="act-item"
+                (click)="activity.sourceRoute ? navigateToRoute(activity.sourceRoute) : navigateToDocument(activity.operationType, activity.referenceId)">
+                <div class="act-icon" [style.color]="getActivityColor(activity.operationType)">
+                  <i [class]="'pi ' + getActivityIcon(activity.operationType)"></i>
+                </div>
+                <div class="act-body">
+                  <strong>{{ activity.description }}</strong>
+                  <small>{{ activity.username }} · {{ formatTime(activity.timestamp) }}</small>
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+
       </div>
     </main>
   }

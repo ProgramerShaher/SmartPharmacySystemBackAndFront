@@ -1,5 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using SmartPharmacySystem.Core.Enums;
+using System;
+using System.Collections.Generic;
 
 namespace SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 
@@ -12,15 +14,13 @@ public class CreatePurchaseInvoiceDto
     /// <summary>
     /// معرف المورد
     /// </summary>
-    [Required]
-    public int SupplierId { get; set; }
+    public int? SupplierId { get; set; }
 
     /// <summary>
     /// رقم فاتورة المورد
     /// </summary>
-    [Required]
     [StringLength(100, MinimumLength = 1, ErrorMessage = "رقم فاتورة المورد يجب أن يكون بين 1 و 100 حرف")]
-    public string SupplierInvoiceNumber { get; set; } = string.Empty;
+    public string? SupplierInvoiceNumber { get; set; }
 
     /// <summary>
     /// تاريخ الشراء
@@ -42,9 +42,6 @@ public class CreatePurchaseInvoiceDto
     /// </summary>
     [StringLength(500, ErrorMessage = "الملاحظات يجب أن تكون أقل من 500 حرف")]
     public string Notes { get; set; } = string.Empty;
-
-
-
 
     /// <summary>
     /// قائمة أصناف الفاتورة

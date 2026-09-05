@@ -193,13 +193,62 @@ public class FinancialService : IFinancialService
     public async Task<PagedResponse<FinancialTransactionDto>> GetTransactionsAsync(FinancialTransactionQueryDto query)
     {
         var skip = (query.Page - 1) * query.PageSize;
-        var items = await _unitOfWork.Financials.GetTransactionsAsync(
-            query.StartDate, query.EndDate, query.Type, skip, query.PageSize);
+        var items = (await _unitOfWork.Financials.GetTransactionsAsync(
+            query.StartDate, query.EndDate, query.Type, skip, query.PageSize)).ToList();
         var total = await _unitOfWork.Financials.GetTransactionsCountAsync(
             query.StartDate, query.EndDate, query.Type);
 
+        var dtos = _mapper.Map<List<FinancialTransactionDto>>(items);
+
+        if (dtos.Any())
+        {
+            var accountIds = items.Select(i => i.AccountId).Distinct().ToList();
+            var allAccountTransactions = new List<FinancialTransaction>();
+
+            foreach (var accId in accountIds)
+            {
+                var txs = await _unitOfWork.Financials.GetTransactionsByAccountAsync(accId);
+                allAccountTransactions.AddRange(txs);
+            }
+
+            if (!allAccountTransactions.Any())
+            {
+                var fallbackTxs = await _unitOfWork.Financials.GetTransactionsAsync(null, null, null, 0, 10000);
+                allAccountTransactions.AddRange(fallbackTxs);
+            }
+
+            var balanceMap = new Dictionary<int, decimal>();
+            var groupedByAccount = allAccountTransactions
+                .OrderBy(t => t.TransactionDate)
+                .ThenBy(t => t.CreatedAt)
+                .ThenBy(t => t.Id)
+                .GroupBy(t => t.AccountId);
+
+            foreach (var group in groupedByAccount)
+            {
+                decimal runningBal = 0;
+                foreach (var tx in group)
+                {
+                    if (tx.Type == FinancialTransactionType.Income)
+                        runningBal += tx.Amount;
+                    else
+                        runningBal -= tx.Amount;
+
+                    balanceMap[tx.Id] = runningBal;
+                }
+            }
+
+            foreach (var dto in dtos)
+            {
+                if (balanceMap.TryGetValue(dto.Id, out var bal))
+                {
+                    dto.BalanceAfterTransaction = bal;
+                }
+            }
+        }
+
         return new PagedResponse<FinancialTransactionDto>(
-            _mapper.Map<IEnumerable<FinancialTransactionDto>>(items),
+            dtos,
             total,
             query.Page,
             query.PageSize);

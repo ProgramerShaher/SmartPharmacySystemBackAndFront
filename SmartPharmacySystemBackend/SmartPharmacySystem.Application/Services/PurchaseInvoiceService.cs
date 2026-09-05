@@ -1,6 +1,5 @@
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 using SmartPharmacySystem.Application.DTOs.PurchaseInvoice;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Core.Entities;
@@ -9,6 +8,7 @@ using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Application.DTOs.Barcode;
 using SmartPharmacySystem.Application.IServices;
 using SmartPharmacySystem.Application.DTOs.Financial;
+using SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -340,7 +340,7 @@ namespace SmartPharmacySystem.Application.Services
                 }
                 else
                 {
-                    var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId)
+                    var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value)
                         ?? throw new KeyNotFoundException("المورد غير موجود");
 
                     journalEntry.Lines.Add(new JournalEntryLineDto
@@ -421,7 +421,7 @@ namespace SmartPharmacySystem.Application.Services
                     }
                     else if (invoice.PaymentMethod == PaymentType.Credit)
                     {
-                        var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId);
+                        var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value);
                         if (supplier != null)
                         {
                             supplier.Balance -= invoice.TotalAmount; // Decrease Debt
@@ -450,6 +450,19 @@ namespace SmartPharmacySystem.Application.Services
             if (invoice.Status != DocumentStatus.Draft)
                 throw new InvalidOperationException("لا يمكن حذف فاتورة معتمدة أو ملغاة.");
 
+            if (invoice.PurchaseInvoiceDetails != null)
+            {
+                foreach (var detail in invoice.PurchaseInvoiceDetails)
+                {
+                    var batch = await _unitOfWork.MedicineBatches.GetByIdAsync(detail.BatchId);
+                    if (batch != null && (batch.Status == "Incoming" || batch.RemainingQuantity <= 0))
+                    {
+                        batch.IsDeleted = true;
+                        await _unitOfWork.MedicineBatches.UpdateAsync(batch);
+                    }
+                }
+            }
+
             await _unitOfWork.PurchaseInvoices.SoftDeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -466,7 +479,7 @@ namespace SmartPharmacySystem.Application.Services
             {
                 await _financialService.ProcessTransactionAsync(accountId, invoice.TotalAmount, FinancialTransactionType.Expense, ReferenceType.PurchaseInvoice, invoice.Id, $"سداد فاتورة: {invoice.PurchaseInvoiceNumber}");
 
-                var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId);
+                var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value);
                 if (supplier != null)
                 {
                     supplier.Balance -= invoice.TotalAmount;
@@ -516,7 +529,7 @@ namespace SmartPharmacySystem.Application.Services
 
             var distribution = supplierDistribution.Select(sd => new DTOs.Dashboard.SupplierDistributionItem
             {
-                SupplierName = supplierDict.GetValueOrDefault(sd.SupplierId, "غير معروف"),
+                SupplierName = sd.SupplierId.HasValue ? supplierDict.GetValueOrDefault(sd.SupplierId.Value, "غير معروف") : "غير معروف",
                 TotalAmount = sd.TotalAmount
             }).ToList();
 
@@ -662,7 +675,7 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     if (invoice.SupplierId <= 0) throw new InvalidOperationException("يجب اختيار مورد للشراء الآجل.");
                     
-                    var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId)
+                    var supplier = await _unitOfWork.Suppliers.GetByIdAsync(invoice.SupplierId.Value)
                         ?? throw new KeyNotFoundException("المورد غير موجود");
                     
                     journalEntry.Lines.Add(new JournalEntryLineDto

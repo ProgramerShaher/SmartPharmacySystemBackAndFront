@@ -33,9 +33,6 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         }
 
-        /// <summary>
-        /// Optimized: AsNoTracking + limited results
-        /// </summary>
         public async Task<IEnumerable<PurchaseInvoice>> GetAllAsync()
         {
             return await _context.PurchaseInvoices
@@ -43,8 +40,9 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .Include(i => i.Supplier)
                 .Include(i => i.Warehouse)
                 .Include(i => i.Creator)
+                .Where(i => !i.IsDeleted)
                 .OrderByDescending(i => i.CreatedAt)
-                .Take(100) // Limit to prevent timeout
+                .Take(100)
                 .ToListAsync();
         }
 
@@ -62,7 +60,6 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             }
             else
             {
-                // Disconnect navigation properties to avoid tracking conflicts with already tracked entities
                 entity.Creator = null;
                 entity.Approver = null;
                 entity.Canceller = null;
@@ -88,10 +85,8 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
             return Task.CompletedTask;
         }
 
-
         public async Task DeleteAsync(int id)
         {
-            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
             var entity = await _context.PurchaseInvoices.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
             if (entity != null)
             {
@@ -101,7 +96,6 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
         public async Task SoftDeleteAsync(int id)
         {
-            // NOTE: `FindAsync` can bypass global query filters; use a filtered query instead.
             var entity = await _context.PurchaseInvoices.FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
             if (entity != null)
             {
@@ -124,9 +118,6 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                 .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         }
 
-        /// <summary>
-        /// Optimized for read-only operations with AsNoTracking
-        /// </summary>
         public async Task<PurchaseInvoice?> GetByIdWithFullDetailsAsync(int id)
         {
             return await _context.PurchaseInvoices
@@ -139,7 +130,8 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
                     .ThenInclude(d => d.Batch)
                 .FirstOrDefaultAsync(i => i.Id == id && !i.IsDeleted);
         }
-    public async Task<IEnumerable<PurchaseInvoice>> GetBySupplierIdAsync(int supplierId)
+
+        public async Task<IEnumerable<PurchaseInvoice>> GetBySupplierIdAsync(int supplierId)
         {
             return await _context.PurchaseInvoices
                 .AsNoTracking()

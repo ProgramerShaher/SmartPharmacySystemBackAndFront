@@ -142,17 +142,19 @@
                     </td>
                     <td class="text-center no-print">
                         <div class="actions justify-content-center">
-                            <!-- DRAFT STATUS: Edit, Delete, Approve -->
+                            <!-- DRAFT STATUS: View, Edit, Approve, Delete -->
                             <ng-container *ngIf="isDraft(invoice)">
-                                <p-button *appHasPermission="['sales.invoices.create']" icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
-                                    size="small" pTooltip="اعتماد" (onClick)="approveInvoice(invoice.id)"></p-button>
-                                <p-button *appHasPermission="['sales.invoices.edit']" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info"
+                                    size="small" pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>
+                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="primary"
                                     size="small" pTooltip="تعديل" (onClick)="editInvoice(invoice.id)"></p-button>
-                                <p-button *appHasPermission="['sales.invoices.delete']" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                                <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success"
+                                    size="small" pTooltip="اعتماد" (onClick)="approveInvoice(invoice.id)"></p-button>
+                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
                                     size="small" pTooltip="حذف" (onClick)="deleteDraft(invoice.id)"></p-button>
                             </ng-container>
 
-                            <!-- APPROVED STATUS: View, Print, Return -->
+                            <!-- APPROVED / CLOSED STATUS: View, Print, Return -->
                             <ng-container *ngIf="isApproved(invoice) || isClosed(invoice)">
                                 <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
                                     pTooltip="عرض" (onClick)="viewDetails(invoice.id)"></p-button>

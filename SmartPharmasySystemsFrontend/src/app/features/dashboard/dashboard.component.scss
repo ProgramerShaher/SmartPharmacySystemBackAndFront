@@ -5,6 +5,9 @@
   color: #1e293b;
   direction: rtl;
   font-family: 'Tajawal', 'Cairo', sans-serif;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 /* =========================================
@@ -27,6 +30,9 @@
   border-radius: 8px;
   padding: 0.4rem 0.75rem;
   margin-bottom: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .title-wrap { display: flex; align-items: center; gap: 0.7rem; }
 .icon-circle {
@@ -43,7 +49,15 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
 /* =========================================
    LAYOUT
    ========================================= */
-.dashboard-layout { display: flex; flex-direction: column; gap: 0.5rem; }
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
 .loading-area { display: flex; flex-direction: column; gap: 0.5rem; }
 
 /* =========================================
@@ -53,6 +67,8 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 0.4rem;
+  min-width: 0;
+  width: 100%;
 }
 
 @media (max-width: 1280px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
@@ -69,6 +85,7 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
   border-right: 3px solid transparent;
   display: block;
   width: 100%;
+  box-sizing: border-box;
 }
 .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.07); }
 .kpi-card.indigo  { border-right-color: #6366f1; }
@@ -96,18 +113,26 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
 /* =========================================
    CHIPS PANEL
    ========================================= */
-.chips-panel { border-radius: 8px; padding: 0.4rem 0.5rem; }
+.chips-panel {
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
 .system-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
   gap: 0.3rem;
+  min-width: 0;
+  width: 100%;
 }
 @media (max-width: 1280px) { .system-grid { grid-template-columns: repeat(5, 1fr); } }
 
 .sys-chip {
   display: flex; align-items: center; gap: 0.4rem;
   padding: 0.3rem 0.4rem; border-radius: 6px; cursor: pointer;
-  transition: all 0.2s; text-align: right; width: 100%;
+  transition: all 0.2s; text-align: right; width: 100%; box-sizing: border-box;
 }
 .sys-chip:hover { background: #f1f5f9; transform: translateY(-1px); }
 .sys-chip i { font-size: 0.9rem; width: 1.2rem; text-align: center; flex-shrink: 0; }
@@ -120,15 +145,17 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
 .chip-info span   { display: block; font-size: 0.52rem; color: #64748b; font-weight: 700; }
 
 /* =========================================
-   MAIN COLUMNS LAYOUT
+   MAIN CONTENT AREA (FULL WIDTH)
    ========================================= */
-.main-columns {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
+.main-content-area {
+  display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  align-items: start;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
-@media (max-width: 1100px) { .main-columns { grid-template-columns: 1fr; } }
 
 /* =========================================
    CHARTS
@@ -137,15 +164,20 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
   display: grid;
   grid-template-columns: 3fr 2fr;
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
-.charts-row:last-child { margin-bottom: 0; }
 
 .panel {
   border-radius: 8px;
   padding: 0.5rem;
+  min-width: 0;
+  box-sizing: border-box;
 }
-.chart-panel { display: flex; flex-direction: column; }
+.chart-panel { display: flex; flex-direction: column; min-width: 0; overflow: hidden; }
 .chart-wide { /* 3fr */ }
 
 .panel-head {
@@ -153,14 +185,69 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.35rem;
+  gap: 0.5rem;
 }
 .panel-head h3 { margin: 0; font-size: 0.72rem; font-weight: 800; color: #0f172a; }
 .panel-head p  { margin: 0; font-size: 0.58rem; color: #64748b; }
 
+.head-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  i {
+    font-size: 0.9rem;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+}
+
+.text-emerald-500 { color: #10b981; }
+.text-indigo-500 { color: #6366f1; }
+.text-rose-500 { color: #f43f5e; }
+
+/* =========================================
+   BOTTOM WIDGETS GRID (4 COLUMNS AT BOTTOM)
+   ========================================= */
+.bottom-widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.2rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1280px) {
+  .bottom-widgets-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .bottom-widgets-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bottom-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
 /* =========================================
    TABLE CARDS
    ========================================= */
-.table-card { overflow: hidden; }
+.table-card { overflow: hidden; min-width: 0; }
 
 .badge-pill {
   display: inline-flex; align-items: center;
@@ -169,6 +256,8 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
 }
 .badge-pill.emerald { background: #dcfce7; color: #15803d; }
 .badge-pill.gold    { background: #fef3c7; color: #b45309; }
+.badge-pill.indigo  { background: #e0e7ff; color: #3730a3; }
+.badge-pill.rose    { background: #ffe4e6; color: #9f1239; }
 
 .rank-badge {
   display: inline-flex; align-items: center; justify-content: center;
@@ -198,8 +287,7 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
 /* =========================================
    SIDE COLUMN
    ========================================= */
-.col-side { display: flex; flex-direction: column; gap: 0.5rem; }
-.side-panel { border-radius: 8px; padding: 0.5rem; }
+.side-panel { border-radius: 8px; padding: 0.5rem; min-width: 0; }
 
 .mini-list { display: flex; flex-direction: column; gap: 0.22rem; }
 .mini-item {
@@ -252,10 +340,45 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
 .empty-msg { text-align: center; padding: 1.5rem; color: #94a3b8; font-size: 0.7rem; }
 .empty-msg i { display: block; font-size: 1.5rem; margin-bottom: 0.3rem; }
 
+.empty-chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 260px;
+  color: #94a3b8;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 6px;
+
+  i {
+    font-size: 2.2rem;
+    color: #cbd5e1;
+  }
+}
+
 /* =========================================
-   NG-DEEP TABLE COMPACT OVERRIDES
+   NG-DEEP OVERRIDES & CHART CANVAS CONSTRAINTS
    ========================================= */
 :host ::ng-deep {
+  p-chart {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+
+    canvas {
+      max-width: 100% !important;
+    }
+  }
+
+  .compact-table {
+    width: 100%;
+    max-width: 100%;
+  }
+
   .compact-table .p-datatable-thead > tr > th {
     background: #f8fafc; color: #475569;
     font-size: 0.6rem; font-weight: 800;
@@ -330,3 +453,4 @@ h1 { margin: 0; font-size: 1.05rem; font-weight: 800; color: #0f172a; }
     font-size: 0.48rem;
   }
 }
+

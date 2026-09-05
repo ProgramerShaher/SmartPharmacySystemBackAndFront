@@ -12,18 +12,23 @@ export class DailyClosingService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<any> {
-    // Calling the endpoint for branch 1
-    return this.http.get<any>(`${this.apiUrl}/branch/1`);
+    // يجلب الإغلاقات للفرع الحالي — BranchId يُقرأ من الـ token في الـ backend
+    return this.http.get<any>(`${this.apiUrl}`);
   }
 
-  closeDay(date: Date, transferToMainSafe: boolean = false): Observable<any> {
+  getByBranch(branchId: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/branch/${branchId}`);
+  }
+
+  closeDay(date: Date): Observable<any> {
+    // إرسال التاريخ فقط — جميع القيم المالية تُحسب تلقائياً من الـ backend
     const formattedDate = date.toISOString().split('T')[0];
-    return this.http.post<any>(`${this.apiUrl}`, { 
-      branchId: 1, 
-      closingDate: formattedDate, 
-      openingCash: 0, 
-      actualCash: 0, 
-      transferToMainSafe 
+    return this.http.post<any>(`${this.apiUrl}`, {
+      closingDate: formattedDate
     });
+  }
+
+  getById(id: number): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/${id}`);
   }
 }

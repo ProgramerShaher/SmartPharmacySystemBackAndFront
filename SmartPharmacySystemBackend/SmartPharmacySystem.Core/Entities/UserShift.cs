@@ -35,6 +35,16 @@ public class UserShift : BaseEntity
     public string Status { get; set; } = "Open"; // Open, Closed
     public string? Notes { get; set; }
 
+    // Cash Transfer Tracking
+    public bool IsCashTransferredToMainSafe { get; set; } = false;
+    public DateTime? CashTransferredAt { get; set; }
+    
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? TransferredCashAmount { get; set; }
+    
+    [MaxLength(50)]
+    public string? TransferReferenceNumber { get; set; }
+
     // Navigation properties
     public virtual User User { get; set; } = null!;
     public virtual Branch Branch { get; set; } = null!;

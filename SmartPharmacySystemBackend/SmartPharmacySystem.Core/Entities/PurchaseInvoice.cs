@@ -19,7 +19,7 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     /// <summary>
     /// Foreign key to the supplier.
     /// </summary>
-    public int SupplierId { get; set; }
+    public int? SupplierId { get; set; }
 
     /// <summary>
     /// Invoice number provided by the supplier.
@@ -94,7 +94,7 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     /// <summary>
     /// Navigation property to the supplier.
     /// </summary>
-    public virtual Supplier Supplier { get; set; } = null!;
+    public virtual Supplier? Supplier { get; set; }
 
     public virtual Warehouse Warehouse { get; set; } = null!;
 

@@ -21,4 +21,7 @@ public interface IMedicineRepository
     // FEFO & Reorder Logic
     Task<IEnumerable<MedicineBatch>> GetBatchesByFEFOAsync(int medicineId);
     Task<IEnumerable<Medicine>> GetReorderReadyMedicinesAsync();
-}
+
+    // Fast Lookup Projection
+    Task<IEnumerable<Medicine>> GetLookupProjectionsAsync();
+}

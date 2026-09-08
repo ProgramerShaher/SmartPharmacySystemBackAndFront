@@ -10,7 +10,27 @@ namespace SmartPharmacySystem.Controllers;
 public class DailyClosingsController : ControllerBase
 {
     private readonly IDailyClosingService _closingService;
-    public DailyClosingsController(IDailyClosingService closingService) => _closingService = closingService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public DailyClosingsController(IDailyClosingService closingService, ICurrentUserService currentUserService)
+    {
+        _closingService = closingService;
+        _currentUserService = currentUserService;
+    }
+
+    /// <summary>
+    /// جلب جميع إغلاقات الفرع الحالي (BranchId يُقرأ من الـ token تلقائياً)
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAll([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    {
+        var branchId = _currentUserService.GetCurrentBranchId();
+        if (!branchId.HasValue)
+            return BadRequest(ApiResponse<string>.Failed("لا يمكن تحديد الفرع الحالي"));
+
+        var result = await _closingService.GetByBranchIdAsync(branchId.Value, from, to);
+        return Ok(ApiResponse<IEnumerable<DailyClosingDto>>.Succeeded(result, "تم جلب إغلاقات الفرع الحالي"));
+    }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
@@ -58,7 +78,7 @@ public class DailyClosingsController : ControllerBase
     public async Task<IActionResult> Create(CreateDailyClosingDto dto)
     {
         var result = await _closingService.CreateAsync(dto);
-        return Ok(ApiResponse<DailyClosingDto>.Succeeded(result, "تم إنشاء الإغلاق بنجاح"));
+        return Ok(ApiResponse<DailyClosingDto>.Succeeded(result, "تم الإقفال اليومي بنجاح"));
     }
 
     [HttpPut]

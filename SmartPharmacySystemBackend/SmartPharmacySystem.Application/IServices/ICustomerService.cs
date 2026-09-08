@@ -13,5 +13,7 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<IEnumerable<CustomerDto>> GetTopDebtorsAsync(int count);
         Task<CustomerStatementDto> GetStatementAsync(int customerId);
         Task<Core.Models.CustomerStatistics> GetStatisticsAsync();
+        Task<IEnumerable<CustomerDto>> GetLookupListAsync();
     }
 }
+

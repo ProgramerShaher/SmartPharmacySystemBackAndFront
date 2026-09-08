@@ -9,7 +9,8 @@ export interface Supplier {
     phoneNumber?: string;
     address?: string;
     email?: string;
-    Balance: number;
+    balance?: number;
+    Balance?: number;
     notes?: string;
     isActive?: boolean;
     isDeleted?: boolean;

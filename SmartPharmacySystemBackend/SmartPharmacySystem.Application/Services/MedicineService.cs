@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using ExcelDataReader;
 using System.Data;
 
+using Microsoft.Extensions.Caching.Memory;
+
 namespace SmartPharmacySystem.Application.Services
 {
     public class MedicineService : IMedicineService
@@ -17,12 +19,16 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILogger<MedicineService> _logger;
+        private readonly IMemoryCache _cache;
 
-        public MedicineService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MedicineService> logger)
+        private const string MedicineLookupCacheKey = "lookup_medicines_cache";
+
+        public MedicineService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<MedicineService> logger, IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
+            _cache = cache;
         }
 
         public async Task<MedicineDto> CreateMedicineAsync(CreateMedicineDto dto)
@@ -42,9 +48,11 @@ namespace SmartPharmacySystem.Application.Services
 
             await _unitOfWork.Medicines.AddAsync(medicine);
             await _unitOfWork.SaveChangesAsync();
+            _cache.Remove(MedicineLookupCacheKey);
 
             return _mapper.Map<MedicineDto>(medicine);
         }
+
 
         public async Task UpdateMedicineAsync(int id, UpdateMedicineDto dto)
         {
@@ -89,6 +97,7 @@ namespace SmartPharmacySystem.Application.Services
 
             await _unitOfWork.Medicines.UpdateAsync(medicine);
             await _unitOfWork.SaveChangesAsync();
+            _cache.Remove(MedicineLookupCacheKey);
         }
 
         public async Task DeleteMedicineAsync(int id)
@@ -113,13 +122,16 @@ namespace SmartPharmacySystem.Application.Services
                 medicine.UpdatedAt = DateTime.UtcNow;
                 await _unitOfWork.Medicines.UpdateAsync(medicine);
                 await _unitOfWork.SaveChangesAsync();
+                _cache.Remove(MedicineLookupCacheKey);
                 return;
             }
 
             // 3. الحذف المنطقي النهائي إذا لم تكن هناك قيود
             await _unitOfWork.Medicines.SoftDeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
+            _cache.Remove(MedicineLookupCacheKey);
         }
+
 
         public async Task DeleteBulkMedicinesAsync(IEnumerable<int> ids)
         {
@@ -367,7 +379,27 @@ namespace SmartPharmacySystem.Application.Services
                 }
             }
 
+            _cache.Remove(MedicineLookupCacheKey);
             return result;
+        }
+
+        public async Task<IEnumerable<MedicineDto>> GetLookupMedicinesAsync()
+        {
+            if (_cache.TryGetValue(MedicineLookupCacheKey, out IEnumerable<MedicineDto>? cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var medicines = await _unitOfWork.Medicines.GetLookupProjectionsAsync();
+            var dtos = _mapper.Map<IEnumerable<MedicineDto>>(medicines).ToList();
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromHours(2))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(30));
+
+            _cache.Set(MedicineLookupCacheKey, dtos, cacheOptions);
+            return dtos;
         }
     }
 }
+

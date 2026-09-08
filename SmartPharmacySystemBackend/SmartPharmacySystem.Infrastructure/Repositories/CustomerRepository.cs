@@ -145,5 +145,14 @@ namespace SmartPharmacySystem.Infrastructure.Repositories
 
             return stats ?? new CustomerStatistics();
         }
+
+        public async Task<IEnumerable<Customer>> GetActiveLookupListAsync()
+        {
+            return await _context.Customers
+                .AsNoTracking()
+                .Where(c => !c.IsDeleted && c.IsActive)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
+        }
     }
 }

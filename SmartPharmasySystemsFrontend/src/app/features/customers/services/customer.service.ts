@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Observable, BehaviorSubject, of } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse, PagedResult } from '../../../core/models';
@@ -27,9 +27,35 @@ export class CustomerService {
     // Signal for total debt
     public totalCustomerDebt = signal(0);
 
+    private lookupCache: Customer[] | null = null;
+
     constructor(private http: HttpClient) {
         this.refreshCustomersWithDebt();
     }
+
+    loadLookupIndex(forceRefresh = false): Observable<Customer[]> {
+        if (!forceRefresh && this.lookupCache) {
+            return of(this.lookupCache);
+        }
+        return this.http.get<ApiResponse<Customer[]>>(`${this.apiUrl}/lookup`).pipe(
+            map(res => res.data || []),
+            tap(items => this.lookupCache = items)
+        );
+    }
+
+    searchLocal(query: string): Customer[] {
+        if (!this.lookupCache || !query) return this.lookupCache || [];
+        const q = query.trim().toLowerCase();
+        return this.lookupCache.filter(c => 
+            (c.name && c.name.toLowerCase().includes(q)) ||
+            (c.phoneNumber && c.phoneNumber.includes(q))
+        );
+    }
+
+    clearLookupCache(): void {
+        this.lookupCache = null;
+    }
+
 
     /**
      * Get all customers

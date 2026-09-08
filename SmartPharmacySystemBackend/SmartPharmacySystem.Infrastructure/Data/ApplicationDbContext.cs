@@ -105,6 +105,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     // ===== Shifts =====
     public DbSet<UserShift> UserShifts { get; set; } = null!;
 
+    // ===== Backup System =====
+    public DbSet<BackupConfiguration> BackupConfigurations { get; set; } = null!;
+    public DbSet<BackupHistory> BackupHistories { get; set; } = null!;
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
@@ -1559,6 +1563,23 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<Medicine>()
             .HasIndex(m => new { m.CategoryId, m.Status })
             .HasDatabaseName("IX_Medicines_CategoryId_Status");
+
+        modelBuilder.Entity<Medicine>()
+            .HasIndex(m => new { m.DefaultBarcode, m.IsDeleted, m.Status })
+            .HasDatabaseName("IX_Medicines_Barcode_Lookup");
+
+        modelBuilder.Entity<Medicine>()
+            .HasIndex(m => new { m.InternalCode, m.IsDeleted, m.Status })
+            .HasDatabaseName("IX_Medicines_InternalCode_Lookup");
+
+        modelBuilder.Entity<Customer>()
+            .HasIndex(c => new { c.PhoneNumber, c.IsDeleted, c.IsActive })
+            .HasDatabaseName("IX_Customers_Phone_Lookup");
+
+        modelBuilder.Entity<Supplier>()
+            .HasIndex(s => new { s.PhoneNumber, s.IsDeleted })
+            .HasDatabaseName("IX_Suppliers_Phone_Lookup");
+
 
         // MedicineBatches Indexes
         modelBuilder.Entity<MedicineBatch>()

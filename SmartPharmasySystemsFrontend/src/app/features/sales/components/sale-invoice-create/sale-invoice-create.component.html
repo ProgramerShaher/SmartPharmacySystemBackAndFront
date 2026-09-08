@@ -13,6 +13,7 @@
                             (completeMethod)="searchMedicine($event)" field="name" [(ngModel)]="searchQueryText"
                             [ngModelOptions]="{standalone: true}" (onSelect)="onMedicineSelectInline($event.value)"
                             placeholder="ابحث عن الدواء بالاسم أو امسح الباركود..." appendTo="body" [forceSelection]="true"
+                            [minLength]="1" [autoHighlight]="true" [showEmptyMessage]="true" emptyMessage="لا يوجد نتائج للبحث"
                             styleClass="custom-p-input header-search-input"></p-autoComplete>
                         <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
                             <i class="pi pi-camera"></i>
@@ -96,14 +97,15 @@
         <p-table [value]="items()" dataKey="batchId" responsiveLayout="scroll" styleClass="custom-p-table">
             <ng-template pTemplate="header">
                 <tr>
-                    <th style="width: 28%; text-align: right;">الصنف</th>
-                    <th style="text-align: center; width: 14%;">الدفعة (FEFO)</th>
-                    <th style="text-align: center; width: 12%;">الكمية</th>
-                    <th style="text-align: right; width: 12%;">سعر البيع</th>
-                    <th style="text-align: center; width: 10%;">الخصم %</th>
+                    <th style="width: 24%; text-align: right;">الصنف</th>
+                    <th style="text-align: center; width: 12%;">الباركود</th>
+                    <th style="text-align: center; width: 12%;">الدفعة (FEFO)</th>
+                    <th style="text-align: center; width: 10%;">الكمية</th>
+                    <th style="text-align: right; width: 10%;">سعر البيع</th>
+                    <th style="text-align: center; width: 9%;">الخصم %</th>
                     <th style="text-align: right; width: 12%;">الإجمالي الصافي</th>
-                    <th style="text-align: center; width: 10%;">الربح المتوقع</th>
-                    <th style="width: 80px; text-align: center;">الإجراءات</th>
+                    <th style="text-align: center; width: 9%;">الربح المتوقع</th>
+                    <th style="width: 70px; text-align: center;">الإجراءات</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item let-i="rowIndex">
@@ -113,6 +115,9 @@
                         <div *ngIf="item.expiryDate" class="expiry-subtext">
                             <i class="pi pi-calendar"></i> انتهاء: {{ item.expiryDate | date:'MM/yy' }}
                         </div>
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="badge-barcode"><i class="pi pi-barcode"></i> {{ item.barcode || '-' }}</span>
                     </td>
                     <td style="text-align: center;">
                         <span class="badge-batch">{{ item.batchNumber || '-' }}</span>
@@ -155,7 +160,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="8" class="empty-state">
+                    <td colspan="9" class="empty-state">
                         <span class="empty-icon"><i class="pi pi-shopping-cart"></i></span>
                         <div>لا توجد أصناف في الفاتورة بعد</div>
                         <div class="empty-sub">استخدم حقل "اختيار الدواء" بالأعلى أو قم بمسح الباركود لإضافة الأصناف بسرعة</div>

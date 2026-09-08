@@ -1,13 +1,17 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
-import { AuthService } from '../../features/auth/services/auth.service';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 /**
  * JWT Interceptor - Adds Authorization header to all HTTP requests
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const authService = inject(AuthService);
-    const token = authService.getToken();
+    const platformId = inject(PLATFORM_ID);
+    let token = null;
+
+    if (isPlatformBrowser(platformId)) {
+        token = localStorage.getItem('auth_token');
+    }
 
     // Skip adding token for auth endpoints
     if (req.url.includes('/Auth/login')) {
@@ -20,8 +24,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
             setHeaders: {
                 Authorization: `Bearer ${token}`
             }
-    });
-  }
+        });
+    }
 
     return next(req);
 };

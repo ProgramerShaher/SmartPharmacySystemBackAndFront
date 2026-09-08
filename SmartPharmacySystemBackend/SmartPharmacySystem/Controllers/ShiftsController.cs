@@ -78,6 +78,21 @@ public class ShiftsController : ControllerBase
         return BadRequest(result);
     }
 
+    [RequirePermission("sales.daily_closing.manage")]
+    [HttpPost("SweepUntransferred")]
+    public async Task<ActionResult<ApiResponse<int>>> SweepUntransferred()
+    {
+        var branchId = _currentUserService.GetCurrentBranchId();
+        if (!branchId.HasValue) return BadRequest(ApiResponse<int>.Failed("الفرع غير محدد."));
+
+        var result = await _shiftService.SweepUntransferredShiftsToMainSafeAsync(branchId.Value);
+        if (result.Success)
+        {
+            return Ok(result);
+        }
+        return BadRequest(result);
+    }
+
     [HttpGet("{id}/Summary")]
     public async Task<ActionResult<ApiResponse<ShiftSummaryDto>>> GetShiftSummary(int id)
     {

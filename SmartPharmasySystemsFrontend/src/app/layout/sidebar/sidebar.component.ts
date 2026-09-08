@@ -455,7 +455,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon: 'pi pi-cog',
       iconClass: 'icon-settings',
       match: '/settings',
-      extraMatches: ['/users', '/roles', '/branches', '/departments', '/system-alerts'],
+      extraMatches: ['/users', '/roles', '/branches', '/departments', '/system-alerts', '/backup'],
       children: [
         {
           label: 'المستخدمون', route: '/users', icon: 'pi pi-user-edit',
@@ -464,6 +464,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
         {
           label: 'الأدوار والصلاحيات', route: '/roles', icon: 'pi pi-shield',
           anyPermission: ['access.roles.view', 'admin.roles.manage']
+        },
+        {
+          label: 'النسخ الاحتياطي', route: '/backup', icon: 'pi pi-cloud-upload',
+          permission: 'admin.backup.manage'
         },
         {
           label: 'فروع الصيدلية', route: '/branches', icon: 'pi pi-building',

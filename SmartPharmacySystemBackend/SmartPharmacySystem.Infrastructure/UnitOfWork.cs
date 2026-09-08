@@ -169,6 +169,14 @@ namespace SmartPharmacySystem.Infrastructure
         private IFinancialPeriodRepository? _financialPeriods;
         public IFinancialPeriodRepository FinancialPeriods => _financialPeriods ??= new FinancialPeriodRepository(_context);
 
+        // ===== Backup System =====
+        private IBackupConfigRepository? _backupConfigurations;
+        public IBackupConfigRepository BackupConfigurations => _backupConfigurations ??= new BackupConfigRepository(_context);
+
+        private IBackupHistoryRepository? _backupHistories;
+        public IBackupHistoryRepository BackupHistories => _backupHistories ??= new BackupHistoryRepository(_context);
+
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

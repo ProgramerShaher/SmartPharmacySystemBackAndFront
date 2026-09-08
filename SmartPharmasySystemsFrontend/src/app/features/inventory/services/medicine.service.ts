@@ -13,12 +13,110 @@ import {
 } from '../../../core/models/medicine.interface';
 import { MedicineBatchResponseDto } from '../../../core/models/medicine-batch.interface';
 
+import { of } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
 @Injectable({
     providedIn: 'root'
 })
 export class MedicineService {
     private readonly http = inject(HttpClient);
     private readonly apiUrl = `${environment.apiUrl}/Medicines`;
+
+    // Local In-Memory Fast Lookup Index
+    private lookupCache: Medicine[] | null = null;
+    private barcodeMap = new Map<string, Medicine>();
+    private isPreloading = false;
+
+    /**
+     * Preload or fetch compact medicine lookup dataset
+     */
+    loadLookupIndex(forceRefresh = false): Observable<Medicine[]> {
+        if (!forceRefresh && this.lookupCache) {
+            return of(this.lookupCache);
+        }
+
+        return this.http.get<ApiResponse<Medicine[]>>(`${this.apiUrl}/lookup`).pipe(
+            map(res => res.data || []),
+            tap(items => {
+                this.lookupCache = items;
+                this.barcodeMap.clear();
+                items.forEach(med => {
+                    const code = med.defaultBarcode || (med as any).barcode;
+                    if (code) {
+                        this.barcodeMap.set(code.trim().toLowerCase(), med);
+                    }
+                    if (med.internalCode) {
+                        this.barcodeMap.set(med.internalCode.trim().toLowerCase(), med);
+                    }
+                    if (med.medicineUnits && med.medicineUnits.length > 0) {
+                        med.medicineUnits.forEach(unit => {
+                            if (unit.barcode) {
+                                this.barcodeMap.set(unit.barcode.trim().toLowerCase(), med);
+                            }
+                        });
+                    }
+                });
+            })
+        );
+    }
+
+    /**
+     * Fast O(1) local barcode lookup
+     */
+    getByBarcodeLocal(barcode: string): Medicine | undefined {
+        if (!barcode) return undefined;
+        return this.barcodeMap.get(barcode.trim().toLowerCase());
+    }
+
+    /**
+     * Ultra-fast local search with intelligent ranking (< 5 ms)
+     */
+    searchLocal(query: string, maxResults = 20): Medicine[] {
+        if (!this.lookupCache) return [];
+
+        const q = (query || '').trim().toLowerCase();
+        if (!q) {
+            return this.lookupCache.slice(0, maxResults);
+        }
+
+        // 1. Exact Barcode / Code Match
+        const exactBarcodeMatch = this.getByBarcodeLocal(q);
+
+        const exactNameMatches: Medicine[] = [];
+        const startsWithMatches: Medicine[] = [];
+        const containsMatches: Medicine[] = [];
+
+        for (const item of this.lookupCache) {
+            if (exactBarcodeMatch && item.id === exactBarcodeMatch.id) continue;
+
+            const name = (item.name || '').toLowerCase();
+            const sciName = (item.scientificName || '').toLowerCase();
+
+            if (name === q) {
+                exactNameMatches.push(item);
+            } else if (name.startsWith(q)) {
+                startsWithMatches.push(item);
+            } else if (name.includes(q) || sciName.includes(q)) {
+                containsMatches.push(item);
+            }
+        }
+
+        const results: Medicine[] = [];
+        if (exactBarcodeMatch) results.push(exactBarcodeMatch);
+        results.push(...exactNameMatches, ...startsWithMatches, ...containsMatches);
+
+        return results.slice(0, maxResults);
+    }
+
+    /**
+     * Invalidate local lookup cache after mutations
+     */
+    clearLookupCache(): void {
+        this.lookupCache = null;
+        this.barcodeMap.clear();
+    }
+
 
   /**
    * Get all medicines with advanced filtering
@@ -74,7 +172,8 @@ export class MedicineService {
    */
     create(dto: CreateMedicineDto): Observable<Medicine> {
         return this.http.post<ApiResponse<Medicine>>(this.apiUrl, dto).pipe(
-            map(response => response.data!)
+            map(response => response.data!),
+            tap(() => this.clearLookupCache())
         );
     }
 
@@ -83,7 +182,8 @@ export class MedicineService {
    */
     update(id: number, dto: UpdateMedicineDto): Observable<Medicine> {
         return this.http.put<ApiResponse<Medicine>>(`${this.apiUrl}/${id}`, dto).pipe(
-            map(response => response.data!)
+            map(response => response.data!),
+            tap(() => this.clearLookupCache())
         );
     }
 
@@ -92,7 +192,8 @@ export class MedicineService {
    */
     delete(id: number): Observable<void> {
         return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/${id}`).pipe(
-            map(() => undefined)
+            map(() => undefined),
+            tap(() => this.clearLookupCache())
         );
     }
 
@@ -100,8 +201,11 @@ export class MedicineService {
      * Delete multiple medicines
      */
     deleteBulk(ids: number[]): Observable<ApiResponse<any>> {
-        return this.http.request<ApiResponse<any>>('delete', `${this.apiUrl}/bulk`, { body: ids });
+        return this.http.request<ApiResponse<any>>('delete', `${this.apiUrl}/bulk`, { body: ids }).pipe(
+            tap(() => this.clearLookupCache())
+        );
     }
+
 
   /**
    * Get distinct manufacturers for dropdown

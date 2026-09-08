@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Text.Json;
 using SmartPharmacySystem.Application.Wrappers;
 
@@ -61,7 +61,7 @@ namespace SmartPharmacySystem.Middleware
 
                 default:
                     statusCode = (int)HttpStatusCode.InternalServerError; // 500
-                    message = "حدث خطأ داخلي، يرجى التواصل مع الدعم الفني";
+                    message = $"حدث خطأ داخلي: {ex.Message}{(ex.InnerException != null ? " -> " + ex.InnerException.Message : "")}";
                     break;
             }
 

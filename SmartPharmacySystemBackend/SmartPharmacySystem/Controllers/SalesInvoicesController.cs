@@ -100,8 +100,17 @@ namespace SmartPharmacySystem.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateSaleInvoiceDto dto)
         {
-            if (id != dto.Id)
+            if (dto == null)
+                return BadRequest(ApiResponse<object>.Failed("بيانات الفاتورة غير صحيحة"));
+
+            if (dto.Id == 0)
+            {
+                dto.Id = id;
+            }
+            else if (id != dto.Id)
+            {
                 return BadRequest(ApiResponse<object>.Failed("رقم الفاتورة غير متطابق"));
+            }
 
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<object>.Failed("البيانات المدخلة غير صحيحة"));

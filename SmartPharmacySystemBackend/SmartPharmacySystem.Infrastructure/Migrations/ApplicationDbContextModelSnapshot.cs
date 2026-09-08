@@ -680,6 +680,207 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                     b.ToTable("AutomatedAuditItems");
                 });
 
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.BackupConfiguration", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("EncryptBackup")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GoogleDriveFolderId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("GoogleDriveFolderName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("IntervalDays")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsAutoBackupEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastRunAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LocalRetentionDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxBackupsToKeep")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("NextScheduledRun")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RetentionDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RetentionMode")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("ScheduledTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("TempBackupPath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Timezone")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("VerifyAfterBackup")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BackupConfigurations");
+                });
+
+            modelBuilder.Entity("SmartPharmacySystem.Core.Entities.BackupHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BackupType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DatabaseName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DeletedBy")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DurationSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long?>("FileSizeBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("GoogleDriveFileId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("GoogleDriveWebViewLink")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRecovery")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LocalEncryptedPath")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("LocalTempPath")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OccurrenceId")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("OriginalBackupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TriggeredByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TriggeredByUserName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UploadStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VerificationMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BackupHistories");
+                });
+
             modelBuilder.Entity("SmartPharmacySystem.Core.Entities.Branch", b =>
                 {
                     b.Property<int>("Id")
@@ -1689,7 +1890,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 1,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(5796),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 775, DateTimeKind.Utc).AddTicks(7428),
                             Description = "رواتب الموظفين والبدلات",
                             IsDeleted = false,
                             Name = "رواتب"
@@ -1697,7 +1898,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 2,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7202),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(8887),
                             Description = "إيجار مقر الصيدلية والمخازن",
                             IsDeleted = false,
                             Name = "إيجار"
@@ -1705,7 +1906,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 3,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7206),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(8894),
                             Description = "فواتير الكهرباء",
                             IsDeleted = false,
                             Name = "كهرباء"
@@ -1713,7 +1914,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 4,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7210),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(9120),
                             Description = "فواتير المياه",
                             IsDeleted = false,
                             Name = "مياه"
@@ -1721,7 +1922,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 5,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7213),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(9123),
                             Description = "فواتير الهاتف والاشتراكات",
                             IsDeleted = false,
                             Name = "اتصالات وانترنت"
@@ -1729,7 +1930,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 6,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7216),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(9124),
                             Description = "أدوات مكتبية ومطبوعات",
                             IsDeleted = false,
                             Name = "قرطاسية وأدوات مكتبية"
@@ -1737,7 +1938,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 7,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7219),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(9126),
                             Description = "صيانة المعدات والمباني",
                             IsDeleted = false,
                             Name = "صيانة"
@@ -1745,7 +1946,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 8,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7222),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(9128),
                             Description = "أدوات ومواد نظافة",
                             IsDeleted = false,
                             Name = "نظافة"
@@ -1753,7 +1954,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                         new
                         {
                             Id = 9,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 37, 629, DateTimeKind.Utc).AddTicks(7225),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 20, 776, DateTimeKind.Utc).AddTicks(9129),
                             Description = "مصاريف متنوعة",
                             IsDeleted = false,
                             Name = "أخرى"
@@ -2290,7 +2491,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Id = 1,
                             AccountId = 1101,
                             BranchId = 1,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 38, 492, DateTimeKind.Utc).AddTicks(1527),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 22, 368, DateTimeKind.Utc).AddTicks(4664),
                             Credit = 0m,
                             Debit = 50000m,
                             Description = "إيداع رصيد افتتاحي",
@@ -2302,7 +2503,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Id = 2,
                             AccountId = 3101,
                             BranchId = 1,
-                            CreatedAt = new DateTime(2026, 9, 2, 23, 25, 38, 492, DateTimeKind.Utc).AddTicks(4025),
+                            CreatedAt = new DateTime(2026, 9, 5, 19, 54, 22, 368, DateTimeKind.Utc).AddTicks(7188),
                             Credit = 50000m,
                             Debit = 0m,
                             Description = "إثبات رأس المال",
@@ -4793,7 +4994,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "admin@pharmacy.com",
                             FullName = "مدير النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$hb/YTtjbwMZ4w6Xl7X97ueoFs5i2bjWM17/vGKGnnSAcQz73BSzNq",
+                            PasswordHash = "$2a$11$GoPK5rRWOeWqBtbg/pl7POUvtAyPfU1lYeIztvh0YQPNW6MwF0RxO",
                             RoleId = 1,
                             Status = 1,
                             Username = "admin"
@@ -4806,7 +5007,7 @@ namespace SmartPharmacySystem.Infrastructure.Migrations
                             Email = "pharmacist@pharmacy.com",
                             FullName = "صيدلي النظام",
                             IsDeleted = false,
-                            PasswordHash = "$2a$11$hb/YTtjbwMZ4w6Xl7X97ueoFs5i2bjWM17/vGKGnnSAcQz73BSzNq",
+                            PasswordHash = "$2a$11$GoPK5rRWOeWqBtbg/pl7POUvtAyPfU1lYeIztvh0YQPNW6MwF0RxO",
                             RoleId = 2,
                             Status = 1,
                             Username = "pharmacist"

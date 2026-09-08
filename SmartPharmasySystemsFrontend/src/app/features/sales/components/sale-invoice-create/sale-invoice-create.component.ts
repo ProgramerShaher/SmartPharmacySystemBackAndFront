@@ -36,6 +36,7 @@ import { finalize } from 'rxjs/operators';
 interface InvoiceItem {
     medicineId: number;
     medicineName: string;
+    barcode?: string;
     batchId: number;
     batchNumber: string;
     quantity: number;
@@ -216,7 +217,12 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
             }
         });
 
+        // Preload product and customer lookup indexes asynchronously in background
+        this.medicineService.loadLookupIndex().subscribe();
+        this.customerService.loadLookupIndex().subscribe();
+
         this.loadCustomers(); // Load customers on init
+
         this.route.params.subscribe((params: any) => {
             if (params['id']) {
                 this.isEditMode = true;
@@ -356,6 +362,13 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
     }
 
     processScannedBarcode(barcode: string) {
+        if (!barcode) return;
+        const localMed = this.medicineService.getByBarcodeLocal(barcode);
+        if (localMed) {
+            this.onMedicineSelectInline(localMed);
+            return;
+        }
+
         this.messageService.add({ severity: 'info', summary: 'جاري البحث', detail: `تم مسح الباركود: ${barcode}` });
 
         this.barcodeService.processBarcode({
@@ -379,6 +392,7 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         });
     }
 
+
     private addBarcodeItemToInvoice(data: any) {
         if (!data.availableQuantity || data.availableQuantity <= 0) {
             this.itemModalVisible = false;
@@ -392,9 +406,11 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         }
 
         // 1. تجهيز الدواء
+        this.selectedMedicineBarcode = data.barcode || data.defaultBarcode || null;
         this.inlineMedicine = {
             id: data.medicineId,
             name: data.tradeName,
+            defaultBarcode: this.selectedMedicineBarcode
         } as any;
 
         // 2. تجهيز الوحدة الأساسية
@@ -468,9 +484,9 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
 
     // 💼 LOAD CUSTOMERS
     loadCustomers() {
-        this.customerService.getAll({ pageSize: 100 }).subscribe({
-            next: (result) => {
-                this.customers = result.items.map(c => ({
+        this.customerService.loadLookupIndex().subscribe({
+            next: (items) => {
+                this.customers = items.map(c => ({
                     id: c.id,
                     name: c.name,
                     phone: c.phoneNumber || '',
@@ -558,8 +574,15 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
 
 
     searchCustomer(event: any) {
-        // Mock search for now or implement real service call
-        // this.customerService.search(event.query)...
+        if (!event || !event.query) return;
+        const localResults = this.customerService.searchLocal(event.query);
+        this.customers = localResults.map(c => ({
+            id: c.id,
+            name: c.name,
+            phone: c.phoneNumber || '',
+            pricelistId: (c as any).pricelistId || null,
+            pricelistDiscountPercentage: (c as any).pricelistDiscountPercentage || 0
+        }));
     }
 
     loadInvoice(id: number) {
@@ -581,6 +604,7 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
                 const mappedItems: InvoiceItem[] = (invoice.items || []).map(d => ({
                     medicineId: d.medicineId,
                     medicineName: d.medicineName || 'Unknown',
+                    barcode: (d as any).barcode || (d as any).medicineBarcode || (d as any).defaultBarcode || '',
                     batchId: d.batchId || 0,
                     batchNumber: d.companyBatchNumber || '',
                     quantity: d.quantity,
@@ -605,13 +629,12 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         });
     }
 
-    // 💊 FAST SEARCH
+    // 💊 FAST INSTANT SEARCH
     searchMedicine(event: any) {
-        this.medicineService.getAll({ search: event.query, pageSize: 20 }).subscribe({
-            next: (res) => this.filteredMedicines = res.items || [],
-            error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Search failed' })
-        });
+        const query = event ? (event.query || '') : '';
+        this.filteredMedicines = this.medicineService.searchLocal(query, 20);
     }
+
 
     updateItemQuantity(item: InvoiceItem, qty: number) {
         if (qty > item.availableQuantity) {
@@ -975,6 +998,8 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
                 const baseUnitCost = batch.unitPurchasePrice || 0;
                 const unitCost = baseUnitCost * unitFactor;
 
+                const itemBarcode = this.selectedMedicineBarcode || this.inlineMedicine?.defaultBarcode || (this.inlineMedicine as any)?.barcode || (batch as any)?.barcode || '';
+
                 const existingItemIndex = currentItems.findIndex(item => item.batchId === batch.id && item.saleUnitId === saleUnitId);
 
                 if (existingItemIndex !== -1) {
@@ -982,10 +1007,12 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
                     existing.quantity += takeUnitQty;
                     existing.total = existing.quantity * existing.salePrice;
                     existing.profit = (existing.salePrice - existing.unitCost) * existing.quantity;
+                    if (!existing.barcode) existing.barcode = itemBarcode;
                 } else {
                     currentItems.push({
                         medicineId: this.inlineMedicine.id,
                         medicineName: `${this.inlineMedicine.name} (${unitName})`,
+                        barcode: itemBarcode,
                         batchId: batch.id,
                         batchNumber: batch.companyBatchNumber,
                         quantity: takeUnitQty,
@@ -1036,6 +1063,7 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
 
     editItemInline(item: InvoiceItem, index: number) {
         this.editingItemIndex = index;
+        this.selectedMedicineBarcode = item.barcode || null;
 
         // Hydrate Medicine
         this.inlineMedicine = {

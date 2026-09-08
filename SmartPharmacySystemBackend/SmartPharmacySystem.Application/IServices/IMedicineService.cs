@@ -15,7 +15,9 @@ namespace SmartPharmacySystem.Application.Interfaces
         Task<PagedResult<MedicineDto>> SearchAsync(MedicineQueryDto query);
         Task<IEnumerable<SmartPharmacySystem.Application.DTOs.MedicineBatch.MedicineBatchResponseDto>> GetBatchesByFEFOAsync(int medicineId);
         Task<IEnumerable<MedicineDto>> GetReorderReportAsync();
+        Task<IEnumerable<MedicineDto>> GetLookupMedicinesAsync();
         Task<ImportResultDto> ImportFromExcelAsync(Microsoft.AspNetCore.Http.IFormFile file);
+
         Task<byte[]> GenerateExcelTemplateAsync();
     }
 }

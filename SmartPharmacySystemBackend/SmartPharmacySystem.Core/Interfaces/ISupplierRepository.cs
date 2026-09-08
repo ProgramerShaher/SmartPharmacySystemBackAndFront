@@ -17,4 +17,5 @@ public interface ISupplierRepository
     Task<bool> ExistsAsync(int id);
     Task<(IEnumerable<Supplier> Items, int TotalCount)> GetPagedAsync(string? search, int page, int pageSize, string sortBy, string sortDir, bool? hasBalance);
     Task UpdateBalanceAsync(int supplierId, decimal amount);
-}
+    Task<IEnumerable<Supplier>> GetActiveLookupListAsync();
+}

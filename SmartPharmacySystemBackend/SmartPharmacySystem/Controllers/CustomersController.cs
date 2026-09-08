@@ -23,6 +23,14 @@ namespace SmartPharmacySystem.Controllers
             return Ok(ApiResponse<PagedResponse<CustomerDto>>.Succeeded(result, "تم جلب العملاء بنجاح"));
         }
 
+        [HttpGet("lookup")]
+        public async Task<IActionResult> GetLookup()
+        {
+            var result = await _customerService.GetLookupListAsync();
+            return Ok(ApiResponse<IEnumerable<CustomerDto>>.Succeeded(result, "تم جلب قائمة العملاء السريعة بنجاح"));
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {

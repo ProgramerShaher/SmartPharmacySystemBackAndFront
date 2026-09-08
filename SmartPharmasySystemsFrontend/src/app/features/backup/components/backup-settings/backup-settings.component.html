@@ -1,0 +1,202 @@
+<p-toast></p-toast>
+<div class="grid">
+    <div class="col-12">
+        <div class="flex justify-content-between align-items-center mb-4">
+            <div class="flex align-items-center gap-3">
+                <p-button icon="pi pi-arrow-right" [text]="true" [rounded]="true" routerLink="../dashboard"></p-button>
+                <h2 class="m-0">إعدادات النسخ الاحتياطي</h2>
+            </div>
+            <div class="flex gap-2">
+                <button pButton pRipple label="حفظ الإعدادات" icon="pi pi-check" class="p-button-primary" (click)="saveSettings()" [loading]="saving"></button>
+            </div>
+        </div>
+    </div>
+  
+    <div class="col-12">
+      <p-tabView>
+        <p-tabPanel header="الجدولة والاحتفاظ">
+          <form [formGroup]="settingsForm" class="p-fluid">
+            <div class="grid formgrid">
+              
+              <!-- Auto Backup Toggle -->
+              <div class="field col-12">
+                <div class="flex align-items-center gap-3 bg-primary-reverse p-3 border-round">
+                    <p-inputSwitch formControlName="isAutoBackupEnabled"></p-inputSwitch>
+                    <label class="font-bold text-lg mb-0">تفعيل النسخ الاحتياطي التلقائي (المجدول)</label>
+                </div>
+              </div>
+  
+              <div class="col-12 md:col-6" *ngIf="settingsForm.get('isAutoBackupEnabled')?.value">
+                <p-card header="إعدادات الجدول الزمني">
+                  <div class="field mb-4">
+                    <label>المنطقة الزمنية (للجدولة)</label>
+                    <p-dropdown [options]="timezoneOptions" formControlName="timezone" placeholder="اختر المنطقة الزمنية"></p-dropdown>
+                    <small class="text-500">ملاحظة: النظام سيعتمد هذا التوقيت لتنفيذ الجدولة بغض النظر عن توقيت السيرفر المحلي.</small>
+                  </div>
+  
+                  <div class="field mb-4">
+                    <label>التكرار</label>
+                    <p-dropdown [options]="frequencyOptions" formControlName="frequency" placeholder="اختر التكرار"></p-dropdown>
+                  </div>
+  
+                  <div class="field mb-4" *ngIf="settingsForm.get('frequency')?.value === 'Custom'">
+                    <label>عدد الأيام (كل كم يوم؟)</label>
+                    <p-inputNumber formControlName="intervalDays" [min]="1" [max]="365" [showButtons]="true"></p-inputNumber>
+                  </div>
+  
+                  <div class="field mb-4">
+                    <label>وقت التنفيذ (H:mm:ss)</label>
+                    <input type="time" pInputText formControlName="scheduledTime" step="1" />
+                  </div>
+                </p-card>
+              </div>
+  
+              <div class="col-12 md:col-6" *ngIf="settingsForm.get('isAutoBackupEnabled')?.value">
+                <p-card header="سياسة الاحتفاظ (Retention Policy)">
+                    <div class="field mb-4">
+                        <label>طريقة الاحتفاظ (للملفات السحابية وقاعدة البيانات)</label>
+                        <p-dropdown [options]="retentionOptions" formControlName="retentionMode"></p-dropdown>
+                    </div>
+      
+                    <div class="field mb-4" *ngIf="settingsForm.get('retentionMode')?.value === 'ByCount'">
+                        <label>أقصى عدد للنسخ الناجحة المحتفظ بها</label>
+                        <p-inputNumber formControlName="maxBackupsToKeep" [min]="1" [showButtons]="true"></p-inputNumber>
+                    </div>
+      
+                    <div class="field mb-4" *ngIf="settingsForm.get('retentionMode')?.value === 'ByDays'">
+                        <label>حذف النسخ الأقدم من (أيام)</label>
+                        <p-inputNumber formControlName="retentionDays" [min]="1" [showButtons]="true"></p-inputNumber>
+                    </div>
+      
+                    <div class="field mb-4">
+                        <label>الاحتفاظ بالملفات المحلية المؤقتة (أيام)</label>
+                        <p-inputNumber formControlName="localRetentionDays" [min]="1" [max]="30" [showButtons]="true"></p-inputNumber>
+                        <small class="text-500 block mt-1">للملفات المشفرة المخزنة في السيرفر المحلي.</small>
+                    </div>
+                </p-card>
+              </div>
+            </div>
+          </form>
+        </p-tabPanel>
+  
+        <p-tabPanel header="التخزين السحابي والتشفير">
+            <form [formGroup]="settingsForm" class="p-fluid">
+                <div class="grid">
+                    <div class="col-12 md:col-6">
+                        <p-card header="Google Drive">
+                            <p-messages severity="info">
+                                <ng-template pTemplate>
+                                    <div class="flex">
+                                        <i class="pi pi-info-circle mr-2"></i>
+                                        <div>يجب توفر ملف بيانات الاعتماد `Google Service Account JSON` في مسار النظام.</div>
+                                    </div>
+                                </ng-template>
+                            </p-messages>
+        
+                            <div class="field mb-4 mt-3">
+                                <label>معرف المجلد (Folder ID)</label>
+                                <input pInputText formControlName="googleDriveFolderId" placeholder="مثال: 1A2B3C4D5E6F7G8H9I0J" />
+                            </div>
+        
+                            <div class="field mb-4">
+                                <label>اسم المجلد (للمرجعية)</label>
+                                <input pInputText formControlName="googleDriveFolderName" />
+                            </div>
+        
+                            <div class="mt-4">
+                                <button pButton pRipple type="button" label="فحص الاتصال" icon="pi pi-wifi" class="p-button-outlined" (click)="testDrive()" [loading]="testingDrive"></button>
+                            </div>
+                        </p-card>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <p-card header="الأمان والتحقق">
+                            <div class="flex align-items-center gap-3 mb-4 p-3 bg-yellow-50 border-round border-yellow-200 border-1 text-yellow-900">
+                                <p-inputSwitch formControlName="verifyAfterBackup"></p-inputSwitch>
+                                <div>
+                                    <label class="font-bold block mb-1">التحقق بعد النسخ (RESTORE VERIFYONLY)</label>
+                                    <small>يفحص سلامة ملف النسخة المأخوذة فوراً.</small>
+                                </div>
+                            </div>
+        
+                            <div class="flex align-items-center gap-3 mb-4 p-3 bg-blue-50 border-round border-blue-200 border-1 text-blue-900">
+                                <p-inputSwitch formControlName="encryptBackup"></p-inputSwitch>
+                                <div>
+                                    <label class="font-bold block mb-1">التشفير السحابي (AES-256-GCM)</label>
+                                    <small>إلزامي وآمن جداً. يتم التشفير قبل الرفع السحابي.</small>
+                                </div>
+                            </div>
+                        </p-card>
+
+                        <p-card header="إدارة مفتاح التشفير (DPAPI)" *ngIf="settingsForm.get('encryptBackup')?.value" styleClass="mt-3">
+                            <p class="text-500 mb-4">مفتاح التشفير مخزن بشكل آمن في السيرفر باستخدام تقنية DPAPI. في حال تغيير السيرفر، ستحتاج إلى استيراد المفتاح لفك تشفير النسخ السابقة.</p>
+                            
+                            <div class="flex gap-3">
+                                <button pButton pRipple type="button" label="تصدير مفتاح التعافي" icon="pi pi-key" class="p-button-warning" (click)="openExportDialog()"></button>
+                                <button pButton pRipple type="button" label="استيراد مفتاح" icon="pi pi-upload" class="p-button-outlined p-button-secondary" (click)="openImportDialog()"></button>
+                            </div>
+                        </p-card>
+                    </div>
+                </div>
+            </form>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+</div>
+
+<!-- Export Key Dialog -->
+<p-dialog header="تصدير مفتاح التشفير" [(visible)]="displayExportDialog" [modal]="true" [style]="{width: '500px'}">
+    <p-messages severity="warn">
+        <ng-template pTemplate>
+            <div><strong>تحذير خطير:</strong> هذا المفتاح هو الوحيد القادر على فك تشفير النسخ الاحتياطية. أي شخص يحصل عليه سيتمكن من فك التشفير. يجب تخزينه في مدير كلمات مرور آمن أو خزنة آمنة فقط.</div>
+        </ng-template>
+    </p-messages>
+
+    <div class="p-fluid mt-4" *ngIf="!exportedKey">
+        <div class="field">
+            <label>لتأكيد التصدير، أدخل كلمة المرور الخاصة بك كمدير نظام</label>
+            <p-password [(ngModel)]="exportPassword" [feedback]="false" [toggleMask]="true" placeholder="كلمة المرور..."></p-password>
+        </div>
+    </div>
+
+    <div class="p-fluid mt-4" *ngIf="exportedKey">
+        <div class="field">
+            <label class="text-green-600 font-bold"><i class="pi pi-check-circle"></i> تم تصدير المفتاح بنجاح</label>
+            <div class="p-inputgroup mt-2">
+                <input pInputText type="text" [value]="exportedKey" readonly style="font-family: monospace;" />
+                <button type="button" pButton icon="pi pi-copy" (click)="copyKey()" title="نسخ"></button>
+            </div>
+            <small class="text-red-500 block mt-2">لن يتم عرض هذا المفتاح مرة أخرى بعد إغلاق هذه النافذة!</small>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="إغلاق" icon="pi pi-times" class="p-button-text" (click)="displayExportDialog = false"></button>
+        <button *ngIf="!exportedKey" pButton pRipple label="تصدير الآن" icon="pi pi-download" class="p-button-danger" (click)="exportKey()" [loading]="exporting"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Import Key Dialog -->
+<p-dialog header="استيراد مفتاح التعافي" [(visible)]="displayImportDialog" [modal]="true" [style]="{width: '500px'}">
+    <p-messages severity="info">
+        <ng-template pTemplate>
+            <div>استخدم هذا الخيار فقط عند نقل النظام إلى سيرفر جديد واسترجاع قاعدة البيانات. سيكتب المفتاح في النظام المحلي (DPAPI).</div>
+        </ng-template>
+    </p-messages>
+
+    <div class="p-fluid mt-4">
+        <div class="field mb-4">
+            <label>مفتاح التعافي (Base64)</label>
+            <input pInputText [(ngModel)]="importKeyString" placeholder="الصق المفتاح هنا..." style="font-family: monospace;" />
+        </div>
+        <div class="field">
+            <label>للتأكيد، أدخل كلمة المرور الخاصة بك</label>
+            <p-password [(ngModel)]="importPassword" [feedback]="false" [toggleMask]="true"></p-password>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="إلغاء" icon="pi pi-times" class="p-button-text" (click)="displayImportDialog = false"></button>
+        <button pButton pRipple label="استيراد وحفظ" icon="pi pi-upload" class="p-button-primary" (click)="importKey()" [loading]="importing"></button>
+    </ng-template>
+</p-dialog>

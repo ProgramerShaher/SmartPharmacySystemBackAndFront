@@ -3,12 +3,16 @@ using Microsoft.Extensions.Logging;
 using SmartPharmacySystem.Application.DTOs.Shared;
 using SmartPharmacySystem.Application.DTOs.Suppliers;
 using SmartPharmacySystem.Application.DTOs.SupplierPayments;
+using SmartPharmacySystem.Application.DTOs.CreatePurchaseInvoice;
+using SmartPharmacySystem.Application.DTOs.PurchaseReturns;
 using SmartPharmacySystem.Application.Interfaces;
 using SmartPharmacySystem.Application.IServices;
 using SmartPharmacySystem.Core.Entities;
 using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Enums;
 using SmartPharmacySystem.Application.IServices;
+
+using Microsoft.Extensions.Caching.Memory;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -18,14 +22,19 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<SupplierService> _logger;
         private readonly IAccountService _accountService;
+        private readonly IMemoryCache _cache;
 
-        public SupplierService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<SupplierService> logger, IAccountService accountService)
+        private const string SupplierLookupCacheKey = "lookup_suppliers_cache";
+
+        public SupplierService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<SupplierService> logger, IAccountService accountService, IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _accountService = accountService;
+            _cache = cache;
         }
+
 
         public async Task<SupplierDto> CreateAsync(CreateSupplierDto dto)
         {
@@ -67,7 +76,9 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.Suppliers.AddAsync(supplier);
                 await _unitOfWork.SaveChangesAsync();
 
+
                 });
+                _cache.Remove(SupplierLookupCacheKey);
                 return _mapper.Map<SupplierDto>(supplier);
             }
             catch (Exception ex)
@@ -87,6 +98,7 @@ namespace SmartPharmacySystem.Application.Services
 
             await _unitOfWork.Suppliers.UpdateAsync(supplier);
             await _unitOfWork.SaveChangesAsync();
+            _cache.Remove(SupplierLookupCacheKey);
         }
 
         public async Task DeleteAsync(int id)
@@ -105,6 +117,7 @@ namespace SmartPharmacySystem.Application.Services
 
             await _unitOfWork.Suppliers.SoftDeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
+            _cache.Remove(SupplierLookupCacheKey);
         }
 
         public async Task<SupplierDto?> GetByIdAsync(int id)
@@ -168,5 +181,28 @@ namespace SmartPharmacySystem.Application.Services
 
             return result;
         }
+
+        public async Task<IEnumerable<SupplierDto>> GetLookupListAsync()
+        {
+            if (_cache.TryGetValue(SupplierLookupCacheKey, out IEnumerable<SupplierDto>? cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var suppliers = await _unitOfWork.Suppliers.GetActiveLookupListAsync();
+            var dtos = _mapper.Map<IEnumerable<SupplierDto>>(suppliers).Select(s => {
+                s.PurchaseInvoices = new List<PurchaseInvoiceDto>();
+                s.PurchaseReturns = new List<PurchaseReturnDto>();
+                return s;
+            }).ToList();
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromHours(2))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(30));
+
+            _cache.Set(SupplierLookupCacheKey, dtos, cacheOptions);
+            return dtos;
+        }
     }
 }
+

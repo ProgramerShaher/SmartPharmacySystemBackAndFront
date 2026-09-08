@@ -15,5 +15,7 @@ namespace SmartPharmacySystem.Core.Interfaces
         Task<IEnumerable<Customer>> GetTopDebtorsAsync(int count);
         Task UpdateBalanceAsync(int customerId, decimal amount);
         Task<CustomerStatistics> GetStatisticsAsync();
+        Task<IEnumerable<Customer>> GetActiveLookupListAsync();
     }
 }
+

@@ -185,4 +185,16 @@ public class MedicineRepository : IMedicineRepository
             .OrderBy(m => m.Name)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Medicine>> GetLookupProjectionsAsync()
+    {
+        return await _context.Medicines
+            .AsNoTracking()
+            .Include(m => m.Category)
+            .Include(m => m.MedicineUnits)
+            .Where(m => !m.IsDeleted && m.Status == "Active")
+            .OrderBy(m => m.Name)
+            .ToListAsync();
+    }
 }
+

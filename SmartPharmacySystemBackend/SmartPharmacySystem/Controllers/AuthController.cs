@@ -48,8 +48,11 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
+            var fullError = $"[{DateTime.Now}] Login Error: {ex.Message} | Inner: {ex.InnerException?.Message}\nStack: {ex.StackTrace}\n\n";
+            try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppContext.BaseDirectory, "db_error.txt"), fullError); } catch {}
+            
             _logger.LogError(ex, "Error during login");
-            return StatusCode(500, ApiResponse<LoginResponseDto>.Failed("حدث خطأ أثناء تسجيل الدخول"));
+            return StatusCode(500, ApiResponse<LoginResponseDto>.Failed($"خطأ في الاتصال بقاعدة البيانات: {ex.Message}"));
         }
     }
 

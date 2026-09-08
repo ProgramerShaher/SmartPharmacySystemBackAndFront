@@ -9,6 +9,8 @@ using SmartPharmacySystem.Core.Interfaces;
 using SmartPharmacySystem.Core.Models;
 using SmartPharmacySystem.Core.Enums;
 
+using Microsoft.Extensions.Caching.Memory;
+
 namespace SmartPharmacySystem.Application.Services
 {
     public class CustomerService : ICustomerService
@@ -16,13 +18,18 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAccountService _accountService;
+        private readonly IMemoryCache _cache;
 
-        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, IAccountService accountService)
+        private const string CustomerLookupCacheKey = "lookup_customers_cache";
+
+        public CustomerService(IUnitOfWork unitOfWork, IMapper mapper, IAccountService accountService, IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _accountService = accountService;
+            _cache = cache;
         }
+
 
         public async Task<CustomerDto> GetByIdAsync(int id)
         {
@@ -81,6 +88,7 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.SaveChangesAsync();
 
                 });
+                _cache.Remove(CustomerLookupCacheKey);
                 return _mapper.Map<CustomerDto>(customer);
             }
             catch (Exception)
@@ -97,12 +105,14 @@ namespace SmartPharmacySystem.Application.Services
             _mapper.Map(dto, customer);
             await _unitOfWork.Customers.UpdateAsync(customer);
             await _unitOfWork.SaveChangesAsync();
+            _cache.Remove(CustomerLookupCacheKey);
         }
 
         public async Task DeleteAsync(int id)
         {
             await _unitOfWork.Customers.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
+            _cache.Remove(CustomerLookupCacheKey);
         }
 
         public async Task<IEnumerable<CustomerDto>> GetTopDebtorsAsync(int count)
@@ -144,9 +154,29 @@ namespace SmartPharmacySystem.Application.Services
 
             return result;
         }
+
         public async Task<CustomerStatistics> GetStatisticsAsync()
         {
             return await _unitOfWork.Customers.GetStatisticsAsync();
         }
+
+        public async Task<IEnumerable<CustomerDto>> GetLookupListAsync()
+        {
+            if (_cache.TryGetValue(CustomerLookupCacheKey, out IEnumerable<CustomerDto>? cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var customers = await _unitOfWork.Customers.GetActiveLookupListAsync();
+            var dtos = _mapper.Map<IEnumerable<CustomerDto>>(customers).ToList();
+
+            var cacheOptions = new MemoryCacheEntryOptions()
+                .SetAbsoluteExpiration(TimeSpan.FromHours(2))
+                .SetSlidingExpiration(TimeSpan.FromMinutes(30));
+
+            _cache.Set(CustomerLookupCacheKey, dtos, cacheOptions);
+            return dtos;
+        }
     }
 }
+

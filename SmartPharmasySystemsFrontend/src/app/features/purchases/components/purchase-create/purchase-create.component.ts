@@ -24,6 +24,7 @@ import { BarcodeService } from '../../../../core/services/barcode.service';
 import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode-simulator/barcode-simulator.component';
 import { TransactionType } from '../../../../core/models/barcode.interface';
 import { InventoryService } from '../../../inventory/services/inventory.service';
+import { MedicineService } from '../../../inventory/services/medicine.service';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputNumberModule } from 'primeng/inputnumber';
 
@@ -100,8 +101,10 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private barcodeService: BarcodeService,
-        private inventoryService: InventoryService
+        private inventoryService: InventoryService,
+        private medicineService: MedicineService
     ) {
+
         this.purchaseForm = this.fb.group({
             supplierId: [null],
             warehouseId: [null, Validators.required],
@@ -137,8 +140,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
 
 
     ngOnInit() {
+        this.medicineService.loadLookupIndex().subscribe();
+        this.supplierService.loadLookupIndex().subscribe();
+
         this.loadSuppliers();
         this.loadWarehouses();
+
 
         // Dynamic validation for Supplier based on Payment Method
         this.purchaseForm.get('paymentMethod')?.valueChanges.subscribe(method => {
@@ -258,6 +265,13 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
     }
 
     processScannedBarcode(barcode: string) {
+        if (!barcode) return;
+        const localMed = this.medicineService.getByBarcodeLocal(barcode);
+        if (localMed) {
+            this.onMedicineSelect(localMed);
+            return;
+        }
+
         this.messageService.add({ severity: 'info', summary: 'جاري البحث', detail: `تم مسح الباركود: ${barcode}` });
 
         this.barcodeService.processBarcode({
@@ -281,6 +295,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
         });
     }
 
+
     private addBarcodeItemToInvoice(data: any) {
         const existingDetails = this.details.controls;
         const existingIndex = existingDetails.findIndex(ctrl => ctrl.get('medicineId')?.value === data.medicineId && ctrl.get('companyBatchNumber')?.value === data.batchNumber);
@@ -297,6 +312,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
             const detail = {
                 medicineId: data.medicineId,
                 medicineName: data.tradeName,
+                barcode: data.barcode || data.defaultBarcode || data.batchBarcode || null,
                 companyBatchNumber: data.batchNumber || 'جديد',
                 expiryDate: data.expiryDate ? new Date(data.expiryDate) : null,
                 quantity: 1,
@@ -315,7 +331,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
     }
 
     loadSuppliers() {
-        this.supplierService.getAll({ pageSize: 1000 }).subscribe((res: any) => this.suppliers = res.items);
+        this.supplierService.loadLookupIndex().subscribe((items: any) => this.suppliers = items);
     }
 
     loadWarehouses() {
@@ -415,6 +431,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
             id: [detail.id || 0],
             medicineId: [detail.medicineId, Validators.required],
             medicineName: [detail.medicineName],
+            barcode: [detail.barcode || detail.medicineBarcode || detail.defaultBarcode || null],
             companyBatchNumber: [detail.companyBatchNumber],
             expiryDate: [detail.expiryDate ? new Date(detail.expiryDate) : null],
             quantity: [displayQuantity, [Validators.required, Validators.min(1)]],
@@ -431,10 +448,10 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
     // --- Search & Medicine Selection Workflow ---
 
     searchMedicines(event: any) {
-        this.inventoryService.searchMedicines({ search: event.query }).subscribe(res => {
-            this.filteredMedicines = res.items;
-        });
+        const query = event ? (event.query || '') : '';
+        this.filteredMedicines = this.medicineService.searchLocal(query, 20);
     }
+
 
     onMedicineSelect(medicine: Medicine) {
         this.selectedMedicine = medicine;
@@ -525,6 +542,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
         const detail = {
             medicineId: val.medicineId,
             medicineName: finalName,
+            barcode: this.selectedMedicineBarcode || (this.selectedMedicine ? (this.selectedMedicine.defaultBarcode || (this.selectedMedicine as any).barcode) : null),
             companyBatchNumber: val.companyBatchNumber,
             expiryDate: val.expiryDate,
             quantity: val.quantity,

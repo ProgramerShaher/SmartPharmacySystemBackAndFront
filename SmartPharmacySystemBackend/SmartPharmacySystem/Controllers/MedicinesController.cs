@@ -47,6 +47,18 @@ namespace SmartPharmacySystem.Controllers
         }
 
         /// <summary>
+        /// Get high-performance cached product lookup dataset for POS / Purchase
+        /// </summary>
+        [HttpGet("lookup")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetLookup()
+        {
+            var medicines = await _medicineService.GetLookupMedicinesAsync();
+            return Ok(ApiResponse<IEnumerable<MedicineDto>>.Succeeded(medicines, "Medicine lookup dataset retrieved successfully"));
+        }
+
+
+        /// <summary>
         /// Get medicine by ID
         /// </summary>
         /// <access>Admin | Pharmacist</access>

@@ -17,11 +17,25 @@ using SmartPharmacySystem.Infrastructure.Hubs;
 using SmartPharmacySystem.Middleware;
 using SmartPharmacySystem.Infrastructure.Services;
 
-var builder = WebApplication.CreateBuilder(args);
+// تحديد مسار النظام ليكون نفس مسار ملف الـ exe بدلاً من مسار الويندوز الافتراضي
+var options = new WebApplicationOptions
+{
+    Args = args,
+    ContentRootPath = AppContext.BaseDirectory
+};
 
-// -------------------- Database --------------------
+var builder = WebApplication.CreateBuilder(options);
+builder.Host.UseWindowsService(); // السطر الذي أضفناه سابقاً
+
+// -------------------- Database (Auto-Discovery) --------------------
+// يكتشف SQL Server تلقائياً على أي جهاز بدون أي إعداد يدوي
+var connectionString = DetectSqlServerConnection(
+    builder.Configuration.GetConnectionString("DefaultConnection") ?? "",
+    builder.Environment
+);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    options.UseSqlServer(connectionString,
         sqlServerOptionsAction: sqlOptions =>
         {
             sqlOptions.EnableRetryOnFailure(
@@ -57,6 +71,10 @@ builder.Services.AddAuthentication(options =>
 
 // -------------------- AutoMapper --------------------
 builder.Services.AddAutoMapper(cfg => cfg.AddMaps(typeof(MappingProfile)));
+
+// -------------------- Caching --------------------
+builder.Services.AddMemoryCache();
+
 
 
 // -------------------- Dependency Injection --------------------
@@ -106,6 +124,9 @@ builder.Services.AddScoped<IMedicineWarehouseConfigRepository, MedicineWarehouse
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IPharmacySettingsRepository, PharmacySettingsRepository>();
 builder.Services.AddScoped<IInvoiceSequenceRepository, InvoiceSequenceRepository>();
+builder.Services.AddScoped<IBackupConfigRepository, BackupConfigRepository>();
+builder.Services.AddScoped<IBackupHistoryRepository, BackupHistoryRepository>();
+
 
 // Services
 builder.Services.AddScoped<IMedicineService, MedicineService>();
@@ -144,6 +165,14 @@ builder.Services.AddScoped<IMasterDashboardService, MasterDashboardService>(); /
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
 builder.Services.AddScoped<IChequeService, ChequeService>();
+
+// Backup System Services
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
+builder.Services.AddScoped<IKeyManagementService, KeyManagementService>();
+builder.Services.AddScoped<IGoogleDriveService, GoogleDriveService>();
+builder.Services.AddScoped<IBackupStateService, BackupStateService>();
+builder.Services.AddScoped<IBackupRetentionService, BackupRetentionService>();
+builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddScoped<IPharmacySettingsService, PharmacySettingsService>();
 builder.Services.AddHttpClient<IWhatsAppNotificationService, WhatsAppNotificationService>();
 
@@ -182,6 +211,11 @@ builder.Services.AddScoped<IPricelistRepository, PricelistRepository>();
 builder.Services.AddScoped<IOnlineOrderService, OnlineOrderService>();
 builder.Services.AddScoped<IMobileAuthService, MobileAuthService>();
 
+// -------------------- Licensing --------------------
+// Singleton: hardware fingerprinting is stateless; no benefit from per-request instantiation.
+builder.Services.AddSingleton<ILicenseService, LicenseService>();
+
+
 // -------------------- HttpContextAccessor --------------------
 builder.Services.AddHttpContextAccessor();
 
@@ -194,6 +228,8 @@ builder.Services.AddControllers()
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<ExpiryCheckWorker>();
 builder.Services.AddHostedService<StockCountWorker>();
+builder.Services.AddHostedService<BackupStartupTask>();
+builder.Services.AddHostedService<BackupSchedulerWorker>();
 
 // -------------------- CORS --------------------
 builder.Services.AddCors(options =>
@@ -253,28 +289,47 @@ builder.Services.AddSwaggerGen(c =>
 var app = builder.Build();
 
 // -------------------- Database Initialization & Seeding --------------------
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
-    try
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        var context = services.GetRequiredService<ApplicationDbContext>();
-        
-        logger.LogInformation("جاري التحقق من وجود الجداول وتحديث قاعدة البيانات...");
-        await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
-        logger.LogInformation("تم تحديث هيكل قاعدة البيانات بنجاح.");
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var context = services.GetRequiredService<ApplicationDbContext>();
 
-        logger.LogInformation("جاري بذر البيانات الأولية للصلاحيات والأدوار...");
-        await SmartPharmacySystem.Infrastructure.Data.Seeders.PermissionSeeder.SeedAsync(context);
-        await SmartPharmacySystem.Infrastructure.Data.Seeders.RoleSeeder.SeedAsync(context);
-        logger.LogInformation("تم بذر البيانات الأولية بنجاح.");
-    }
-    catch (Exception ex)
+    const int maxRetries = 3;
+    const int delaySeconds = 2;
+
+    for (int attempt = 1; attempt <= maxRetries; attempt++)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "حدث خطأ أثناء تهجير قاعدة البيانات.");
+        try
+        {
+            logger.LogInformation("🔄 محاولة الاتصال بقاعدة البيانات... ({Attempt}/{Max})", attempt, maxRetries);
+
+            await context.Database.CanConnectAsync();
+            await context.Database.MigrateAsync();
+            await SmartPharmacySystem.Infrastructure.Data.Seeders.PermissionSeeder.SeedAsync(context);
+            await SmartPharmacySystem.Infrastructure.Data.Seeders.RoleSeeder.SeedAsync(context);
+            logger.LogInformation("✅ تم الاتصال بـ SQL Server وبذر البيانات بنجاح.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("❌ فشلت محاولة قاعدة البيانات {Attempt}/{Max}: {Message}", attempt, maxRetries, ex.Message);
+
+            if (attempt == maxRetries)
+            {
+                logger.LogCritical(ex, "🚫 تعذّر الاتصال بـ SQL Server أو تطبيق Migrations بعد {Max} محاولات.", maxRetries);
+            }
+            else
+            {
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+            }
+        }
     }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"⚠️ تنبيه قاعدة البيانات: {ex.Message}");
 }
 
 // -------------------- Middlewares --------------------
@@ -305,10 +360,14 @@ if (app.Environment.IsDevelopment())
 
 app.MapHub<NotificationHub>("/notificationHub");
 
-// Redirect root to swagger
-app.MapGet("/", () => Results.Redirect("/swagger"));
+// Redirect root to swagger only in development
+if (app.Environment.IsDevelopment())
+{
+    app.MapGet("/", () => Results.Redirect("/swagger"));
+}
 
-app.UseStaticFiles(); // Serve images from wwwroot/images/medicines/
+app.UseDefaultFiles(); // ليبحث عن ملف index.html الخاص بـ Angular عند فتح الصفحة الرئيسية
+app.UseStaticFiles(); // Serve static files & Angular assets from wwwroot
 // app.UseHttpsRedirection(); // Disabled for mobile testing on local network
 app.UseCors("AllowAll");
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -317,4 +376,102 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+app.MapFallbackToFile("index.html"); // ليقوم Angular بإدارة التنقل بين الصفحات بدون أخطاء
 app.Run();
+
+// ═════════════════════════════════════════════════════════════════════════════
+// Auto-Discovery: يكتشف SQL Server تلقائياً على أي جهاز
+// ═════════════════════════════════════════════════════════════════════════════
+static string DetectSqlServerConnection(string configuredConnection, IWebHostEnvironment env)
+{
+    const string dbName = "PharmacyDB";
+
+    // 1. جرّب الـ Connection String المحفوظ في appsettings.json أولاً
+    if (!string.IsNullOrWhiteSpace(configuredConnection) && TestConnection(configuredConnection))
+        return configuredConnection;
+
+    // 2. ابحث عن SQL Server instances نشطة عبر Windows Services
+    var candidates = GetSqlServerInstances();
+
+    foreach (var server in candidates)
+    {
+        // 1. فحص الاتصال بالسيرفر نفسه (باستخدام قاعدة master الافتراضية)
+        var testCs = $"Server={server};Database=master;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=3";
+        
+        if (TestConnection(testCs))
+        {
+            // 2. إذا نجح الاتصال بالسيرفر، نبني نص الاتصال النهائي الخاص بتطبيقنا
+            var finalCs = $"Server={server};Database={dbName};Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True";
+            
+            // احفظ الـ Connection String الناجح في appsettings.json للمرات القادمة
+            SaveConnectionString(finalCs, env);
+            return finalCs;
+        }
+    }
+
+    // 3. إذا لم يُعثر على أي اتصال → ارجع الـ appsettings بحيث رسالة الخطأ تكون واضحة
+    return configuredConnection;
+}
+
+static bool TestConnection(string connectionString)
+{
+    try
+    {
+        using var conn = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
+        conn.Open();
+        return true;
+    }
+    catch { return false; }
+}
+
+static List<string> GetSqlServerInstances()
+{
+    var servers = new List<string>();
+
+    try
+    {
+        // اقرأ الـ Services لاكتشاف جميع instances
+        var services = System.ServiceProcess.ServiceController.GetServices();
+        foreach (var svc in services)
+        {
+            if (!svc.DisplayName.StartsWith("SQL Server (", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            // استخرج اسم الـ Instance من "SQL Server (INSTANCENAME)"
+            var start    = svc.DisplayName.IndexOf('(') + 1;
+            var end      = svc.DisplayName.IndexOf(')');
+            var instance = svc.DisplayName[start..end];
+
+            if (instance.Equals("MSSQLSERVER", StringComparison.OrdinalIgnoreCase))
+                servers.Add(".");           // Default instance
+            else
+                servers.Add($".\\{instance}");  // Named instance
+        }
+    }
+    catch { /* ignore — نكمل بالـ fallbacks */ }
+
+    // أضف خيارات احتياطية شائعة
+    servers.AddRange(new[] { ".", ".\\SQLEXPRESS", ".\\MSSQLSERVER", "localhost", "localhost\\SQLEXPRESS" });
+
+    return servers.Distinct().ToList();
+}
+
+static void SaveConnectionString(string connectionString, IWebHostEnvironment env)
+{
+    try
+    {
+        var appSettingsPath = Path.Combine(env.ContentRootPath, "appsettings.json");
+        if (!File.Exists(appSettingsPath)) return;
+
+        var json = File.ReadAllText(appSettingsPath);
+        // استبدل قيمة DefaultConnection
+        var escaped = connectionString.Replace("\\", "\\\\");
+        json = System.Text.RegularExpressions.Regex.Replace(
+            json,
+            @"""DefaultConnection""\s*:\s*""[^""]*""",
+            $@"""DefaultConnection"": ""{escaped}"""
+        );
+        File.WriteAllText(appSettingsPath, json);
+    }
+    catch { /* لا نوقف التطبيق إذا فشل الحفظ */ }
+}

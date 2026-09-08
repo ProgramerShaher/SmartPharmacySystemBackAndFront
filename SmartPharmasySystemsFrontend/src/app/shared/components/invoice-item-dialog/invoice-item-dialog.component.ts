@@ -11,6 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageService, Message } from 'primeng/api'; // Added Message
 import { MessagesModule } from 'primeng/messages'; // Added MessagesModule
 import { InventoryService } from '../../../features/inventory/services/inventory.service';
+import { MedicineService } from '../../../features/inventory/services/medicine.service';
 import { AlertService } from '../../../core/services/alert.service'; // Added AlertService
 import { Medicine, MedicineBatch } from '../../../core/models';
 
@@ -61,6 +62,7 @@ export class InvoiceItemDialogComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private inventoryService: InventoryService,
+        private medicineService: MedicineService,
         private messageService: MessageService,
         private alertService: AlertService
     ) {
@@ -88,6 +90,7 @@ export class InvoiceItemDialogComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.medicineService.loadLookupIndex().subscribe();
         this.updateValidators();
     }
 
@@ -215,9 +218,11 @@ export class InvoiceItemDialogComponent implements OnInit {
     }
 
     searchMedicines(event: any) {
-        this.inventoryService.searchMedicines({ search: event.query }).subscribe(res => {
-            this.filteredMedicines = res.items;
-        });
+        if (!event || !event.query) {
+            this.filteredMedicines = [];
+            return;
+        }
+        this.filteredMedicines = this.medicineService.searchLocal(event.query, 20);
     }
 
     onMedicineSelect(medicine: Medicine) {

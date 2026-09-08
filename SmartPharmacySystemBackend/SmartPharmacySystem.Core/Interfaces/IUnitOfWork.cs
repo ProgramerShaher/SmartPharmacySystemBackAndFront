@@ -64,6 +64,10 @@ public interface IUnitOfWork
     IUserShiftRepository UserShifts { get; }
     IFinancialPeriodRepository FinancialPeriods { get; }
 
+    // ===== Backup System =====
+    IBackupConfigRepository BackupConfigurations { get; }
+    IBackupHistoryRepository BackupHistories { get; }
+
     Task<int> SaveChangesAsync();
     Task BeginTransactionAsync();
     Task CommitAsync();

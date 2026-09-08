@@ -156,4 +156,22 @@ public class SupplierRepository : ISupplierRepository
             _context.Entry(supplier).State = EntityState.Modified;
         }
     }
+
+    public async Task<IEnumerable<Supplier>> GetActiveLookupListAsync()
+    {
+        return await _context.Suppliers
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted)
+            .OrderBy(s => s.Name)
+            .Select(s => new Supplier
+            {
+                Id = s.Id,
+                Name = s.Name,
+                PhoneNumber = s.PhoneNumber,
+                Address = s.Address,
+                Balance = s.Balance
+            })
+            .ToListAsync();
+    }
 }
+

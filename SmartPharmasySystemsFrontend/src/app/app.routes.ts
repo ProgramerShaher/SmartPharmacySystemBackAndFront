@@ -150,6 +150,13 @@ export const routes: Routes = [
                 data: { permission: 'reports.sales.view' },
                 loadChildren: () => import('./features/reports/reports.routes').then(m => m.REPORTS_ROUTES)
             },
+            // ---- النسخ الاحتياطي
+            {
+                path: 'backup',
+                canActivate: [permissionGuard],
+                data: { permission: 'admin.backup.manage' },
+                loadChildren: () => import('./features/backup/backup.routes').then(m => m.BACKUP_ROUTES)
+            },
             // ---- الطلبات الأونلاين
             {
                 path: 'online-orders',

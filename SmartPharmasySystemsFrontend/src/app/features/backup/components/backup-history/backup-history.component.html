@@ -1,0 +1,88 @@
+<p-toast></p-toast>
+<div class="grid">
+    <div class="col-12">
+        <div class="flex justify-content-between align-items-center mb-4">
+            <div class="flex align-items-center gap-3">
+                <p-button icon="pi pi-arrow-right" [text]="true" [rounded]="true" routerLink="../dashboard"></p-button>
+                <h2 class="m-0">سجل عمليات النسخ الاحتياطي</h2>
+            </div>
+            <button pButton pRipple label="تحديث السجل" icon="pi pi-refresh" class="p-button-outlined" (click)="loadHistory()"></button>
+        </div>
+    </div>
+  
+    <div class="col-12">
+        <p-card>
+            <div class="flex gap-4 mb-4">
+                <div class="field">
+                    <label class="block mb-2">تصفية بالحالة</label>
+                    <p-dropdown [options]="statusOptions" [(ngModel)]="statusFilter" (onChange)="onFilterChange()" [style]="{'min-width': '200px'}"></p-dropdown>
+                </div>
+                <div class="field">
+                    <label class="block mb-2">تصفية بالنوع</label>
+                    <p-dropdown [options]="typeOptions" [(ngModel)]="typeFilter" (onChange)="onFilterChange()" [style]="{'min-width': '200px'}"></p-dropdown>
+                </div>
+            </div>
+
+            <p-table 
+                [value]="histories" 
+                [lazy]="true" 
+                (onLazyLoad)="loadHistory($event)" 
+                [paginator]="true" 
+                [rows]="pageSize" 
+                [totalRecords]="totalRecords" 
+                [loading]="loading"
+                [rowsPerPageOptions]="[10, 20, 50]"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-sm p-datatable-striped"
+            >
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>المعرف / العملية</th>
+                        <th>النوع</th>
+                        <th>وقت البدء</th>
+                        <th>المدة</th>
+                        <th>الحجم</th>
+                        <th>التحقق</th>
+                        <th>الحالة</th>
+                        <th style="width: 120px">إجراءات</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-h>
+                    <tr>
+                        <td>
+                            <div class="font-bold">{{h.occurrenceId}}</div>
+                            <div class="text-sm text-500 mt-1" *ngIf="h.isRecovery">
+                                <i class="pi pi-exclamation-circle text-orange-500 mr-1"></i> استعادة (Recovery)
+                            </div>
+                            <div class="text-sm text-500 mt-1" *ngIf="h.retryCount > 0">
+                                <i class="pi pi-refresh text-blue-500 mr-1"></i> إعادة محاولة ({{h.retryCount}})
+                            </div>
+                        </td>
+                        <td>{{h.backupType === 'Automatic' ? 'تلقائي' : 'يدوي'}}</td>
+                        <td>{{h.startedAt | date:'medium'}}</td>
+                        <td>{{formatDuration(h.durationSeconds)}}</td>
+                        <td>{{formatBytes(h.fileSizeBytes)}}</td>
+                        <td>
+                            <p-tag *ngIf="h.isVerified" severity="success" value="سليم" [pTooltip]="h.verificationMessage" tooltipPosition="top"></p-tag>
+                            <p-tag *ngIf="!h.isVerified && h.status === 'Completed'" severity="warning" value="غير مفحوص"></p-tag>
+                            <span *ngIf="h.status !== 'Completed' && !h.isVerified">-</span>
+                        </td>
+                        <td>
+                            <p-tag [severity]="getStatusSeverity(h.status)" [value]="getStatusLabel(h.status)" [pTooltip]="h.errorMessage" tooltipPosition="top"></p-tag>
+                            <div *ngIf="h.uploadStatus === 'Completed'" class="text-xs text-500 mt-1"><i class="pi pi-cloud text-blue-500"></i> مرفوع سحابياً</div>
+                        </td>
+                        <td>
+                            <button *ngIf="h.status === 'Failed'" pButton pRipple icon="pi pi-refresh" class="p-button-rounded p-button-warning p-button-text" pTooltip="إعادة المحاولة" (click)="retryBackup(h.id)"></button>
+                            <a *ngIf="h.googleDriveWebViewLink" [href]="h.googleDriveWebViewLink" target="_blank" pButton pRipple icon="pi pi-external-link" class="p-button-rounded p-button-info p-button-text" pTooltip="عرض في Drive"></a>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="8" class="text-center p-4">لا توجد سجلات نسخ احتياطي مطابقة للبحث.</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </p-card>
+    </div>
+</div>

@@ -37,6 +37,17 @@ namespace SmartPharmacySystem.Controllers
         }
 
         /// <summary>
+        /// Get high-performance cached supplier lookup dataset
+        /// </summary>
+        [HttpGet("lookup")]
+        public async Task<IActionResult> GetLookup()
+        {
+            var suppliers = await _supplierService.GetLookupListAsync();
+            return Ok(ApiResponse<IEnumerable<SupplierDto>>.Succeeded(suppliers, "Supplier lookup dataset retrieved successfully"));
+        }
+
+
+        /// <summary>
         /// Get supplier by ID
         /// </summary>
         /// <access>Admin | Pharmacist</access>

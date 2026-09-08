@@ -126,8 +126,8 @@
           <div class="kpi-main-row">
             <div>
               <span class="kpi-title">الرصيد الدائن المستحق</span>
-              <span class="kpi-value font-mono" [class.debt]="supplier.Balance > 0" [class.clear]="supplier.Balance <= 0">
-                {{ supplier.Balance | number }}
+              <span class="kpi-value font-mono" [class.debt]="(supplier.balance || supplier.Balance || 0) > 0" [class.clear]="(supplier.balance || supplier.Balance || 0) <= 0">
+                {{ (supplier.balance || supplier.Balance || 0) | number }}
                 <span class="kpi-unit">ر.ي</span>
               </span>
             </div>
@@ -137,7 +137,7 @@
           </div>
           <div class="kpi-footer-row">
             <i class="pi pi-info-circle ml-1"></i>
-            <span>{{ supplier.Balance > 0 ? 'ذمم دائنة مستحقة الدفع فوراً' : 'الحساب مصفر وخالص تماماً' }}</span>
+            <span>{{ (supplier.balance || supplier.Balance || 0) > 0 ? 'ذمم دائنة مستحقة الدفع فوراً' : 'الحساب مصفر وخالص تماماً' }}</span>
           </div>
         </div>
 

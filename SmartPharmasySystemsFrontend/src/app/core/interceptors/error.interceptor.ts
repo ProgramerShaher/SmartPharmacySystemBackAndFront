@@ -1,11 +1,11 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { throwError, EMPTY } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../features/auth/services/auth.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
-    const authService = inject(AuthService);
+    const injector = inject(Injector);
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
@@ -17,6 +17,8 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 }
 
                 // Auto logout if 401 Unauthorized for authenticated session requests
+                // Use injector.get() to avoid Circular Dependency with HttpClient
+                const authService = injector.get(AuthService);
                 authService.logout();
                 return EMPTY;
             }

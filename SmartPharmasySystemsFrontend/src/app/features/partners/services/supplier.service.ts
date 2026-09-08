@@ -27,7 +27,34 @@ export class SupplierService {
     public totalSupplierDebt = signal(0);
     public loading = signal(false);
 
+    private lookupCache: Supplier[] | null = null;
+
     constructor(private http: HttpClient) { }
+
+    loadLookupIndex(forceRefresh = false): Observable<Supplier[]> {
+        if (!forceRefresh && this.lookupCache) {
+            return of(this.lookupCache);
+        }
+        return this.http.get<ApiResponse<Supplier[]>>(`${this.apiUrl}/lookup`).pipe(
+            map(res => res.data || []),
+            tap(items => this.lookupCache = items)
+        );
+    }
+
+    searchLocal(query: string): Supplier[] {
+        if (!this.lookupCache || !query) return this.lookupCache || [];
+        const q = query.trim().toLowerCase();
+        return this.lookupCache.filter(s => {
+            const name = s.name || (s as any).Name || '';
+            const phone = s.phoneNumber || (s as any).PhoneNumber || '';
+            return name.toLowerCase().includes(q) || phone.includes(q);
+        });
+    }
+
+    clearLookupCache(): void {
+        this.lookupCache = null;
+    }
+
 
     getAll(query?: SupplierQueryDto): Observable<PagedResult<Supplier>> {
         let params = new HttpParams();
@@ -46,7 +73,7 @@ export class SupplierService {
                 tap(res => {
                     this.suppliers.set(res.items);
                     // Use totalCount from backend if available, or calc local (less accurate for paged)
-                    const total = res.items.reduce((acc, curr) => acc + (curr.Balance || 0), 0);
+                    const total = res.items.reduce((acc, curr) => acc + (curr.balance || curr.Balance || 0), 0);
                     this.totalSupplierDebt.set(total);
                     this.loading.set(false);
                 })
@@ -149,7 +176,7 @@ export class SupplierService {
             .pipe(
                 map(res => {
                     const items = res.data?.items || [];
-                    return items.reduce((sum, s) => sum + (s.Balance || 0), 0);
+                    return items.reduce((sum, s) => sum + (s.balance || s.Balance || 0), 0);
                 }),
                 catchError(() => of(0))
             );

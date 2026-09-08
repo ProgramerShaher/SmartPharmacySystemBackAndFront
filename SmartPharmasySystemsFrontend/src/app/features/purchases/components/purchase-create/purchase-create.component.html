@@ -13,6 +13,7 @@
                             (completeMethod)="searchMedicines($event)" field="name" [(ngModel)]="searchQueryText"
                             [ngModelOptions]="{standalone: true}" (onSelect)="onMedicineSelect($event.value)"
                             placeholder="ابحث عن الدواء بالاسم أو امسح الباركود..." appendTo="body" [forceSelection]="true"
+                            [minLength]="1" [autoHighlight]="true" [showEmptyMessage]="true" emptyMessage="لا يوجد نتائج للبحث"
                             styleClass="custom-p-input header-search-input"></p-autoComplete>
                         <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
                             <i class="pi pi-camera"></i>
@@ -93,18 +94,22 @@
         <p-table [value]="details.value" responsiveLayout="scroll" styleClass="custom-p-table">
             <ng-template pTemplate="header">
                 <tr>
-                    <th style="width: 30%; text-align: right;">الصنف المورد</th>
-                    <th style="text-align: center; width: 18%;">رقم الدفعة</th>
-                    <th style="text-align: center; width: 14%;">الموقع</th>
-                    <th style="text-align: center; width: 12%;">الكمية</th>
+                    <th style="width: 25%; text-align: right;">الصنف المورد</th>
+                    <th style="text-align: center; width: 14%;">الباركود</th>
+                    <th style="text-align: center; width: 15%;">رقم الدفعة</th>
+                    <th style="text-align: center; width: 12%;">الموقع</th>
+                    <th style="text-align: center; width: 10%;">الكمية</th>
                     <th style="text-align: right; width: 12%;">سعر الشراء</th>
-                    <th style="text-align: right; width: 14%;">الإجمالي</th>
+                    <th style="text-align: right; width: 12%;">الإجمالي</th>
                     <th style="width: 80px; text-align: center;" *ngIf="!isReadOnly">الإجراءات</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item let-i="rowIndex">
                 <tr (click)="!isReadOnly && editItem(i)" class="table-row-item">
                     <td style="font-weight: 700; color: #0f172a; text-align: right;">{{ item.medicineName }}</td>
+                    <td style="text-align: center;">
+                        <span class="badge-barcode"><i class="pi pi-barcode"></i> {{ item.barcode || '-' }}</span>
+                    </td>
                     <td style="text-align: center;">
                         <span class="badge-batch">{{ item.companyBatchNumber || '-' }}</span>
                     </td>
@@ -137,7 +142,7 @@
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="7" class="empty-state">
+                    <td colspan="8" class="empty-state">
                         <span class="empty-icon"><i class="pi pi-box"></i></span>
                         <div>لا توجد أصناف في الفاتورة بعد</div>
                         <div class="empty-sub">استخدم حقل "اختيار الدواء" بالأعلى لإضافة الأصناف بسرعة</div>

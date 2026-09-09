@@ -99,6 +99,9 @@ namespace SmartPharmacySystem.Infrastructure
         private IPharmacySettingsRepository? _pharmacySettings;
         public IPharmacySettingsRepository PharmacySettings => _pharmacySettings ??= new PharmacySettingsRepository(_context);
 
+        private IBusinessProfileRepository? _businessProfiles;
+        public IBusinessProfileRepository BusinessProfiles => _businessProfiles ??= new BusinessProfileRepository(_context);
+
         private IEmployeeRepository? _employees;
         public IEmployeeRepository Employees => _employees ??= new EmployeeRepository(_context);
 

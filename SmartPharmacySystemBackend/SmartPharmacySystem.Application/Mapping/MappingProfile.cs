@@ -536,6 +536,10 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<PharmacySettings, PharmacySettingsDto>().ReverseMap();
             CreateMap<UpdatePharmacySettingsDto, PharmacySettings>();
 
+            // Business Profile Mappings
+            CreateMap<BusinessProfile, BusinessProfileDto>().ReverseMap();
+            CreateMap<UpdateBusinessProfileDto, BusinessProfile>();
+
             // ==================== Multi-Branch & Inventory Mappings ====================
 
             // Branch Mappings

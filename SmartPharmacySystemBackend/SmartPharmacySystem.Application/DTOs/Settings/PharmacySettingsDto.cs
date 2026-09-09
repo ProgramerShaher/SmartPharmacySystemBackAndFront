@@ -15,6 +15,9 @@ public class PharmacySettingsDto
     public string? Website { get; set; }
     public string BaseCurrency { get; set; } = string.Empty;
     public string? InvoiceWelcomeMessage { get; set; }
+    public SmartPharmacySystem.Core.Enums.BusinessType BusinessType { get; set; } = SmartPharmacySystem.Core.Enums.BusinessType.Pharmacy;
+    public int? BusinessProfileId { get; set; }
+    public BusinessProfileDto? BusinessProfile { get; set; }
 }
 
 public class UpdatePharmacySettingsDto
@@ -30,4 +33,5 @@ public class UpdatePharmacySettingsDto
     public string? Website { get; set; }
     public string BaseCurrency { get; set; } = string.Empty;
     public string? InvoiceWelcomeMessage { get; set; }
+    public SmartPharmacySystem.Core.Enums.BusinessType? BusinessType { get; set; }
 }

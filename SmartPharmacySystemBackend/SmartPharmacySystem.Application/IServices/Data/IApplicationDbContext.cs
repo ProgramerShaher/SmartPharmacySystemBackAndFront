@@ -8,6 +8,7 @@ public interface IApplicationDbContext
     DbSet<User> Users { get; }
     DbSet<Role> Roles { get; }
     DbSet<Category> Categories { get; }
+    DbSet<BusinessProfile> BusinessProfiles { get; }
     DbSet<Medicine> Medicines { get; }
     DbSet<MedicineBatch> MedicineBatches { get; }
     DbSet<Supplier> Suppliers { get; }

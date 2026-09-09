@@ -123,6 +123,7 @@ builder.Services.AddScoped<IStockTransferItemRepository, StockTransferItemReposi
 builder.Services.AddScoped<IMedicineWarehouseConfigRepository, MedicineWarehouseConfigRepository>();
 builder.Services.AddScoped<IWarehouseRepository, WarehouseRepository>();
 builder.Services.AddScoped<IPharmacySettingsRepository, PharmacySettingsRepository>();
+builder.Services.AddScoped<IBusinessProfileRepository, BusinessProfileRepository>();
 builder.Services.AddScoped<IInvoiceSequenceRepository, InvoiceSequenceRepository>();
 builder.Services.AddScoped<IBackupConfigRepository, BackupConfigRepository>();
 builder.Services.AddScoped<IBackupHistoryRepository, BackupHistoryRepository>();
@@ -174,6 +175,7 @@ builder.Services.AddScoped<IBackupStateService, BackupStateService>();
 builder.Services.AddScoped<IBackupRetentionService, BackupRetentionService>();
 builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddScoped<IPharmacySettingsService, PharmacySettingsService>();
+builder.Services.AddScoped<IBusinessProfileService, BusinessProfileService>();
 builder.Services.AddHttpClient<IWhatsAppNotificationService, WhatsAppNotificationService>();
 
 // -------------------- HR & Payroll Services --------------------

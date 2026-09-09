@@ -1,4 +1,4 @@
-﻿# 📘 PROJECT_MASTER.md — وثيقة المشروع الشاملة
+# 📘 PROJECT_MASTER.md — وثيقة المشروع الشاملة
 ## نظام إدارة الأعمال التجارية المتكامل (Smart Commercial ERP)
 
 > **⚠️ هذه الوثيقة هي المرجع الأول والوحيد لأي شخص أو ذكاء اصطناعي يعمل على هذا المشروع.**
@@ -118,13 +118,13 @@ D:\MyPharmacyProject\
 ### المرحلة الأولى — الأساس (الأولوية القصوى)
 | # | المهمة | الحالة |
 |:---:|:---|:---:|
-| 1.1 | إنشاء BusinessType enum | ⬜ لم يبدأ |
-| 1.2 | إنشاء BusinessProfile entity | ⬜ لم يبدأ |
-| 1.3 | إضافة BusinessProfile لـ PharmacySettings | ⬜ لم يبدأ |
-| 1.4 | إضافة DbSet للـ DbContext | ⬜ لم يبدأ |
-| 1.5 | IBusinessProfileService + BusinessProfileService | ⬜ لم يبدأ |
-| 1.6 | BusinessProfileController | ⬜ لم يبدأ |
-| 1.7 | EF Migration للجدول الجديد | ⬜ لم يبدأ |
+| 1.1 | إنشاء BusinessType enum | ✅ مكتمل |
+| 1.2 | إنشاء BusinessProfile entity | ✅ مكتمل |
+| 1.3 | إضافة BusinessProfile لـ PharmacySettings | ✅ مكتمل |
+| 1.4 | إضافة DbSet للـ DbContext | ✅ مكتمل |
+| 1.5 | IBusinessProfileService + BusinessProfileService | ✅ مكتمل |
+| 1.6 | BusinessProfileController | ✅ مكتمل |
+| 1.7 | EF Migration للجدول الجديد | ✅ مكتمل |
 | 1.8 | تحميل Profile في Angular Store | ⬜ لم يبدأ |
 | 1.9 | تحويل Quantity من int الى decimal | ⬜ لم يبدأ |
 | 1.10 | إصلاح منطق IsPaid في سند القبض | ⬜ لم يبدأ |
@@ -342,10 +342,20 @@ Migrations الموجودة لا تُعدّل أبداً. أنشئ Migration ج�
 | 2026-09-08 | إنشاء مصفوفة متطلبات تفصيلية لكل نشاط |
 | 2026-09-09 | الاتفاق على نظام BusinessProfile كمحور للتكيف |
 | 2026-09-09 | وضع قواعد العمل وإنشاء هذه الوثيقة |
+| 2026-09-09 | تنفيذ المهام 1.1 إلى 1.7: بناء نظام BusinessProfile في الـ Backend وتطبيق الـ Migration |
 
-### ملاحظة مهمة:
-لم يُنفَّذ أي شيء من المرحلة الأولى بعد.
-آخر شيء تم: إنشاء ملف BusinessType.cs ثم حذفه لأن الموافقة لم تكن قد أُخذت.
+### ما تم إنجازه في المرحلة الأولى:
+- تم إنشاء Enum الـ `BusinessType` لـ 10 أنشطة تجارية.
+- تم إنشاء Enum الـ `InvoicePrintTemplate` لقوالب الطباعة (Thermal80mm, A4Formal, A4Simple).
+- تم إنشاء Entity الـ `BusinessProfile` بجميع الحقول والسياسات.
+- تم ربط `PharmacySettings` بـ `BusinessProfile` بنجاح دون التأثير على بيانات الصيدلية السابقة.
+- تم إنشاء `IBusinessProfileRepository` و `BusinessProfileRepository` وربطهما في `UnitOfWork`.
+- تم إضافة `DbSet<BusinessProfile>` في `ApplicationDbContext` و `IApplicationDbContext`.
+- تم إنشاء DTOs الـ `BusinessProfileDto` و `UpdateBusinessProfileDto` وربطهما في AutoMapper.
+- تم إنشاء `IBusinessProfileService` و `BusinessProfileService` مع مولد القوالب الافتراضية للأنشطة الـ 10.
+- تم إنشاء `BusinessProfileController` وتوفير Endpoints الاستعلام والتبديل والتخصيص.
+- تم تطبيق EF Core Migration `AddBusinessProfileSystem` بنجاح وتحديث قاعدة البيانات.
+- تم بناء كامل الـ Solution بنجاح: 0 Errors.
 
 ---
 
@@ -354,9 +364,9 @@ Migrations الموجودة لا تُعدّل أبداً. أنشئ Migration ج�
 اقرأ هذه الوثيقة بالكامل قبل أي عمل.
 
 ### الوضع الحالي 2026-09-09:
-- مرحلة التخطيط مكتملة
-- لم يُنفَّذ أي شيء من المرحلة الأولى
-- النظام الحالي يعمل ولا يجب كسره
+- المهام من 1.1 إلى 1.7 مكتملة في الـ Backend وقاعدة البيانات محدثة.
+- المهمة التالية: **1.8 تحميل Profile في Angular Store** لربط الواجهة الأمامية بالملف.
+- النظام الحالي يعمل بكل أمان وتوافق كامل.
 
 ### ما يجب فعله عند البدء:
 1. اقرأ هذه الوثيقة كاملاً

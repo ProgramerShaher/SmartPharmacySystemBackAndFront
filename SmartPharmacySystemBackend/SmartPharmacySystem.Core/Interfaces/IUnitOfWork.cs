@@ -35,6 +35,7 @@ public interface IUnitOfWork
     IJournalEntryRepository JournalEntries { get; }
     IChequeRepository Cheques { get; }
     IPharmacySettingsRepository PharmacySettings { get; }
+    IBusinessProfileRepository BusinessProfiles { get; }
     IEmployeeRepository Employees { get; }
     IDepartmentRepository Departments { get; }
     IAttendanceRepository Attendances { get; }

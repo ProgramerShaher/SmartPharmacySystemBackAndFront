@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Entities;
 
@@ -51,4 +52,20 @@ public class PharmacySettings : BaseEntity
     /// </summary>
     [MaxLength(512)]
     public string? LicenseKey { get; set; }
+
+    // ── Business Type & Profile ───────────────────────────────────────────
+    /// <summary>
+    /// نوع النشاط التجاري للمنشأة (صيدلية، سوبرماركت، ملابس، إلخ)
+    /// </summary>
+    public BusinessType BusinessType { get; set; } = BusinessType.Pharmacy;
+
+    /// <summary>
+    /// المعرف الفريد لملف إعدادات النشاط التجاري المعتمد
+    /// </summary>
+    public int? BusinessProfileId { get; set; }
+
+    /// <summary>
+    /// ملف إعدادات النشاط التجاري المعتمد
+    /// </summary>
+    public virtual BusinessProfile? BusinessProfile { get; set; }
 }

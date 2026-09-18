@@ -6,7 +6,7 @@
             <h2><i class="pi pi-cog text-primary"></i> إعدادات الصيدلية</h2>
             <p>إدارة بيانات المؤسسة، الهوية، ومعلومات التواصل</p>
         </div>
-        <button pButton icon="pi pi-check" label="حفظ التغييرات" class="p-button-sm p-button-primary shadow-2"
+        <button *ngIf="activeTab !== 'businessType'" pButton icon="pi pi-check" label="حفظ التغييرات" class="p-button-sm p-button-primary shadow-2"
             (click)="saveSettings()" [loading]="isSaving"></button>
     </div>
 
@@ -26,12 +26,16 @@
                     <i class="pi pi-file-check"></i>
                     <span>البيانات الضريبية</span>
                 </li>
+                <li [class.active]="activeTab === 'businessType'" (click)="activeTab = 'businessType'">
+                    <i class="pi pi-sliders-h"></i>
+                    <span>نمط النشاط التجاري</span>
+                </li>
             </ul>
         </div>
 
         <!-- Main Content Area -->
         <div class="settings-content surface-card shadow-1 border-round-xl border-1 surface-border">
-            <form [formGroup]="settingsForm" class="p-fluid form-compact">
+            <form *ngIf="activeTab !== 'businessType'" [formGroup]="settingsForm" class="p-fluid form-compact">
                 
                 <!-- 1. Identity Tab -->
                 <div class="tab-panel fade-in" *ngIf="activeTab === 'identity'">
@@ -153,6 +157,11 @@
                 </div>
 
             </form>
+
+            <!-- 4. Business Type & Policies Tab -->
+            <div class="tab-panel fade-in" *ngIf="activeTab === 'businessType'">
+                <app-business-profile-settings></app-business-profile-settings>
+            </div>
         </div>
     </div>
 

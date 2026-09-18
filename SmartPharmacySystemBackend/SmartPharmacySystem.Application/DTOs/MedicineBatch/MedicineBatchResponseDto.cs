@@ -48,21 +48,21 @@ public class MedicineBatchResponseDto
     /// إجمالي الكمية المشتراة في هذه الدفعة.
     /// </summary>
     /// <example>100</example>
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Remaining quantity available for sale.
     /// الكمية المتبقية المتاحة للبيع.
     /// </summary>
     /// <example>75</example>
-    public int RemainingQuantity { get; set; }
+    public decimal RemainingQuantity { get; set; }
 
     /// <summary>
     /// Quantity that has been sold.
     /// الكمية التي تم بيعها.
     /// </summary>
     /// <example>25</example>
-    public int SoldQuantity { get; set; }
+    public decimal SoldQuantity { get; set; }
 
     /// <summary>
     /// Expiry date of the batch.

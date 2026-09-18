@@ -41,8 +41,8 @@ public class MedicineBatchCreateDto : IValidatableObject
     /// </summary>
     /// <example>100</example>
     [Required(ErrorMessage = "Quantity is required | الكمية مطلوبة")]
-    [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0 | الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; }
+    [Range(0.0001, double.MaxValue, ErrorMessage = "Quantity must be greater than 0 | الكمية يجب أن تكون أكبر من صفر")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Expiry date of the batch.

@@ -103,7 +103,7 @@ public interface IMedicineBatchService
     /// <param name="quantity">Quantity to sell</param>
     /// <param name="userId">User performing the sale</param>
     /// <returns>Sale result with batch details used</returns>
-    Task<BatchSaleResultDto> SellFromBatchFIFOAsync(int medicineId, int quantity, int userId);
+    Task<BatchSaleResultDto> SellFromBatchFIFOAsync(int medicineId, decimal quantity, int userId);
 
     /// <summary>
     /// Sells from a specific batch by ID.
@@ -113,13 +113,13 @@ public interface IMedicineBatchService
     /// <param name="quantity">Quantity to sell</param>
     /// <param name="userId">User performing the sale</param>
     /// <returns>Updated batch response</returns>
-    Task<MedicineBatchResponseDto> SellFromBatchAsync(int batchId, int quantity, int userId);
+    Task<MedicineBatchResponseDto> SellFromBatchAsync(int batchId, decimal quantity, int userId);
 
     /// <summary>
     /// Returns quantity to a batch (e.g., for sales returns).
     /// يرجع الكمية إلى دفعة (مثلاً لمرتجعات المبيعات).
     /// </summary>
-    Task<MedicineBatchResponseDto> ReturnToBatchAsync(int batchId, int quantity, int userId);
+    Task<MedicineBatchResponseDto> ReturnToBatchAsync(int batchId, decimal quantity, int userId);
 
     /// <summary>
     /// Marks a batch as damaged.
@@ -151,13 +151,13 @@ public interface IMedicineBatchService
     /// Gets total available quantity for a medicine.
     /// يحصل على إجمالي الكمية المتاحة لدواء.
     /// </summary>
-    Task<int> GetTotalAvailableQuantityAsync(int medicineId);
+    Task<decimal> GetTotalAvailableQuantityAsync(int medicineId);
 
     /// <summary>
     /// Validates if a batch can be sold from.
     /// يتحقق مما إذا كان يمكن البيع من دفعة.
     /// </summary>
-    Task<BatchValidationResultDto> ValidateBatchForSaleAsync(int batchId, int quantity);
+    Task<BatchValidationResultDto> ValidateBatchForSaleAsync(int batchId, decimal quantity);
 }
 
 /// <summary>
@@ -182,7 +182,7 @@ public class BatchSaleResultDto
     /// Total quantity sold.
     /// إجمالي الكمية المباعة.
     /// </summary>
-    public int TotalQuantitySold { get; set; }
+    public decimal TotalQuantitySold { get; set; }
 
     /// <summary>
     /// Details of each batch used in the sale.
@@ -213,7 +213,7 @@ public class BatchSaleDetailDto
     /// Quantity sold from this batch.
     /// الكمية المباعة من هذه الدفعة.
     /// </summary>
-    public int QuantitySold { get; set; }
+    public decimal QuantitySold { get; set; }
 
 
 
@@ -227,7 +227,7 @@ public class BatchSaleDetailDto
     /// Remaining quantity after sale.
     /// الكمية المتبقية بعد البيع.
     /// </summary>
-    public int RemainingQuantity { get; set; }
+    public decimal RemainingQuantity { get; set; }
 }
 
 /// <summary>
@@ -252,5 +252,5 @@ public class BatchValidationResultDto
     /// Available quantity in the batch.
     /// الكمية المتاحة في الدفعة.
     /// </summary>
-    public int AvailableQuantity { get; set; }
+    public decimal AvailableQuantity { get; set; }
 }

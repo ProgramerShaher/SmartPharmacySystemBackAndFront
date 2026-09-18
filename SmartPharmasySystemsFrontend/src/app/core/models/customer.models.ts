@@ -25,6 +25,7 @@ export interface CustomerReceipt {
     receiptDate: string;
     paymentMethod: string;
     referenceNo?: string;
+    saleInvoiceId?: number;
     notes?: string;
     createdBy: number;
     createdByName?: string;

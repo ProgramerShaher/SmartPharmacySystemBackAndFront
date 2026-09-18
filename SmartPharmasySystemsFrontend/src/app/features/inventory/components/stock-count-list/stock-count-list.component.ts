@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormsModule } from '@angular/forms';
 import { StockCountService } from '../../services/stock-count.service';
 import { TableModule } from 'primeng/table';
+import { PaginatorModule } from 'primeng/paginator';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
@@ -27,6 +28,7 @@ import { BranchService } from '../../../branches/services/branch.service';
     ReactiveFormsModule,
     FormsModule,
     TableModule,
+    PaginatorModule,
     ButtonModule,
     InputTextModule,
     DropdownModule,
@@ -48,6 +50,11 @@ export class StockCountListComponent implements OnInit {
   warehouses: WarehouseDto[] = [];
   filterForm: FormGroup;
   isLoading = false;
+  viewMode: 'table' | 'grid' = 'table';
+
+  setViewMode(mode: 'table' | 'grid'): void {
+    this.viewMode = mode;
+  }
 
   StockCountStatus = StockCountStatus;
   StockCountType = StockCountType;

@@ -1,125 +1,300 @@
-<div class="card" dir="rtl">
-    <!-- Header -->
-    <div class="header">
-        <div class="header-left">
-            <span class="status-badge">مرتجع جديد</span>
-            <h1 class="header-title">إضافة مرتجع مشتريات</h1>
+<p-dialog [(visible)]="visible" [modal]="true" [style]="{width: '1180px', maxWidth: '96vw'}"
+    [breakpoints]="{'1200px': '92vw', '960px': '95vw', '640px': '98vw'}" [draggable]="false" [resizable]="false"
+    [showHeader]="false" styleClass="return-modal-dialog" appendTo="body" dir="rtl" (onHide)="close()">
+
+    <div class="return-modal-wrapper" dir="rtl">
+        <p-toast position="top-left"></p-toast>
+
+        <!-- 🎩 Header -->
+        <div class="modal-header">
+            <div class="header-right-side">
+                <div class="icon-circle purchase-theme">
+                    <i class="pi pi-arrow-circle-left"></i>
+                </div>
+                <div>
+                    <div class="title-with-badge">
+                        <h2 class="modal-title">إضافة مرتجع مشتريات (للمورد)</h2>
+                        <span class="status-chip draft">مسودة مرتجع</span>
+                    </div>
+                    <p class="modal-subtitle">إرجاع بضائع وتوريدات لمردودات الموردين وتسوية أرصدة الحسابات والمخزن آلياً</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <!-- أزرار سريعة للمرتجع -->
+                <button *ngIf="selectedInvoice && details.length > 0" type="button" class="btn-quick-action return-all-btn"
+                    (click)="returnAllAvailable()" pTooltip="إرجاع كامل المتاح في المخزن [F4]" tooltipPosition="bottom">
+                    <i class="pi pi-check-circle"></i>
+                    <span>إرجاع المتاح <kbd>F4</kbd></span>
+                </button>
+
+                <button *ngIf="selectedInvoice && details.length > 0" type="button" class="btn-quick-action reset-btn"
+                    (click)="resetQuantities()" pTooltip="تصفير الكميات [F5]" tooltipPosition="bottom">
+                    <i class="pi pi-refresh"></i>
+                    <span>تصفير <kbd>F5</kbd></span>
+                </button>
+
+                <button type="button" class="btn-quick-action help-btn" (click)="shortcutsHelpVisible = !shortcutsHelpVisible"
+                    pTooltip="دليل الاختصارات [F1]" tooltipPosition="bottom">
+                    <i class="pi pi-question-circle"></i>
+                    <kbd>F1</kbd>
+                </button>
+
+                <button type="button" class="btn-modal-close" (click)="close()" pTooltip="إغلاق [Esc]" tooltipPosition="bottom">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
         </div>
-        <button class="btn-close" (click)="goBack()" pTooltip="إغلاق">
-            <i class="pi pi-times"></i>
-        </button>
-    </div>
 
-    <!-- القسم الأول: البيانات الأساسية -->
-    <form [formGroup]="returnForm">
-        <div class="grid-container p-fluid">
-            <div class="input-group">
-                <label>بحث عن فاتورة التوريد (المعتمدة) <span class="text-red-500">*</span></label>
-                <p-autoComplete formControlName="invoice" [suggestions]="filteredInvoices"
-                    (completeMethod)="searchInvoices($event)" field="purchaseInvoiceNumber"
-                    placeholder="رقم الفاتورة أو المورد..." [dropdown]="true" (onSelect)="onInvoiceSelect($event)"
-                    appendTo="body" styleClass="custom-p-input return-autocomplete"></p-autoComplete>
-            </div>
-
-            <div class="input-group">
-                <label>تاريخ المرتجع <span class="text-red-500">*</span></label>
-                <p-calendar formControlName="returnDate" [showIcon]="false" appendTo="body" dateFormat="dd/mm/yy"
-                    placeholder="التاريخ" styleClass="custom-p-input"></p-calendar>
-            </div>
-
-            <div class="input-group" style="grid-column: span 2;">
-                <label>سبب الإرجاع <span class="text-red-500">*</span></label>
-                <input type="text" formControlName="reason" placeholder="مثال: منتهي، تألف، خطأ في الصنف..."
-                    class="custom-native-input" />
+        <!-- 🔍 قسم البحث عن فاتورة التوريد -->
+        <div class="invoice-selection-bar" *ngIf="!selectedInvoice">
+            <div class="search-input-wrapper">
+                <label for="purchaseReturnInvoiceSearch" class="field-label">
+                    <i class="pi pi-search"></i>
+                    البحث عن فاتورة التوريد والشراء المعتمدة <span class="required-star">*</span>
+                </label>
+                <div class="p-fluid">
+                    <p-autoComplete [(ngModel)]="returnForm.value.invoice" [suggestions]="filteredInvoices"
+                        (completeMethod)="searchInvoices($event)" (onSelect)="onInvoiceSelect($event)"
+                        field="purchaseInvoiceNumber" placeholder="اكتب رقم فاتورة التوريد أو اسم المورد..."
+                        inputId="purchaseReturnInvoiceSearch" [minLength]="1" [autoHighlight]="true"
+                        styleClass="custom-p-input invoice-search-ac" appendTo="body">
+                        <ng-template let-invoice pTemplate="item">
+                            <div class="invoice-search-result-row">
+                                <div class="invoice-info-main">
+                                    <div class="invoice-number">
+                                        <i class="pi pi-box"></i>
+                                        #{{ invoice.purchaseInvoiceNumber }}
+                                    </div>
+                                    <div class="customer-name">
+                                        <i class="pi pi-truck"></i>
+                                        {{ invoice.supplierName || 'مورد عام' }}
+                                    </div>
+                                </div>
+                                <div class="invoice-info-meta">
+                                    <div class="invoice-amount">{{ invoice.totalAmount | number:'1.2-2' }} ر.ي</div>
+                                    <div class="invoice-date">{{ invoice.purchaseDate | date:'dd/MM/yyyy' }}</div>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </p-autoComplete>
+                </div>
             </div>
         </div>
-    </form>
 
-    <!-- الجدول -->
-    <div class="table-container custom-p-table" *ngIf="selectedInvoice">
-        <p-table [value]="details" styleClass="p-datatable-sm" responsiveLayout="scroll">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th style="text-align: right;">الصنف</th>
-                    <th style="text-align: center;">الدفعة</th>
-                    <th style="text-align: center;">حالة البيع</th>
-                    <th style="text-align: center;">المتاح للإرجاع</th>
-                    <th style="text-align: center; color: #ef4444;">الكمية المرتجعة</th>
-                    <th style="text-align: left;">سعر التوريد</th>
-                    <th style="text-align: left;">قيمة المرتجع</th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item>
-                <tr class="item-row" [ngClass]="{'grayscale': item.maxReturnQty === 0}">
-                    <td style="font-weight: 500;">
-                        {{item.medicineName}}
-                    </td>
-                    <td style="text-align: center;">
-                        <div class="flex flex-column align-items-center">
-                            <span class="batch-tag indigo mb-1">{{item.companyBatchNumber}}</span>
-                            <small class="text-xs"
-                                [ngClass]="item.expiryStatus === 'Expired' ? 'text-red-500 font-bold' : 'text-500'">
-                                {{item.expiryDate | date:'MM/yy'}}
+        <!-- 📑 شريط الفاتورة المختارة -->
+        <div class="selected-invoice-strip" *ngIf="selectedInvoice">
+            <div class="invoice-info-card">
+                <div class="info-group">
+                    <span class="info-label">رقم فاتورة التوريد</span>
+                    <span class="info-val font-mono">#{{ selectedInvoice.purchaseInvoiceNumber }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">المورد</span>
+                    <span class="info-val">{{ selectedInvoice.supplierName }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">تاريخ التوريد</span>
+                    <span class="info-val">{{ selectedInvoice.purchaseDate | date:'dd/MM/yyyy' }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">إجمالي الفاتورة</span>
+                    <span class="info-val text-primary">{{ selectedInvoice.totalAmount | number:'1.2-2' }} ر.ي</span>
+                </div>
+            </div>
+
+            <button type="button" class="btn-change-invoice" (click)="selectedInvoice = null; details = []" pTooltip="اختيار فاتورة أخرى">
+                <i class="pi pi-sync"></i>
+                تغيير الفاتورة
+            </button>
+        </div>
+
+        <!-- 📝 بيانات المردود: التاريخ والسبب -->
+        <form [formGroup]="returnForm" *ngIf="selectedInvoice">
+            <div class="fields-grid">
+                <div class="form-field-box">
+                    <label for="purchaseReturnDate" class="field-label">
+                        تاريخ المردود <span class="required-star">*</span>
+                    </label>
+                    <p-calendar formControlName="returnDate" [showIcon]="false" dateFormat="dd/mm/yy" appendTo="body"
+                        inputId="purchaseReturnDate" styleClass="custom-p-input"
+                        (keydown.enter)="purchaseReturnReason.focus()"></p-calendar>
+                </div>
+
+                <div class="form-field-box span-2">
+                    <label for="purchaseReturnReason" class="field-label">
+                        سبب الإرجاع للمورد <span class="required-star">*</span>
+                    </label>
+                    <input #purchaseReturnReason pInputText id="purchaseReturnReason" formControlName="reason"
+                        placeholder="مثال: منتهي الصلاحية، تالف أثناء الشحن، خطأ في تسعيرة المورد..."
+                        class="custom-native-input"
+                        (keydown.enter)="focusRowQuantity(0)" />
+                </div>
+            </div>
+        </form>
+
+        <!-- 📦 جدول الأصناف المتاحة للإرجاع -->
+        <div class="table-card" *ngIf="selectedInvoice">
+            <p-table [value]="details" responsiveLayout="scroll" styleClass="custom-return-table" [scrollable]="true" scrollHeight="320px">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 28%; text-align: right;">الصنف</th>
+                        <th style="width: 14%; text-align: center;">الدفعة / الصلاحية</th>
+                        <th style="width: 12%; text-align: center;">حالة الصرف</th>
+                        <th style="width: 12%; text-align: center;">المتاح للإرجاع</th>
+                        <th style="width: 14%; text-align: center;">الكمية المرتجعة</th>
+                        <th style="width: 10%; text-align: left;">سعر التوريد</th>
+                        <th style="width: 10%; text-align: left;">قيمة المردود</th>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="body" let-item let-i="rowIndex">
+                    <tr [class.row-has-return]="item.returnQty > 0" [class.row-disabled]="item.maxReturnQty === 0">
+                        <!-- الصنف -->
+                        <td style="text-align: right;">
+                            <div class="medicine-name-title">{{ item.medicineName }}</div>
+                        </td>
+
+                        <!-- الدفعة -->
+                        <td style="text-align: center;">
+                            <div class="batch-badge">
+                                <i class="pi pi-tag"></i>
+                                {{ item.companyBatchNumber || 'افتراضية' }}
+                            </div>
+                            <small class="expiry-text" *ngIf="item.expiryDate">
+                                {{ item.expiryDate | date:'MM/yy' }}
                             </small>
-                        </div>
-                    </td>
-                    <td style="text-align: center;">
-                        <span *ngIf="item.loadingBatch"><i class="pi pi-spin pi-spinner opacity-50"></i></span>
-                        <p-tag *ngIf="!item.loadingBatch" [severity]="item.batchSoldQty > 0 ? 'danger' : 'success'"
-                            [value]="item.batchSoldQty > 0 ? (item.batchSoldQty + ' مباع') : 'لم يباع'"
-                            styleClass="shadow-sm"></p-tag>
-                    </td>
-                    <td style="text-align: center;">
-                        <span style="font-weight: 700;"
-                            [ngClass]="item.maxReturnQty > 0 ? 'text-teal-600' : 'text-gray-400'">
-                            {{item.maxReturnQty}}
-                        </span>
-                    </td>
-                    <td style="text-align: center; padding: 6px !important;">
-                        <div class="flex justify-content-center">
-                            <p-inputNumber [(ngModel)]="item.returnQty" [min]="0" [max]="item.maxReturnQty"
-                                [disabled]="item.maxReturnQty === 0" [showButtons]="true" buttonLayout="horizontal"
-                                spinnerMode="horizontal" incrementButtonIcon="pi pi-plus"
-                                decrementButtonIcon="pi pi-minus" styleClass="return-input-number"
-                                (onInput)="calculateTotal()"></p-inputNumber>
-                        </div>
-                    </td>
-                    <td style="text-align: left;">
-                        {{ item.purchasePrice | number:'1.0-2' }}
-                    </td>
-                    <td style="text-align: left; font-weight: 700; color: #ef4444;">
-                        {{ (item.returnQty * item.purchasePrice) | number:'1.0-2' }}
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-    </div>
+                        </td>
 
-    <!-- Empty State -->
-    <div class="empty-state" *ngIf="!selectedInvoice">
-        <i class="pi pi-search empty-icon"></i>
-        <p>يرجى البحث عن فاتورة توريد سابقة للبدء</p>
-    </div>
+                        <!-- حالة البيع والصرف -->
+                        <td style="text-align: center;">
+                            <span *ngIf="item.loadingBatch"><i class="pi pi-spin pi-spinner text-xs"></i></span>
+                            <span *ngIf="!item.loadingBatch" class="status-pill" [class.sold]="item.batchSoldQty > 0" [class.not-sold]="item.batchSoldQty === 0">
+                                {{ item.batchSoldQty > 0 ? ('مباع (' + item.batchSoldQty + ')') : 'متاح بالكامل' }}
+                            </span>
+                        </td>
 
-    <!-- التذييل والإجراءات -->
-    <div class="footer">
-        <div class="footer-stats">
-            <span class="stat-badge stat-items">قيمة التسوية: <span class="stat-number">{{ totalReturnAmount |
-                    number:'1.0-0' }} ر.ي</span></span>
-            <span class="stat-badge stat-qty" *ngIf="selectedInvoice">المورد: <span class="stat-number">{{
-                    selectedInvoice.supplierName }}</span></span>
+                        <!-- المتاح للإرجاع -->
+                        <td style="text-align: center;">
+                            <span class="qty-pill available" [class.zero]="item.maxReturnQty === 0">
+                                {{ item.maxReturnQty }}
+                            </span>
+                        </td>
+
+                        <!-- كمية المرتجع مع التنقل السلس بالكيبورد -->
+                        <td style="text-align: center;" (click)="$event.stopPropagation()">
+                            <p-inputNumber [(ngModel)]="item.returnQty" (ngModelChange)="calculateTotal()"
+                                [min]="0" [max]="item.maxReturnQty" [showButtons]="false"
+                                [disabled]="item.maxReturnQty === 0"
+                                [inputId]="'p_return_qty_' + i"
+                                (keydown)="onQtyKeydown(i, $event)"
+                                styleClass="custom-p-input qty-input"
+                                inputStyleClass="text-center font-bold return-qty-input-field">
+                            </p-inputNumber>
+                        </td>
+
+                        <!-- سعر التوريد -->
+                        <td style="text-align: left; font-weight: 600;">
+                            {{ item.purchasePrice | number:'1.2-2' }}
+                        </td>
+
+                        <!-- القيمة الإجمالية للمردود -->
+                        <td style="text-align: left; font-weight: 800; color: var(--danger-color, #ef4444);">
+                            {{ ((item.returnQty || 0) * item.purchasePrice) | number:'1.2-2' }} <small>ر.ي</small>
+                        </td>
+                    </tr>
+                </ng-template>
+
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="7" class="table-empty-notice">
+                            <i class="pi pi-box"></i>
+                            لا توجد أصناف في فاتورة التوريد هذه
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
         </div>
-        <div class="footer-actions">
-            <button type="button" class="btn btn-outline" (click)="saveReturn(false)" [disabled]="saving">
-                <i class="pi pi-save"></i> حفظ كمسودة
-            </button>
-            <button type="button" class="btn btn-primary" (click)="saveReturn(true)"
-                [disabled]="totalReturnAmount <= 0 || saving">
-                <i class="pi pi-check-circle"></i> اعتماد المردود
-            </button>
-        </div>
-    </div>
-</div>
 
-<p-confirmDialog [dir]="'rtl'"></p-confirmDialog>
-<p-toast></p-toast>
+        <!-- حالة فارغة قبل اختيار الفاتورة -->
+        <div class="empty-state-card" *ngIf="!selectedInvoice">
+            <div class="empty-icon-box">
+                <i class="pi pi-truck"></i>
+            </div>
+            <h3>الرجاء تحديد فاتورة التوريد للبدء</h3>
+            <p>ابحث برقم فاتورة الشراء أو اسم المورد أعلاه لعرض الدفعات والكميات المتاحة للإرجاع للمورد.</p>
+        </div>
+
+        <!-- 🏁 Modal Footer -->
+        <div class="modal-footer">
+            <div class="footer-stats-chips">
+                <div class="stat-chip">
+                    <span class="stat-label">أصناف المردود:</span>
+                    <span class="stat-value font-mono">{{ totalReturnPieces > 0 ? (details | slice:0).length : 0 }}</span>
+                </div>
+                <div class="stat-chip">
+                    <span class="stat-label">إجمالي القطع المرتجعة:</span>
+                    <span class="stat-value font-mono">{{ totalReturnPieces }}</span>
+                </div>
+                <div class="stat-chip total-amount-chip">
+                    <span class="stat-label">قيمة التسوية مع المورد:</span>
+                    <span class="stat-value highlight">{{ totalReturnAmount | number:'1.2-2' }} ر.ي</span>
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <button type="button" class="btn-footer btn-cancel" (click)="close()">
+                    <i class="pi pi-times"></i>
+                    إلغاء [Esc]
+                </button>
+
+                <button type="button" class="btn-footer btn-draft" (click)="saveReturn(false)"
+                    [disabled]="saving || !selectedInvoice || totalReturnAmount <= 0">
+                    <i class="pi pi-save"></i>
+                    حفظ مسودة <kbd>F3</kbd>
+                </button>
+
+                <button id="purchaseReturnApproveBtn" type="button" class="btn-footer btn-approve" (click)="saveReturn(true)"
+                    [disabled]="saving || !selectedInvoice || totalReturnAmount <= 0">
+                    <i class="pi pi-check-circle"></i>
+                    اعتماد المردود <kbd>F2</kbd>
+                </button>
+            </div>
+        </div>
+
+        <!-- دليل الاختصارات F1 -->
+        <p-dialog [(visible)]="shortcutsHelpVisible" [modal]="true" [style]="{width: '420px', maxWidth: '90vw'}"
+            header="اختصارات لوحة المفاتيح" appendTo="body" [draggable]="false" [resizable]="false">
+            <div class="shortcuts-help-list" dir="rtl">
+                <div class="shortcut-item">
+                    <kbd>F2</kbd> أو <kbd>Ctrl+Enter</kbd>
+                    <span>اعتماد المردود وتسوية حساب المورد</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>F3</kbd>
+                    <span>حفظ المردود كمسودة</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>F4</kbd>
+                    <span>إرجاع كافة الكميات المتاحة في المخزن</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>F5</kbd>
+                    <span>تصفير كافة كميات المردود</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Enter</kbd> / <kbd>↓</kbd>
+                    <span>الانتقال لكمية الصنف التالي</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>↑</kbd>
+                    <span>الرجوع لكمية الصنف السابق</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Esc</kbd>
+                    <span>إغلاق النافذة</span>
+                </div>
+            </div>
+        </p-dialog>
+    </div>
+</p-dialog>

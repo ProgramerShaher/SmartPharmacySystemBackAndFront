@@ -19,6 +19,7 @@ public class DamagedGoodsService : IDamagedGoodsService
     private readonly INotificationService _notificationService;
     private readonly IJournalEntryService _journalEntryService;
     private readonly ILogger<DamagedGoodsService> _logger;
+    private readonly IAccountLookupService _accountLookupService;
 
     public DamagedGoodsService(
         IUnitOfWork unitOfWork,
@@ -26,7 +27,8 @@ public class DamagedGoodsService : IDamagedGoodsService
         ICurrentUserService currentUserService,
         INotificationService notificationService,
         IJournalEntryService journalEntryService,
-        ILogger<DamagedGoodsService> logger)
+        ILogger<DamagedGoodsService> logger,
+        IAccountLookupService accountLookupService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -34,6 +36,7 @@ public class DamagedGoodsService : IDamagedGoodsService
         _notificationService = notificationService;
         _journalEntryService = journalEntryService;
         _logger = logger;
+        _accountLookupService = accountLookupService;
     }
 
     public async Task<DamagedGoodsRecordDto> GetByIdAsync(int id)
@@ -226,6 +229,9 @@ public class DamagedGoodsService : IDamagedGoodsService
 
             if (record.DamageValue > 0)
             {
+                var damagedAccount = await _accountLookupService.GetDamagedGoodsExpenseAccountAsync();
+                var inventoryAccount = await _accountLookupService.GetInventoryAccountAsync();
+
                 var journalEntry = new JournalEntryDto
                 {
                     EntryDate = DateTime.UtcNow,
@@ -236,14 +242,14 @@ public class DamagedGoodsService : IDamagedGoodsService
                     {
                         new()
                         {
-                            AccountId = 5206,
+                            AccountId = damagedAccount.Id,
                             Debit = record.DamageValue,
                             Credit = 0,
                             Description = $"خسائر أدوية تالفة - {record.DamageCode}"
                         },
                         new()
                         {
-                            AccountId = 1301,
+                            AccountId = inventoryAccount.Id,
                             Debit = 0,
                             Credit = record.DamageValue,
                             Description = $"تخفيض مخزون أدوية تالفة - {record.DamageCode}"

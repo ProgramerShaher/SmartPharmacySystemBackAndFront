@@ -12,24 +12,24 @@ namespace SmartPharmacySystem.Application.Services;
 
 public class MonthlySalaryService : IMonthlySalaryService
 {
-    private const int DefaultPaidFromAccountId = 1101;
-    private const int DefaultSalaryExpenseAccountId = 5201;
-
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IJournalEntryService _journalEntryService;
     private readonly IFinancialService _financialService;
+    private readonly IAccountLookupService _accountLookupService;
 
     public MonthlySalaryService(
         IUnitOfWork unitOfWork,
         IMapper mapper,
         IJournalEntryService journalEntryService,
-        IFinancialService financialService)
+        IFinancialService financialService,
+        IAccountLookupService accountLookupService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _journalEntryService = journalEntryService;
         _financialService = financialService;
+        _accountLookupService = accountLookupService;
     }
 
     public async Task<MonthlySalaryDto> GetByIdAsync(int id)
@@ -172,19 +172,30 @@ public class MonthlySalaryService : IMonthlySalaryService
 
     private async Task PaySalaryInternalAsync(MonthlySalary salary, PaySalaryDto dto, int? userId, bool saveImmediately = true)
     {
-        var paidFromAccountId = dto.PaidFromAccountId > 0 ? dto.PaidFromAccountId : DefaultPaidFromAccountId;
-        var salaryExpenseAccountId = dto.SalaryExpenseAccountId ?? DefaultSalaryExpenseAccountId;
-
-        var paidFromAccount = await _unitOfWork.Accounts.GetByIdAsync(paidFromAccountId)
-            ?? throw new KeyNotFoundException("حساب صرف الراتب غير موجود");
+        Account paidFromAccount;
+        if (dto.PaidFromAccountId > 0)
+        {
+            paidFromAccount = await _unitOfWork.Accounts.GetByIdAsync(dto.PaidFromAccountId)
+                ?? throw new KeyNotFoundException("حساب صرف الراتب غير موجود");
+        }
+        else
+        {
+            paidFromAccount = await _accountLookupService.GetCashAccountAsync(userId);
+        }
 
         if (paidFromAccount.IsMainAccount || !paidFromAccount.IsActive)
             throw new InvalidOperationException("يجب اختيار حساب صرف فرعي ونشط");
 
-        var salaryExpenseAccount = await _unitOfWork.Accounts.GetByIdAsync(salaryExpenseAccountId)
-            ?? await _unitOfWork.Accounts.GetByCodeAsync("52001")
-            ?? await _unitOfWork.Accounts.GetByCodeAsync("5201")
-            ?? throw new KeyNotFoundException("حساب مصروف الرواتب غير موجود");
+        Account salaryExpenseAccount;
+        if (dto.SalaryExpenseAccountId.HasValue && dto.SalaryExpenseAccountId.Value > 0)
+        {
+            salaryExpenseAccount = await _unitOfWork.Accounts.GetByIdAsync(dto.SalaryExpenseAccountId.Value)
+                ?? await _accountLookupService.GetSalaryExpenseAccountAsync();
+        }
+        else
+        {
+            salaryExpenseAccount = await _accountLookupService.GetSalaryExpenseAccountAsync();
+        }
 
         if (salaryExpenseAccount.IsMainAccount || !salaryExpenseAccount.IsActive)
             throw new InvalidOperationException("يجب اختيار حساب مصروف رواتب فرعي ونشط");

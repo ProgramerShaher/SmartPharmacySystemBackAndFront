@@ -106,7 +106,7 @@ public class InventoryStockRepository : IInventoryStockRepository
             .ToListAsync();
     }
 
-    public async Task<int> GetTotalQuantityAsync(int warehouseId, int medicineId)
+    public async Task<decimal> GetTotalQuantityAsync(int warehouseId, int medicineId)
     {
         return await _context.InventoryStocks
             .AsNoTracking()

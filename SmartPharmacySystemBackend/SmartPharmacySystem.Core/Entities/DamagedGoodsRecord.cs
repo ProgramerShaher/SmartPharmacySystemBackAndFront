@@ -25,7 +25,8 @@ public class DamagedGoodsRecord : BaseEntity
     public DateTime ExpiryDate { get; set; }
 
     [Required]
-    public int Quantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Quantity { get; set; }
 
     [Required]
     public DamageType DamageType { get; set; } = DamageType.PhysicalDamage;

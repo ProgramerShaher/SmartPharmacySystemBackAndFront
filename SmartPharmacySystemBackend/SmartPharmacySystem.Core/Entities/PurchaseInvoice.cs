@@ -1,5 +1,6 @@
 using SmartPharmacySystem.Core.Enums;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Collections.Generic;
 using System;
 
@@ -32,9 +33,32 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     public DateTime PurchaseDate { get; set; }
 
     /// <summary>
-    /// Total amount of the invoice.
+    /// Total amount of the invoice (including tax).
     /// </summary>
     public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// المجموع الفرعي قبل الضريبة
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Subtotal { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة المطبقة (%)
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// إجمالي مبلغ ضريبة القيمة المضافة لفاتورة الشراء
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxAmount { get; set; } = 0;
+
+    /// <summary>
+    /// هل الأسعار شاملة الضريبة
+    /// </summary>
+    public bool IsTaxInclusive { get; set; } = true;
 
     /// <summary>
     /// The amount that has been paid towards this invoice.
@@ -63,6 +87,26 @@ public class PurchaseInvoice : BaseMultiBranchEntity
     /// Has the invoice been paid (for credit invoices)
     /// </summary>
     public bool IsPaid { get; set; } = false;
+
+    /// <summary>
+    /// تكاليف الشحن والنقل للمشتريات
+    /// </summary>
+    public decimal ShippingCost { get; set; } = 0;
+
+    /// <summary>
+    /// رسوم الجمارك والتخليص
+    /// </summary>
+    public decimal CustomsCost { get; set; } = 0;
+
+    /// <summary>
+    /// مصاريف إضافية أخرى (تأمين، عمالة وتنزيل)
+    /// </summary>
+    public decimal OtherLandedCosts { get; set; } = 0;
+
+    /// <summary>
+    /// إجمالي مصاريف التوريد الإضافية المحملة على الفاتورة
+    /// </summary>
+    public decimal TotalLandedCost => ShippingCost + CustomsCost + OtherLandedCosts;
 
 
     /// <summary>

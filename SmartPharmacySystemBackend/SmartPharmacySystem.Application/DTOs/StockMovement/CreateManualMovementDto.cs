@@ -11,8 +11,8 @@ public class CreateManualMovementDto
     public int? BatchId { get; set; }
 
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; } // Will be handled as negative internally for Damage, +/- for Adjustment
+    [Range(0.0001, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
+    public decimal Quantity { get; set; } // Will be handled as negative internally for Damage, +/- for Adjustment
 
     [Required]
     public StockMovementType Type { get; set; } // Adjustment or Damage only

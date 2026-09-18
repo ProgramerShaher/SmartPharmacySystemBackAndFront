@@ -60,15 +60,29 @@ namespace SmartPharmacySystem.Application.Services
                 await _unitOfWork.CustomerReceipts.AddAsync(receipt);
                 await _unitOfWork.SaveChangesAsync(); // Get ID first for linking
 
-                // 2. Handle Linked Invoice (Mark as Paid)
+                // 2. Handle Linked Invoice (Partial or Full Payment Tracking)
                 if (dto.SaleInvoiceId.HasValue)
                 {
-                    var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(dto.SaleInvoiceId.Value);
-                    if (invoice != null && invoice.CustomerId == dto.CustomerId)
+                    var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(dto.SaleInvoiceId.Value)
+                        ?? throw new KeyNotFoundException("الفاتورة المرتبطة بالسند غير موجودة.");
+
+                    if (invoice.CustomerId != dto.CustomerId)
+                        throw new InvalidOperationException("الفاتورة المحددة لا تتبع لنفس العميل.");
+
+                    invoice.PaidAmount += dto.Amount;
+                    invoice.IsPaid = invoice.PaidAmount >= invoice.TotalAmount;
+                    await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
+
+                    // Add linked payment record
+                    var paymentRecord = new Core.Entities.SaleInvoicePayment
                     {
-                        invoice.IsPaid = true;
-                        await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
-                    }
+                        SaleInvoiceId = invoice.Id,
+                        PaymentMethod = dto.PaymentMethod,
+                        Amount = dto.Amount,
+                        ReferenceNumber = $"REC-{receipt.Id}",
+                        Notes = $"سداد بموجب سند قبض رقم {receipt.Id}" + (string.IsNullOrWhiteSpace(dto.Notes) ? "" : $" - {dto.Notes}")
+                    };
+                    await _unitOfWork.SaleInvoicePayments.AddAsync(paymentRecord);
                 }
 
                 // 3. Update Customer Balance (Decrease Debt)
@@ -248,7 +262,7 @@ namespace SmartPharmacySystem.Application.Services
                                                 }
                                                 catch { unitName = "حبة"; }
 
-                                                int qtyToShow = d.QuantityInSaleUnit > 0 ? d.QuantityInSaleUnit : d.Quantity;
+                                                decimal qtyToShow = d.QuantityInSaleUnit > 0 ? d.QuantityInSaleUnit : d.Quantity;
                                                 if (qtyToShow < 0) qtyToShow = 0;
 
                                                 decimal lineTotal = d.TotalLineAmount;
@@ -380,6 +394,18 @@ namespace SmartPharmacySystem.Application.Services
 
                 // 2. Reverse Customer Balance (Increase Debt)
                 await _unitOfWork.Customers.UpdateBalanceAsync(receipt.CustomerId, receipt.Amount);
+
+                // 2.5 Reverse Linked Sale Invoice if present
+                if (receipt.SaleInvoiceId.HasValue)
+                {
+                    var invoice = await _unitOfWork.SaleInvoices.GetByIdAsync(receipt.SaleInvoiceId.Value);
+                    if (invoice != null)
+                    {
+                        invoice.PaidAmount = Math.Max(0, invoice.PaidAmount - receipt.Amount);
+                        invoice.IsPaid = invoice.PaidAmount >= invoice.TotalAmount;
+                        await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
+                    }
+                }
 
                 // 3. Reverse Vault (Expense to reverse previous income)
                 await _financialService.ProcessTransactionAsync(

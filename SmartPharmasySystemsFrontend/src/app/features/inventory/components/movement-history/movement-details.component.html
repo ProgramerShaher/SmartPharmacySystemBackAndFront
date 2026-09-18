@@ -1,71 +1,153 @@
-<div *ngIf="loading" class="flex justify-content-center p-5">
-    <p-progressSpinner></p-progressSpinner>
+<div *ngIf="loading" class="flex justify-content-center align-items-center p-5 min-h-20rem">
+  <p-progressSpinner></p-progressSpinner>
 </div>
-<div [ngClass]="isRouteMode ? 'standalone-page surface-card p-4 border-round shadow-2 max-w-30rem mx-auto mt-5' : ''">
-    <div *ngIf="isRouteMode" class="text-center mb-4 border-bottom-1 surface-border pb-3">
-        <h2 class="m-0 text-primary">تفاصيل حركة المخزون</h2>
-        <span class="text-500">رقم المرجع: {{ movement?.referenceNumber || 'بدون مرجع' }}</span>
-    </div>
-    <div class="movement-details" dir="rtl" *ngIf="movement && !loading">
-    <div class="details-section">
-        <h3 class="section-title">بيانات الدواء</h3>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <label>الدواء:</label>
-                <span>{{ movement.medicine?.name }}</span>
-            </div>
-            <div class="detail-item">
-                <label>رقم التشغيلة:</label>
-                <span>{{ movement.batch?.companyBatchNumber }}</span>
-            </div>
-            <div class="detail-item" *ngIf="movement.batch?.expiryDate">
-                <label>تاريخ الانتهاء:</label>
-                <span [class.text-danger]="isExpired(movement.batch?.expiryDate)">
-                    {{ movement.batch?.expiryDate | date:'MM/yyyy' }}
-                </span>
-            </div>
+
+<div class="statement-container fadein" dir="rtl" *ngIf="!loading && movement">
+
+  <!-- ═══════════ Header Bar ═══════════ -->
+  <div class="imperial-search-bar mb-3">
+    <div class="search-content">
+      <div class="flex-align">
+        <div class="search-icon-badge">
+          <i class="pi pi-file"></i>
         </div>
-    </div>
-
-    <div class="details-section">
-        <h3 class="section-title">تفاصيل الحركة</h3>
-        <div class="detail-grid">
-            <div class="detail-item">
-                <label>النوع:</label>
-                <p-tag [value]="getMovementTypeLabel(movement.movementType)"
-                    [severity]="getMovementTypeSeverity(movement.movementType)"></p-tag>
-            </div>
-            <div class="detail-item">
-                <label>الكمية:</label>
-                <span class="qty" [ngClass]="movement.movementType.toString().toUpperCase() === 'IN' ? 'text-success' : 'text-danger'">
-                    {{ movement.movementType.toString().toUpperCase() === 'IN' ? '+' : '-' }}{{ movement.quantity }}
-                </span>
-            </div>
-            <div class="detail-item">
-                <label>التاريخ:</label>
-                <span>{{ movement.date | date:'dd/MM/yyyy HH:mm' }}</span>
-            </div>
-            <div class="detail-item">
-                <label>المرجع:</label>
-                <span>{{ movement.referenceNumber || '---' }}</span>
-            </div>
+        <div class="search-input-wrapper">
+          <label class="search-label">تفاصيل حركة المخزون</label>
+          <span class="font-bold text-base" style="color: var(--text-color);">
+            مرجع رقم: <span class="font-mono text-primary">{{ movement.referenceNumber || 'بدون رقم مرجع' }}</span>
+          </span>
         </div>
+      </div>
+
+      <div class="action-buttons">
+        <button pButton icon="pi pi-arrow-right" label="العودة للحركات" (click)="onClose()"
+          class="p-button-outlined p-button-sm px-3"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ Summary KPI Cards ═══════════ -->
+  <div class="summary-stats-grid mb-3">
+    <div class="statement-stat-card card-teal">
+      <div class="stat-icon-wrapper teal">
+        <i class="pi pi-tag"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">نوع الحركة المخزنية</span>
+        <span class="stat-value text-sm">{{ movement.movementTypeLabel || getMovementTypeLabel(movement.movementType) }}</span>
+        <span class="stat-sub">{{ movement.referenceTypeLabel || 'حركة مسجلة' }}</span>
+      </div>
     </div>
 
-    <div class="details-section" *ngIf="movement.notes">
-        <h3 class="section-title">ملاحظات</h3>
-        <p class="notes-text">{{ movement.notes }}</p>
+    <div class="statement-stat-card" [ngClass]="movement.quantity > 0 ? 'card-teal' : 'card-red'">
+      <div class="stat-icon-wrapper" [ngClass]="movement.quantity > 0 ? 'teal' : 'red'">
+        <i class="pi" [ngClass]="movement.quantity > 0 ? 'pi-arrow-down-left' : 'pi-arrow-up-right'"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">الكمية المسجلة</span>
+        <span class="stat-value font-mono" [ngClass]="movement.quantity > 0 ? 'text-green-500' : 'text-red-500'">
+          {{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}
+        </span>
+        <span class="stat-sub">وحدة أساسية</span>
+      </div>
     </div>
 
-    <div class="details-section info-footer">
-        <div class="detail-item">
-            <label>بواسطة:</label>
-            <span>مستخدم رقم #{{ movement.createdBy }}</span>
+    <div class="statement-stat-card card-blue">
+      <div class="stat-icon-wrapper blue">
+        <i class="pi pi-calendar"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">تاريخ ووقت الحركة</span>
+        <span class="stat-value font-mono text-sm">{{ movement.date | date:'dd/MM/yyyy' }}</span>
+        <span class="stat-sub font-mono">{{ movement.date | date:'HH:mm:ss' }}</span>
+      </div>
+    </div>
+
+    <div class="statement-stat-card card-purple">
+      <div class="stat-icon-wrapper purple">
+        <i class="pi pi-user"></i>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">المستخدم المسؤول</span>
+        <span class="stat-value text-sm">{{ movement.createdByName || 'المستخدم #' + movement.createdBy }}</span>
+        <span class="stat-sub font-mono">ID: {{ movement.createdBy || '-' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ Details Cards Grid ═══════════ -->
+  <div class="grid">
+    <!-- Card 1: Medicine & Batch -->
+    <div class="col-12 md:col-6">
+      <div class="ledger-card-wrapper p-4 h-full">
+        <div class="flex align-items-center gap-2 mb-3 pb-2 border-bottom-1 surface-border">
+          <i class="pi pi-box text-primary text-xl"></i>
+          <span class="font-bold text-base" style="color: var(--text-color);">بيانات الدواء والتشغيلة</span>
         </div>
+
+        <div class="details-rows-list">
+          <div class="detail-row">
+            <span class="row-label">اسم الدواء:</span>
+            <span class="row-val font-bold text-primary">{{ movement.medicineName || movement.medicine?.name || 'غير محدد' }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="movement.medicineId">
+            <span class="row-label">كود الدواء:</span>
+            <span class="row-val font-mono">#{{ movement.medicineId }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="row-label">رقم التشغيلة (Batch):</span>
+            <span class="row-val font-mono font-bold">{{ movement.batchNumber || movement.batch?.companyBatchNumber || '-' }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="movement.batch?.expiryDate">
+            <span class="row-label">تاريخ الانتهاء:</span>
+            <span class="row-val font-mono" [class.text-red-500]="isExpired(movement.batch?.expiryDate)">
+              {{ movement.batch?.expiryDate | date:'MM/yyyy' }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="flex justify-content-center mt-4">
-        <p-button label="إغلاق" icon="pi pi-times" severity="secondary" (onClick)="onClose()"></p-button>
+    <!-- Card 2: Reference & Notes -->
+    <div class="col-12 md:col-6">
+      <div class="ledger-card-wrapper p-4 h-full">
+        <div class="flex align-items-center gap-2 mb-3 pb-2 border-bottom-1 surface-border">
+          <i class="pi pi-receipt text-primary text-xl"></i>
+          <span class="font-bold text-base" style="color: var(--text-color);">بيانات المستند والملاحظات</span>
+        </div>
+
+        <div class="details-rows-list">
+          <div class="detail-row">
+            <span class="row-label">نوع المرجع:</span>
+            <span class="row-val">{{ movement.referenceTypeLabel || 'حركة يدوية / مرجع نظام' }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="row-label">رقم المرجع:</span>
+            <span class="row-val font-mono font-bold">{{ movement.referenceNumber || '-' }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="movement.referenceId">
+            <span class="row-label">معرف المرجع (ID):</span>
+            <span class="row-val font-mono">{{ movement.referenceId }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="movement.financialDescription">
+            <span class="row-label">الوصف المالي:</span>
+            <span class="row-val">{{ movement.financialDescription }}</span>
+          </div>
+
+          <div class="detail-row" style="flex-direction: column; align-items: flex-start; gap: 0.35rem;">
+            <span class="row-label">الملاحظات والبيان:</span>
+            <span class="row-val p-2 border-round w-full" style="background: var(--surface-hover); color: var(--text-color);">
+              {{ movement.notes || 'لا توجد ملاحظات مسجلة لهذه الحركة' }}
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 </div>

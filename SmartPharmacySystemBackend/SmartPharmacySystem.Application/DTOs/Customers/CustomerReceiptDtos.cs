@@ -1,4 +1,5 @@
 using SmartPharmacySystem.Core.Enums;
+using System.Collections.Generic;
 
 namespace SmartPharmacySystem.Application.DTOs.Customers
 {
@@ -12,6 +13,7 @@ namespace SmartPharmacySystem.Application.DTOs.Customers
         public decimal Amount { get; set; }
         public DateTime ReceiptDate { get; set; }
         public string? ReferenceNo { get; set; }
+        public int? SaleInvoiceId { get; set; }
         public PaymentType PaymentMethod { get; set; }
         public string? Notes { get; set; }
         public bool IsCancelled { get; set; }

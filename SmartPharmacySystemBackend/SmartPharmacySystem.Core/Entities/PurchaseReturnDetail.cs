@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace SmartPharmacySystem.Core.Entities;
 
 /// <summary>
@@ -25,7 +27,8 @@ public class PurchaseReturnDetail : BaseEntity
     /// <summary>
     /// Quantity returned.
     /// </summary>
-    public int Quantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Purchase price per unit at the time of return.

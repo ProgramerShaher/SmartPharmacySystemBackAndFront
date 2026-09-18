@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using SmartPharmacySystem.Application.DTOs.Barcode;
 using SmartPharmacySystem.Application.IServices;
 using SmartPharmacySystem.Application.DTOs.Financial;
+using SmartPharmacySystem.Application.Helpers;
 
 namespace SmartPharmacySystem.Application.Services
 {
@@ -28,7 +29,8 @@ namespace SmartPharmacySystem.Application.Services
         Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
         IServiceScopeFactory serviceScopeFactory,
         IShiftService shiftService,
-        IClosingValidationService closingValidationService) : ISaleInvoiceService
+        IClosingValidationService closingValidationService,
+        IAccountLookupService accountLookupService) : ISaleInvoiceService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
@@ -45,6 +47,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IServiceScopeFactory _serviceScopeFactory = serviceScopeFactory;
         private readonly IShiftService _shiftService = shiftService;
         private readonly IClosingValidationService _closingValidationService = closingValidationService;
+        private readonly IAccountLookupService _accountLookupService = accountLookupService;
 
         public async Task<SaleInvoiceDto> CreateAsync(CreateSaleInvoiceDto dto, int userId)
         {
@@ -92,9 +95,72 @@ namespace SmartPharmacySystem.Application.Services
                         throw new InvalidOperationException("يجب أن تكون الكمية أكبر من صفر لكل الأصناف.");
                 }
 
+                entity.TaxRate = dto.TaxRate;
+                entity.IsTaxInclusive = dto.IsTaxInclusive;
+                entity.TotalDiscount = dto.TotalDiscount;
+
                 await ProcessFEFOAndFinancialsAsync(entity);
 
+                // Handle Multi-Payment and Partial Payment Setup
+                if (dto.Payments != null && dto.Payments.Any())
+                {
+                    decimal totalPaid = 0;
+                    foreach (var p in dto.Payments)
+                    {
+                        if (p.Amount <= 0) continue;
+                        entity.Payments.Add(new SaleInvoicePayment
+                        {
+                            PaymentMethod = p.PaymentMethod,
+                            Amount = p.Amount,
+                            ReferenceNumber = p.ReferenceNumber,
+                            AccountId = p.AccountId,
+                            Notes = p.Notes
+                        });
+                        if (p.PaymentMethod != PaymentType.Credit)
+                        {
+                            totalPaid += p.Amount;
+                        }
+                    }
+                    entity.PaidAmount = totalPaid;
+                    entity.IsPaid = entity.PaidAmount >= entity.TotalAmount;
+                }
+                else if (entity.PaymentMethod == PaymentType.Cash)
+                {
+                    entity.PaidAmount = entity.TotalAmount;
+                    entity.IsPaid = true;
+                }
+                else if (dto.PaidAmount.HasValue && dto.PaidAmount.Value > 0)
+                {
+                    entity.PaidAmount = Math.Min(dto.PaidAmount.Value, entity.TotalAmount);
+                    entity.IsPaid = entity.PaidAmount >= entity.TotalAmount;
+                }
+                else
+                {
+                    entity.PaidAmount = 0;
+                    entity.IsPaid = false;
+                }
+
                 entity.SaleInvoiceNumber = await _invoiceNumberGenerator.GenerateSaleInvoiceNumberAsync();
+
+                try
+                {
+                    var settings = await _unitOfWork.PharmacySettings.GetSettingsAsync();
+                    var sellerName = !string.IsNullOrWhiteSpace(settings?.PharmacyName) ? settings.PharmacyName : "المؤسسة التجارية";
+                    var taxNumber = !string.IsNullOrWhiteSpace(settings?.TaxNumber) ? settings.TaxNumber : "300000000000003";
+
+                    entity.ZatcaQrCode = ZatcaQrCodeGenerator.GenerateQrCode(
+                        sellerName,
+                        taxNumber,
+                        entity.InvoiceDate,
+                        entity.TotalAmount,
+                        entity.TaxAmount
+                    );
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to generate ZATCA QR Code for invoice {InvoiceNumber}", entity.SaleInvoiceNumber);
+                }
+
                 await _unitOfWork.SaleInvoices.AddAsync(entity);
                 await _unitOfWork.SaveChangesAsync();
                 });
@@ -290,25 +356,75 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<JournalEntryLineDto>()
                 };
 
-                var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
-                var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync($"11101-{userId}")
-                                  ?? await _unitOfWork.Accounts.GetByCodeAsync("11101") 
-                                  ?? allAccounts.FirstOrDefault(a => a.Name.Contains("صندوق") || a.Name.Contains("نقد")) 
-                                  ?? allAccounts.FirstOrDefault() 
-                                  ?? throw new InvalidOperationException("حساب الصندوق غير موجود، يرجى تهيئة دليل الحسابات أولاً.");
-                                  
-                var receivablesAccount = await _unitOfWork.Accounts.GetByCodeAsync("112") 
-                                         ?? allAccounts.FirstOrDefault(a => a.Name.Contains("ذمم") || a.Name.Contains("عملاء")) 
-                                         ?? allAccounts.FirstOrDefault() 
-                                         ?? throw new InvalidOperationException("حساب الذمم المدينة غير موجود");
-                                         
-                var salesRevenueAccount = await _unitOfWork.Accounts.GetByCodeAsync("41001") 
-                                          ?? await _unitOfWork.Accounts.GetByCodeAsync("41") 
-                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("مبيعات") || a.Name.Contains("إيراد"))
-                                          ?? allAccounts.FirstOrDefault() 
-                                          ?? throw new InvalidOperationException("حساب إيرادات المبيعات غير موجود");
-                
-                if (invoice.PaymentMethod == PaymentType.Cash)
+                var cashAccount = await _accountLookupService.GetCashAccountAsync(userId);
+                var receivablesAccount = await _accountLookupService.GetReceivablesAccountAsync();
+                var salesRevenueAccount = await _accountLookupService.GetSalesRevenueAccountAsync();
+                var cardAccount = await _accountLookupService.GetCardAccountAsync();
+
+                if (invoice.Payments != null && invoice.Payments.Any())
+                {
+                    decimal totalPaid = 0;
+                    foreach (var payment in invoice.Payments)
+                    {
+                        if (payment.Amount <= 0) continue;
+
+                        if (payment.PaymentMethod == PaymentType.Cash)
+                        {
+                            journalEntry.Lines.Add(new JournalEntryLineDto
+                            {
+                                AccountId = payment.AccountId ?? cashAccount.Id,
+                                Debit = payment.Amount,
+                                Credit = 0,
+                                Description = $"تحصيل نقدي - فاتورة {invoice.SaleInvoiceNumber} {(string.IsNullOrEmpty(payment.ReferenceNumber) ? "" : $"مرجع: {payment.ReferenceNumber}")}"
+                            });
+                            totalPaid += payment.Amount;
+                        }
+                        else if (payment.PaymentMethod == PaymentType.Credit)
+                        {
+                            if (invoice.CustomerId.HasValue)
+                            {
+                                journalEntry.Lines.Add(new JournalEntryLineDto
+                                {
+                                    AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id,
+                                    Debit = payment.Amount,
+                                    Credit = 0,
+                                    Description = $"مبيعات آجلة - فاتورة {invoice.SaleInvoiceNumber}"
+                                });
+                                await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, payment.Amount);
+                            }
+                        }
+                        else // Card, BankTransfer, Check
+                        {
+                            journalEntry.Lines.Add(new JournalEntryLineDto
+                            {
+                                AccountId = payment.AccountId ?? cardAccount.Id,
+                                Debit = payment.Amount,
+                                Credit = 0,
+                                Description = $"تحصيل إلكتروني/بنكي ({payment.PaymentMethod}) - فاتورة {invoice.SaleInvoiceNumber} {(string.IsNullOrEmpty(payment.ReferenceNumber) ? "" : $"مرجع: {payment.ReferenceNumber}")}"
+                            });
+                            totalPaid += payment.Amount;
+                        }
+                    }
+
+                    // Check if there is remaining unpaid amount not explicitly in Credit lines
+                    decimal explicitCredit = invoice.Payments.Where(p => p.PaymentMethod == PaymentType.Credit).Sum(p => p.Amount);
+                    decimal remainder = invoice.TotalAmount - totalPaid - explicitCredit;
+                    if (remainder > 0 && invoice.CustomerId.HasValue)
+                    {
+                        journalEntry.Lines.Add(new JournalEntryLineDto
+                        {
+                            AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id,
+                            Debit = remainder,
+                            Credit = 0,
+                            Description = $"متبقي آجل - فاتورة {invoice.SaleInvoiceNumber}"
+                        });
+                        await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, remainder);
+                    }
+
+                    invoice.PaidAmount = totalPaid;
+                    invoice.IsPaid = invoice.PaidAmount >= invoice.TotalAmount;
+                }
+                else if (invoice.PaymentMethod == PaymentType.Cash)
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
@@ -317,27 +433,59 @@ namespace SmartPharmacySystem.Application.Services
                         Credit = 0,
                         Description = $"تحصيل مبيعات نقدية - فاتورة {invoice.SaleInvoiceNumber}"
                     });
+                    invoice.PaidAmount = invoice.TotalAmount;
                     invoice.IsPaid = true;
+
+                    invoice.Payments.Add(new SaleInvoicePayment
+                    {
+                        SaleInvoiceId = invoice.Id,
+                        PaymentMethod = PaymentType.Cash,
+                        Amount = invoice.TotalAmount,
+                        Notes = "دفع نقدي كامل"
+                    });
                 }
                 else if (invoice.CustomerId.HasValue)
                 {
-                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    decimal paid = invoice.PaidAmount > 0 ? Math.Min(invoice.PaidAmount, invoice.TotalAmount) : 0;
+                    decimal creditAmount = invoice.TotalAmount - paid;
+
+                    if (paid > 0)
                     {
-                        AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id,
-                        Debit = invoice.TotalAmount,
-                        Credit = 0,
-                        Description = $"مبيعات آجلة - فاتورة {invoice.SaleInvoiceNumber}"
-                    });
-                    invoice.IsPaid = false;
-                    await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, invoice.TotalAmount);
+                        journalEntry.Lines.Add(new JournalEntryLineDto
+                        {
+                            AccountId = cashAccount.Id,
+                            Debit = paid,
+                            Credit = 0,
+                            Description = $"دفعة مقدمة نقدية - فاتورة {invoice.SaleInvoiceNumber}"
+                        });
+                        invoice.Payments.Add(new SaleInvoicePayment
+                        {
+                            SaleInvoiceId = invoice.Id,
+                            PaymentMethod = PaymentType.Cash,
+                            Amount = paid,
+                            Notes = "دفعة مقدمة"
+                        });
+                    }
+
+                    if (creditAmount > 0)
+                    {
+                        journalEntry.Lines.Add(new JournalEntryLineDto
+                        {
+                            AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id,
+                            Debit = creditAmount,
+                            Credit = 0,
+                            Description = $"مبيعات آجلة - فاتورة {invoice.SaleInvoiceNumber}"
+                        });
+                        await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, creditAmount);
+                    }
+
+                    invoice.PaidAmount = paid;
+                    invoice.IsPaid = invoice.PaidAmount >= invoice.TotalAmount;
                 }
 
                 if (invoice.TotalDiscount > 0)
                 {
-                    var discountAccount = await _unitOfWork.Accounts.GetByCodeAsync("41002")
-                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("خصم مسموح"))
-                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("خصومات"))
-                                          ?? salesRevenueAccount;
+                    var discountAccount = await _accountLookupService.GetDiscountAccountAsync();
 
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
@@ -348,27 +496,43 @@ namespace SmartPharmacySystem.Application.Services
                     });
                 }
 
-                journalEntry.Lines.Add(new JournalEntryLineDto
+                if (invoice.TaxAmount > 0)
                 {
-                    AccountId = salesRevenueAccount.Id,
-                    Debit = 0,
-                    Credit = invoice.TotalAmount + invoice.TotalDiscount, // Gross Revenue
-                    Description = $"إيراد مبيعات فاتورة {invoice.SaleInvoiceNumber}"
-                });
+                    var vatPayableAccount = await _accountLookupService.GetVatPayableAccountAsync();
+
+                    decimal netRevenue = (invoice.TotalAmount + invoice.TotalDiscount) - invoice.TaxAmount;
+
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = salesRevenueAccount.Id,
+                        Debit = 0,
+                        Credit = netRevenue,
+                        Description = $"إيراد مبيعات قبل الضريبة - فاتورة {invoice.SaleInvoiceNumber}"
+                    });
+
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = vatPayableAccount.Id,
+                        Debit = 0,
+                        Credit = invoice.TaxAmount,
+                        Description = $"ضريبة القيمة المضافة المستحقة - فاتورة {invoice.SaleInvoiceNumber}"
+                    });
+                }
+                else
+                {
+                    journalEntry.Lines.Add(new JournalEntryLineDto
+                    {
+                        AccountId = salesRevenueAccount.Id,
+                        Debit = 0,
+                        Credit = invoice.TotalAmount + invoice.TotalDiscount, // Gross Revenue
+                        Description = $"إيراد مبيعات فاتورة {invoice.SaleInvoiceNumber}"
+                    });
+                }
 
                 if (invoice.TotalCost > 0)
                 {
-                    var cogsAccount = await _unitOfWork.Accounts.GetByCodeAsync("51001") 
-                                      ?? await _unitOfWork.Accounts.GetByCodeAsync("51") 
-                                      ?? allAccounts.FirstOrDefault(a => a.Name.Contains("تكلفة") || a.Name.Contains("تكاليف"))
-                                      ?? allAccounts.FirstOrDefault()
-                                      ?? throw new InvalidOperationException("حساب تكلفة المبيعات غير موجود");
-                                      
-                    var inventoryAccount = await _unitOfWork.Accounts.GetByCodeAsync("11301") 
-                                           ?? await _unitOfWork.Accounts.GetByCodeAsync("113") 
-                                           ?? allAccounts.FirstOrDefault(a => a.Name.Contains("مخزون") || a.Name.Contains("مستودع"))
-                                           ?? allAccounts.FirstOrDefault()
-                                           ?? throw new InvalidOperationException("حساب المخزون غير موجود");
+                    var cogsAccount = await _accountLookupService.GetCostOfGoodsSoldAccountAsync();
+                    var inventoryAccount = await _accountLookupService.GetInventoryAccountAsync();
 
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
@@ -390,17 +554,16 @@ namespace SmartPharmacySystem.Application.Services
                 var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
                 await _journalEntryService.ApproveAsync(createdEntry.Id, userId);
 
-                if (invoice.PaymentMethod == PaymentType.Cash)
+                if (invoice.PaidAmount > 0)
                 {
                     await _financialService.ProcessTransactionAsync(
                         accountId: 1,
-                        amount: invoice.TotalAmount,
+                        amount: invoice.PaidAmount,
                         type: FinancialTransactionType.Income,
                         referenceType: ReferenceType.SaleInvoice,
                         referenceId: invoice.Id,
-                        description: $"إيراد مبيعات نقدية - فاتورة {invoice.SaleInvoiceNumber}"
+                        description: $"إيراد مبيعات محصل - فاتورة {invoice.SaleInvoiceNumber}"
                     );
-                    invoice.IsPaid = true;
                 }
 
                 await _unitOfWork.SaleInvoices.UpdateAsync(invoice);
@@ -531,7 +694,7 @@ namespace SmartPharmacySystem.Application.Services
                                                     }
                                                     catch { unitName = "حبة"; }
 
-                                                    int qtyToShow = d.QuantityInSaleUnit > 0 ? d.QuantityInSaleUnit : d.Quantity;
+                                                    decimal qtyToShow = d.QuantityInSaleUnit > 0 ? d.QuantityInSaleUnit : d.Quantity;
                                                     if (qtyToShow < 0) qtyToShow = 0;
 
                                                     decimal lineTotal = d.TotalLineAmount;
@@ -730,19 +893,21 @@ namespace SmartPharmacySystem.Application.Services
 
                 await _stockMovementService.CancelDocumentMovementsAsync(id, ReferenceType.SaleInvoice);
 
-                if (invoice.IsPaid)
+                if (invoice.PaidAmount > 0)
                 {
                     await _financialService.ProcessTransactionAsync(
                         accountId: 1,
-                        amount: invoice.TotalAmount,
+                        amount: invoice.PaidAmount,
                         type: FinancialTransactionType.Expense,
                         referenceType: ReferenceType.SaleInvoice,
                         referenceId: invoice.Id,
-                        description: $"إلغاء اعتماد فاتورة مبيعات (خصم) - رقم: {invoice.SaleInvoiceNumber}");
+                        description: $"إلغاء اعتماد فاتورة مبيعات (استرداد مدفوع) - رقم: {invoice.SaleInvoiceNumber}");
                 }
-                else if (invoice.PaymentMethod == PaymentType.Credit && invoice.CustomerId.HasValue)
+
+                decimal remainingDebt = invoice.TotalAmount - invoice.PaidAmount;
+                if (remainingDebt > 0 && invoice.CustomerId.HasValue)
                 {
-                    await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, -invoice.TotalAmount);
+                    await _unitOfWork.Customers.UpdateBalanceAsync(invoice.CustomerId.Value, -remainingDebt);
                 }
 
                 invoice.Status = DocumentStatus.Draft;
@@ -933,13 +1098,13 @@ namespace SmartPharmacySystem.Application.Services
                     conversionFactor = saleUnit?.ConversionFactor ?? 1;
                 }
 
-                int rawQty = detail.Quantity;
-                int baseUnits = rawQty * conversionFactor;
+                decimal rawQty = detail.Quantity;
+                decimal baseUnits = rawQty * conversionFactor;
                 
                 detail.QuantityInSaleUnit = rawQty;
                 detail.Quantity = baseUnits;
 
-                int remainingToAllocate = detail.Quantity;
+                decimal remainingToAllocate = detail.Quantity;
 
                 if (detail.BatchId > 0)
                 {
@@ -947,10 +1112,10 @@ namespace SmartPharmacySystem.Application.Services
                     var batch = medicineBatches.FirstOrDefault(b => b.Id == detail.BatchId)
                         ?? throw new KeyNotFoundException($"التشغيلة {detail.BatchId} غير موجودة");
 
-                    int canTake = Math.Min(remainingToAllocate, batch.RemainingQuantity);
+                    decimal canTake = Math.Min(remainingToAllocate, batch.RemainingQuantity);
                     if (canTake > 0)
                     {
-                        var splitDetail = CreateSplitDetail(detail, batch, canTake, conversionFactor);
+                        var splitDetail = CreateSplitDetail(detail, batch, canTake, conversionFactor, invoice);
                         invoice.SaleInvoiceDetails.Add(splitDetail);
                         remainingToAllocate -= canTake;
                     }
@@ -965,10 +1130,10 @@ namespace SmartPharmacySystem.Application.Services
                         if (remainingToAllocate <= 0) break;
                         if (batch.Id == detail.BatchId) continue;
 
-                        int canTake = Math.Min(remainingToAllocate, batch.RemainingQuantity);
+                        decimal canTake = Math.Min(remainingToAllocate, batch.RemainingQuantity);
                         if (canTake > 0)
                         {
-                            var splitDetail = CreateSplitDetail(detail, batch, canTake, conversionFactor);
+                            var splitDetail = CreateSplitDetail(detail, batch, canTake, conversionFactor, invoice);
                             invoice.SaleInvoiceDetails.Add(splitDetail);
                             remainingToAllocate -= canTake;
                         }
@@ -982,33 +1147,65 @@ namespace SmartPharmacySystem.Application.Services
                 }
             }
 
+            invoice.Subtotal = invoice.SaleInvoiceDetails.Sum(d => d.Subtotal);
+            invoice.TaxAmount = invoice.SaleInvoiceDetails.Sum(d => d.TaxAmount);
             invoice.TotalAmount = invoice.SaleInvoiceDetails.Sum(d => d.TotalLineAmount);
             invoice.TotalDiscount = invoice.SaleInvoiceDetails.Sum(d => d.DiscountAmount);
             invoice.TotalCost = invoice.SaleInvoiceDetails.Sum(d => d.TotalCost);
             invoice.TotalProfit = invoice.SaleInvoiceDetails.Sum(d => d.Profit);
         }
 
-        private SaleInvoiceDetail CreateSplitDetail(SaleInvoiceDetail template, MedicineBatch batch, int quantity, int conversionFactor)
+        private SaleInvoiceDetail CreateSplitDetail(SaleInvoiceDetail template, MedicineBatch batch, decimal quantity, int conversionFactor, SaleInvoice invoice)
         {
             var grossLineAmount = (quantity / (decimal)conversionFactor) * template.SalePrice;
             var discountPercentage = template.DiscountPercentage;
             var discountAmount = Math.Round(grossLineAmount * (discountPercentage / 100m), 2);
             var netLineAmount = grossLineAmount - discountAmount;
 
+            var lineTaxRate = template.TaxRate > 0 ? template.TaxRate : invoice.TaxRate;
+            decimal lineSubtotal;
+            decimal lineTaxAmount;
+            decimal lineTotalAmount;
+
+            if (lineTaxRate > 0)
+            {
+                if (invoice.IsTaxInclusive)
+                {
+                    lineSubtotal = Math.Round(netLineAmount / (1m + (lineTaxRate / 100m)), 2);
+                    lineTaxAmount = Math.Round(netLineAmount - lineSubtotal, 2);
+                    lineTotalAmount = netLineAmount;
+                }
+                else
+                {
+                    lineSubtotal = netLineAmount;
+                    lineTaxAmount = Math.Round(lineSubtotal * (lineTaxRate / 100m), 2);
+                    lineTotalAmount = lineSubtotal + lineTaxAmount;
+                }
+            }
+            else
+            {
+                lineSubtotal = netLineAmount;
+                lineTaxAmount = 0;
+                lineTotalAmount = netLineAmount;
+            }
+
             return new SaleInvoiceDetail
             {
                 MedicineId = template.MedicineId,
                 BatchId = batch.Id,
                 Quantity = quantity,
-                QuantityInSaleUnit = quantity / conversionFactor, // integer division, might be 0 for partials
+                QuantityInSaleUnit = quantity / conversionFactor, // decimal division
                 SaleUnitId = template.SaleUnitId,
                 SalePrice = template.SalePrice,
                 DiscountPercentage = discountPercentage,
                 DiscountAmount = discountAmount,
+                Subtotal = lineSubtotal,
+                TaxRate = lineTaxRate,
+                TaxAmount = lineTaxAmount,
                 UnitCost = batch.UnitPurchasePrice,
                 TotalCost = quantity * batch.UnitPurchasePrice,
-                TotalLineAmount = netLineAmount, // Net amount after discount
-                Profit = netLineAmount - (quantity * batch.UnitPurchasePrice) // Profit based on net amount
+                TotalLineAmount = lineTotalAmount, // Total with tax
+                Profit = lineSubtotal - (quantity * batch.UnitPurchasePrice) // Profit based on net revenue before tax
             };
         }
 
@@ -1115,7 +1312,7 @@ namespace SmartPharmacySystem.Application.Services
             return result;
         }
 
-        private async Task IncreaseInventoryStockAsync(int branchId, int medicineId, string batchNumber, DateTime expiryDate, int quantity)
+        private async Task IncreaseInventoryStockAsync(int branchId, int medicineId, string batchNumber, DateTime expiryDate, decimal quantity)
         {
             var warehouse = await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Main)
                 ?? await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Branch);
@@ -1146,7 +1343,7 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.InventoryStocks.UpdateAsync(stock);
         }
 
-        private async Task DecreaseInventoryStockAsync(int branchId, int medicineId, string batchNumber, int quantity)
+        private async Task DecreaseInventoryStockAsync(int branchId, int medicineId, string batchNumber, decimal quantity)
         {
             var warehouse = await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Main)
                 ?? await _unitOfWork.Warehouses.GetByBranchAndTypeAsync(branchId, WarehouseType.Branch);

@@ -35,9 +35,32 @@ public class CreateSaleInvoiceDto
     public string? CustomerName { get; set; }
 
     /// <summary>
+    /// المبلغ المدفوع مقدماً (اختياري للآجل أو الدفع الجزئي)
+    /// </summary>
+    public decimal? PaidAmount { get; set; }
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة (%)
+    /// </summary>
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// هل الأسعار شاملة الضريبة أم غير شاملة (مضافة)
+    /// </summary>
+    public bool IsTaxInclusive { get; set; } = true;
+
+    /// <summary>
+    /// إجمالي الخصم على الفاتورة
+    /// </summary>
+    public decimal TotalDiscount { get; set; } = 0;
+
+    /// <summary>
     /// تفاصيل الفاتورة
     /// </summary>
     public List<SalesInvoiceDetails.CreateSaleInvoiceDetailDto> Details { get; set; } = new();
 
-
+    /// <summary>
+    /// توزيع الدفع المتعدد (اختياري - في حال الدفع المقسم مثل كاش + شبكة)
+    /// </summary>
+    public List<CreateSaleInvoicePaymentDto>? Payments { get; set; }
 }

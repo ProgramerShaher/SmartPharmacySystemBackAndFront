@@ -1,0 +1,70 @@
+.quotation-details-page {
+  padding: 1.5rem;
+
+  .header-bar {
+    border: 1px solid var(--surface-border);
+  }
+
+  .a4-container {
+    max-width: 850px;
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 1px solid var(--surface-border);
+  }
+
+  .a4-table {
+    border-collapse: collapse;
+    width: 100%;
+
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 8px 10px;
+      font-size: 0.875rem;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #334155;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #fcfcfd;
+    }
+  }
+}
+
+// Print Media Styles for Official A4 Invoicing
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .no-print, .header-bar, .sidebar, .topbar {
+    display: none !important;
+  }
+
+  .quotation-details-page,
+  .a4-container,
+  .a4-container * {
+    visibility: visible;
+  }
+
+  .quotation-details-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .a4-container {
+    box-shadow: none !important;
+    border: none !important;
+    padding: 15mm !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+}

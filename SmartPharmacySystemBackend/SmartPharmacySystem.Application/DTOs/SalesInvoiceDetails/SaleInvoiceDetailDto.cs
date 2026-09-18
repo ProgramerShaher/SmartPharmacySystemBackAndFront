@@ -12,15 +12,20 @@ public class SaleInvoiceDetailDto
     public string MedicineName { get; set; } = string.Empty;
     public int BatchId { get; set; }
     public string CompanyBatchNumber { get; set; } = string.Empty;
-    public int Quantity { get; set; }
-    public int QuantityInSaleUnit { get; set; }
+    public decimal Quantity { get; set; }
+    public decimal QuantityInSaleUnit { get; set; }
     public string SaleUnitName { get; set; } = string.Empty;
     public decimal SalePrice { get; set; }
     public decimal UnitCost { get; set; }
     public decimal TotalLineAmount { get; set; }
+    public decimal Subtotal { get; set; }
+    public decimal TaxRate { get; set; }
+    public decimal TaxAmount { get; set; }
+    public decimal DiscountPercentage { get; set; }
+    public decimal DiscountAmount { get; set; }
     public decimal TotalCost { get; set; }
     public decimal Profit { get; set; }
-    public int RemainingQtyToReturn { get; set; }
+    public decimal RemainingQtyToReturn { get; set; }
     public bool IsDeleted { get; set; }
 
     // --- Invoice Data ---
@@ -35,7 +40,7 @@ public class SaleInvoiceDetailDto
     public DateTime CreatedAt { get; set; }
 
     // --- Batch Data ---
-    public int BatchRemainingQuantity { get; set; }
-    public int BatchSoldQuantity { get; set; }
+    public decimal BatchRemainingQuantity { get; set; }
+    public decimal BatchSoldQuantity { get; set; }
     public DateTime? BatchExpiryDate { get; set; }
 }

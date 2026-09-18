@@ -10,7 +10,7 @@ public class BestSellingMedicinesReportDto
     public DateTime ToDate { get; set; }
 
     /// <summary>إجمالي الأدوية المباعة</summary>
-    public int TotalMedicinesSold { get; set; }
+    public decimal TotalMedicinesSold { get; set; }
 
     /// <summary>إجمالي الإيرادات</summary>
     public decimal TotalRevenue { get; set; }
@@ -33,7 +33,7 @@ public class BestSellingMedicineDto
     public string? CategoryName { get; set; }
 
     /// <summary>الكمية المباعة</summary>
-    public int QuantitySold { get; set; }
+    public decimal QuantitySold { get; set; }
 
     /// <summary>إجمالي الإيرادات</summary>
     public decimal TotalRevenue { get; set; }

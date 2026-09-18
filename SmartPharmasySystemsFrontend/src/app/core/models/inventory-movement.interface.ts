@@ -105,3 +105,5 @@ export interface StockMovementQueryDto {
     page?: number;
     pageSize?: number;
 }
+
+export type InventoryMovementQueryDto = StockMovementQueryDto;

@@ -484,8 +484,8 @@ public class MasterDashboardService : IMasterDashboardService
             .Select(x => new
             {
                 x.medicine,
-                Quantity = x.stock?.Quantity ?? 0,
-                ReorderLevel = x.medicine.ReorderLevel > 0 ? x.medicine.ReorderLevel : Math.Max(x.medicine.MinAlertQuantity, 10)
+                Quantity = x.stock?.Quantity ?? 0m,
+                ReorderLevel = x.medicine.ReorderLevel > 0 ? x.medicine.ReorderLevel : Math.Max(x.medicine.MinAlertQuantity, 10m)
             })
             .Where(x => x.Quantity <= x.ReorderLevel)
             .OrderBy(x => x.Quantity)

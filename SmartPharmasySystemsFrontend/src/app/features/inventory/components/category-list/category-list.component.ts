@@ -16,6 +16,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TooltipModule } from 'primeng/tooltip';
+import { PaginatorModule } from 'primeng/paginator';
 
 // Child Component
 import { CategoryAddEditComponent } from '../category-add-edit/category-add-edit.component';
@@ -33,6 +34,7 @@ import { CategoryAddEditComponent } from '../category-add-edit/category-add-edit
         DialogModule,
         ConfirmDialogModule,
         TooltipModule,
+        PaginatorModule,
         CategoryAddEditComponent
     ],
     templateUrl: './category-list.component.html',
@@ -42,6 +44,15 @@ export class CategoryListComponent implements OnInit {
     categories: Category[] = [];
     totalRecords = 0;
     loading = true;
+
+    viewMode: 'table' | 'grid' = (typeof localStorage !== 'undefined' && localStorage.getItem('categories-view-mode') as 'table' | 'grid') || 'table';
+
+    setViewMode(mode: 'table' | 'grid') {
+        this.viewMode = mode;
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('categories-view-mode', mode);
+        }
+    }
 
     displayModal = false;
     selectedCategoryId: number | null = null;

@@ -17,6 +17,14 @@ export interface PurchaseInvoice {
     purchaseInvoiceNumber: string;
     purchaseDate: string; // ISO Date
     totalAmount: number;
+    subtotal?: number;
+    taxRate?: number;
+    taxAmount?: number;
+    isTaxInclusive?: boolean;
+    shippingCost?: number;
+    customsCost?: number;
+    otherLandedCosts?: number;
+    totalLandedCost?: number;
     paymentMethod: PaymentType;
     notes: string;
     createdBy: number;
@@ -56,7 +64,12 @@ export interface CreatePurchaseInvoiceDto {
     supplierInvoiceNumber?: string | null;
     purchaseDate: string; // ISO date string
     paymentMethod: PaymentType;
+    taxRate?: number;
+    isTaxInclusive?: boolean;
     notes?: string;
+    shippingCost?: number;
+    customsCost?: number;
+    otherLandedCosts?: number;
     items: CreatePurchaseInvoiceDetailDto[];
 }
 
@@ -71,7 +84,12 @@ export interface UpdatePurchaseInvoiceDto {
     supplierInvoiceNumber?: string | null;
     purchaseDate: string;
     paymentMethod: PaymentType;
+    taxRate?: number;
+    isTaxInclusive?: boolean;
     notes?: string;
+    shippingCost?: number;
+    customsCost?: number;
+    otherLandedCosts?: number;
     items: CreatePurchaseInvoiceDetailDto[];
 }
 

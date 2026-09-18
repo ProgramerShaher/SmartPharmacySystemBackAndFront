@@ -8,7 +8,7 @@ public class ExpiryAlertDto
     public string BatchNumber { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
     public int DaysRemaining { get; set; }
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public ExpiryAlertLevel AlertLevel { get; set; }
     public string AlertLevelText { get; set; } = string.Empty;
     public string ColorCode { get; set; } = string.Empty; // Hex Code

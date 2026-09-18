@@ -15,7 +15,7 @@ namespace SmartPharmacySystem.Application.DTOs.Alerts
         // Data
         public string AlertType { get; set; } = string.Empty; // Expiry vs LowStock
         public int DaysRemaining { get; set; } // For Expiry
-        public int Quantity { get; set; }
+        public decimal Quantity { get; set; }
         public string BatchNumber { get; set; } = string.Empty;
         public int MedicineId { get; set; }
         public int BatchId { get; set; }

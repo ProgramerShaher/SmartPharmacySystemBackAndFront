@@ -1,4 +1,5 @@
 using SmartPharmacySystem.Core.Enums;
+using System.Collections.Generic;
 
 namespace SmartPharmacySystem.Application.DTOs.SalesInvoices;
 
@@ -27,9 +28,54 @@ public class SaleInvoiceDto
     public string SaleInvoiceNumber { get; set; } = string.Empty;
 
     /// <summary>
-    /// المبلغ الإجمالي
+    /// المبلغ الإجمالي (شاملاً الضريبة)
     /// </summary>
     public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// المجموع الفرعي قبل الضريبة
+    /// </summary>
+    public decimal Subtotal { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة (%)
+    /// </summary>
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// إجمالي مبلغ الضريبة
+    /// </summary>
+    public decimal TaxAmount { get; set; } = 0;
+
+    /// <summary>
+    /// هل الأسعار شاملة الضريبة
+    /// </summary>
+    public bool IsTaxInclusive { get; set; } = true;
+
+    /// <summary>
+    /// رمز الاستجابة السريعة المشفر وفق متطلبات هيئة الزكاة والضريبة والجمارك (ZATCA Base64)
+    /// </summary>
+    public string? ZatcaQrCode { get; set; }
+
+    /// <summary>
+    /// إجمالي الخصم المطبق على الفاتورة
+    /// </summary>
+    public decimal TotalDiscount { get; set; } = 0;
+
+    /// <summary>
+    /// المبلغ المدفوع
+    /// </summary>
+    public decimal PaidAmount { get; set; } = 0;
+
+    /// <summary>
+    /// المبلغ المتبقي
+    /// </summary>
+    public decimal RemainingAmount => Math.Max(0, TotalAmount - PaidAmount);
+
+    /// <summary>
+    /// هل تم سداد الفاتورة بالكامل
+    /// </summary>
+    public bool IsPaid { get; set; } = false;
 
     /// <summary>
     /// التكلفة الإجمالية
@@ -45,6 +91,11 @@ public class SaleInvoiceDto
     /// طريقة الدفع
     /// </summary>
     public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
+
+    /// <summary>
+    /// معرف العميل
+    /// </summary>
+    public int? CustomerId { get; set; }
 
     /// <summary>
     /// اسم العميل
@@ -66,9 +117,6 @@ public class SaleInvoiceDto
     public string? CancelledByName { get; set; }
 
     /// <summary>
-    /// هل محذوف
-    /// </summary>
-    /// <summary>
     /// حالة الفاتورة
     /// </summary>
     public DocumentStatus Status { get; set; }
@@ -86,4 +134,9 @@ public class SaleInvoiceDto
     /// تفاصيل الفاتورة
     /// </summary>
     public List<SalesInvoiceDetails.SaleInvoiceDetailDto> Items { get; set; } = new();
+
+    /// <summary>
+    /// سجل دفعات الفاتورة (الدفع المتعدد)
+    /// </summary>
+    public List<SaleInvoicePaymentDto> Payments { get; set; } = new();
 }

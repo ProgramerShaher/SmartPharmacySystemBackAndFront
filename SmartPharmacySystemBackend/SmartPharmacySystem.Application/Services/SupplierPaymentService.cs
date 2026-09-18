@@ -19,6 +19,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IFinancialService _financialService;
         private readonly IJournalEntryService _journalEntryService;
         private readonly IClosingValidationService _closingValidationService;
+        private readonly IAccountLookupService _accountLookupService;
 
         public SupplierPaymentService(
             IUnitOfWork unitOfWork,
@@ -26,7 +27,8 @@ namespace SmartPharmacySystem.Application.Services
             ILogger<SupplierPaymentService> logger,
             IFinancialService financialService,
             IJournalEntryService journalEntryService,
-            IClosingValidationService closingValidationService)
+            IClosingValidationService closingValidationService,
+            IAccountLookupService accountLookupService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -34,6 +36,7 @@ namespace SmartPharmacySystem.Application.Services
             _financialService = financialService;
             _journalEntryService = journalEntryService;
             _closingValidationService = closingValidationService;
+            _accountLookupService = accountLookupService;
         }
 
         public async Task<SupplierPaymentDto> CreateAsync(CreateSupplierPaymentDto dto, int userId)
@@ -103,10 +106,14 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto>()
                 };
 
+                // Dynamic Account Resolution
+                var payablesAccount = await _accountLookupService.GetPayablesAccountAsync();
+                var cashAccount = await _accountLookupService.GetCashAccountAsync(userId);
+
                 // 1. الطرف المدين (من حـ/ المورد)
                 journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
                 {
-                    AccountId = supplier.AccountId ?? 2101, // حساب المورد الخاص أو ذمم الموردين
+                    AccountId = supplier.AccountId ?? payablesAccount.Id, // حساب المورد الخاص أو ذمم الموردين
                     Debit = dto.Amount,
                     Credit = 0,
                     Description = $"صرف مبلغ دفعة من الحساب - سند رقم {payment.Id}"
@@ -115,7 +122,7 @@ namespace SmartPharmacySystem.Application.Services
                 // 2. الطرف الدائن (إلى حـ/ الصندوق)
                 journalEntry.Lines.Add(new SmartPharmacySystem.Application.DTOs.Financial.JournalEntryLineDto
                 {
-                    AccountId = 1101, // الصندوق الرئيسي
+                    AccountId = cashAccount.Id, // الصندوق
                     Debit = 0,
                     Credit = dto.Amount,
                     Description = $"صرف نقدية بموجب سند رقم {payment.Id}"

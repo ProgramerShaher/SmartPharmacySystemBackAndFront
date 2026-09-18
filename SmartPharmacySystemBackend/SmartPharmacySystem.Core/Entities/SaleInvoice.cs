@@ -23,9 +23,42 @@ public class SaleInvoice : BaseMultiBranchEntity
     public DateTime InvoiceDate { get; set; }
 
     /// <summary>
-    /// Total amount of the sale.
+    /// Total amount of the sale (Grand Total including tax).
     /// </summary>
     public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// المجموع الفرعي قبل الضريبة
+    /// Subtotal before VAT.
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Subtotal { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة المطبقة (%)
+    /// VAT Rate applied (e.g. 15.00)
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// إجمالي مبلغ ضريبة القيمة المضافة
+    /// Total VAT amount for the invoice.
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxAmount { get; set; } = 0;
+
+    /// <summary>
+    /// هل الأسعار شاملة الضريبة أم غير شاملة (مضافة)
+    /// Indicates whether line prices are tax-inclusive (true) or tax-exclusive (false).
+    /// </summary>
+    public bool IsTaxInclusive { get; set; } = true;
+
+    /// <summary>
+    /// رمز الاستجابة السريعة المشفر وفق متطلبات هيئة الزكاة والضريبة والجمارك (ZATCA TLV Base64)
+    /// </summary>
+    [MaxLength(1000)]
+    public string? ZatcaQrCode { get; set; }
 
     /// <summary>
     /// Total discount applied to the whole invoice.
@@ -66,10 +99,24 @@ public class SaleInvoice : BaseMultiBranchEntity
     public virtual Customer? Customer { get; set; }
 
     /// <summary>
-    /// هل تم تحصيل الفاتورة (للفواتير الآجلة)
-    /// Has the invoice been received (for credit invoices)
+    /// هل تم تحصيل الفاتورة (للفواتير الآجلة أو المدفوعة جزئياً)
+    /// Has the invoice been received (for credit or partially paid invoices)
     /// </summary>
     public bool IsPaid { get; set; } = false;
+
+    /// <summary>
+    /// المبلغ المدفوع من الفاتورة حتى الآن
+    /// The total amount paid towards this invoice so far.
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal PaidAmount { get; set; } = 0;
+
+    /// <summary>
+    /// المبلغ المتبقي على الفاتورة
+    /// The remaining unpaid balance on this invoice.
+    /// </summary>
+    [NotMapped]
+    public decimal RemainingAmount => Math.Max(0, TotalAmount - PaidAmount);
 
 
     /// <summary>
@@ -118,6 +165,12 @@ public class SaleInvoice : BaseMultiBranchEntity
     /// Collection of sales returns related to this invoice.
     /// </summary>
     public ICollection<SalesReturn> SalesReturns { get; set; }
+
+    /// <summary>
+    /// Collection of payments made for this invoice (Multi-payment).
+    /// دفعات الفاتورة (للدفع المتعدد أو السداد)
+    /// </summary>
+    public virtual ICollection<SaleInvoicePayment> Payments { get; set; } = new List<SaleInvoicePayment>();
 
     // Multi-Branch Properties Inherited from BaseMultiBranchEntity
 

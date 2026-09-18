@@ -8,19 +8,19 @@ public class InventoryFlowReportDto
     public string MedicineName { get; set; } = string.Empty;
     public string BatchNumber { get; set; } = string.Empty;
 
-    public int OpeningBalance { get; set; }
-    public int TotalPurchases { get; set; }
-    public int TotalSales { get; set; }
-    public int TotalTransfersIn { get; set; }
-    public int TotalTransfersOut { get; set; }
-    public int TotalDamages { get; set; }
-    public int TotalAdjustments { get; set; }
-    public int TotalSalesReturns { get; set; }
-    public int TotalPurchaseReturns { get; set; }
+    public decimal OpeningBalance { get; set; }
+    public decimal TotalPurchases { get; set; }
+    public decimal TotalSales { get; set; }
+    public decimal TotalTransfersIn { get; set; }
+    public decimal TotalTransfersOut { get; set; }
+    public decimal TotalDamages { get; set; }
+    public decimal TotalAdjustments { get; set; }
+    public decimal TotalSalesReturns { get; set; }
+    public decimal TotalPurchaseReturns { get; set; }
 
     // (Opening + Purchases + TransfersIn + SalesReturns) - (Sales + TransfersOut + Damages + PurchaseReturns) +/- Adjustments
-    public int ExpectedClosingBalance { get; set; }
-    public int ActualSystemBalance { get; set; }
+    public decimal ExpectedClosingBalance { get; set; }
+    public decimal ActualSystemBalance { get; set; }
     
     public bool IsBalanced => ExpectedClosingBalance == ActualSystemBalance;
 
@@ -30,7 +30,7 @@ public class InventoryFlowReportDto
 public class MovementSummaryDto
 {
     public string MovementType { get; set; } = string.Empty;
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;
     public string Date { get; set; } = string.Empty;
 }

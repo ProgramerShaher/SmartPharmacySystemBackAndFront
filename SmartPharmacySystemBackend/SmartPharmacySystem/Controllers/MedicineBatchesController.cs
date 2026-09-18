@@ -297,11 +297,11 @@ public class MedicineBatchesController : ControllerBase
     /// <access>Admin | Pharmacist</access>
     /// <param name="medicineId">Medicine ID | معرف الدواء</param>
     [HttpGet("medicine/{medicineId:int}/quantity")]
-    [ProducesResponseType(typeof(ApiResponse<int>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiResponse<decimal>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTotalQuantity(int medicineId)
     {
         var quantity = await _service.GetTotalAvailableQuantityAsync(medicineId);
-        return Ok(ApiResponse<int>.Succeeded(quantity,
+        return Ok(ApiResponse<decimal>.Succeeded(quantity,
             $"Total available quantity: {quantity} | إجمالي الكمية المتاحة: {quantity}"));
     }
 

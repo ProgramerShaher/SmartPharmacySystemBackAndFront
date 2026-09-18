@@ -214,24 +214,24 @@ namespace SmartPharmacySystem.Application.Services
                     ? movementsByBatch[batch.Id]
                     : new List<InventoryMovement>();
 
-                int openingBalance = 0;
-                int totalPurch = batchMovements.Where(m => m.MovementType == StockMovementType.Purchase).Sum(m => m.Quantity);
-                int totalSale = batchMovements.Where(m => m.MovementType == StockMovementType.Sale).Sum(m => m.Quantity);
-                int totalTransIn = batchMovements.Where(m => m.MovementType == StockMovementType.TransferIn).Sum(m => m.Quantity);
-                int totalTransOut = batchMovements.Where(m => m.MovementType == StockMovementType.TransferOut).Sum(m => m.Quantity);
-                int totalDamage = batchMovements.Where(m => m.MovementType == StockMovementType.Damage).Sum(m => m.Quantity);
-                int totalSalesRet = batchMovements.Where(m => m.MovementType == StockMovementType.SalesReturn).Sum(m => m.Quantity);
-                int totalPurchRet = batchMovements.Where(m => m.MovementType == StockMovementType.PurchaseReturn).Sum(m => m.Quantity);
-                int totalAdj = batchMovements.Where(m => m.MovementType == StockMovementType.Adjustment).Sum(m => m.Quantity);
+                decimal openingBalance = 0;
+                decimal totalPurch = batchMovements.Where(m => m.MovementType == StockMovementType.Purchase).Sum(m => m.Quantity);
+                decimal totalSale = batchMovements.Where(m => m.MovementType == StockMovementType.Sale).Sum(m => m.Quantity);
+                decimal totalTransIn = batchMovements.Where(m => m.MovementType == StockMovementType.TransferIn).Sum(m => m.Quantity);
+                decimal totalTransOut = batchMovements.Where(m => m.MovementType == StockMovementType.TransferOut).Sum(m => m.Quantity);
+                decimal totalDamage = batchMovements.Where(m => m.MovementType == StockMovementType.Damage).Sum(m => m.Quantity);
+                decimal totalSalesRet = batchMovements.Where(m => m.MovementType == StockMovementType.SalesReturn).Sum(m => m.Quantity);
+                decimal totalPurchRet = batchMovements.Where(m => m.MovementType == StockMovementType.PurchaseReturn).Sum(m => m.Quantity);
+                decimal totalAdj = batchMovements.Where(m => m.MovementType == StockMovementType.Adjustment).Sum(m => m.Quantity);
 
                 var openingMovements = batchMovements.Where(m => m.ReferenceType == ReferenceType.OpeningBalance).Sum(m => m.Quantity);
                 openingBalance += openingMovements;
 
-                int expectedBalance = openingBalance + totalPurch + totalSalesRet + totalTransIn 
+                decimal expectedBalance = openingBalance + totalPurch + totalSalesRet + totalTransIn 
                                     - totalSale - totalPurchRet - totalTransOut - totalDamage + totalAdj;
 
-                int actualBalance = stock.Quantity;
-                int variance = actualBalance - expectedBalance;
+                decimal actualBalance = stock.Quantity;
+                decimal variance = actualBalance - expectedBalance;
 
                 decimal cost = batch?.UnitPurchasePrice ?? 0;
                 decimal retailPrice = batch?.RetailPrice ?? 0;

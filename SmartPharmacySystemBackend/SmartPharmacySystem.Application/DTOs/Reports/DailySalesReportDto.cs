@@ -25,7 +25,7 @@ public class DailySalesReportDto
     public int InvoiceCount { get; set; }
 
     /// <summary>عدد الأصناف المباعة</summary>
-    public int ItemsSold { get; set; }
+    public decimal ItemsSold { get; set; }
 
     /// <summary>متوسط قيمة الفاتورة</summary>
     public decimal AverageInvoiceValue => InvoiceCount > 0 ? Math.Round(TotalSales / InvoiceCount, 2) : 0;
@@ -58,6 +58,6 @@ public class TopSellingItemDto
 {
     public int MedicineId { get; set; }
     public string MedicineName { get; set; } = string.Empty;
-    public int QuantitySold { get; set; }
+    public decimal QuantitySold { get; set; }
     public decimal Revenue { get; set; }
 }

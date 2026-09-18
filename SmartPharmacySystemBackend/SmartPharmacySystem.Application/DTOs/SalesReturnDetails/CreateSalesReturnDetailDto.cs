@@ -32,8 +32,8 @@ public class CreateSalesReturnDetailDto
     /// الكمية
     /// </summary>
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; }
+    [Range(0.0001, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// سعر البيع للوحدة

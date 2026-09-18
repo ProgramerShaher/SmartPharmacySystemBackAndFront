@@ -450,7 +450,7 @@ public class MedicineBatchService(
     // ===================== Business Operations =====================
 
     /// <inheritdoc/>
-    public async Task<BatchSaleResultDto> SellFromBatchFIFOAsync(int medicineId, int quantity, int userId)
+    public async Task<BatchSaleResultDto> SellFromBatchFIFOAsync(int medicineId, decimal quantity, int userId)
     {
         logger.LogInformation("FIFO Selling {Quantity} units of medicine {MedicineId}", quantity, medicineId);
 
@@ -536,7 +536,7 @@ public class MedicineBatchService(
     }
 
     /// <inheritdoc/>
-    public async Task<MedicineBatchResponseDto> SellFromBatchAsync(int batchId, int quantity, int userId)
+    public async Task<MedicineBatchResponseDto> SellFromBatchAsync(int batchId, decimal quantity, int userId)
     {
         logger.LogInformation("Selling {Quantity} units from batch {BatchId}", quantity, batchId);
 
@@ -571,7 +571,7 @@ public class MedicineBatchService(
     }
 
     /// <inheritdoc/>
-    public async Task<MedicineBatchResponseDto> ReturnToBatchAsync(int batchId, int quantity, int userId)
+    public async Task<MedicineBatchResponseDto> ReturnToBatchAsync(int batchId, decimal quantity, int userId)
     {
         logger.LogInformation("Returning {Quantity} units to batch {BatchId}", quantity, batchId);
 
@@ -768,13 +768,13 @@ public class MedicineBatchService(
     }
 
     /// <inheritdoc/>
-    public async Task<int> GetTotalAvailableQuantityAsync(int medicineId)
+    public async Task<decimal> GetTotalAvailableQuantityAsync(int medicineId)
     {
         return await batchRepository.GetTotalAvailableQuantityAsync(medicineId);
     }
 
     /// <inheritdoc/>
-    public async Task<BatchValidationResultDto> ValidateBatchForSaleAsync(int batchId, int quantity)
+    public async Task<BatchValidationResultDto> ValidateBatchForSaleAsync(int batchId, decimal quantity)
     {
         var result = new BatchValidationResultDto { IsValid = true, Errors = new List<string>() };
 

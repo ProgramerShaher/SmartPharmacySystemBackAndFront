@@ -58,7 +58,7 @@ public class InventoryStocksController : ControllerBase
     public async Task<IActionResult> GetTotalQuantity(int warehouseId, int medicineId)
     {
         var quantity = await _stockService.GetTotalQuantityAsync(warehouseId, medicineId);
-        return Ok(ApiResponse<int>.Succeeded(quantity, "تم جلب الكمية الإجمالية"));
+        return Ok(ApiResponse<decimal>.Succeeded(quantity, "تم جلب الكمية الإجمالية"));
     }
 
     [HttpGet("search")]

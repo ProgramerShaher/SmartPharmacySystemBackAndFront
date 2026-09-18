@@ -13,7 +13,7 @@ public interface IInventoryMovementRepository
     Task<bool> ExistsAsync(int id);
     Task<(IEnumerable<InventoryMovement> Items, int TotalCount)> GetPagedAsync(string search, int page, int pageSize, string sortBy, string sortDirection);
 
-    Task<int> GetCurrentBalanceAsync(int medicineId, int? batchId = null);
+    Task<decimal> GetCurrentBalanceAsync(int medicineId, int? batchId = null);
     Task<IEnumerable<InventoryMovement>> GetStockCardMovementsAsync(int medicineId, int? batchId = null);
     Task<IEnumerable<InventoryMovement>> GetMovementsByReferenceAsync(int referenceId, SmartPharmacySystem.Core.Enums.ReferenceType type);
 }

@@ -116,3 +116,7 @@
 <app-purchase-return-details [(visible)]="displayDetailsModal" [invoiceId]="selectedReturnId"
     (onAction)="loadReturns()">
 </app-purchase-return-details>
+
+<!-- Create Return Modal -->
+<app-purchase-return-create [(visible)]="showCreateModal" (onSaved)="loadReturns()">
+</app-purchase-return-create>

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace SmartPharmacySystem.Core.Entities;
 
 /// <summary>
@@ -64,12 +66,14 @@ public class Medicine : BaseEntity
     /// <summary>
     /// Minimum quantity that triggers an alert for low stock.
     /// </summary>
-    public int MinAlertQuantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal MinAlertQuantity { get; set; }
 
     /// <summary>
     /// Point at which a reorder notification should be generated.
     /// </summary>
-    public int ReorderLevel { get; set; } = 10;
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal ReorderLevel { get; set; } = 10m;
 
     /// <summary>
     /// Indicates if the medicine is sold by unit (true) or by quantity (false).
@@ -117,4 +121,35 @@ public class Medicine : BaseEntity
     /// Collection of packaging/sub units for this medicine.
     /// </summary>
     public ICollection<MedicineUnit> MedicineUnits { get; set; } = new List<MedicineUnit>();
+
+    /// <summary>
+    /// تنويعات الصنف من مقاسات وألوان وموديلات
+    /// </summary>
+    public virtual ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
+
+    /// <summary>
+    /// مدة الضمان الافتراضية بالأشهر للأجهزة الإلكترونية
+    /// </summary>
+    public int DefaultWarrantyMonths { get; set; } = 12;
+
+    /// <summary>
+    /// الأرقام التسلسلية للأجهزة المرتبطة بهذا الصنف
+    /// </summary>
+    public virtual ICollection<ProductSerialNumber> SerialNumbers { get; set; } = new List<ProductSerialNumber>();
+
+    /// <summary>
+    /// رقم القطعة الأصلي للشركة المصنعة (OEM Part Number) - خاص بقطع الغيار
+    /// </summary>
+    public string? OemPartNumber { get; set; }
+
+    /// <summary>
+    /// رقم القطعة التجاري أو البديل من الشركة الصانعة (Manufacturer Part Number)
+    /// </summary>
+    public string? ManufacturerPartNumber { get; set; }
+
+    /// <summary>
+    /// الموديلات والمركبات المتوافقة (Compatible Vehicles / Models)
+    /// مثل: تويوتا كامري 2018-2024، لكزس ES 2019-2023
+    /// </summary>
+    public string? CompatibleVehicles { get; set; }
 }

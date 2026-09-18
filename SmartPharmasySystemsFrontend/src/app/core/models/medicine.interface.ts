@@ -31,11 +31,15 @@ export interface Medicine {
     defaultPurchasePrice: number;
     defaultSalePrice: number;
     minAlertQuantity: number;
+    totalStock: number;
     reorderLevel: number;
     soldByUnit: boolean;
     status: string; // "Active" | "Inactive"
     imageUrl?: string;
     notes?: string;
+    oemPartNumber?: string;
+    manufacturerPartNumber?: string;
+    compatibleVehicles?: string;
     createdAt: string;
     updatedAt?: string;
     isDeleted: boolean;
@@ -70,6 +74,9 @@ export interface CreateMedicineDto {
     notes?: string;
     baseUnitName?: string;
     medicineUnits?: MedicineUnit[];
+    oemPartNumber?: string;
+    manufacturerPartNumber?: string;
+    compatibleVehicles?: string;
 }
 
 /**
@@ -94,6 +101,9 @@ export interface UpdateMedicineDto {
     notes?: string;
     baseUnitName?: string;
     medicineUnits?: MedicineUnit[];
+    oemPartNumber?: string;
+    manufacturerPartNumber?: string;
+    compatibleVehicles?: string;
 }
 
 /**
@@ -135,6 +145,9 @@ export interface MedicineDto {
     status: string;
     imageUrl?: string;
     notes?: string;
+    oemPartNumber?: string;
+    manufacturerPartNumber?: string;
+    compatibleVehicles?: string;
     totalQuantity?: number;
     stock?: number;
     createdAt?: string;

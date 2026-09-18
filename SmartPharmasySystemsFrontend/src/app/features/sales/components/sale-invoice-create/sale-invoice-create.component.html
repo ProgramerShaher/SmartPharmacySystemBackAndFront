@@ -12,9 +12,27 @@
                         <p-autoComplete #medicineAutoComplete [suggestions]="filteredMedicines"
                             (completeMethod)="searchMedicine($event)" field="name" [(ngModel)]="searchQueryText"
                             [ngModelOptions]="{standalone: true}" (onSelect)="onMedicineSelectInline($event.value)"
-                            placeholder="ابحث عن الدواء بالاسم أو امسح الباركود..." appendTo="body" [forceSelection]="true"
+                            placeholder="ابحث بالاسم أو رقم القطعة OEM أو الباركود..." appendTo="body" [forceSelection]="true"
                             [minLength]="1" [autoHighlight]="true" [showEmptyMessage]="true" emptyMessage="لا يوجد نتائج للبحث"
-                            styleClass="custom-p-input header-search-input"></p-autoComplete>
+                            styleClass="custom-p-input header-search-input">
+                            <ng-template let-med pTemplate="item">
+                                <div class="flex flex-column gap-1 py-1 w-full">
+                                    <div class="flex align-items-center justify-content-between">
+                                        <span class="font-bold text-900">{{ med.name }}</span>
+                                        <span class="text-sm font-semibold text-primary">{{ med.defaultSalePrice | currency:' ':'symbol':'1.2-2' }}</span>
+                                    </div>
+                                    <div class="flex align-items-center gap-2 flex-wrap text-xs text-500">
+                                        <span *ngIf="med.defaultBarcode"><i class="pi pi-barcode mr-1"></i>{{ med.defaultBarcode }}</span>
+                                        <span *ngIf="med.oemPartNumber" class="px-2 py-0 border-round bg-blue-50 text-blue-700 font-mono">
+                                            <i class="pi pi-wrench mr-1"></i>OEM: {{ med.oemPartNumber }}
+                                        </span>
+                                        <span *ngIf="med.compatibleVehicles" class="px-2 py-0 border-round bg-green-50 text-green-700">
+                                            <i class="pi pi-car mr-1"></i>{{ med.compatibleVehicles }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </p-autoComplete>
                         <span class="icon-scanner" (click)="toggleSimulator()" pTooltip="مسح الباركود">
                             <i class="pi pi-camera"></i>
                         </span>
@@ -28,6 +46,31 @@
         </div>
 
         <div class="header-actions-top">
+            <!-- تعليق الفاتورة الحالية -->
+            <button *ngIf="allowHoldInvoice" type="button" class="btn-top-action hold-btn"
+                (click)="holdCurrentInvoice()" [disabled]="items().length === 0"
+                pTooltip="تعليق الفاتورة الحالية [F6]" tooltipPosition="bottom">
+                <i class="pi pi-pause"></i>
+                <span>تعليق [F6]</span>
+            </button>
+
+            <!-- استرجاع الفواتير المعلقة مع العداد -->
+            <button *ngIf="allowHoldInvoice" type="button" class="btn-top-action held-list-btn"
+                (click)="openHeldInvoicesModal()"
+                pTooltip="قائمة الفواتير المعلقة" tooltipPosition="bottom">
+                <i class="pi pi-bookmark"></i>
+                <span>المعلقة</span>
+                <span class="held-badge" *ngIf="(heldCount$ | async) as count" [class.has-held]="count > 0">{{ count }}</span>
+            </button>
+
+            <!-- فحص الضمان والسيريال -->
+            <button *ngIf="trackSerialNumbers" type="button" class="btn-top-action warranty-btn"
+                (click)="openWarrantyDialog()"
+                pTooltip="فحص الضمان والأرقام التسلسلية [F8]" tooltipPosition="bottom">
+                <i class="pi pi-shield"></i>
+                <span>فحص الضمان [F8]</span>
+            </button>
+
             <button type="button" class="btn-top-action drawer-btn" (click)="openDrawerLedger()"
                 pTooltip="رصيد وحركة درج الكاشير [Ctrl+D]" tooltipPosition="bottom">
                 <i class="pi pi-wallet"></i>
@@ -90,6 +133,17 @@
                 optionValue="value" appendTo="body" styleClass="custom-p-input"
                 [disabled]="isCashCustomer" (keydown.enter)="focusNext('medicineAutoComplete', $event)"></p-dropdown>
         </div>
+
+        <!-- ضريبة القيمة المضافة (ZATCA / VAT) -->
+        <div class="input-group" *ngIf="enableVAT" style="min-width: 170px;">
+            <label>ضريبة القيمة المضافة</label>
+            <div style="display: flex; align-items: center; gap: 8px; padding: 4px 8px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; height: 38px;">
+                <p-inputSwitch [ngModel]="isTaxInclusive()" (ngModelChange)="isTaxInclusive.set($event)"></p-inputSwitch>
+                <span style="font-size: 11px; font-weight: 700; color: #1e40af;">
+                    {{ isTaxInclusive() ? 'شامل الضريبة' : 'غير شامل' }} ({{ taxRate() }}%)
+                </span>
+            </div>
+        </div>
     </div>
 
     <!-- الجدول والقائمة الفارغة للأصناف -->
@@ -112,6 +166,19 @@
                 <tr (click)="editItemInline(item, i)" class="table-row-item">
                     <td style="font-weight: 700; color: #0f172a; text-align: right;">
                         {{ item.medicineName }}
+                        <div *ngIf="item.variantSize || item.variantColor" class="variant-badge-line" style="display: inline-flex; align-items: center; gap: 4px; margin-top: 2px;">
+                            <span *ngIf="item.variantColorHex" style="width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.15);" [style.background]="item.variantColorHex"></span>
+                            <span *ngIf="item.variantSize" style="background: #e0e7ff; color: #4338ca; font-size: 11px; padding: 1px 6px; border-radius: 4px; font-weight: 700;">مقاس {{ item.variantSize }}</span>
+                            <span *ngIf="item.variantColor" style="background: #f1f5f9; color: #334155; font-size: 11px; padding: 1px 6px; border-radius: 4px; font-weight: 600;">{{ item.variantColor }}</span>
+                        </div>
+                        <div *ngIf="item.serialNumbers && item.serialNumbers.length > 0" class="serial-badge-line" style="display: inline-flex; flex-wrap: wrap; gap: 4px; margin-top: 2px;">
+                            <span *ngFor="let sn of item.serialNumbers" style="background: #e0f2fe; color: #0369a1; font-size: 10px; font-family: monospace; padding: 1px 6px; border-radius: 4px; font-weight: 700;">
+                                <i class="pi pi-shield" style="font-size: 9px;"></i> {{ sn }}
+                            </span>
+                            <span *ngIf="item.warrantyMonths" style="background: #ecfdf5; color: #047857; font-size: 10px; padding: 1px 5px; border-radius: 4px; font-weight: 600;">
+                                ضمان {{ item.warrantyMonths }} شهر
+                            </span>
+                        </div>
                         <div *ngIf="item.expiryDate" class="expiry-subtext">
                             <i class="pi pi-calendar"></i> انتهاء: {{ item.expiryDate | date:'MM/yy' }}
                         </div>
@@ -123,7 +190,7 @@
                         <span class="badge-batch">{{ item.batchNumber || '-' }}</span>
                     </td>
                     <td style="text-align: center;">
-                        <span style="font-weight: 800; font-size: 13px; color: #0f172a;">{{ item.quantity }}</span>
+                        <span style="font-weight: 800; font-size: 13px; color: #0f172a;">{{ item.quantity | number : '1.0-3' }}</span>
                         <span class="unit-tag">{{ item.unitName || 'حبة' }}</span>
                     </td>
                     <td style="text-align: right; font-weight: 600; color: #334155;">
@@ -179,7 +246,15 @@
             </span>
             <span class="stat-badge stat-qty">
                 <i class="pi pi-box"></i>
-                إجمالي القطع: <span class="stat-number">{{ totalQuantity() }}</span>
+                إجمالي القطع: <span class="stat-number">{{ totalQuantity() | number : '1.0-3' }}</span>
+            </span>
+            <span *ngIf="enableVAT && taxRate() > 0" class="stat-badge" style="background: #f0fdf4; border-color: #bbf7d0; color: #166534;">
+                <i class="pi pi-money-bill"></i>
+                قبل الضريبة: <span class="stat-number font-mono">{{ vatSubtotal() | number : '1.2-2' }}</span>
+            </span>
+            <span *ngIf="enableVAT && taxRate() > 0" class="stat-badge" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
+                <i class="pi pi-percentage"></i>
+                ضريبة ({{ taxRate() }}%): <span class="stat-number font-mono">{{ vatAmount() | number : '1.2-2' }}</span>
             </span>
             <span class="stat-badge stat-total">
                 <i class="pi pi-calculator"></i>
@@ -226,8 +301,10 @@
                 <!-- الكمية (تأخذ Focus تلقائياً + Select All) -->
                 <div class="input-group">
                     <label>الكمية المطلوب بيعها <span class="text-red-500">*</span></label>
-                    <p-inputNumber #qtyInputEl [(ngModel)]="inlineQuantity" [ngModelOptions]="{standalone: true}" [min]="1"
-                        [max]="maxAllowedQuantityInline" [showButtons]="false" (onFocus)="onInputFocus($event)"
+                    <p-inputNumber #qtyInputEl [(ngModel)]="inlineQuantity" [ngModelOptions]="{standalone: true}"
+                        [min]="quantityMin" [max]="maxAllowedQuantityInline" [step]="quantityStep"
+                        [minFractionDigits]="0" [maxFractionDigits]="quantityFractionDigits"
+                        [showButtons]="false" (onFocus)="onInputFocus($event)"
                         (keyup.enter)="confirmModalItem()" styleClass="custom-p-input modal-input-highlight"></p-inputNumber>
                 </div>
 
@@ -236,6 +313,47 @@
                     <label>وحدة البيع <span class="text-red-500">*</span></label>
                     <p-dropdown [options]="inlineUnitOptions" [(ngModel)]="inlineUnit" [ngModelOptions]="{standalone: true}"
                         optionLabel="label" appendTo="body" styleClass="custom-p-input"></p-dropdown>
+                </div>
+            </div>
+
+            <!-- تنويعات الصنف (المقاس واللون لقطاع الملابس والموضة) -->
+            <div *ngIf="useProductVariants && availableVariants.length > 0" class="variants-selector-container" style="margin-top: 10px; margin-bottom: 12px;">
+                <label style="font-weight: 700; font-size: 0.82rem; color: #334155; margin-bottom: 6px; display: block;">
+                    <i class="pi pi-palette" style="color: #6366f1; margin-left: 4px;"></i> اختر المقاس واللون:
+                </label>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                    <div *ngFor="let v of availableVariants" 
+                        class="variant-select-chip" 
+                        [class.active-variant]="selectedVariant?.id === v.id"
+                        (click)="onVariantSelectInline(v)"
+                        style="cursor: pointer; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; border: 1.5px solid #cbd5e1; background: #ffffff; font-size: 12px; transition: all 0.2s;"
+                        [style.borderColor]="selectedVariant?.id === v.id ? '#6366f1' : '#cbd5e1'"
+                        [style.background]="selectedVariant?.id === v.id ? '#eff6ff' : '#ffffff'">
+                        <span *ngIf="v.colorHex" style="width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.2);" [style.background]="v.colorHex"></span>
+                        <strong style="color: #1e293b;">{{ v.size || '-' }}</strong>
+                        <span *ngIf="v.color" style="color: #64748b;">/ {{ v.color }}</span>
+                        <span *ngIf="v.additionalPrice > 0" style="color: #059669; font-weight: 700; font-size: 10px; background: #ecfdf5; padding: 1px 4px; border-radius: 4px;">+{{ v.additionalPrice | number:'1.0-0' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- الأرقام التسلسلية للأجهزة والإلكترونيات -->
+            <div *ngIf="trackSerialNumbers && availableSerialNumbers.length > 0" class="serials-selector-container" style="margin-top: 10px; margin-bottom: 12px;">
+                <label style="font-weight: 700; font-size: 0.82rem; color: #334155; margin-bottom: 6px; display: block;">
+                    <i class="pi pi-shield" style="color: #0284c7; margin-left: 4px;"></i> الأرقام التسلسلية المتوفرة (اختر السيريال):
+                </label>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto; padding: 6px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <div *ngFor="let sn of availableSerialNumbers"
+                        class="serial-select-chip"
+                        [class.active-serial]="selectedSerialNumbers.includes(sn.serialNumber)"
+                        (click)="toggleSerialNumberSelection(sn.serialNumber)"
+                        style="cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 11px; transition: all 0.2s;"
+                        [style.borderColor]="selectedSerialNumbers.includes(sn.serialNumber) ? '#0284c7' : '#cbd5e1'"
+                        [style.background]="selectedSerialNumbers.includes(sn.serialNumber) ? '#e0f2fe' : '#ffffff'"
+                        [style.color]="selectedSerialNumbers.includes(sn.serialNumber) ? '#0369a1' : '#334155'">
+                        <i class="pi pi-check" *ngIf="selectedSerialNumbers.includes(sn.serialNumber)" style="font-size: 10px;"></i>
+                        <span>{{ sn.serialNumber }}</span>
+                    </div>
                 </div>
             </div>
 
@@ -412,4 +530,184 @@
             </div>
         </ng-container>
     </div>
+</p-dialog>
+
+<!-- نافذة الفواتير المعلقة (Held Invoices Dialog) -->
+<p-dialog [(visible)]="heldInvoicesVisible" [modal]="true" appendTo="body"
+    [style]="{width: '780px', maxWidth: '95vw'}" [draggable]="false" [resizable]="false" dir="rtl"
+    header="الفواتير المعلقة في نقطة البيع">
+
+    <div class="held-invoices-modal-content" style="padding: 0.5rem 0;">
+        <div *ngIf="loadingHeldInvoices" class="flex flex-column align-items-center justify-content-center p-5">
+            <p-progressSpinner styleClass="w-3rem h-3rem" strokeWidth="4"></p-progressSpinner>
+            <p class="mt-3 text-secondary font-medium">جاري جلب الفواتير المعلقة...</p>
+        </div>
+
+        <div *ngIf="!loadingHeldInvoices && heldInvoicesList.length === 0" class="text-center p-5" style="color: #64748b;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                <i class="pi pi-inbox" style="font-size: 2.2rem; color: #94a3b8;"></i>
+            </div>
+            <h3 style="margin: 0 0 0.5rem; font-size: 1.1rem; font-weight: 700; color: #334155;">لا توجد أي فواتير معلقة حالياً</h3>
+            <p style="margin: 0; font-size: 0.85rem;">يمكنك تعليق أي فاتورة جارية بالضغط على الزر في الأعلى أو بالاختصار [F6]</p>
+        </div>
+
+        <div *ngIf="!loadingHeldInvoices && heldInvoicesList.length > 0" class="held-table-container">
+            <p-table [value]="heldInvoicesList" [scrollable]="true" scrollHeight="320px" styleClass="p-datatable-sm p-datatable-striped">
+                <ng-template pTemplate="header">
+                    <tr style="font-size: 0.82rem;">
+                        <th style="width: 22%;">رقم المرجع</th>
+                        <th style="width: 25%;">العميل</th>
+                        <th class="text-center" style="width: 14%;">الأصناف</th>
+                        <th class="text-center" style="width: 18%;">الإجمالي</th>
+                        <th class="text-center" style="width: 21%;">إجراءات</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-held>
+                    <tr style="font-size: 0.85rem;">
+                        <td>
+                            <span style="font-family: monospace; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">
+                                {{ held.holdReference }}
+                            </span>
+                            <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">
+                                {{ held.createdAt | date:'HH:mm | yyyy/MM/dd' }}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 700; color: #1e293b;">{{ held.customerName || 'عميل نقدي' }}</div>
+                            <small *ngIf="held.notes" style="color: #64748b;">{{ held.notes }}</small>
+                        </td>
+                        <td class="text-center">
+                            <span style="background: #f1f5f9; color: #475569; font-weight: 700; padding: 2px 8px; border-radius: 12px; font-size: 0.78rem;">
+                                {{ held.itemsCount }} أصناف
+                            </span>
+                        </td>
+                        <td class="text-center" style="font-weight: 800; color: #059669; font-size: 0.92rem;">
+                            {{ held.totalAmount | number:'1.2-2' }} <small style="font-size: 0.75rem;">ر.ي</small>
+                        </td>
+                        <td class="text-center">
+                            <div style="display: flex; gap: 0.35rem; justify-content: center;">
+                                <button pButton label="استرجاع" icon="pi pi-replay" class="p-button-sm p-button-success"
+                                    (click)="restoreHeldInvoice(held)" pTooltip="استئناف الفاتورة في السلة"></button>
+                                <button pButton icon="pi pi-trash" class="p-button-sm p-button-danger p-button-outlined"
+                                    (click)="deleteHeldInvoice(held, $event)" pTooltip="حذف الفاتورة نهائياً"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <span style="font-size: 0.8rem; color: #64748b;">إجمالي الفواتير المعلقة: {{ heldInvoicesList.length }}</span>
+            <button pButton label="إغلاق" icon="pi pi-times" class="p-button-text p-button-secondary p-button-sm" (click)="heldInvoicesVisible = false"></button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- نافذة مساعدة الاختصارات (Shortcuts Dialog) -->
+<p-dialog [(visible)]="shortcutsHelpVisible" [modal]="true" appendTo="body"
+    [style]="{width: '460px', maxWidth: '95vw'}" [draggable]="false" [resizable]="false" dir="rtl"
+    header="اختصارات لوحة المفاتيح السريعة (POS)">
+    <div style="display: flex; flex-direction: column; gap: 0.65rem; padding: 0.5rem 0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+            <span style="font-weight:600; color:#334155;">اعتماد وحفظ الفاتورة</span>
+            <span style="font-family:monospace; font-weight:800; background:#0284c7; color:#fff; padding:2px 8px; border-radius:4px;">F2</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+            <span style="font-weight:600; color:#334155;">حفظ مسودة</span>
+            <span style="font-family:monospace; font-weight:800; background:#475569; color:#fff; padding:2px 8px; border-radius:4px;">F3</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+            <span style="font-weight:600; color:#334155;">تبديل نوع العميل (نقدي / مسجل)</span>
+            <span style="font-family:monospace; font-weight:800; background:#059669; color:#fff; padding:2px 8px; border-radius:4px;">F4</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+            <span style="font-weight:600; color:#334155;">تعليق الفاتورة الجارية</span>
+            <span style="font-family:monospace; font-weight:800; background:#d97706; color:#fff; padding:2px 8px; border-radius:4px;">F6</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+            <span style="font-weight:600; color:#334155;">فحص الضمان والسيريال</span>
+            <span style="font-family:monospace; font-weight:800; background:#0284c7; color:#fff; padding:2px 8px; border-radius:4px;">F8</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+            <span style="font-weight:600; color:#334155;">حركة ورصيد درج الكاشير</span>
+            <span style="font-family:monospace; font-weight:800; background:#7c3aed; color:#fff; padding:2px 8px; border-radius:4px;">Ctrl + D</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding: 0.5rem 0.75rem; background:#f8fafc; border-radius:6px; border:1px solid #e2e8f0;">
+            <span style="font-weight:600; color:#334155;">إغلاق النوافذ / التراجع</span>
+            <span style="font-family:monospace; font-weight:800; background:#dc2626; color:#fff; padding:2px 8px; border-radius:4px;">Esc</span>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton label="حسناً" icon="pi pi-check" class="p-button-sm p-button-primary" (click)="shortcutsHelpVisible = false"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- ==========================================
+     نافذة فحص الضمان والسيريال [F8]
+     ========================================== -->
+<p-dialog [(visible)]="warrantyDialogVisible" [modal]="true" appendTo="body"
+    [style]="{width: '520px', maxWidth: '95vw'}" [draggable]="false" [resizable]="false" dir="rtl"
+    header="فحص الضمان والأرقام التسلسلية (Warranty Check)">
+    <div style="display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem 0;">
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="text" pInputText [(ngModel)]="warrantySearchSn"
+                placeholder="أدخل أو امسح الرقم التسلسلي (SN / IMEI)..."
+                (keyup.enter)="checkWarranty()"
+                style="flex: 1; font-family: monospace; font-weight: 700;" autofocus />
+            <button pButton label="فحص" icon="pi pi-search" class="p-button-primary"
+                [loading]="loadingWarrantyCheck" (click)="checkWarranty()"></button>
+        </div>
+
+        <div *ngIf="warrantyCheckError" style="padding: 0.75rem 1rem; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #dc2626; font-size: 0.88rem; display: flex; align-items: center; gap: 0.5rem;">
+            <i class="pi pi-exclamation-circle"></i>
+            <span>{{ warrantyCheckError }}</span>
+        </div>
+
+        <div *ngIf="warrantySearchResult" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem;">
+                <div>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: 800; color: #1e293b;">{{ warrantySearchResult.medicineName }}</h3>
+                    <span style="font-family: monospace; color: #64748b; font-size: 0.85rem;">SN: {{ warrantySearchResult.serialNumber }}</span>
+                </div>
+                <span *ngIf="warrantySearchResult.isUnderWarranty" style="background: #ecfdf5; color: #047857; font-weight: 800; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="pi pi-shield"></i> ساري (باقي {{ warrantySearchResult.remainingDays }} يوم)
+                </span>
+                <span *ngIf="!warrantySearchResult.isUnderWarranty && warrantySearchResult.status === 'Sold'" style="background: #fef2f2; color: #dc2626; font-weight: 800; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="pi pi-times-circle"></i> منتهي الضمان
+                </span>
+                <span *ngIf="warrantySearchResult.status === 'InStock'" style="background: #eff6ff; color: #0284c7; font-weight: 800; padding: 4px 10px; border-radius: 20px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 4px;">
+                    <i class="pi pi-box"></i> متوفر في المخزن (غير مباع)
+                </span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem;">
+                <div>
+                    <span style="color: #64748b;">العميل: </span>
+                    <strong style="color: #1e293b;">{{ warrantySearchResult.customerName || 'عميل نقدي / غير محدد' }}</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">تاريخ البيع: </span>
+                    <strong style="color: #1e293b;">{{ warrantySearchResult.saleDate ? (warrantySearchResult.saleDate | date:'yyyy-MM-dd') : '-' }}</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">مدة الضمان: </span>
+                    <strong style="color: #1e293b;">{{ warrantySearchResult.warrantyMonths }} شهر</strong>
+                </div>
+                <div>
+                    <span style="color: #64748b;">انتهاء الضمان: </span>
+                    <strong style="color: #1e293b;">{{ warrantySearchResult.warrantyExpiryDate ? (warrantySearchResult.warrantyExpiryDate | date:'yyyy-MM-dd') : '-' }}</strong>
+                </div>
+            </div>
+
+            <div *ngIf="warrantySearchResult.notes" style="font-size: 0.82rem; color: #475569; background: #fff; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                <strong>ملاحظات: </strong> {{ warrantySearchResult.notes }}
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton label="إغلاق" icon="pi pi-times" class="p-button-sm p-button-secondary" (click)="warrantyDialogVisible = false"></button>
+    </ng-template>
 </p-dialog>

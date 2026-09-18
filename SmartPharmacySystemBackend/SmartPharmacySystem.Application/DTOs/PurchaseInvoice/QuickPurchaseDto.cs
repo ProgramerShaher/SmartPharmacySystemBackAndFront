@@ -9,11 +9,11 @@ namespace SmartPharmacySystem.Application.DTOs.PurchaseInvoice
         public int MedicineId { get; set; }
 
         [Required]
-        [Range(1, int.MaxValue)]
-        public int Quantity { get; set; }
+        [Range(0.0001, double.MaxValue)]
+        public decimal Quantity { get; set; }
 
-        [Range(0, int.MaxValue)]
-        public int BonusQuantity { get; set; }
+        [Range(0, double.MaxValue)]
+        public decimal BonusQuantity { get; set; }
 
         [Required]
         [Range(0, double.MaxValue)]

@@ -12,7 +12,7 @@ public interface IInventoryStockRepository
     Task<IEnumerable<InventoryStock>> GetExpiringSoonAsync(int daysThreshold);
     Task<IEnumerable<InventoryStock>> GetExpiredAsync();
     Task<IEnumerable<InventoryStock>> GetBelowReorderLevelAsync();
-    Task<int> GetTotalQuantityAsync(int warehouseId, int medicineId);
+    Task<decimal> GetTotalQuantityAsync(int warehouseId, int medicineId);
     Task<InventoryStock> AddAsync(InventoryStock stock);
     Task UpdateAsync(InventoryStock stock);
     Task DeleteAsync(int id);

@@ -3,6 +3,14 @@ import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 export type Theme = 'light' | 'dark' | 'system';
+export type ButtonShape = 'rounded' | 'squircle' | 'pill' | 'classic';
+
+export interface ButtonShapeOption {
+    key: ButtonShape;
+    name: string;
+    radius: string;
+    description: string;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -11,6 +19,14 @@ export class ThemeService {
     private renderer: Renderer2;
     private currentThemeSub: BehaviorSubject<Theme>;
     currentTheme$: Observable<Theme>;
+
+    // Button Shape System
+    private currentButtonShapeSub: BehaviorSubject<ButtonShape>;
+    currentButtonShape$: Observable<ButtonShape>;
+
+    // Color System
+    private currentColorSub: BehaviorSubject<string>;
+    currentColor$: Observable<string>;
 
     constructor(
         rendererFactory: RendererFactory2,
@@ -21,9 +37,16 @@ export class ThemeService {
         this.currentThemeSub = new BehaviorSubject<Theme>(this.getInitialTheme());
         this.currentTheme$ = this.currentThemeSub.asObservable();
 
+        this.currentButtonShapeSub = new BehaviorSubject<ButtonShape>(this.getInitialButtonShape());
+        this.currentButtonShape$ = this.currentButtonShapeSub.asObservable();
+
+        this.currentColorSub = new BehaviorSubject<string>(this.getInitialColor());
+        this.currentColor$ = this.currentColorSub.asObservable();
+
         if (isPlatformBrowser(this.platformId)) {
             this.applyTheme(this.currentThemeSub.value);
             this.applyColor(this.currentColorSub.value);
+            this.applyButtonShape(this.currentButtonShapeSub.value);
 
             // Listen to system preference changes
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
@@ -34,10 +57,11 @@ export class ThemeService {
         }
     }
 
+    // --- Theme System ---
     private getInitialTheme(): Theme {
         if (isPlatformBrowser(this.platformId)) {
             const saved = localStorage.getItem('app-theme') as Theme;
-            return saved || 'light'; // Default to light if nothing saved
+            return saved || 'light';
         }
         return 'light';
     }
@@ -63,12 +87,19 @@ export class ThemeService {
             actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
 
+        const root = this.document.documentElement;
+        const body = this.document.body;
+
         if (actualTheme === 'dark') {
-            this.renderer.addClass(this.document.body, 'dark-theme');
-            this.renderer.removeClass(this.document.body, 'light-theme');
+            this.renderer.addClass(body, 'dark-theme');
+            this.renderer.removeClass(body, 'light-theme');
+            this.renderer.setAttribute(root, 'data-theme', 'dark');
+            this.renderer.setAttribute(body, 'data-theme', 'dark');
         } else {
-            this.renderer.addClass(this.document.body, 'light-theme');
-            this.renderer.removeClass(this.document.body, 'dark-theme');
+            this.renderer.addClass(body, 'light-theme');
+            this.renderer.removeClass(body, 'dark-theme');
+            this.renderer.setAttribute(root, 'data-theme', 'light');
+            this.renderer.setAttribute(body, 'data-theme', 'light');
         }
     }
 
@@ -76,15 +107,51 @@ export class ThemeService {
         return this.currentThemeSub.value;
     }
 
-    // --- Color System ---
-    
-    private currentColorSub = new BehaviorSubject<string>(this.getInitialColor());
-    currentColor$ = this.currentColorSub.asObservable();
+    // --- Button Shape System ---
+    get buttonShapeOptions(): ButtonShapeOption[] {
+        return [
+            { key: 'rounded', name: 'عصري منحني (8px)', radius: '8px', description: 'تصميم متوازن وعصري' },
+            { key: 'squircle', name: 'انسيابي ناعم (12px)', radius: '12px', description: 'حواف ناعمة مريحة للعين' },
+            { key: 'pill', name: 'كبسولة دائري (Pill)', radius: '9999px', description: 'حواف دائرية كاملة' },
+            { key: 'classic', name: 'كلاسيكي حاد (4px)', radius: '4px', description: 'تصميم كلاسيكي دقيق' }
+        ];
+    }
 
+    private getInitialButtonShape(): ButtonShape {
+        if (isPlatformBrowser(this.platformId)) {
+            const saved = localStorage.getItem('app-button-shape') as ButtonShape;
+            return saved || 'rounded';
+        }
+        return 'rounded';
+    }
+
+    setButtonShape(shape: ButtonShape) {
+        if (isPlatformBrowser(this.platformId)) {
+            localStorage.setItem('app-button-shape', shape);
+            this.currentButtonShapeSub.next(shape);
+            this.applyButtonShape(shape);
+        }
+    }
+
+    private applyButtonShape(shape: ButtonShape) {
+        if (!isPlatformBrowser(this.platformId)) return;
+        const opt = this.buttonShapeOptions.find(o => o.key === shape);
+        const radius = opt ? opt.radius : '8px';
+        const fieldRadius = shape === 'pill' ? '22px' : radius;
+        const root = this.document.documentElement;
+        root.style.setProperty('--btn-border-radius', radius);
+        root.style.setProperty('--field-border-radius', fieldRadius);
+    }
+
+    get currentButtonShapeValue(): ButtonShape {
+        return this.currentButtonShapeSub.value;
+    }
+
+    // --- Color System ---
     private getInitialColor(): string {
         if (isPlatformBrowser(this.platformId)) {
             const saved = localStorage.getItem('app-primary-color');
-            return saved || 'emerald'; // Default color
+            return saved || 'emerald';
         }
         return 'emerald';
     }
@@ -128,22 +195,23 @@ export class ThemeService {
     // Pre-defined Professional Color Palettes
     get colorOptions() {
         return [
-            { key: 'emerald', name: 'زمردي (افتراضي)', color: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981' },
-            { key: 'blue', name: 'أزرق احترافي', color: '#3b82f6' },
+            { key: 'emerald', name: 'زمردي صيدلاني', color: '#10b981' },
+            { key: 'blue', name: 'أزرق تقني', color: '#3b82f6' },
             { key: 'indigo', name: 'نيلي عصري', color: '#6366f1' },
             { key: 'purple', name: 'بنفسجي ملكي', color: '#8b5cf6' },
-            { key: 'rose', name: 'وردي', color: '#f43f5e' },
+            { key: 'rose', name: 'وردي أنيق', color: '#f43f5e' },
             { key: 'orange', name: 'برتقالي حيوي', color: '#f97316' },
-            { key: 'cyan', name: 'سماوي', color: '#06b6d4' }
+            { key: 'cyan', name: 'سماوي بحري', color: '#06b6d4' },
+            { key: 'teal', name: 'تركوازي طبي', color: '#0d9488' }
         ];
     }
 
     private getColorPalette(key: string): any {
         const palettes: any = {
             'emerald': {
-                base: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', rgb: '16, 185, 129',
+                base: '#10b981', rgb: '16, 185, 129',
                 50: '#ecfdf5', 100: '#d1fae5', 200: '#a7f3d0', 300: '#6ee7b7',
-                400: '#34d399', 500: getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim() || '#10b981', 600: getComputedStyle(document.documentElement).getPropertyValue('--primary-600').trim() || '#059669', 700: '#047857',
+                400: '#34d399', 500: '#10b981', 600: '#059669', 700: '#047857',
                 800: '#065f46', 900: '#064e3b'
             },
             'blue': {
@@ -181,6 +249,12 @@ export class ThemeService {
                 50: '#ecfeff', 100: '#cffafe', 200: '#a5f3fc', 300: '#67e8f9',
                 400: '#22d3ee', 500: '#06b6d4', 600: '#0891b2', 700: '#0e7490',
                 800: '#155e75', 900: '#164e63'
+            },
+            'teal': {
+                base: '#0d9488', rgb: '13, 148, 136',
+                50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+                400: '#2dd4bf', 500: '#0d9488', 600: '#0f766e', 700: '#115e59',
+                800: '#134e4a', 900: '#134e4a'
             }
         };
         return palettes[key];

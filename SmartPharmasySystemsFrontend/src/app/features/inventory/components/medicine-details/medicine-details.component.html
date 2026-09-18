@@ -1,179 +1,188 @@
-<div class="min-h-screen bg-gray-50 pb-8" dir="rtl" *ngIf="!loading && medicine; else loader">
+<div class="min-h-screen pb-8" style="background: var(--bg-color); color: var(--text-color);" dir="rtl" *ngIf="!loading && medicine; else loader">
     <!-- Hero Header with Gradient -->
-    <div class="bg-white shadow-1 border-bottom-1 border-200 relative overflow-hidden">
-        <div class="surface-overlay px-4 py-5 md:px-6 lg:px-8 relative z-2">
+    <div class="shadow-1 relative overflow-hidden" style="background: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+        <div class="px-4 py-5 md:px-6 lg:px-8 relative z-2">
             <div
                 class="flex flex-column md:flex-row align-items-start md:align-items-center justify-content-between gap-4">
                 <div class="flex align-items-start gap-4">
                     <div
-                        class="w-6rem h-6rem border-circle bg-teal-50 flex align-items-center justify-content-center border-2 border-white shadow-2">
-                        <i class="pi pi-box text-5xl text-teal-600"></i>
+                        class="w-6rem h-6rem border-circle flex align-items-center justify-content-center shadow-2"
+                        style="background: rgba(var(--primary-rgb), 0.12); border: 2px solid var(--primary-color);">
+                        <i class="pi pi-box text-5xl" style="color: var(--primary-color);"></i>
                     </div>
                     <div>
                         <div class="flex flex-wrap align-items-center gap-3 mb-2">
-                            <h1 class="m-0 text-4xl font-bold text-900">{{medicine.name}}</h1>
+                            <h1 class="m-0 text-3xl font-bold" style="color: var(--text-color);">{{medicine.name}}</h1>
                             <p-tag [value]="medicine.status === 'Active' ? 'نشط' : 'متوقف'" [severity]="getStatusSeverity(medicine.status)"
-                                [rounded]="true" class="text-lg"></p-tag>
+                                [rounded]="true" class="text-sm"></p-tag>
                         </div>
-                        <div class="flex flex-wrap align-items-center gap-4 text-700">
-                            <span class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-2xl">
-                                <i class="pi pi-tag text-teal-600"></i>
-                                <span class="font-medium">{{medicine.categoryName}}</span>
+                        <div class="flex flex-wrap align-items-center gap-3" style="color: var(--text-color-secondary);">
+                            <span class="flex align-items-center gap-2 px-3 py-1 border-round-2xl border-1"
+                                  style="background: var(--surface-hover); border-color: var(--border-color); color: var(--text-color);">
+                                <i class="pi pi-tag" style="color: var(--primary-color);"></i>
+                                <span class="font-medium text-xs">{{medicine.categoryName}}</span>
                             </span>
-                            <span class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-2xl">
-                                <i class="pi pi-building text-teal-600"></i>
-                                <span class="font-medium">{{medicine.manufacturer || 'غير محدد'}}</span>
+                            <span class="flex align-items-center gap-2 px-3 py-1 border-round-2xl border-1"
+                                  style="background: var(--surface-hover); border-color: var(--border-color); color: var(--text-color);">
+                                <i class="pi pi-building" style="color: var(--primary-color);"></i>
+                                <span class="font-medium text-xs">{{medicine.manufacturer || 'غير محدد'}}</span>
                             </span>
-                            <span class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-2xl font-mono">
-                                <i class="pi pi-barcode text-teal-600"></i>
-                                <span class="font-bold">{{medicine.internalCode}}</span>
+                            <span class="flex align-items-center gap-2 px-3 py-1 border-round-2xl font-mono border-1"
+                                  style="background: var(--surface-hover); border-color: var(--border-color); color: var(--text-color);">
+                                <i class="pi pi-barcode" style="color: var(--primary-color);"></i>
+                                <span class="font-bold text-xs">{{medicine.internalCode}}</span>
                             </span>
                         </div>
-                        </div>
-                        </div>
+                    </div>
+                </div>
                 <div class="flex gap-3">
                     <button pButton label="عودة" icon="pi pi-arrow-left"
-                        class="p-button-outlined p-button-secondary p-button-rounded px-4" (click)="goBack()"></button>
-                    <button pButton label="تعديل" icon="pi pi-pencil" class="p-button-rounded p-button-info px-4"
+                        class="p-button-outlined p-button-secondary p-button-sm px-4" (click)="goBack()"></button>
+                    <button pButton label="تعديل" icon="pi pi-pencil" class="imperial-btn-primary p-button-sm px-4"
                         (click)="editMedicine()"></button>
                 </div>
-                </div>
-                </div>
-                <!-- Decorative Background Element -->
-                <div
-                    class="absolute top-0 right-0 w-full h-full bg-gradient-to-l from-teal-50 to-white opacity-50 z-1 pointer-events-none">
-                </div>
-                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="px-4 py-6 md:px-6 lg:px-8 max-w-8xl mx-auto">
         <!-- KPI Cards Section -->
         <div class="grid mb-6">
             <div class="col-12 md:col-4">
-                <div class="card mb-0 bg-white border-round-2xl shadow-1 p-4 border-right-3 border-teal-500 h-full">
+                <div class="card mb-0 border-round-2xl shadow-1 p-4 h-full"
+                     style="background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); border-right: 4px solid var(--primary-color);">
                     <div class="flex justify-content-between mb-3">
                         <div>
-                            <span class="block text-500 font-medium mb-3">إجمالي المخزون</span>
-                            <div class="text-900 font-bold text-3xl">{{medicine.totalQuantity}} <small
-                                    class="text-500 text-lg">{{medicine.baseUnitName || 'حبة'}}</small></div>
-                            <div class="text-sm font-bold text-teal-700 mt-2" *ngIf="medicine.totalQuantity && medicine.totalQuantity > 0">
+                            <span class="block text-xs font-bold mb-2" style="color: var(--text-color-secondary);">إجمالي المخزون</span>
+                            <div class="text-3xl font-bold font-mono" style="color: var(--text-color);">{{medicine.totalQuantity}} <small class="text-sm font-normal" style="color: var(--text-color-secondary);">{{medicine.baseUnitName || 'حبة'}}</small></div>
+                            <div class="text-xs font-bold mt-2" style="color: var(--primary-color);" *ngIf="medicine.totalQuantity && medicine.totalQuantity > 0">
                                 تعادل: {{ getFormattedStock(medicine.totalQuantity) }}
                             </div>
                         </div>
-                        <div class="flex align-items-center justify-content-center bg-teal-100 border-round-xl"
-                            style="width: 3.5rem; height: 3.5rem">
-                            <i class="pi pi-box text-teal-600 text-xl"></i>
+                        <div class="flex align-items-center justify-content-center border-round-xl"
+                            style="width: 3.2rem; height: 3.2rem; background: rgba(var(--primary-rgb), 0.12); color: var(--primary-color);">
+                            <i class="pi pi-box text-xl"></i>
                         </div>
                     </div>
-                    <!-- Stock Level Indicator -->
-                    <div class="w-full bg-gray-100 border-round-2xl h-1rem mt-3 overflow-hidden">
-                        <div class="bg-teal-500 h-full border-round-2xl"
+                    <div class="w-full border-round-2xl h-1rem mt-3 overflow-hidden" style="background: var(--surface-hover);">
+                        <div class="h-full border-round-2xl" style="background: var(--primary-color);"
                             [style.width.%]="(getCurrentStock() / medicine.reorderLevel) * 100"></div>
-                        <!-- Simplified progress logic -->
                     </div>
-                    <div class="mt-2 text-sm text-500 flex justify-content-between">
+                    <div class="mt-2 text-xs flex justify-content-between" style="color: var(--text-color-secondary);">
                         <span>حد الطلب: {{medicine.reorderLevel}}</span>
-                        <span>{{getStatusSeverity(medicine.status) === 'success' ? 'مخزون جيد' : 'مخزون حرج'}}</span>
-                        </div>
-                        </div>
-                        </div>
-
-            <div class="col-12 md:col-4">
-                <div class="card mb-0 bg-white border-round-2xl shadow-1 p-4 border-right-3 border-blue-500 h-full">
-                    <div class="flex justify-content-between mb-3">
-                        <div>
-                            <span class="block text-500 font-medium mb-3">سعر البيع</span>
-                            <div class="text-900 font-bold text-3xl">{{medicine.defaultSalePrice | currency:'YER'}}</div>
-                        </div>
-                        <div class="flex align-items-center justify-content-center bg-blue-100 border-round-xl"
-                            style="width: 3.5rem; height: 3.5rem">
-                            <i class="pi pi-tag text-blue-600 text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="surface-100 p-2 border-round flex justify-content-between align-items-center mt-3">
-                        <span class="text-600">سعر الشراء:</span>
-                        <span class="font-bold text-700">{{medicine.defaultPurchasePrice | currency:'YER'}}</span>
+                        <span [style.color]="getStatusSeverity(medicine.status) === 'success' ? '#10b981' : '#ef4444'">
+                            {{getStatusSeverity(medicine.status) === 'success' ? 'مخزون جيد' : 'مخزون حرج'}}
+                        </span>
                     </div>
                 </div>
             </div>
 
             <div class="col-12 md:col-4">
-                <div class="card mb-0 bg-white border-round-2xl shadow-1 p-4 border-right-3 border-purple-500 h-full">
+                <div class="card mb-0 border-round-2xl shadow-1 p-4 h-full"
+                     style="background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); border-right: 4px solid #3b82f6;">
                     <div class="flex justify-content-between mb-3">
                         <div>
-                            <span class="block text-500 font-medium mb-3">عدد الدفعات</span>
-                            <div class="text-900 font-bold text-3xl">{{batches.length}} <small class="text-500 text-lg">دفعة</small>
-                            </div>
-                            </div>
-                            <div class="flex align-items-center justify-content-center bg-purple-100 border-round-xl"
-                                style="width: 3.5rem; height: 3.5rem">
-                                <i class="pi pi-list text-purple-600 text-xl"></i>
-                            </div>
-                            </div>
-                            <div class="flex gap-2 mt-3">
-                                <p-tag severity="danger" value="منتهية: {{ getExpiredCount() }}" [rounded]="true"></p-tag>
-                                <p-tag severity="warning" value="قريبة: {{ getExpiringSoonCount() }}" [rounded]="true"></p-tag>
-                            </div>
-                            </div>
-                            </div>
-                            </div>
+                            <span class="block text-xs font-bold mb-2" style="color: var(--text-color-secondary);">سعر البيع</span>
+                            <div class="text-3xl font-bold font-mono" style="color: var(--text-color);">{{medicine.defaultSalePrice | currency:'YER'}}</div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center border-round-xl"
+                            style="width: 3.2rem; height: 3.2rem; background: rgba(59, 130, 246, 0.12); color: #3b82f6;">
+                            <i class="pi pi-tag text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-2 border-round flex justify-content-between align-items-center mt-3"
+                         style="background: var(--surface-hover); border: 1px solid var(--border-color);">
+                        <span class="text-xs" style="color: var(--text-color-secondary);">سعر الشراء:</span>
+                        <span class="font-bold text-sm font-mono text-red-500">{{medicine.defaultPurchasePrice | currency:'YER'}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 md:col-4">
+                <div class="card mb-0 border-round-2xl shadow-1 p-4 h-full"
+                     style="background: var(--card-bg); color: var(--text-color); border: 1px solid var(--border-color); border-right: 4px solid #8b5cf6;">
+                    <div class="flex justify-content-between mb-3">
+                        <div>
+                            <span class="block text-xs font-bold mb-2" style="color: var(--text-color-secondary);">عدد الدفعات</span>
+                            <div class="text-3xl font-bold font-mono" style="color: var(--text-color);">{{batches.length}} <small class="text-sm font-normal" style="color: var(--text-color-secondary);">دفعة</small></div>
+                        </div>
+                        <div class="flex align-items-center justify-content-center border-round-xl"
+                            style="width: 3.2rem; height: 3.2rem; background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+                            <i class="pi pi-list text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-3">
+                        <p-tag severity="danger" value="منتهية: {{ getExpiredCount() }}" [rounded]="true"></p-tag>
+                        <p-tag severity="warning" value="قريبة: {{ getExpiringSoonCount() }}" [rounded]="true"></p-tag>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Content Grid -->
         <div class="grid">
         
             <!-- Details Column -->
             <div class="col-12 xl:col-5">
-                <div class="card shadow-2 border-round-2xl p-0 overflow-hidden bg-white h-full mb-4 xl:mb-0">
-                    <div class="p-4 border-bottom-1 border-100 bg-gray-50 flex justify-content-between align-items-center">
-                        <h3 class="text-xl font-bold text-800 m-0 flex align-items-center gap-2">
-                            <i class="pi pi-info-circle text-teal-600"></i> المعلومات الأساسية
+                <div class="card shadow-2 border-round-2xl p-0 overflow-hidden h-full mb-4 xl:mb-0"
+                     style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                    <div class="p-4 flex justify-content-between align-items-center"
+                         style="background: var(--surface-hover); border-bottom: 1px solid var(--border-color);">
+                        <h3 class="text-base font-bold m-0 flex align-items-center gap-2" style="color: var(--text-color);">
+                            <i class="pi pi-info-circle" style="color: var(--primary-color);"></i> المعلومات الأساسية
                         </h3>
                     </div>
                     <div class="p-4">
                         <ul class="list-none p-0 m-0">
-                            <li class="flex align-items-center justify-content-between py-3 border-bottom-1 border-100">
-                                <span class="text-500 font-medium">الاسم العلمي</span>
-                                <span class="text-900 font-bold text-lg">{{medicine.scientificName || '-'}}</span>
+                            <li class="flex align-items-center justify-content-between py-3" style="border-bottom: 1px solid var(--border-color);">
+                                <span class="text-xs font-bold" style="color: var(--text-color-secondary);">الاسم العلمي</span>
+                                <span class="font-bold text-sm" style="color: var(--text-color);">{{medicine.scientificName || '-'}}</span>
                             </li>
-                            <li class="flex align-items-center justify-content-between py-3 border-bottom-1 border-100">
-                                <span class="text-500 font-medium">المادة الفعالة</span>
-                                <span class="text-900">{{medicine.activeIngredient || '-'}}</span>
+                            <li class="flex align-items-center justify-content-between py-3" style="border-bottom: 1px solid var(--border-color);">
+                                <span class="text-xs font-bold" style="color: var(--text-color-secondary);">المادة الفعالة</span>
+                                <span class="text-sm" style="color: var(--text-color);">{{medicine.activeIngredient || '-'}}</span>
                             </li>
-                            <li class="flex align-items-center justify-content-between py-3 border-bottom-1 border-100">
-                                <span class="text-500 font-medium">الباركود</span>
-                                <span class="text-900 font-mono text-lg bg-gray-100 px-2 border-round">{{medicine.defaultBarcode
-                                    ||
-                                    '-'}}</span>
+                            <li class="flex align-items-center justify-content-between py-3" style="border-bottom: 1px solid var(--border-color);">
+                                <span class="text-xs font-bold" style="color: var(--text-color-secondary);">الباركود</span>
+                                <span class="font-mono text-sm px-2 py-1 border-round font-bold"
+                                      style="background: var(--surface-hover); color: var(--text-color); border: 1px solid var(--border-color);">
+                                    {{medicine.defaultBarcode || '-'}}
+                                </span>
                             </li>
-                            <li class="py-3 border-bottom-1 border-100">
-                                <span class="block text-500 font-medium mb-2">الوصف</span>
-                                <p class="m-0 text-700 line-height-3">{{medicine.description || 'لا يوجد وصف'}}</p>
+                            <li class="py-3" style="border-bottom: 1px solid var(--border-color);">
+                                <span class="block text-xs font-bold mb-2" style="color: var(--text-color-secondary);">الوصف</span>
+                                <p class="m-0 text-sm line-height-3" style="color: var(--text-color);">{{medicine.description || 'لا يوجد وصف'}}</p>
                             </li>
-                            <li class="py-3 border-bottom-1 border-100" *ngIf="medicine.medicineUnits && medicine.medicineUnits.length > 0">
-                                <span class="block text-700 font-bold mb-3 flex align-items-center gap-2">
-                                    <i class="pi pi-clone text-teal-600"></i> وحدات التعبئة المتعددة والأسعار
+                            <li class="py-3" style="border-bottom: 1px solid var(--border-color);" *ngIf="medicine.medicineUnits && medicine.medicineUnits.length > 0">
+                                <span class="block font-bold mb-3 flex align-items-center gap-2 text-sm" style="color: var(--text-color);">
+                                    <i class="pi pi-clone" style="color: var(--primary-color);"></i> وحدات التعبئة المتعددة والأسعار
                                 </span>
                                 <div class="flex flex-column gap-2">
-                                    <div class="border-1 border-100 border-round p-2 surface-50 flex justify-content-between text-sm">
-                                        <span class="font-bold text-600">الوحدة الصغرى ({{medicine.baseUnitName || 'حبة'}})</span>
-                                        <span class="text-700 font-bold">شراء: {{medicine.defaultPurchasePrice | currency:'YER'}} | بيع: {{medicine.defaultSalePrice | currency:'YER'}}</span>
+                                    <div class="border-round p-2 flex justify-content-between text-xs"
+                                         style="background: var(--surface-hover); border: 1px solid var(--border-color); color: var(--text-color);">
+                                        <span class="font-bold">الوحدة الصغرى ({{medicine.baseUnitName || 'حبة'}})</span>
+                                        <span class="font-bold font-mono">شراء: {{medicine.defaultPurchasePrice | currency:'YER'}} | بيع: {{medicine.defaultSalePrice | currency:'YER'}}</span>
                                     </div>
-                                    <div *ngFor="let unit of medicine.medicineUnits" class="border-1 border-200 border-round p-2 bg-white flex justify-content-between align-items-center shadow-1 text-sm">
+                                    <div *ngFor="let unit of medicine.medicineUnits"
+                                         class="border-round p-2 flex justify-content-between align-items-center text-xs"
+                                         style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color);">
                                         <div class="flex flex-column">
-                                            <span class="font-bold text-800">{{unit.name}}</span>
-                                            <small class="text-500">تحتوي على {{unit.conversionFactor}} {{medicine.baseUnitName || 'حبة'}}</small>
+                                            <span class="font-bold">{{unit.name}}</span>
+                                            <small style="color: var(--text-color-secondary);">تحتوي على {{unit.conversionFactor}} {{medicine.baseUnitName || 'حبة'}}</small>
                                         </div>
-                                        <div class="text-right">
-                                            <div class="text-xs text-600">شراء: <strong class="text-800">{{unit.defaultPurchasePrice | currency:'YER'}}</strong></div>
-                                            <div class="text-xs text-600">بيع: <strong class="text-800">{{unit.defaultSalePrice | currency:'YER'}}</strong></div>
+                                        <div class="text-right font-mono">
+                                            <div>شراء: <strong class="text-red-500">{{unit.defaultPurchasePrice | currency:'YER'}}</strong></div>
+                                            <div>بيع: <strong class="text-teal-500">{{unit.defaultSalePrice | currency:'YER'}}</strong></div>
                                         </div>
                                     </div>
                                 </div>
                             </li>
                             <li class="py-3">
-                                <span class="block text-500 font-medium mb-2">ملاحظات</span>
-                                <p class="m-0 text-700 line-height-3 text-sm surface-100 p-3 border-round">{{medicine.notes ||
-                                    'لا توجد
-                                    ملاحظات'}}</p>
+                                <span class="block text-xs font-bold mb-2" style="color: var(--text-color-secondary);">ملاحظات</span>
+                                <p class="m-0 text-xs line-height-3 p-3 border-round"
+                                   style="background: var(--surface-hover); border: 1px solid var(--border-color); color: var(--text-color);">
+                                    {{medicine.notes || 'لا توجد ملاحظات'}}
+                                </p>
                             </li>
                         </ul>
                     </div>
@@ -182,19 +191,21 @@
 
             <!-- Batches Table Column -->
             <div class="col-12 xl:col-7">
-                <div class="card shadow-2 border-round-2xl p-0 overflow-hidden bg-white h-full">
-                    <div class="p-4 border-bottom-1 border-100 bg-gray-50 flex justify-content-between align-items-center">
-                        <h3 class="text-xl font-bold text-800 m-0 flex align-items-center gap-2">
-                            <i class="pi pi-table text-purple-600"></i> سجل الدفعات (FEFO)
+                <div class="card shadow-2 border-round-2xl p-0 overflow-hidden h-full"
+                     style="background: var(--card-bg); border: 1px solid var(--border-color);">
+                    <div class="p-4 flex justify-content-between align-items-center"
+                         style="background: var(--surface-hover); border-bottom: 1px solid var(--border-color);">
+                        <h3 class="text-base font-bold m-0 flex align-items-center gap-2" style="color: var(--text-color);">
+                            <i class="pi pi-table" style="color: var(--primary-color);"></i> سجل الدفعات (FEFO)
                         </h3>
                         <p-tag severity="info" value="مرتب حسب الأقرب للانتهاء"></p-tag>
                     </div>
 
                     <div class="p-3">
-                        <p-table [value]="batches" [rowHover]="true" styleClass="p-datatable-gridlines p-datatable-sm"
+                        <p-table [value]="batches" [rowHover]="true" styleClass="p-datatable-sm imperial-statement-table"
                             responsiveLayout="scroll">
                             <ng-template pTemplate="header">
-                                <tr class="bg-gray-50 text-xs">
+                                <tr>
                                     <th>رقم التشغيلة</th>
                                     <th>تاريخ الانتهاء</th>
                                     <th>سعر الشراء</th>
@@ -206,23 +217,23 @@
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-batch>
-                                <tr [ngClass]="{'bg-red-50': batch.isExpired, 'bg-orange-50': batch.isExpiringSoon}" class="text-xs">
+                                <tr class="text-xs">
                                     <td class="font-bold">{{batch.companyBatchNumber}}</td>
                                     <td class="font-mono">
                                         <div class="flex flex-column">
-                                            <span [class.text-red-600]="batch.isExpired">{{batch.expiryDate | date:'dd/MM/yyyy'}}</span>
-                                            <span class="text-xs text-500">{{batch.daysUntilExpiry}} يوم</span>
+                                            <span [class.text-red-500]="batch.isExpired">{{batch.expiryDate | date:'dd/MM/yyyy'}}</span>
+                                            <span class="text-xs" style="color: var(--text-color-secondary);">{{batch.daysUntilExpiry}} يوم</span>
                                         </div>
                                     </td>
-                                    <td class="font-mono text-blue-700 font-bold">{{batch.unitPurchasePrice | currency:'YER'}}</td>
-                                    <td class="font-mono text-green-700 font-bold">{{batch.retailPrice | currency:'YER'}}</td>
-                                    <td class="font-bold text-teal-700">
+                                    <td class="font-mono font-bold text-red-500">{{batch.unitPurchasePrice | currency:'YER'}}</td>
+                                    <td class="font-mono font-bold text-teal-500">{{batch.retailPrice | currency:'YER'}}</td>
+                                    <td class="font-bold">
                                         {{batch.remainingQuantity}} {{medicine.baseUnitName || 'حبة'}}
-                                        <div class="text-xs text-500 font-normal mt-1" *ngIf="medicine.medicineUnits && medicine.medicineUnits.length > 0 && batch.remainingQuantity > 0">
+                                        <div class="text-xs font-normal mt-1" style="color: var(--text-color-secondary);" *ngIf="medicine.medicineUnits && medicine.medicineUnits.length > 0 && batch.remainingQuantity > 0">
                                             ({{ getFormattedStock(batch.remainingQuantity) }})
                                         </div>
                                     </td>
-                                    <td class="text-sm text-600">{{batch.storageLocation || '-'}}</td>
+                                    <td class="text-sm" style="color: var(--text-color-secondary);">{{batch.storageLocation || '-'}}</td>
                                     <td>
                                         <p-tag [severity]="getBatchStatusSeverity(batch)"
                                             [value]="batch.isExpired ? 'منتهية' : (batch.isExpiringSoon ? 'قريبة' : 'صالحة')"></p-tag>
@@ -230,26 +241,26 @@
                                     <td class="text-center">
                                         <button pButton icon="pi pi-eye" class="p-button-rounded p-button-text p-button-sm p-button-secondary" (click)="viewBatchDetails(batch.id)" pTooltip="عرض التفاصيل"></button>
                                     </td>
-                                    </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="emptymessage">
-                                        <tr>
-                                            <td colspan="8" class="text-center p-4">
-                                                <div class="flex flex-column align-items-center">
-                                                    <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
-                                                    <span class="text-gray-500">لا توجد دفعات مخزنية متاحة</span>
-                                                </div>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="8" class="text-center p-4">
+                                        <div class="flex flex-column align-items-center">
+                                            <i class="pi pi-inbox text-4xl mb-2" style="color: var(--primary-color);"></i>
+                                            <span style="color: var(--text-color-secondary);">لا توجد دفعات مخزنية متاحة</span>
+                                        </div>
                                     </td>
-                                    </tr>
-                                    </ng-template>
-                                    </p-table>
-                                    </div>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
                 </div>
-                </div>
+            </div>
 
         </div>
-        </div>
-        </div>
+    </div>
+</div>
 <ng-template #loader>
     <div class="flex align-items-center justify-content-center min-h-screen">
         <p-progressSpinner strokeWidth="4"></p-progressSpinner>

@@ -39,8 +39,16 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<Supplier> Suppliers { get; set; } = null!;
     public DbSet<PurchaseInvoice> PurchaseInvoices { get; set; } = null!;
     public DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; set; } = null!;
+    public DbSet<PurchaseOrder> PurchaseOrders { get; set; } = null!;
+    public DbSet<PurchaseOrderDetail> PurchaseOrderDetails { get; set; } = null!;
     public DbSet<SaleInvoice> SaleInvoices { get; set; } = null!;
     public DbSet<SaleInvoiceDetail> SaleInvoiceDetails { get; set; } = null!;
+    public DbSet<SaleInvoicePayment> SaleInvoicePayments { get; set; } = null!;
+    public DbSet<Quotation> Quotations { get; set; } = null!;
+    public DbSet<QuotationDetail> QuotationDetails { get; set; } = null!;
+    public DbSet<HeldInvoice> HeldInvoices { get; set; } = null!;
+    public DbSet<ProductVariant> ProductVariants { get; set; } = null!;
+    public DbSet<ProductSerialNumber> ProductSerialNumbers { get; set; } = null!;
     public DbSet<InventoryMovement> InventoryMovements { get; set; } = null!;
     public DbSet<ExpenseCategory> ExpenseCategories { get; set; } = null!;
     public DbSet<Expense> Expenses { get; set; } = null!;
@@ -226,6 +234,58 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.HasIndex(e => new { e.PricelistId, e.MedicineId }).IsUnique();
         });
 
+        // ProductVariant Configuration
+        modelBuilder.Entity<ProductVariant>(entity =>
+        {
+            entity.Property(e => e.AdditionalPrice).HasPrecision(18, 4);
+            entity.Property(e => e.StockQuantity).HasPrecision(18, 4);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany(m => m.ProductVariants)
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => new { e.MedicineId, e.Size, e.Color });
+            entity.HasIndex(e => e.Barcode);
+            entity.HasIndex(e => e.Sku);
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // ProductSerialNumber Configuration (Electronics Warranty & Serial Numbers)
+        modelBuilder.Entity<ProductSerialNumber>(entity =>
+        {
+            entity.HasOne(e => e.Medicine)
+                  .WithMany(m => m.SerialNumbers)
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Batch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BatchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Customer)
+                  .WithMany()
+                  .HasForeignKey(e => e.CustomerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SaleInvoiceDetail)
+                  .WithMany(sid => sid.SerialNumbers)
+                  .HasForeignKey(e => e.SaleInvoiceDetailId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.PurchaseInvoiceDetail)
+                  .WithMany(pid => pid.SerialNumbers)
+                  .HasForeignKey(e => e.PurchaseInvoiceDetailId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(e => e.SerialNumber).IsUnique();
+            entity.HasIndex(e => new { e.MedicineId, e.Status });
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
 
         // CustomerReceipt Configuration
         modelBuilder.Entity<CustomerReceipt>(entity =>
@@ -243,6 +303,130 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
                   .WithMany()
                   .HasForeignKey(e => e.BranchId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Quotation Configuration (Price Quotations & Proforma Invoices)
+        modelBuilder.Entity<Quotation>(entity =>
+        {
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TotalDiscount).HasPrecision(18, 2);
+            entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+
+            entity.HasIndex(e => new { e.BranchId, e.QuotationNumber });
+            entity.HasIndex(e => e.QuotationDate);
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.Customer)
+                  .WithMany()
+                  .HasForeignKey(e => e.CustomerId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ConvertedSaleInvoice)
+                  .WithMany()
+                  .HasForeignKey(e => e.ConvertedSaleInvoiceId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => (CurrentBranchId == null || e.BranchId == CurrentBranchId) && !e.IsDeleted);
+        });
+
+        // QuotationDetail Configuration
+        modelBuilder.Entity<QuotationDetail>(entity =>
+        {
+            entity.Property(e => e.Quantity).HasPrecision(18, 4);
+            entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountPercentage).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
+            entity.Property(e => e.Total).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.Quotation)
+                  .WithMany(q => q.QuotationDetails)
+                  .HasForeignKey(e => e.QuotationId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SaleUnit)
+                  .WithMany()
+                  .HasForeignKey(e => e.SaleUnitId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
+        });
+
+        // PurchaseOrder Configuration (Purchase Orders / PO)
+        modelBuilder.Entity<PurchaseOrder>(entity =>
+        {
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TotalDiscount).HasPrecision(18, 2);
+            entity.Property(e => e.ShippingCost).HasPrecision(18, 2);
+            entity.Property(e => e.TotalAmount).HasPrecision(18, 2);
+
+            entity.HasIndex(e => new { e.BranchId, e.OrderNumber });
+            entity.HasIndex(e => e.OrderDate);
+            entity.HasIndex(e => e.Status);
+
+            entity.HasOne(e => e.Supplier)
+                  .WithMany()
+                  .HasForeignKey(e => e.SupplierId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.ConvertedPurchaseInvoice)
+                  .WithMany()
+                  .HasForeignKey(e => e.ConvertedPurchaseInvoiceId)
+                  .OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(e => e.Branch)
+                  .WithMany()
+                  .HasForeignKey(e => e.BranchId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => (CurrentBranchId == null || e.BranchId == CurrentBranchId) && !e.IsDeleted);
+        });
+
+        // PurchaseOrderDetail Configuration
+        modelBuilder.Entity<PurchaseOrderDetail>(entity =>
+        {
+            entity.Property(e => e.Quantity).HasPrecision(18, 4);
+            entity.Property(e => e.ReceivedQuantity).HasPrecision(18, 4);
+            entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountPercentage).HasPrecision(18, 2);
+            entity.Property(e => e.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
+            entity.Property(e => e.Total).HasPrecision(18, 2);
+
+            entity.HasOne(e => e.PurchaseOrder)
+                  .WithMany(po => po.PurchaseOrderDetails)
+                  .HasForeignKey(e => e.PurchaseOrderId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(e => e.Medicine)
+                  .WithMany()
+                  .HasForeignKey(e => e.MedicineId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SaleUnit)
+                  .WithMany()
+                  .HasForeignKey(e => e.SaleUnitId)
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasQueryFilter(e => !e.IsDeleted);
         });
 
         modelBuilder.Entity<FinancialTransaction>(entity =>
@@ -311,6 +495,10 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.MovingAverageCost).HasPrecision(18, 2);
             entity.Property(e => e.DefaultPurchasePrice).HasPrecision(18, 2);
             entity.Property(e => e.DefaultSalePrice).HasPrecision(18, 2);
+            entity.Property(e => e.OemPartNumber).HasMaxLength(100);
+            entity.Property(e => e.ManufacturerPartNumber).HasMaxLength(100);
+            entity.Property(e => e.CompatibleVehicles).HasMaxLength(500);
+            entity.HasIndex(e => e.OemPartNumber);
         });
 
         // Seed Expense Categories
@@ -405,6 +593,34 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .Property(pi => pi.TotalAmount)
             .HasPrecision(18, 2);
 
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.Subtotal)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.TaxRate)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.TaxAmount)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.PaidAmount)
+            .HasPrecision(18, 2);
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.ShippingCost)
+            .HasPrecision(18, 4);
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.CustomsCost)
+            .HasPrecision(18, 4);
+
+        modelBuilder.Entity<PurchaseInvoice>()
+            .Property(pi => pi.OtherLandedCosts)
+            .HasPrecision(18, 4);
+
         // PurchaseInvoice - User Audit
         modelBuilder.Entity<PurchaseInvoice>()
             .HasOne(pi => pi.Creator)
@@ -461,6 +677,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(e => e.PurchasePrice).HasPrecision(18, 2);
             entity.Property(e => e.SalePrice).HasPrecision(18, 2);
             entity.Property(e => e.Total).HasPrecision(18, 2);
+            entity.Property(e => e.Subtotal).HasPrecision(18, 2);
+            entity.Property(e => e.TaxRate).HasPrecision(18, 2);
+            entity.Property(e => e.TaxAmount).HasPrecision(18, 2);
+            entity.Property(e => e.AllocatedLandedCost).HasPrecision(18, 4);
+            entity.Property(e => e.EffectiveUnitCost).HasPrecision(18, 4);
         });
 
         modelBuilder.Entity<SaleInvoice>()
@@ -478,8 +699,14 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         modelBuilder.Entity<SaleInvoice>(entity =>
         {
             entity.Property(si => si.TotalAmount).HasPrecision(18, 2);
+            entity.Property(si => si.Subtotal).HasPrecision(18, 2);
+            entity.Property(si => si.TaxRate).HasPrecision(18, 2);
+            entity.Property(si => si.TaxAmount).HasPrecision(18, 2);
+            entity.Property(si => si.TotalDiscount).HasPrecision(18, 2);
+            entity.Property(si => si.PaidAmount).HasPrecision(18, 2);
             entity.Property(si => si.TotalCost).HasPrecision(18, 2);
             entity.Property(si => si.TotalProfit).HasPrecision(18, 2);
+            entity.Property(si => si.ZatcaQrCode).HasMaxLength(1000);
         });
 
         modelBuilder.Entity<SaleInvoice>()
@@ -543,6 +770,11 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             entity.Property(sid => sid.SalePrice).HasPrecision(18, 2);
             entity.Property(sid => sid.UnitCost).HasPrecision(18, 2);
             entity.Property(sid => sid.TotalLineAmount).HasPrecision(18, 2);
+            entity.Property(sid => sid.Subtotal).HasPrecision(18, 2);
+            entity.Property(sid => sid.TaxRate).HasPrecision(18, 2);
+            entity.Property(sid => sid.TaxAmount).HasPrecision(18, 2);
+            entity.Property(sid => sid.DiscountAmount).HasPrecision(18, 2);
+            entity.Property(sid => sid.DiscountPercentage).HasPrecision(18, 2);
             entity.Property(sid => sid.TotalCost).HasPrecision(18, 2);
             entity.Property(sid => sid.Profit).HasPrecision(18, 2);
         });
@@ -1756,7 +1988,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             new Customer { Id = 1, Name = "عميل نقدي عام", PhoneNumber = "000000000", CreatedAt = new DateTime(2025, 1, 1) }
         );
 
-
+        
         // ==================== Full Chart of Accounts Seeding ====================
         modelBuilder.Entity<Account>().HasData(
             // 1. الأصول (Assets)

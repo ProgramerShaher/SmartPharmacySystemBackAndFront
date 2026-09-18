@@ -32,6 +32,11 @@ import { BarcodeSimulatorComponent } from '../../../../shared/components/barcode
 import { TransactionType } from '../../../../core/models/barcode.interface';
 import { HostListener, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { finalize } from 'rxjs/operators';
+import { BusinessProfileService } from '../../../../core/services/business-profile.service';
+import { HeldInvoiceService } from '../../../../core/services/held-invoice.service';
+import { ProductVariantService } from '../../../../core/services/product-variant.service';
+import { ProductSerialNumberService } from '../../../../core/services/product-serial-number.service';
+import { HeldInvoiceDto, CreateHeldInvoiceDto, ProductVariantDto, ProductSerialNumberDto, WarrantyCheckResultDto } from '../../../../core/models';
 
 interface InvoiceItem {
     medicineId: number;
@@ -53,6 +58,12 @@ interface InvoiceItem {
     discountPercentage: number;
     /** Calculated discount amount for this line */
     discountAmount: number;
+    productVariantId?: number | null;
+    variantSize?: string | null;
+    variantColor?: string | null;
+    variantColorHex?: string | null;
+    serialNumbers?: string[];
+    warrantyMonths?: number;
 }
 
 import { ShiftService } from '../../../../core/services/shift.service';
@@ -97,11 +108,46 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
     customerPricelistDiscount = signal<number>(0);
     activePricelistItems = signal<PricelistItem[]>([]); // To store item-specific overrides
 
+    // 🏛️ VAT & ZATCA COMPUTATION
+    get enableVAT(): boolean {
+        return this.businessProfileService.enableVAT;
+    }
+
+    taxRate = signal<number>(15);
+    isTaxInclusive = signal<boolean>(true);
+
     // ⚡ REACTIVE TOTALS (0ms Latency)
     subtotal = computed(() => this.items().reduce((sum, item) => sum + item.total, 0));
     totalDiscount = computed(() => this.items().reduce((sum, item) => sum + item.discountAmount, 0) + this.discount());
     totalProfit = computed(() => this.items().reduce((sum, item) => sum + item.profit, 0));
-    total = computed(() => Math.max(0, this.subtotal() - this.totalDiscount()));
+
+    vatSubtotal = computed(() => {
+        const netAfterDiscount = Math.max(0, this.subtotal() - this.totalDiscount());
+        if (!this.enableVAT || this.taxRate() <= 0) {
+            return netAfterDiscount;
+        }
+        if (this.isTaxInclusive()) {
+            return Math.round((netAfterDiscount / (1 + this.taxRate() / 100)) * 100) / 100;
+        }
+        return netAfterDiscount;
+    });
+
+    vatAmount = computed(() => {
+        if (!this.enableVAT || this.taxRate() <= 0) return 0;
+        const netAfterDiscount = Math.max(0, this.subtotal() - this.totalDiscount());
+        if (this.isTaxInclusive()) {
+            return Math.round((netAfterDiscount - this.vatSubtotal()) * 100) / 100;
+        }
+        return Math.round((netAfterDiscount * (this.taxRate() / 100)) * 100) / 100;
+    });
+
+    total = computed(() => {
+        const gross = Math.max(0, this.subtotal() - this.totalDiscount());
+        if (!this.enableVAT || this.taxRate() <= 0) return gross;
+        if (this.isTaxInclusive()) return gross;
+        return Math.round((gross + this.vatAmount()) * 100) / 100;
+    });
+
     totalQuantity = computed(() => this.items().reduce((sum, item) => sum + item.quantity, 0));
 
     get inlineLivePrice(): number {
@@ -110,7 +156,8 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
             const basePrice = (this.inlineBatch.retailPrice !== undefined && this.inlineBatch.retailPrice !== null && this.inlineBatch.retailPrice !== 0)
                 ? this.inlineBatch.retailPrice
                 : ((this.inlineUnit && this.inlineUnit.salePrice) ? (this.inlineUnit.salePrice / unitFactor) : 0);
-            return basePrice * unitFactor;
+            const variantAddition = (this.selectedVariant && this.selectedVariant.additionalPrice) ? this.selectedVariant.additionalPrice : 0;
+            return (basePrice * unitFactor) + variantAddition;
         }
         return 0;
     }
@@ -122,12 +169,29 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         return 0;
     }
 
+    get allowDecimalQuantity(): boolean {
+        return this.businessProfileService.allowDecimalQuantity;
+    }
+
+    get quantityMin(): number {
+        return this.allowDecimalQuantity ? 0.001 : 1;
+    }
+
+    get quantityStep(): number {
+        return this.allowDecimalQuantity ? 0.25 : 1;
+    }
+
+    get quantityFractionDigits(): number {
+        return this.allowDecimalQuantity ? 3 : 0;
+    }
+
     get maxAllowedQuantityInline(): number {
         if (!this.inlineBatch) return 0;
         const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
         if (this.availableBatches && this.availableBatches.length > 0) {
             const totalRemaining = this.availableBatches.reduce((sum, b) => sum + (b.remainingQuantity || 0), 0);
-            return Math.floor(totalRemaining / unitFactor);
+            const val = totalRemaining / unitFactor;
+            return this.allowDecimalQuantity ? Number(val.toFixed(3)) : Math.floor(val);
         }
         return 99999;
     }
@@ -135,7 +199,8 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
     get currentBatchAvailableQuantity(): number {
         if (!this.inlineBatch) return 0;
         const unitFactor = this.inlineUnit ? this.inlineUnit.factor : 1;
-        return Math.floor((this.inlineBatch.remainingQuantity || 0) / unitFactor);
+        const val = (this.inlineBatch.remainingQuantity || 0) / unitFactor;
+        return this.allowDecimalQuantity ? Number(val.toFixed(3)) : Math.floor(val);
     }
 
     // 🛫 OPERATIONAL STATE
@@ -186,6 +251,85 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
     itemModalVisible = false;
     searchQueryText = '';
 
+    // ⏸️ HELD INVOICES STATE
+    heldInvoicesVisible = false;
+    heldInvoicesList: HeldInvoiceDto[] = [];
+    loadingHeldInvoices = false;
+    heldCount$ = this.heldInvoiceService.heldCount$;
+
+    get allowHoldInvoice(): boolean {
+        return this.businessProfileService.allowHoldInvoice;
+    }
+
+    get useScaleBarcode(): boolean {
+        return this.businessProfileService.useScaleBarcode;
+    }
+
+    // 🎨 PRODUCT VARIANTS (Fashion, Sizes, Colors)
+    availableVariants: ProductVariantDto[] = [];
+    selectedVariant: ProductVariantDto | null = null;
+
+    get useProductVariants(): boolean {
+        return this.businessProfileService.useProductVariants;
+    }
+
+    // 🛡️ SERIAL NUMBERS & WARRANTY (Electronics & Appliances)
+    availableSerialNumbers: ProductSerialNumberDto[] = [];
+    selectedSerialNumbers: string[] = [];
+    loadingSerialNumbers = false;
+
+    get trackSerialNumbers(): boolean {
+        return this.businessProfileService.trackSerialNumbers || this.businessProfileService.hasWarranty;
+    }
+
+    // 🔍 WARRANTY CHECK DIALOG
+    warrantyDialogVisible = false;
+    warrantySearchSn = '';
+    warrantySearchResult: WarrantyCheckResultDto | null = null;
+    loadingWarrantyCheck = false;
+    warrantyCheckError = '';
+
+    openWarrantyDialog() {
+        this.warrantyDialogVisible = true;
+        this.warrantySearchSn = '';
+        this.warrantySearchResult = null;
+        this.warrantyCheckError = '';
+    }
+
+    checkWarranty() {
+        const sn = this.warrantySearchSn?.trim();
+        if (!sn) return;
+        this.loadingWarrantyCheck = true;
+        this.warrantyCheckError = '';
+        this.warrantySearchResult = null;
+
+        this.serialNumberService.checkWarranty(sn).subscribe({
+            next: (result) => {
+                this.warrantySearchResult = result;
+                this.loadingWarrantyCheck = false;
+                this.cdr.markForCheck();
+            },
+            error: (err) => {
+                this.loadingWarrantyCheck = false;
+                this.warrantyCheckError = err.error?.message || 'لم يتم العثور على جهاز مسجل بهذا الرقم التسلسلي';
+                this.cdr.markForCheck();
+            }
+        });
+    }
+
+    toggleSerialNumberSelection(sn: string) {
+        const index = this.selectedSerialNumbers.indexOf(sn);
+        if (index > -1) {
+            this.selectedSerialNumbers.splice(index, 1);
+        } else {
+            this.selectedSerialNumbers.push(sn);
+        }
+        if (this.selectedSerialNumbers.length > 0) {
+            this.inlineQuantity = this.selectedSerialNumbers.length;
+        }
+        this.cdr.markForCheck();
+    }
+
     // 🎯 VIEWCHILD REFERENCES
     @ViewChild('medicineAutoComplete') medicineAutoComplete: any;
     @ViewChild('qtyInputEl') qtyInputEl: any;
@@ -199,12 +343,29 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         private barcodeService: BarcodeService,
         private shiftService: ShiftService,
         private pricelistService: PricelistService,
+        private businessProfileService: BusinessProfileService,
+        private heldInvoiceService: HeldInvoiceService,
+        private variantService: ProductVariantService,
+        private serialNumberService: ProductSerialNumberService,
         private router: Router,
         private route: ActivatedRoute,
         private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
+        this.heldInvoiceService.refreshCount().subscribe();
+
+        // Initialize default VAT rate from business profile
+        if (this.businessProfileService.currentProfile) {
+            this.taxRate.set(this.businessProfileService.defaultVATRate || 15);
+        } else {
+            this.businessProfileService.loadActiveProfile().subscribe(p => {
+                if (p && p.defaultVATRate) {
+                    this.taxRate.set(p.defaultVATRate);
+                }
+            });
+        }
+
         // Check for open shift first
         this.shiftService.getCurrentShift().subscribe({
             next: (res) => {
@@ -322,9 +483,33 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
             this.toggleCashCustomer();
             return;
         }
+        if (event.key === 'F6') {
+            event.preventDefault();
+            if (this.allowHoldInvoice) {
+                this.holdCurrentInvoice();
+            }
+            return;
+        }
+        if (event.key === 'F8') {
+            event.preventDefault();
+            if (this.trackSerialNumbers) {
+                this.openWarrantyDialog();
+            }
+            return;
+        }
         if (event.key === 'Escape') {
+            if (this.warrantyDialogVisible) {
+                this.warrantyDialogVisible = false;
+                event.preventDefault();
+                return;
+            }
             if (this.shortcutsHelpVisible) {
                 this.shortcutsHelpVisible = false;
+                event.preventDefault();
+                return;
+            }
+            if (this.heldInvoicesVisible) {
+                this.heldInvoicesVisible = false;
                 event.preventDefault();
                 return;
             }
@@ -363,6 +548,43 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
 
     processScannedBarcode(barcode: string) {
         if (!barcode) return;
+
+        // Check for Scale Barcode (EAN-13 electronic scale barcode with weight)
+        const scalePrefix = this.businessProfileService.scaleBarcodePrefix || '20';
+        if (this.useScaleBarcode && barcode.length === 13 && barcode.startsWith(scalePrefix)) {
+            const itemCode = barcode.substring(scalePrefix.length, scalePrefix.length + 5);
+            const weightRaw = barcode.substring(scalePrefix.length + 5, scalePrefix.length + 10);
+            const weightKg = Number((parseFloat(weightRaw) / 1000.0).toFixed(3));
+
+            const localMed = this.medicineService.getByBarcodeLocal(itemCode) || this.medicineService.getByBarcodeLocal(barcode);
+            if (localMed) {
+                this.onMedicineSelectInline(localMed, weightKg);
+                return;
+            }
+
+            this.messageService.add({ severity: 'info', summary: 'صنف ميزان', detail: `تم مسح باركود ميزان بوزن: ${weightKg} كجم` });
+            this.barcodeService.processBarcode({
+                barcode: itemCode,
+                transactionType: TransactionType.Sale
+            }).subscribe({
+                next: (res) => {
+                    if (res.success && res.data) {
+                        this.addBarcodeItemToInvoice(res.data, weightKg);
+                    } else {
+                        this.messageService.add({ severity: 'error', summary: 'فشل', detail: `صنف الميزان كود (${itemCode}) غير مسجل` });
+                    }
+                },
+                error: (err) => {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'خطأ',
+                        detail: err.error?.message || 'حدث خطأ أثناء معالجة باركود الميزان'
+                    });
+                }
+            });
+            return;
+        }
+
         const localMed = this.medicineService.getByBarcodeLocal(barcode);
         if (localMed) {
             this.onMedicineSelectInline(localMed);
@@ -393,7 +615,7 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
     }
 
 
-    private addBarcodeItemToInvoice(data: any) {
+    private addBarcodeItemToInvoice(data: any, initialQty: number = 1) {
         if (!data.availableQuantity || data.availableQuantity <= 0) {
             this.itemModalVisible = false;
             this.messageService.add({
@@ -442,8 +664,8 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
 
         this.availableBatches = this.inlineBatch ? [this.inlineBatch] : [];
 
-        // تجهيز الكمية لتكون 1 مبدئياً
-        this.inlineQuantity = 1;
+        // تجهيز الكمية
+        this.inlineQuantity = initialQty;
         this.editingItemIndex = null;
 
         this.itemModalVisible = true;
@@ -730,13 +952,18 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
             paymentMethod: this.selectedPaymentMethod,
             customerId: customerId,
             customerName: customerName,
+            taxRate: this.enableVAT ? this.taxRate() : 0,
+            isTaxInclusive: this.isTaxInclusive(),
             details: this.items().map(item => ({
                 medicineId: item.medicineId,
                 batchId: item.batchId,
                 quantity: item.quantity,
                 salePrice: item.salePrice,
                 saleUnitId: item.saleUnitId,
-                discountPercentage: item.discountPercentage || 0
+                discountPercentage: item.discountPercentage || 0,
+                taxRate: this.enableVAT ? this.taxRate() : 0,
+                productVariantId: item.productVariantId || null,
+                serialNumbers: item.serialNumbers || []
             })),
             notes: approve ? 'تم الاعتماد من نقطة البيع' : 'مسودة من نقطة البيع'
         };
@@ -828,6 +1055,139 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         }
     }
 
+    // ⏸️ HELD INVOICES ACTIONS
+    holdCurrentInvoice() {
+        if (this.items().length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'تنبيه',
+                detail: 'لا توجد أصناف في الفاتورة لتعليقها'
+            });
+            return;
+        }
+
+        const now = new Date();
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const refNumber = `HLD-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+
+        const cartState = {
+            items: this.items(),
+            discount: this.discount(),
+            isCashCustomer: this.isCashCustomer,
+            selectedCustomerType: this.selectedCustomerType,
+            flyingCustomerName: this.flyingCustomerName,
+            selectedCustomer: this.selectedCustomer,
+            selectedPaymentMethod: this.selectedPaymentMethod
+        };
+
+        const dto: CreateHeldInvoiceDto = {
+            holdReference: refNumber,
+            customerId: this.isCashCustomer ? null : (this.selectedCustomer?.id || null),
+            customerName: this.isCashCustomer ? (this.flyingCustomerName || 'عميل نقدي') : (this.selectedCustomer?.name || 'عميل مسجل'),
+            totalAmount: this.total(),
+            totalDiscount: this.totalDiscount(),
+            itemsCount: this.items().length,
+            cartJson: JSON.stringify(cartState),
+            notes: `معلقة بواسطة الكاشير`
+        };
+
+        this.heldInvoiceService.hold(dto).subscribe({
+            next: (created) => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'تم تعليق الفاتورة',
+                    detail: `تم تعليق الفاتورة بنجاح برقم: ${created.holdReference}`
+                });
+                this.resetFormAfterSave();
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'خطأ',
+                    detail: err.error?.message || 'فشل في تعليق الفاتورة'
+                });
+            }
+        });
+    }
+
+    openHeldInvoicesModal() {
+        this.heldInvoicesVisible = true;
+        this.loadingHeldInvoices = true;
+        this.heldInvoiceService.getAll().subscribe({
+            next: (list) => {
+                this.heldInvoicesList = list;
+                this.loadingHeldInvoices = false;
+                this.cdr.markForCheck();
+            },
+            error: () => {
+                this.loadingHeldInvoices = false;
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل جلب قائمة الفواتير المعلقة' });
+                this.cdr.markForCheck();
+            }
+        });
+    }
+
+    restoreHeldInvoice(held: HeldInvoiceDto) {
+        if (!held.cartJson) {
+            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'بيانات سلة الفاتورة غير متوفرة' });
+            return;
+        }
+
+        try {
+            const parsed = JSON.parse(held.cartJson);
+            this.items.set(parsed.items || []);
+            this.discount.set(parsed.discount || 0);
+            this.isCashCustomer = parsed.isCashCustomer ?? true;
+            this.selectedCustomerType = parsed.selectedCustomerType || (this.isCashCustomer ? 'cash' : 'registered');
+            this.flyingCustomerName = parsed.flyingCustomerName || '';
+            this.selectedCustomer = parsed.selectedCustomer || null;
+            this.selectedPaymentMethod = parsed.selectedPaymentMethod || 1;
+
+            this.heldInvoiceService.resumeAndDelete(held.id).subscribe({
+                next: () => {
+                    this.heldInvoicesVisible = false;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'تم الاسترجاع',
+                        detail: `تم استرجاع الفاتورة رقم ${held.holdReference} بنجاح`
+                    });
+                    this.cdr.markForCheck();
+                },
+                error: () => {
+                    this.heldInvoicesVisible = false;
+                    this.messageService.add({
+                        severity: 'warn',
+                        summary: 'تنبيه',
+                        detail: 'تم استرجاع الفاتورة محلياً'
+                    });
+                    this.cdr.markForCheck();
+                }
+            });
+        } catch (e) {
+            this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'تعذر قراءة بيانات الفاتورة المعلقة' });
+        }
+    }
+
+    deleteHeldInvoice(held: HeldInvoiceDto, event?: Event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        this.heldInvoiceService.resumeAndDelete(held.id).subscribe({
+            next: () => {
+                this.heldInvoicesList = this.heldInvoicesList.filter(h => h.id !== held.id);
+                this.messageService.add({
+                    severity: 'info',
+                    summary: 'تم الحذف',
+                    detail: `تم حذف الفاتورة المعلقة رقم ${held.holdReference}`
+                });
+                this.cdr.markForCheck();
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'خطأ', detail: 'فشل حذف الفاتورة المعلقة' });
+            }
+        });
+    }
+
     // 🎭 INLINE FORM & MODAL CONTROL METHODS
     focusQtyInput() {
         if (this.qtyInputEl) {
@@ -862,11 +1222,11 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         setTimeout(() => this.focusSearchInput(), 100);
     }
 
-    onMedicineSelectInline(medicine: Medicine) {
+    onMedicineSelectInline(medicine: Medicine, initialQty: number = 1) {
         this.inlineMedicine = medicine;
         this.selectedMedicineBarcode = medicine.defaultBarcode || medicine.barcode || null;
         this.inlineBatch = null;
-        this.inlineQuantity = 1;
+        this.inlineQuantity = initialQty;
 
         const baseName = medicine.baseUnitName || 'حبة';
         this.inlineUnitOptions = [
@@ -885,6 +1245,42 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
             });
         }
         this.inlineUnit = this.inlineUnitOptions[0];
+
+        // Load variants if business profile has variants enabled
+        this.availableVariants = [];
+        this.selectedVariant = null;
+        if (this.useProductVariants) {
+            this.variantService.getByMedicineId(medicine.id).subscribe({
+                next: (variants) => {
+                    this.availableVariants = variants || [];
+                    this.selectedVariant = this.availableVariants[0] || null;
+                    this.cdr.markForCheck();
+                },
+                error: () => {
+                    this.availableVariants = [];
+                    this.selectedVariant = null;
+                }
+            });
+        }
+
+        // Load serial numbers if business profile tracks serials / warranty
+        this.availableSerialNumbers = [];
+        this.selectedSerialNumbers = [];
+        if (this.trackSerialNumbers) {
+            this.serialNumberService.getInStockByMedicineId(medicine.id).subscribe({
+                next: (serials) => {
+                    this.availableSerialNumbers = serials || [];
+                    if (this.availableSerialNumbers.length > 0) {
+                        this.selectedSerialNumbers = [this.availableSerialNumbers[0].serialNumber];
+                    }
+                    this.cdr.markForCheck();
+                },
+                error: () => {
+                    this.availableSerialNumbers = [];
+                    this.selectedSerialNumbers = [];
+                }
+            });
+        }
 
         // Load batches for selected medicine (FEFO order from Backend)
         this.medicineService.getFefoBatches(medicine.id).subscribe({
@@ -917,6 +1313,11 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
                 setTimeout(() => this.focusSearchInput(), 100);
             }
         });
+    }
+
+    onVariantSelectInline(variant: ProductVariantDto) {
+        this.selectedVariant = variant;
+        this.cdr.markForCheck();
     }
 
     onBatchSelectInline() {
@@ -973,6 +1374,12 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
                 item.availableQuantity = Math.floor(this.inlineBatch.remainingQuantity / unitFactor);
                 item.saleUnitId = saleUnitId;
                 item.unitName = unitName;
+                item.productVariantId = this.selectedVariant?.id || null;
+                item.variantSize = this.selectedVariant?.size || null;
+                item.variantColor = this.selectedVariant?.color || null;
+                item.variantColorHex = this.selectedVariant?.colorHex || null;
+                item.serialNumbers = [...this.selectedSerialNumbers];
+                item.warrantyMonths = (this.inlineMedicine as any)?.defaultWarrantyMonths || 12;
 
                 this.items.set([...this.items()]);
                 this.messageService.add({ severity: 'success', summary: 'تم التعديل', detail: 'تم تعديل الصنف بنجاح' });
@@ -1026,7 +1433,13 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
                         saleUnitId: saleUnitId,
                         unitName: unitName,
                         discountPercentage: 0,
-                        discountAmount: 0
+                        discountAmount: 0,
+                        productVariantId: this.selectedVariant?.id || null,
+                        variantSize: this.selectedVariant?.size || null,
+                        variantColor: this.selectedVariant?.color || null,
+                        variantColorHex: this.selectedVariant?.colorHex || null,
+                        serialNumbers: [...this.selectedSerialNumbers],
+                        warrantyMonths: (this.inlineMedicine as any)?.defaultWarrantyMonths || 12
                     });
                 }
 
@@ -1057,6 +1470,8 @@ export class SaleInvoiceCreateComponent implements OnInit, AfterViewInit {
         this.availableBatches = [];
         this.inlineUnitOptions = [];
         this.inlineUnit = null;
+        this.availableVariants = [];
+        this.selectedVariant = null;
         this.editingItemIndex = null;
         this.searchQueryText = '';
     }

@@ -17,20 +17,32 @@ namespace SmartPharmacySystem.Core.Entities
         public int? BatchId { get; set; }
         public MedicineBatch? Batch { get; set; }
 
-        public int OpeningBalance { get; set; }
-        public int TotalPurchases { get; set; }
-        public int TotalSales { get; set; }
-        public int TotalTransfersIn { get; set; }
-        public int TotalTransfersOut { get; set; }
-        public int TotalDamages { get; set; }
-        public int TotalAdjustments { get; set; }
-        public int TotalSalesReturns { get; set; }
-        public int TotalPurchaseReturns { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal OpeningBalance { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalPurchases { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalSales { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalTransfersIn { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalTransfersOut { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalDamages { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalAdjustments { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalSalesReturns { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalPurchaseReturns { get; set; }
 
-        public int ExpectedSystemBalance { get; set; }
-        public int ActualSystemBalance { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal ExpectedSystemBalance { get; set; }
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal ActualSystemBalance { get; set; }
         
-        public int Variance { get; set; } // ActualSystemBalance - ExpectedSystemBalance
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal Variance { get; set; } // ActualSystemBalance - ExpectedSystemBalance
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal UnitCost { get; set; } // Store cost at time of audit

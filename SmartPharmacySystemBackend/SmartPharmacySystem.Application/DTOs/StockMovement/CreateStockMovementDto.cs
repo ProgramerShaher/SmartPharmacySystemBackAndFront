@@ -17,7 +17,7 @@ public class CreateStockMovementDto
     public ReferenceType ReferenceType { get; set; }
 
     [Required]
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     [Required]
     public int ReferenceId { get; set; }

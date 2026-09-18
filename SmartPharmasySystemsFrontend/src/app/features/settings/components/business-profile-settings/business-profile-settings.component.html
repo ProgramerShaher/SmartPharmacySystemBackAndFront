@@ -1,0 +1,373 @@
+<p-toast position="top-left"></p-toast>
+
+<div class="card" dir="rtl">
+    <!-- Header: مثل ترويسة فاتورة المبيعات والمشتريات تماماً -->
+    <div class="header">
+        <div class="header-left">
+            <span class="status-badge badge-active" *ngIf="currentProfile">
+                <i class="pi pi-check-circle"></i>
+                {{ currentProfile.displayName }}
+            </span>
+            <h1 class="header-title">ملف نمط النشاط التجاري والسياسات (Business Profile)</h1>
+        </div>
+
+        <div class="header-actions-top">
+            <button type="button" class="btn-top-action" (click)="loadData()" pTooltip="تحديث البيانات" tooltipPosition="bottom">
+                <i class="pi pi-sync"></i>
+                <span>تحديث</span>
+            </button>
+            <button type="button" class="btn-top-action" (click)="resetToPreset()" pTooltip="استعادة القيم الافتراضية للنشاط" tooltipPosition="bottom">
+                <i class="pi pi-refresh"></i>
+                <span>استعادة الافتراضي</span>
+            </button>
+            <button type="button" class="btn-top-action btn-save" (click)="saveCustomProfile()" [disabled]="isSaving">
+                <i class="pi pi-save"></i>
+                <span>{{ isSaving ? 'جاري الحفظ...' : 'حفظ التخصيص' }}</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- المحتوى الرئيسي القابل للتمرير -->
+    <div class="profile-scroll-content" *ngIf="!isLoading">
+
+        <!-- القسم الأول: بطاقات الأنشطة التجارية الـ 10 المدعومة -->
+        <div class="section-block">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="pi pi-th-large"></i>
+                    <span>اختر نوع النشاط التجاري للمنشأة</span>
+                </div>
+                <span class="section-subtitle">يتم تكييف كافة حقول وقواعد النظام آلياً فور اختيار النشاط</span>
+            </div>
+
+            <div class="activities-grid">
+                <div *ngFor="let meta of activitiesMeta" 
+                     class="activity-card" 
+                     [class.active-card]="isCurrentActive(meta.type)"
+                     [class.selected-preview]="selectedPreviewType === meta.type"
+                     (click)="selectActivity(meta.type)">
+                    
+                    <div class="card-top-row">
+                        <div class="activity-icon" [style.background-color]="meta.color + '18'" [style.color]="meta.color">
+                            <i [class]="meta.icon"></i>
+                        </div>
+                        <span class="active-badge" *ngIf="isCurrentActive(meta.type)">
+                            <i class="pi pi-check"></i>
+                            النشاط المعتمد
+                        </span>
+                    </div>
+
+                    <h3 class="activity-name">{{ meta.name }}</h3>
+                    <p class="activity-desc">{{ meta.description }}</p>
+
+                    <div class="activity-features">
+                        <span *ngFor="let feat of meta.keyFeatures" class="feat-tag">
+                            {{ feat }}
+                        </span>
+                    </div>
+
+                    <div class="card-footer-action">
+                        <button *ngIf="!isCurrentActive(meta.type)"
+                                type="button" 
+                                class="btn-switch-action" 
+                                (click)="promptSwitch(meta); $event.stopPropagation()">
+                            <i class="pi pi-arrow-left"></i>
+                            <span>تفعيل هذا النشاط</span>
+                        </button>
+                        <div *ngIf="isCurrentActive(meta.type)" class="current-status-label">
+                            <i class="pi pi-verified"></i>
+                            <span>يعمل النظام بهذا النمط حالياً</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- القسم الثاني: مصفوفة القواعد والسياسات التفصيلية للنشاط النشط -->
+        <div class="section-block mt-4" *ngIf="currentProfile">
+            <div class="section-header">
+                <div class="section-title">
+                    <i class="pi pi-sliders-h"></i>
+                    <span>سياسات وقواعد النشاط المعتمد: {{ currentProfile.displayName }}</span>
+                    <span class="badge-custom-tag" *ngIf="currentProfile.isCustom">مُخصّص يدوياً</span>
+                </div>
+                <span class="section-subtitle">يمكنك ضبط وتخصيص السلوكيات المناسبة لطبيعة عملك بدقة</span>
+            </div>
+
+            <form [formGroup]="profileForm">
+                <div class="policies-grid">
+                    
+                    <!-- 1. إعدادات بطاقة الصنف والمخزون -->
+                    <div class="policy-card">
+                        <div class="policy-card-header">
+                            <div class="policy-card-icon bg-emerald">
+                                <i class="pi pi-box"></i>
+                            </div>
+                            <div class="policy-card-title">
+                                <h4>بطاقة الصنف والمخزون</h4>
+                                <span>الحقول المطلوبة والمسموحة عند تعريف المنتجات</span>
+                            </div>
+                        </div>
+
+                        <div class="policy-items-list">
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">تتبع تاريخ الصلاحية</span>
+                                    <span class="item-desc">إلزامية إدخال تاريخ انتهاء الصلاحية للمنتجات</span>
+                                </div>
+                                <p-inputSwitch formControlName="trackExpiryDate"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">تتبع رقم التشغيلة / الدفعة</span>
+                                    <span class="item-desc">إلزامية وتتبع رقم التشغيلة (Batch Number)</span>
+                                </div>
+                                <p-inputSwitch formControlName="trackBatchNumber"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">تتبع الأرقام التسلسلية (Serial / IMEI)</span>
+                                    <span class="item-desc">خاص بالإلكترونيات والأجهزة لتسجيل سيريال كل جهاز</span>
+                                </div>
+                                <p-inputSwitch formControlName="trackSerialNumbers"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">مصفوفة المقاسات والألوان (Variants)</span>
+                                    <span class="item-desc">خاص بمحلات الملابس والأحذية لإدخال المقاس واللون</span>
+                                </div>
+                                <p-inputSwitch formControlName="useProductVariants"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">السماح بالكميات العشرية (الكسور)</span>
+                                    <span class="item-desc">بيع وشراء بالأوزان والأمتار (0.5 كجم، 1.5 متر)</span>
+                                </div>
+                                <p-inputSwitch formControlName="allowDecimalQuantity"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">باركود الميزان الإلكتروني</span>
+                                    <span class="item-desc">قراءة الباركود المتغير للوزن والسعر من الميزان</span>
+                                </div>
+                                <p-inputSwitch formControlName="useScaleBarcode"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">فترات الضمان للمنتجات</span>
+                                    <span class="item-desc">تسجيل عدد أشهر الضمان وتاريخ الانتهاء</span>
+                                </div>
+                                <p-inputSwitch formControlName="hasWarranty"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">البحث عن البدائل</span>
+                                    <span class="item-desc">بدائل الأدوية بالصيدلية أو بدائل قطع الغيار</span>
+                                </div>
+                                <p-inputSwitch formControlName="hasAlternatives"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">تتبع الأبعاد والأحجام</span>
+                                    <span class="item-desc">أبعاد الطول والعرض والارتفاع لمواد البناء والأثاث</span>
+                                </div>
+                                <p-inputSwitch formControlName="trackDimensions"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">تتبع رقم الموديل ورقم القطعة</span>
+                                    <span class="item-desc">رقم القطعة OEM لقطع الغيار أو موديل الجهاز</span>
+                                </div>
+                                <p-inputSwitch formControlName="trackModelNumber"></p-inputSwitch>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. سياسات البيع ونقاط البيع (POS) -->
+                    <div class="policy-card">
+                        <div class="policy-card-header">
+                            <div class="policy-card-icon bg-blue">
+                                <i class="pi pi-shopping-cart"></i>
+                            </div>
+                            <div class="policy-card-title">
+                                <h4>سياسات البيع ونقاط البيع (POS)</h4>
+                                <span>قواعد فواتير المبيعات ونقاط الدفع والتحصيل</span>
+                            </div>
+                        </div>
+
+                        <div class="policy-items-list">
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">إلزامية اختيار عميل في الفاتورة</span>
+                                    <span class="item-desc">إيقافها يسمح بالزبون النقدي (الطيار) السريع</span>
+                                </div>
+                                <p-inputSwitch formControlName="requireCustomer"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">صرف الأقرب انتهاءً أولاً (FEFO)</span>
+                                    <span class="item-desc">اقتراح وصرف الدفعات الأقرب انتهاءً بصورة آلية</span>
+                                </div>
+                                <p-inputSwitch formControlName="useFEFO"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">السماح بالدفع المتعدد</span>
+                                    <span class="item-desc">تسديد جزء نقداً وجزء شبكة/بطاقة في نفس الفاتورة</span>
+                                </div>
+                                <p-inputSwitch formControlName="allowMultiPayment"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">تعليق الفواتير (Hold Invoice)</span>
+                                    <span class="item-desc">تعليق عملية بيع واستئنافها لاحقاً لخدمة زبون آخر</span>
+                                </div>
+                                <p-inputSwitch formControlName="allowHoldInvoice"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">إلزامية الوردية لبدء البيع</span>
+                                    <span class="item-desc">منع حفظ فواتير البيع إلا بوجود وردية كاشير مفتوحة</span>
+                                </div>
+                                <p-inputSwitch formControlName="requireShiftToSell"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">فحص سقف ائتمان العميل</span>
+                                    <span class="item-desc">منع تجاوز الحد الائتماني المسموح به في المبيعات الآجلة</span>
+                                </div>
+                                <p-inputSwitch formControlName="checkCustomerCreditLimit"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">منع البيع الآجل بدون عميل مسجل</span>
+                                    <span class="item-desc">حظر اختيار الدفع الآجل إذا كان العميل نقدي/طيار</span>
+                                </div>
+                                <p-inputSwitch formControlName="preventCreditSaleWithoutCustomer"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">فتح درج النقود آلياً</span>
+                                    <span class="item-desc">إرسال إشارة فتح الدرج عند إتمام عملية السداد</span>
+                                </div>
+                                <p-inputSwitch formControlName="useCashDrawer"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">السماح بالبيع بأقل من سعر التكلفة</span>
+                                    <span class="item-desc">السماح بتمرير مبيعات بسعر بيع أقل من التكلفة</span>
+                                </div>
+                                <p-inputSwitch formControlName="allowSellBelowCost"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item-dropdown mt-2">
+                                <label class="item-label mb-1 block">قالب طباعة الفواتير الافتراضي</label>
+                                <p-dropdown [options]="printTemplates" formControlName="defaultPrintTemplate" 
+                                            optionLabel="label" optionValue="value" appendTo="body" styleClass="custom-p-input w-full"></p-dropdown>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. سياسات المشتريات والتكاليف والضرائب -->
+                    <div class="policy-card">
+                        <div class="policy-card-header">
+                            <div class="policy-card-icon bg-amber">
+                                <i class="pi pi-file"></i>
+                            </div>
+                            <div class="policy-card-title">
+                                <h4>المشتريات والجمارك والضريبة</h4>
+                                <span>سياسات فواتير التوريد واحتساب التكاليف والضريبة</span>
+                            </div>
+                        </div>
+
+                        <div class="policy-items-list">
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">إلزامية أمر الشراء (PO)</span>
+                                    <span class="item-desc">اشتراط وجود أمر شراء معتمد قبل تسجيل فاتورة التوريد</span>
+                                </div>
+                                <p-inputSwitch formControlName="requirePurchaseOrder"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">توزيع مصاريف الشحن والجمارك (Landed Cost)</span>
+                                    <span class="item-desc">إضافة تكاليف الشحن والتخليص على تكلفة الأصناف</span>
+                                </div>
+                                <p-inputSwitch formControlName="useLandedCost"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item">
+                                <div class="item-text">
+                                    <span class="item-label">تفعيل ضريبة القيمة المضافة (VAT)</span>
+                                    <span class="item-desc">احتساب وعرض الضريبة في فواتير البيع والشراء</span>
+                                </div>
+                                <p-inputSwitch formControlName="enableVAT"></p-inputSwitch>
+                            </div>
+
+                            <div class="policy-item-input mt-2" *ngIf="profileForm.get('enableVAT')?.value">
+                                <label class="item-label mb-1 block">نسبة الضريبة الافتراضية (%)</label>
+                                <input type="number" pInputText formControlName="defaultVATRate" class="custom-p-input w-full" placeholder="15" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- مؤشر التحميل -->
+    <div class="loading-state" *ngIf="isLoading">
+        <i class="pi pi-spin pi-spinner text-3xl text-primary mb-3"></i>
+        <span>جاري تحميل إعدادات وقوالب الأنشطة التجارية...</span>
+    </div>
+</div>
+
+<!-- نافذة تأكيد تبديل النشاط التجاري -->
+<p-dialog [(visible)]="showSwitchDialog" 
+          [modal]="true" 
+          [closable]="!isSwitching"
+          [style]="{ width: '480px' }" 
+          dir="rtl" 
+          header="تأكيد تبديل نوع النشاط التجاري">
+    
+    <div class="switch-dialog-content" *ngIf="targetSwitchMeta">
+        <div class="dialog-icon" [style.color]="targetSwitchMeta.color" [style.background-color]="targetSwitchMeta.color + '18'">
+            <i [class]="targetSwitchMeta.icon"></i>
+        </div>
+        
+        <h3>هل أنت متأكد من تبديل النشاط إلى "{{ targetSwitchMeta.name }}"؟</h3>
+        
+        <p class="dialog-desc">
+            سيقوم النظام بتطبيق القواعد والسياسات الخاصة بـ <strong>{{ targetSwitchMeta.name }}</strong> فوراً، مع تكييف حقول بطاقات الأصناف ونقاط البيع.
+        </p>
+
+        <div class="dialog-alert">
+            <i class="pi pi-info-circle"></i>
+            <span>بياناتك وفواتيرك السابقة محفوظة بالكامل ولن تتأثر أو تُحذف.</span>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button pButton icon="pi pi-times" label="إلغاء" class="p-button-text p-button-secondary" (click)="showSwitchDialog = false" [disabled]="isSwitching"></button>
+        <button pButton icon="pi pi-check" label="نعم، قم بالتبديل الآن" class="p-button-primary" (click)="confirmSwitch()" [loading]="isSwitching"></button>
+    </ng-template>
+</p-dialog>

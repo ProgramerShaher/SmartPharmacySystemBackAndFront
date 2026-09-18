@@ -23,7 +23,12 @@ export interface PurchaseInvoiceDetail {
     purchasePrice: number;
     salePrice: number;
     total: number;
+    subtotal?: number;
+    taxRate?: number;
+    taxAmount?: number;
     trueUnitCost: number; // Calculated: (Qty * Price) / (Qty + Bonus)
+    allocatedLandedCost?: number;
+    effectiveUnitCost?: number;
     isDeleted: boolean;
 
     // Batch-related fields
@@ -49,9 +54,12 @@ export interface CreatePurchaseInvoiceDetailDto {
     purchasePrice: number;
     salePrice: number;
     expiryDate: string; // ISO date string
+    taxRate?: number;
     batchBarcode?: string | null;
     companyBatchNumber?: string | null;
     storageLocation?: string | null;
+    allocatedLandedCost?: number;
+    effectiveUnitCost?: number;
 }
 
 /**
@@ -65,7 +73,10 @@ export interface UpdatePurchaseInvoiceDetailDto {
     purchasePrice: number;
     salePrice: number;
     expiryDate: string;
+    taxRate?: number;
     batchBarcode?: string | null;
     companyBatchNumber?: string | null;
     storageLocation?: string | null;
+    allocatedLandedCost?: number;
+    effectiveUnitCost?: number;
 }

@@ -36,8 +36,8 @@ public class StockTransferDto
     public DateTime? ReceivedAt { get; set; }
     public string? Notes { get; set; }
     public int ItemsCount { get; set; }
-    public int TotalQuantityRequested { get; set; }
-    public int TotalQuantityReceived { get; set; }
+    public decimal TotalQuantityRequested { get; set; }
+    public decimal TotalQuantityReceived { get; set; }
     public List<StockTransferItemDto> Items { get; set; } = new();
     public DateTime CreatedAt { get; set; }
 }

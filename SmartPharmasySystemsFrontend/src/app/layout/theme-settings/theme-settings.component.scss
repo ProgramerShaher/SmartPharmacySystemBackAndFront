@@ -1,5 +1,5 @@
 ::ng-deep .theme-settings-sidebar {
-    width: 350px !important;
+    width: 360px !important;
 
     .p-sidebar-header {
         display: none !important;
@@ -8,6 +8,8 @@
     .p-sidebar-content {
         padding: 0 !important;
         overflow-y: auto !important;
+        background: var(--card-bg, #ffffff) !important;
+        color: var(--text-color, #1e293b) !important;
     }
 }
 
@@ -15,9 +17,10 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-color);
+    background: var(--card-bg);
 
     i {
         font-size: 1.4rem;
@@ -26,8 +29,8 @@
 
     h3 {
         margin: 0;
-        font-size: 1.2rem;
-        font-weight: 700;
+        font-size: 1.15rem;
+        font-weight: 800;
         flex: 1;
     }
 }
@@ -38,43 +41,40 @@
     margin: 0;
 }
 
-
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: var(--text-color);
-
-    i {
-        font-size: 1.5rem;
-        color: var(--primary-color);
-    }
-
-    h3 {
-        margin: 0;
-        font-size: 1.25rem;
-        font-weight: 700;
-    }
-}
-
 .settings-content {
+    padding: 1.25rem 1.5rem;
     color: var(--text-color);
 }
 
 .setting-section {
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
 
     h4 {
-        font-size: 1rem;
-        font-weight: 600;
-        margin: 0 0 1rem 0;
+        font-size: 0.92rem;
+        font-weight: 700;
+        margin: 0 0 0.85rem 0;
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+    }
+
+    .section-hint {
+        font-size: 0.72rem;
         color: var(--text-color-secondary);
+        margin: -0.4rem 0 0.75rem 0;
+        line-height: 1.4;
     }
 }
 
 .theme-options {
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .theme-option {
@@ -82,8 +82,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
+    gap: 0.4rem;
+    padding: 0.85rem;
     border-radius: 12px;
     border: 2px solid var(--border-color);
     background: var(--surface-hover);
@@ -91,16 +91,17 @@
     transition: all 0.2s ease;
 
     i {
-        font-size: 1.5rem;
+        font-size: 1.35rem;
     }
 
     span {
-        font-weight: 600;
-        font-size: 0.9rem;
+        font-weight: 700;
+        font-size: 0.85rem;
     }
 
     &:hover {
-        border-color: var(--primary-300);
+        border-color: var(--primary-400);
+        transform: translateY(-2px);
     }
 
     &.active {
@@ -110,39 +111,116 @@
     }
 }
 
+/* Button Shape Options */
+.button-shape-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.65rem;
+}
+
+.button-shape-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.75rem 0.5rem;
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+    background: var(--surface-hover);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    .shape-preview-box {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.2rem 0;
+
+        .preview-btn {
+            background: var(--primary-color);
+            color: var(--primary-color-text, #ffffff);
+            border: none;
+            padding: 0.3rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(var(--primary-rgb), 0.25);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .preview-input {
+            background: var(--input-bg);
+            color: var(--text-color-secondary);
+            border: 1.5px solid var(--border-color);
+            padding: 0.25rem 0.5rem;
+            font-size: 0.68rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+    }
+
+    .shape-name {
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--text-color-secondary);
+        text-align: center;
+    }
+
+    &:hover {
+        border-color: var(--primary-300);
+        transform: translateY(-2px);
+    }
+
+    &.active {
+        border-color: var(--primary-color);
+        background: rgba(var(--primary-rgb), 0.08);
+
+        .shape-name {
+            color: var(--primary-color);
+        }
+    }
+}
+
+/* Color Options */
 .color-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
 }
 
 .color-option {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
     cursor: pointer;
 
     .color-circle {
-        width: 48px;
-        height: 48px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
 
         i {
             color: white;
-            font-size: 1.2rem;
+            font-size: 1rem;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
     }
 
     .color-name {
-        font-size: 0.8rem;
-        font-weight: 600;
+        font-size: 0.68rem;
+        font-weight: 700;
         color: var(--text-color-secondary);
         text-align: center;
         transition: color 0.2s ease;
@@ -150,13 +228,13 @@
 
     &:hover .color-circle {
         transform: scale(1.1);
-        box-shadow: 0 6px 10px -1px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
     }
 
     &.active {
         .color-circle {
             transform: scale(1.15);
-            box-shadow: 0 0 0 4px var(--card-bg), 0 0 0 6px var(--primary-color);
+            box-shadow: 0 0 0 3px var(--card-bg), 0 0 0 5px var(--primary-color);
         }
         .color-name {
             color: var(--primary-color);

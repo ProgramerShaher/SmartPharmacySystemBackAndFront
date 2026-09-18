@@ -34,6 +34,7 @@ public class BusinessProfileDto
     public bool UseFEFO { get; set; }
     public bool AllowMultiPayment { get; set; }
     public bool AllowHoldInvoice { get; set; }
+    public bool AllowQuotations { get; set; }
     public bool UseCashDrawer { get; set; }
     public InvoicePrintTemplate DefaultPrintTemplate { get; set; }
     public string DefaultPrintTemplateName => DefaultPrintTemplate.ToString();
@@ -74,10 +75,12 @@ public class UpdateBusinessProfileDto
     public bool UseFEFO { get; set; }
     public bool AllowMultiPayment { get; set; }
     public bool AllowHoldInvoice { get; set; }
+    public bool AllowQuotations { get; set; }
     public bool UseCashDrawer { get; set; }
     public InvoicePrintTemplate DefaultPrintTemplate { get; set; }
 
     // ─── إعدادات المشتريات ───────────────────────────
+    public bool AllowPurchaseOrders { get; set; }
     public bool RequirePurchaseOrder { get; set; }
     public bool UseLandedCost { get; set; }
 

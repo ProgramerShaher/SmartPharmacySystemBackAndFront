@@ -128,11 +128,11 @@ public interface IMedicineBatchRepository
     /// Gets total available quantity for a medicine across all batches.
     /// يحصل على إجمالي الكمية المتاحة لدواء عبر جميع الدفعات.
     /// </summary>
-    Task<int> GetTotalAvailableQuantityAsync(int medicineId);
+    Task<decimal> GetTotalAvailableQuantityAsync(int medicineId);
     /// <summary>
     /// Gets total physical quantity (RemainingQuantity) for a medicine across all batches (including expired/quarantined if > 0).
     /// </summary>
-    Task<int> GetTotalQuantityAsync(int medicineId);
+    Task<decimal> GetTotalQuantityAsync(int medicineId);
 
     /// <summary>
     /// Gets all batches including the Medicine entity (eager load).

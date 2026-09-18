@@ -65,7 +65,7 @@ namespace SmartPharmacySystem.Controllers
         public async Task<IActionResult> GetBalance([FromQuery] int medicineId, [FromQuery] int? batchId = null)
         {
             var balance = await _service.GetCurrentBalanceAsync(medicineId, batchId);
-            return Ok(ApiResponse<int>.Succeeded(balance, "تم جلب رصيد الحالي بنجاح"));
+            return Ok(ApiResponse<decimal>.Succeeded(balance, "تم جلب رصيد الحالي بنجاح"));
         }
 
         // -------------------------------------------------------------

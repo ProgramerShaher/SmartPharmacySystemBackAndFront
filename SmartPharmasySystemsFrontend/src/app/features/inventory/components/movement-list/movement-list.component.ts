@@ -13,6 +13,7 @@ import {
 } from '../../../../core/models';
 
 import { TableModule } from 'primeng/table';
+import { PaginatorModule } from 'primeng/paginator';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
@@ -32,6 +33,7 @@ import { ToastModule } from 'primeng/toast';
     CommonModule,
     FormsModule,
     TableModule,
+    PaginatorModule,
     ButtonModule,
     InputTextModule,
     DropdownModule,
@@ -52,6 +54,8 @@ export class MovementListComponent implements OnInit {
   loading = signal(false);
   totalRecords = signal(0);
   showFilters = signal(false);
+  viewMode = signal<'table' | 'grid'>('table');
+  showCharts = signal(false);
 
   totalStockValue = signal(0);
   nearExpiryCount = signal(0);
@@ -193,6 +197,14 @@ export class MovementListComponent implements OnInit {
 
   toggleFilters() {
     this.showFilters.update(v => !v);
+  }
+
+  setViewMode(mode: 'table' | 'grid') {
+    this.viewMode.set(mode);
+  }
+
+  toggleCharts() {
+    this.showCharts.update(v => !v);
   }
 
   viewDetails(movement: StockMovementDto) {

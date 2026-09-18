@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace SmartPharmacySystem.Core.Entities;
 
 /// <summary>
@@ -26,13 +28,15 @@ public class SaleInvoiceDetail : BaseEntity
     /// Quantity sold (stored in Base Unit = smallest unit, e.g. pills). Auto-calculated.
     /// الكمية المباعة محوّلة إلى أصغر وحدة (حبة). محسوبة تلقائياً من وحدة البيع.
     /// </summary>
-    public int Quantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Quantity as entered by the cashier in the selected sale unit (e.g. 2 strips).
     /// الكمية كما أدخلها الكاشير بالوحدة المحددة (مثلاً: 2 شريط).
     /// </summary>
-    public int QuantityInSaleUnit { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal QuantityInSaleUnit { get; set; }
 
     /// <summary>
     /// The unit used when selling (FK to MedicineUnit). Null = base unit.
@@ -68,6 +72,25 @@ public class SaleInvoiceDetail : BaseEntity
     public decimal TotalLineAmount { get; set; }
 
     /// <summary>
+    /// المجموع الفرعي للسطر قبل الضريبة
+    /// Subtotal before VAT for this line.
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Subtotal { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة الضريبة المطبقة على الصنف (%)
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// مبلغ الضريبة المحسوب لهذا السطر
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxAmount { get; set; } = 0;
+
+    /// <summary>
     /// Total cost for this line.
     /// </summary>
     public decimal TotalCost { get; set; }
@@ -80,7 +103,8 @@ public class SaleInvoiceDetail : BaseEntity
     /// <summary>
     /// Quantity remaining that can be returned.
     /// </summary>
-    public int RemainingQtyToReturn { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal RemainingQtyToReturn { get; set; }
 
 
     /// <summary>
@@ -103,4 +127,15 @@ public class SaleInvoiceDetail : BaseEntity
     /// خاصية التنقل لوحدة البيع المستخدمة.
     /// </summary>
     public MedicineUnit? SaleUnit { get; set; }
+
+    /// <summary>
+    /// معرف تنويعة الصنف (المقاس / اللون) في أنشطة الملابس والموضة
+    /// </summary>
+    public int? ProductVariantId { get; set; }
+    public virtual ProductVariant? ProductVariant { get; set; }
+
+    /// <summary>
+    /// الأرقام التسلسلية للأجهزة المباعة في هذا السطر
+    /// </summary>
+    public virtual ICollection<ProductSerialNumber> SerialNumbers { get; set; } = new List<ProductSerialNumber>();
 }

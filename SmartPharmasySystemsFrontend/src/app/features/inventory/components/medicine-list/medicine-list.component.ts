@@ -13,6 +13,7 @@ import { ConfirmationService, MessageService, LazyLoadEvent } from 'primeng/api'
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from "primeng/toast";
+import { PaginatorModule } from 'primeng/paginator';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -36,6 +37,7 @@ import { MedicineDetailsModalComponent } from '../medicine-details-modal/medicin
         TagModule,
         ToolbarModule,
         TooltipModule,
+        PaginatorModule,
         ConfirmDialogModule,
         DialogModule,
         ToastModule,
@@ -54,6 +56,16 @@ export class MedicineListComponent implements OnInit {
     loading = signal(true);
     isImporting = signal(false);
 
+    // Multi-View State
+    viewMode = signal<'table' | 'grid'>((typeof localStorage !== 'undefined' && localStorage.getItem('medicines-view-mode') as 'table' | 'grid') || 'table');
+
+    setViewMode(mode: 'table' | 'grid') {
+        this.viewMode.set(mode);
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('medicines-view-mode', mode);
+        }
+    }
+
     // Filters
     searchTerm = signal('');
     categoryId = signal<number | undefined>(undefined);
@@ -69,6 +81,9 @@ export class MedicineListComponent implements OnInit {
     selectedMedicineId = signal<number | null>(null);
     selectedMedicineIdForBatch = 0;
     selectedMedicineNameForBatch = '';
+    
+    // Bottom Action Bar State
+    activeMedicine: Medicine | null = null;
 
     @ViewChild('dt') dt!: Table;
 
@@ -154,6 +169,7 @@ export class MedicineListComponent implements OnInit {
 
     onMedicineSaved() {
         this.loadMedicines(this.lastLazyEvent);
+        this.activeMedicine = null; // Close action bar on save
     }
 
     deleteMedicine(medicine: Medicine) {
@@ -168,6 +184,9 @@ export class MedicineListComponent implements OnInit {
                 this.medicineService.delete(medicine.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'نجاح', detail: 'تم حذف الدواء بنجاح' });
+                        if (this.activeMedicine?.id === medicine.id) {
+                            this.activeMedicine = null;
+                        }
                         this.loadMedicines(this.lastLazyEvent);
                     },
                     error: (err) => {
@@ -232,6 +251,59 @@ export class MedicineListComponent implements OnInit {
 
     getStatusSeverity(status: string): 'success' | 'danger' | 'warning' | 'info' {
         return status === 'Active' ? 'success' : 'danger';
+    }
+
+    // --- Action Bar Methods ---
+    onRowClick(medicine: Medicine, event?: Event) {
+        const target = event?.target as HTMLElement;
+        // Don't trigger if clicking on checkbox
+        if (target && (target.closest('.p-checkbox') || target.closest('p-tablecheckbox'))) {
+            return;
+        }
+        
+        // إخفاء الشريط إذا تم النقر على نفس الصف مرة أخرى
+        if (this.activeMedicine?.id === medicine.id) {
+            this.activeMedicine = null;
+        } else {
+            this.activeMedicine = medicine;
+            this.selectedMedicines = []; // مسح التحديد لكي لا تتضارب الأشرطة
+            setTimeout(() => {
+                const firstActionBtn = document.querySelector('.floating-action-dock:not(.bulk-dock) .action-btn') as HTMLElement;
+                if (firstActionBtn) firstActionBtn.focus();
+            });
+        }
+    }
+
+    onSelectionChange() {
+        if (this.selectedMedicines.length > 0) {
+            this.activeMedicine = null; // إخفاء شريط إجراءات الصف الواحد
+            setTimeout(() => {
+                if (this.selectedMedicines.length === 1) {
+                    const rowDeleteBtn = document.querySelector('.row-delete-btn') as HTMLElement;
+                    if (rowDeleteBtn) rowDeleteBtn.focus();
+                } else {
+                    const bulkDeleteBtnCenter = document.getElementById('bulkDeleteBtnCenter') as HTMLElement;
+                    if (bulkDeleteBtnCenter) bulkDeleteBtnCenter.focus();
+                }
+            });
+        }
+    }
+
+    isRowSelectable(event: any) {
+        return !event.data || event.data.totalStock === 0;
+    }
+
+    closeActionBar() {
+        this.activeMedicine = null;
+    }
+
+    copyBarcode(barcode: string, event: Event) {
+        event.stopPropagation(); // يمنع تفعيل الصف وإظهار شريط الإجراءات
+        if (barcode) {
+            navigator.clipboard.writeText(barcode).then(() => {
+                this.messageService.add({ severity: 'success', summary: 'تم النسخ', detail: 'تم نسخ الباركود بنجاح', life: 2000 });
+            });
+        }
     }
 
     // --- Excel Import/Export ---

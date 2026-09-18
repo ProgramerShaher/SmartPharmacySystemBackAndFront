@@ -1,0 +1,159 @@
+<div class="quotations-page">
+  <!-- Toast & Confirm -->
+  <p-toast position="top-left"></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Header Section -->
+  <div class="header-card mb-4 p-4 surface-card border-round shadow-1">
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3">
+      <div>
+        <h2 class="m-0 text-900 font-bold flex align-items-center gap-2">
+          <i class="pi pi-file-edit text-primary text-2xl"></i>
+          عروض الأسعار والفواتير المبدئية (Quotations)
+        </h2>
+        <p class="text-500 m-0 mt-1">
+          إدارة عروض الأسعار لمشاريع وعملاء الجملة والتجزئة وتحويلها لفواتير مبيعات رسمية بضغطة زر
+        </p>
+      </div>
+      <div>
+        <button pButton pRipple label="عرض سعر جديد" icon="pi pi-plus" class="p-button-primary" (click)="createNew()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-card mb-4 p-3 surface-card border-round shadow-1">
+    <div class="grid p-fluid">
+      <div class="col-12 md:col-4">
+        <span class="p-input-icon-right w-full">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText placeholder="بحث برقم العرض أو اسم العميل أو الهاتف..." [(ngModel)]="searchTerm" (keyup.enter)="onFilterChange()" />
+        </span>
+      </div>
+      <div class="col-12 md:col-3">
+        <p-dropdown [options]="statusOptions" [(ngModel)]="selectedStatus" optionLabel="label" optionValue="value" placeholder="تصفية حسب الحالة" (onChange)="onFilterChange()"></p-dropdown>
+      </div>
+      <div class="col-12 md:col-3">
+        <p-calendar [(ngModel)]="dateRange" selectionMode="range" [readonlyInput]="true" placeholder="الفترة من - إلى" (onSelect)="onFilterChange()"></p-calendar>
+      </div>
+      <div class="col-12 md:col-2 flex gap-2">
+        <button pButton pRipple icon="pi pi-search" label="بحث" class="p-button-outlined flex-1" (click)="onFilterChange()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div class="table-card surface-card border-round shadow-1 p-3">
+    <p-table [value]="quotations()" [lazy]="true" (onLazyLoad)="onPageChange($event)" [paginator]="true" [rows]="pageSize" [totalRecords]="totalCount()" [loading]="loading()" [rowsPerPageOptions]="[10, 20, 50]" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-striped">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>رقم العرض</th>
+          <th>تاريخ العرض</th>
+          <th>العميل</th>
+          <th>صلاحية العرض</th>
+          <th>المجموع الفرعي</th>
+          <th>الضريبة</th>
+          <th>الإجمالي</th>
+          <th>الحالة</th>
+          <th class="text-center" style="width: 260px">الإجراءات</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-q>
+        <tr>
+          <td class="font-semibold text-primary">
+            <a [routerLink]="['/sales/quotations', q.id]" class="no-underline text-primary hover:underline">
+              {{ q.quotationNumber }}
+            </a>
+          </td>
+          <td>{{ q.quotationDate | date:'yyyy/MM/dd' }}</td>
+          <td>
+            <div class="font-medium text-900">{{ q.customerName || 'عميل نقدي' }}</div>
+            <div *ngIf="q.customerPhone" class="text-500 text-xs">{{ q.customerPhone }}</div>
+          </td>
+          <td>
+            <span *ngIf="q.expiryDate" [class.text-red-500]="q.status === QuotationStatus.Expired">
+              {{ q.expiryDate | date:'yyyy/MM/dd' }}
+            </span>
+            <span *ngIf="!q.expiryDate" class="text-400">غير محدد</span>
+          </td>
+          <td>{{ q.subtotal | number:'1.2-2' }}</td>
+          <td>{{ q.taxAmount | number:'1.2-2' }}</td>
+          <td class="font-bold text-green-600">{{ q.totalAmount | number:'1.2-2' }}</td>
+          <td>
+            <p-tag [value]="q.statusName" [severity]="getStatusSeverity(q.status)"></p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex gap-1 justify-content-center">
+              <!-- عرض التفاصيل والطباعة -->
+              <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-text p-button-info" pTooltip="عرض التفاصيل والطباعة" tooltipPosition="top" (click)="viewDetails(q.id)"></button>
+
+              <!-- تحويل إلى فاتورة مبيعات -->
+              <button *ngIf="q.status !== QuotationStatus.ConvertedToInvoice && q.status !== QuotationStatus.Rejected" pButton pRipple icon="pi pi-check-circle" class="p-button-rounded p-button-text p-button-success" pTooltip="تحويل إلى فاتورة مبيعات" tooltipPosition="top" (click)="openConvertDialog(q)"></button>
+
+              <!-- تعديل (فقط إذا لم يتم التحويل) -->
+              <button *ngIf="q.status !== QuotationStatus.ConvertedToInvoice" pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-warning" pTooltip="تعديل العرض" tooltipPosition="top" (click)="editQuotation(q.id)"></button>
+
+              <!-- حذف (فقط إذا لم يتم التحويل) -->
+              <button *ngIf="q.status !== QuotationStatus.ConvertedToInvoice" pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger" pTooltip="حذف العرض" tooltipPosition="top" (click)="deleteQuotation(q)"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="9" class="text-center p-4 text-500">
+            <i class="pi pi-inbox text-4xl mb-2 block"></i>
+            لا توجد عروض أسعار مطابقة للبحث
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Convert to Invoice Dialog -->
+  <p-dialog [(visible)]="showConvertDialog" [modal]="true" [header]="'تحويل عرض السعر إلى فاتورة مبيعات'" [style]="{ width: '480px' }" [draggable]="false" [resizable]="false">
+    <div *ngIf="selectedQuotation" class="p-fluid">
+      <div class="p-3 mb-3 border-round surface-100">
+        <div class="flex justify-content-between mb-2">
+          <span class="text-600">رقم عرض السعر:</span>
+          <span class="font-bold text-primary">{{ selectedQuotation.quotationNumber }}</span>
+        </div>
+        <div class="flex justify-content-between mb-2">
+          <span class="text-600">العميل:</span>
+          <span class="font-semibold">{{ selectedQuotation.customerName || 'عميل نقدي' }}</span>
+        </div>
+        <div class="flex justify-content-between">
+          <span class="text-600">إجمالي الفاتورة:</span>
+          <span class="font-bold text-green-600 text-lg">{{ selectedQuotation.totalAmount | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="field mb-3">
+        <label class="font-semibold block mb-1">طريقة الدفع للفاتورة</label>
+        <p-dropdown [options]="paymentMethods" [(ngModel)]="convertDto.paymentMethod" optionLabel="label" optionValue="value" (onChange)="onPaymentMethodChange()"></p-dropdown>
+      </div>
+
+      <div class="field mb-3" *ngIf="convertDto.paymentMethod !== 2">
+        <label class="font-semibold block mb-1">المبلغ المدفوع</label>
+        <p-inputNumber [(ngModel)]="convertDto.paidAmount" [min]="0" [max]="selectedQuotation.totalAmount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
+      </div>
+
+      <div class="field mb-3">
+        <label class="font-semibold block mb-1">ملاحظات الفاتورة</label>
+        <input type="text" pInputText [(ngModel)]="convertDto.notes" placeholder="ملاحظات إضافية..." />
+      </div>
+
+      <div class="text-500 text-sm mb-3">
+        <i class="pi pi-info-circle text-primary ml-1"></i>
+        سيتم خصم الأصناف من المخزون وتوليد رقم الفاتورة والباركود الضريبي ZATCA آلياً.
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton pRipple label="إلغاء" icon="pi pi-times" class="p-button-text" (click)="showConvertDialog.set(false)" [disabled]="converting()"></button>
+      <button pButton pRipple label="تأكيد التحويل الآن" icon="pi pi-check" class="p-button-success" (click)="submitConversion()" [loading]="converting()"></button>
+    </ng-template>
+  </p-dialog>
+</div>

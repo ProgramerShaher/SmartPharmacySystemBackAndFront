@@ -42,6 +42,10 @@ using SmartPharmacySystem.Application.DTOs.CustomerLedgers;
 using SmartPharmacySystem.Application.DTOs.InterBranchSettlements;
 using SmartPharmacySystem.Application.DTOs.DailyClosings;
 using SmartPharmacySystem.Application.DTOs.Notifications;
+using SmartPharmacySystem.Application.DTOs.HeldInvoices;
+using SmartPharmacySystem.Application.DTOs.ProductVariants;
+using SmartPharmacySystem.Application.DTOs.ProductSerialNumbers;
+using SmartPharmacySystem.Application.DTOs.Quotations;
 using PriceOverrideDto = SmartPharmacySystem.Application.DTOs.Customers.PriceOverrideDto;
 using CreateExpenseCategoryDto = SmartPharmacySystem.Application.DTOs.Expense.CreateExpenseCategoryDto;
 using ExpenseCategoryDto = SmartPharmacySystem.Application.DTOs.Expense.ExpenseCategoryDto;
@@ -256,6 +260,7 @@ namespace SmartPharmacySystem.Application.Mapping
             CreateMap<SaleInvoice, SaleInvoiceDto>()
                 .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.SaleInvoiceDetails))
+                .ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments))
                 .ForMember(dest => dest.CreatedByName, opt => opt.MapFrom(src => src.Creator != null ? src.Creator.FullName : string.Empty))
                 .ForMember(dest => dest.ApprovedByName, opt => opt.MapFrom(src => src.Approver != null ? src.Approver.FullName : null))
                 .ForMember(dest => dest.CancelledByName, opt => opt.MapFrom(src => src.Canceller != null ? src.Canceller.FullName : null))
@@ -283,7 +288,31 @@ namespace SmartPharmacySystem.Application.Mapping
                     src.CreatedAt))
                 .ReverseMap()
                 .ForMember(dest => dest.SaleInvoiceDetails, opt => opt.Ignore())
-                .ForMember(dest => dest.SaleInvoiceDetails, opt => opt.Ignore());
+                .ForMember(dest => dest.Payments, opt => opt.Ignore());
+
+            // SaleInvoicePayment Mappings
+            CreateMap<SaleInvoicePayment, SaleInvoicePaymentDto>()
+                .ForMember(dest => dest.AccountName, opt => opt.MapFrom(src => src.Account != null ? src.Account.Name : null))
+                .ReverseMap();
+            CreateMap<CreateSaleInvoicePaymentDto, SaleInvoicePayment>();
+
+            // HeldInvoice Mappings
+            CreateMap<HeldInvoice, HeldInvoiceDto>().ReverseMap();
+            CreateMap<CreateHeldInvoiceDto, HeldInvoice>();
+
+            // ProductVariant Mappings
+            CreateMap<ProductVariant, ProductVariantDto>()
+                .ForMember(dest => dest.MedicineName, opt => opt.MapFrom(src => src.Medicine != null ? src.Medicine.Name : null))
+                .ReverseMap();
+            CreateMap<CreateProductVariantDto, ProductVariant>();
+            CreateMap<UpdateProductVariantDto, ProductVariant>();
+
+            // ProductSerialNumber Mappings
+            CreateMap<ProductSerialNumber, ProductSerialNumberDto>()
+                .ForMember(dest => dest.MedicineName, opt => opt.MapFrom(src => src.Medicine != null ? src.Medicine.Name : null))
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : null))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
+                .ReverseMap();
 
             // SaleInvoiceDetail Mappings
             CreateMap<CreateSaleInvoiceDetailDto, SaleInvoiceDetail>()
@@ -871,6 +900,31 @@ namespace SmartPharmacySystem.Application.Mapping
             // InvoiceSequence Mappings
             CreateMap<InvoiceNumberSequence, InvoiceSequenceDto>()
                 .ForMember(dest => dest.NextNumber, opt => opt.Ignore());
+
+            // ==================== Quotation Mappings ====================
+            CreateMap<Quotation, QuotationDto>()
+                .ForMember(dest => dest.BranchName, opt => opt.MapFrom(src => src.Branch != null ? src.Branch.Name : string.Empty))
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? src.Customer.Name : (src.CustomerName ?? string.Empty)))
+                .ForMember(dest => dest.ConvertedSaleInvoiceNumber, opt => opt.MapFrom(src => src.ConvertedSaleInvoice != null ? src.ConvertedSaleInvoice.SaleInvoiceNumber : null))
+                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src =>
+                    src.Status == Core.Enums.QuotationStatus.Draft ? "مسودة" :
+                    src.Status == Core.Enums.QuotationStatus.Sent ? "مرسل للعميل" :
+                    src.Status == Core.Enums.QuotationStatus.Accepted ? "مقبول" :
+                    src.Status == Core.Enums.QuotationStatus.Rejected ? "مرفوض" :
+                    src.Status == Core.Enums.QuotationStatus.Expired ? "منتهي الصلاحية" :
+                    src.Status == Core.Enums.QuotationStatus.ConvertedToInvoice ? "محول لفاتورة" : src.Status.ToString()))
+                .ForMember(dest => dest.Details, opt => opt.MapFrom(src => src.QuotationDetails));
+
+            CreateMap<QuotationDetail, QuotationDetailDto>()
+                .ForMember(dest => dest.MedicineName, opt => opt.MapFrom(src => src.Medicine != null ? src.Medicine.Name : string.Empty))
+                .ForMember(dest => dest.MedicineCode, opt => opt.MapFrom(src => src.Medicine != null ? src.Medicine.InternalCode : null))
+                .ForMember(dest => dest.Barcode, opt => opt.MapFrom(src => src.Medicine != null ? src.Medicine.DefaultBarcode : null))
+                .ForMember(dest => dest.UnitName, opt => opt.MapFrom(src => src.SaleUnit != null ? src.SaleUnit.Name : null));
+
+            CreateMap<CreateQuotationDto, Quotation>()
+                .ForMember(dest => dest.QuotationDetails, opt => opt.Ignore());
+
+            CreateMap<CreateQuotationDetailDto, QuotationDetail>();
         }
     }
 }

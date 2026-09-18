@@ -19,8 +19,8 @@ public class CreatePurchaseInvoiceDetailDto
     /// Quantity as entered by the user in the selected purchase unit (e.g. 5 cartons).
     /// </summary>
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; }  // kept for backward-compat; equals QuantityInPurchaseUnit when sent
+    [Range(0.0001, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
+    public decimal Quantity { get; set; }  // kept for backward-compat; equals QuantityInPurchaseUnit when sent
 
     /// <summary>
     /// معرف وحدة الشراء (مثلاً: كرتون). إذا كان null سيتم التعامل بالوحدة الأساسية (x1).
@@ -31,7 +31,7 @@ public class CreatePurchaseInvoiceDetailDto
     /// <summary>
     /// الكمية المجانية (Bonus)
     /// </summary>
-    public int BonusQuantity { get; set; }
+    public decimal BonusQuantity { get; set; }
 
     /// <summary>
     /// سعر الشراء للوحدة
@@ -59,6 +59,11 @@ public class CreatePurchaseInvoiceDetailDto
     public string? BatchBarcode { get; set; }
 
     /// <summary>
+    /// نسبة ضريبة القيمة المضافة المطبقة (%)
+    /// </summary>
+    public decimal? TaxRate { get; set; }
+
+    /// <summary>
     /// رقم تشغيلة الشركة المصنعة
     /// </summary>
     public string? CompanyBatchNumber { get; set; }
@@ -67,4 +72,14 @@ public class CreatePurchaseInvoiceDetailDto
     /// موقع التخزين (اختياري)
     /// </summary>
     public string? StorageLocation { get; set; }
+
+    /// <summary>
+    /// نصيب السطر من مصاريف التوريد الإضافية (الشحن والجمارك)
+    /// </summary>
+    public decimal AllocatedLandedCost { get; set; } = 0;
+
+    /// <summary>
+    /// التكلفة الفعلية الواصلة للمخزن للوحدة بعد تحميل المصاريف
+    /// </summary>
+    public decimal EffectiveUnitCost { get; set; } = 0;
 }

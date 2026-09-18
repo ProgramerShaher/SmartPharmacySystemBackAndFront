@@ -164,6 +164,7 @@ builder.Services.AddScoped<ICustomerReceiptService, CustomerReceiptService>();
 builder.Services.AddScoped<IReportService, ReportService>(); // Central Reporting Engine
 builder.Services.AddScoped<IMasterDashboardService, MasterDashboardService>(); // Master Dashboard - Single Source of Truth
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IAccountLookupService, AccountLookupService>();
 builder.Services.AddScoped<IJournalEntryService, JournalEntryService>();
 builder.Services.AddScoped<IChequeService, ChequeService>();
 
@@ -176,6 +177,11 @@ builder.Services.AddScoped<IBackupRetentionService, BackupRetentionService>();
 builder.Services.AddScoped<IBackupService, BackupService>();
 builder.Services.AddScoped<IPharmacySettingsService, PharmacySettingsService>();
 builder.Services.AddScoped<IBusinessProfileService, BusinessProfileService>();
+builder.Services.AddScoped<IHeldInvoiceService, HeldInvoiceService>();
+builder.Services.AddScoped<IProductVariantService, ProductVariantService>();
+builder.Services.AddScoped<IProductSerialNumberService, ProductSerialNumberService>();
+builder.Services.AddScoped<IQuotationRepository, QuotationRepository>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
 builder.Services.AddHttpClient<IWhatsAppNotificationService, WhatsAppNotificationService>();
 
 // -------------------- HR & Payroll Services --------------------

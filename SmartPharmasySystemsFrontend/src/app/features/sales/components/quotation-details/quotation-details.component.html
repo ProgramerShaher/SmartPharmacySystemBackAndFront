@@ -1,0 +1,229 @@
+<div class="quotation-details-page">
+  <p-toast position="top-left"></p-toast>
+
+  <!-- Screen-Only Actions Bar -->
+  <div class="no-print header-bar mb-4 p-3 surface-card border-round shadow-1 flex flex-column md:flex-row justify-content-between align-items-center gap-3">
+    <div class="flex align-items-center gap-3">
+      <button pButton pRipple icon="pi pi-arrow-right" class="p-button-rounded p-button-text p-button-secondary" (click)="goBack()" pTooltip="رجوع للقائمة"></button>
+      <div>
+        <h2 class="m-0 text-900 font-bold flex align-items-center gap-2">
+          عرض سعر: {{ quotation()?.quotationNumber }}
+          <p-tag *ngIf="quotation()" [value]="quotation()!.statusName" [severity]="getStatusSeverity(quotation()!.status)"></p-tag>
+        </h2>
+        <small class="text-500">تاريخ الإصدار: {{ quotation()?.quotationDate | date:'yyyy/MM/dd' }}</small>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2 align-items-center">
+      <!-- Change Status Quick Menu -->
+      <div *ngIf="quotation() && quotation()!.status !== QuotationStatus.ConvertedToInvoice" class="flex align-items-center gap-2">
+        <span class="text-sm font-semibold text-600">تغيير الحالة:</span>
+        <button *ngIf="quotation()!.status === QuotationStatus.Draft" pButton pRipple label="إرسال للعميل" icon="pi pi-send" class="p-button-outlined p-button-info p-button-sm" (click)="changeStatus(QuotationStatus.Sent)"></button>
+        <button *ngIf="quotation()!.status === QuotationStatus.Sent" pButton pRipple label="قبول العرض" icon="pi pi-check" class="p-button-outlined p-button-success p-button-sm" (click)="changeStatus(QuotationStatus.Accepted)"></button>
+        <button *ngIf="quotation()!.status === QuotationStatus.Sent" pButton pRipple label="رفض" icon="pi pi-times" class="p-button-outlined p-button-danger p-button-sm" (click)="changeStatus(QuotationStatus.Rejected)"></button>
+      </div>
+
+      <!-- Edit Button -->
+      <button *ngIf="quotation() && quotation()!.status !== QuotationStatus.ConvertedToInvoice" pButton pRipple label="تعديل" icon="pi pi-pencil" class="p-button-outlined p-button-warning" (click)="editQuotation()"></button>
+
+      <!-- Convert to Sale Invoice Button -->
+      <button *ngIf="quotation() && quotation()!.status !== QuotationStatus.ConvertedToInvoice && quotation()!.status !== QuotationStatus.Rejected" pButton pRipple label="تحويل إلى فاتورة مبيعات" icon="pi pi-check-circle" class="p-button-success" (click)="openConvertDialog()"></button>
+
+      <!-- Print A4 Button -->
+      <button pButton pRipple label="طباعة A4 رسمية" icon="pi pi-print" class="p-button-primary" (click)="printA4()"></button>
+    </div>
+  </div>
+
+  <!-- Converted Invoice Notification Banner -->
+  <div *ngIf="quotation() && quotation()!.status === QuotationStatus.ConvertedToInvoice" class="mb-4 p-3 bg-purple-50 border-round border-1 border-purple-200 flex align-items-center justify-content-between">
+    <div class="flex align-items-center gap-2 text-purple-900 font-semibold">
+      <i class="pi pi-check-circle text-purple-600 text-xl"></i>
+      تم تحويل هذا العرض رسمياً إلى فاتورة مبيعات برقم:
+      <span class="text-purple-700 font-bold underline">{{ quotation()!.convertedSaleInvoiceNumber || quotation()!.convertedSaleInvoiceId }}</span>
+      <span *ngIf="quotation()!.convertedAt" class="text-xs text-purple-600">({{ quotation()!.convertedAt | date:'yyyy/MM/dd HH:mm' }})</span>
+    </div>
+    <a *ngIf="quotation()!.convertedSaleInvoiceId" [routerLink]="['/sales']" class="p-button p-button-sm p-button-outlined p-button-help no-underline">
+      عرض الفواتير
+    </a>
+  </div>
+
+  <!-- Official A4 Document Paper Container -->
+  <div class="a4-container surface-card shadow-2 border-round p-5 mx-auto" *ngIf="printData()">
+    <!-- Document Header -->
+    <div class="flex justify-content-between align-items-start border-bottom-2 surface-border pb-4 mb-4">
+      <div>
+        <h1 class="text-2xl font-bold text-900 m-0 mb-1">{{ printData()!.companyName }}</h1>
+        <div *ngIf="printData()!.companyCommercialRegister" class="text-sm text-600">سجل تجاري: {{ printData()!.companyCommercialRegister }}</div>
+        <div *ngIf="printData()!.companyTaxNumber" class="text-sm text-600">الرقم الضريبي: {{ printData()!.companyTaxNumber }}</div>
+        <div *ngIf="printData()!.companyAddress" class="text-sm text-600">العنوان: {{ printData()!.companyAddress }}</div>
+        <div *ngIf="printData()!.companyPhone" class="text-sm text-600">هاتف: {{ printData()!.companyPhone }}</div>
+      </div>
+
+      <div class="text-center">
+        <div class="text-xl font-bold text-primary border-1 border-primary p-2 border-round mb-2 bg-blue-50">
+          عرض سعر / PROFORMA INVOICE
+        </div>
+        <div class="font-bold text-lg text-900">{{ printData()!.quotationNumber }}</div>
+        <div class="text-xs text-600">التاريخ: {{ printData()!.quotationDate | date:'yyyy/MM/dd' }}</div>
+        <div *ngIf="printData()!.expiryDate" class="text-xs text-red-600 font-semibold">
+          صالح حتى: {{ printData()!.expiryDate | date:'yyyy/MM/dd' }}
+        </div>
+      </div>
+
+      <div class="text-left" *ngIf="printData()!.companyLogoUrl">
+        <img [src]="printData()!.companyLogoUrl" alt="شعار المؤسسة" style="max-height: 80px; max-width: 140px; object-fit: contain" />
+      </div>
+    </div>
+
+    <!-- Customer Information Box -->
+    <div class="grid mb-4 surface-50 p-3 border-round border-1 surface-border">
+      <div class="col-12 md:col-6">
+        <div class="text-xs text-500 font-bold mb-1">بيانات العميل / السادة:</div>
+        <div class="font-bold text-lg text-900">{{ printData()!.customerName || 'عميل نقدي / عام' }}</div>
+        <div *ngIf="printData()!.customerAddress" class="text-sm text-700">العنوان: {{ printData()!.customerAddress }}</div>
+      </div>
+      <div class="col-12 md:col-6 text-left md:text-left">
+        <div *ngIf="printData()!.customerPhone" class="text-sm text-700">
+          <span class="font-semibold">الهاتف:</span> {{ printData()!.customerPhone }}
+        </div>
+        <div *ngIf="printData()!.customerEmail" class="text-sm text-700">
+          <span class="font-semibold">البريد:</span> {{ printData()!.customerEmail }}
+        </div>
+        <div class="text-sm text-700">
+          <span class="font-semibold">حالة العرض:</span> {{ printData()!.statusName }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="mb-4">
+      <table class="w-full a4-table">
+        <thead>
+          <tr>
+            <th style="width: 40px">#</th>
+            <th>الصنف / المواصفات</th>
+            <th style="width: 90px">الوحدة</th>
+            <th style="width: 80px">الكمية</th>
+            <th style="width: 100px">سعر الوحدة</th>
+            <th style="width: 80px">خصم</th>
+            <th style="width: 90px">الضريبة</th>
+            <th style="width: 110px">الإجمالي</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of printData()!.details; let i = index">
+            <td class="text-center">{{ i + 1 }}</td>
+            <td>
+              <div class="font-bold text-900">{{ item.medicineName }}</div>
+              <small *ngIf="item.notes" class="text-500 block">{{ item.notes }}</small>
+            </td>
+            <td class="text-center">{{ item.unitName || 'حبة' }}</td>
+            <td class="text-center font-bold">{{ item.quantity }}</td>
+            <td class="text-center">{{ item.unitPrice | number:'1.2-2' }}</td>
+            <td class="text-center">{{ item.discountAmount | number:'1.2-2' }}</td>
+            <td class="text-center">{{ item.taxAmount | number:'1.2-2' }}</td>
+            <td class="text-center font-bold">{{ item.total | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Financial Totals & Signatures -->
+    <div class="grid mb-4">
+      <div class="col-12 md:col-7">
+        <!-- Terms and Conditions -->
+        <div *ngIf="printData()!.termsAndConditions" class="p-3 border-round border-1 surface-border bg-gray-50 mb-3">
+          <div class="font-bold text-sm text-900 mb-1">الشروط والأحكام:</div>
+          <div class="text-xs text-700 white-space-pre-line leading-relaxed">{{ printData()!.termsAndConditions }}</div>
+        </div>
+
+        <div *ngIf="printData()!.notes" class="p-2 text-xs text-600">
+          <span class="font-bold">ملاحظات:</span> {{ printData()!.notes }}
+        </div>
+      </div>
+
+      <div class="col-12 md:col-5">
+        <div class="surface-100 p-3 border-round border-1 surface-border">
+          <div class="flex justify-content-between mb-2 text-sm">
+            <span class="text-600">المجموع قبل الضريبة:</span>
+            <span class="font-semibold">{{ printData()!.subtotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="flex justify-content-between mb-2 text-sm">
+            <span class="text-600">إجمالي الخصومات:</span>
+            <span class="font-semibold text-orange-600">{{ printData()!.totalDiscount | number:'1.2-2' }}</span>
+          </div>
+          <div class="flex justify-content-between mb-2 text-sm">
+            <span class="text-600">ضريبة القيمة المضافة ({{ printData()!.taxRate }}%):</span>
+            <span class="font-semibold">{{ printData()!.taxAmount | number:'1.2-2' }}</span>
+          </div>
+          <p-divider></p-divider>
+          <div class="flex justify-content-between text-lg font-bold text-900">
+            <span>الإجمالي النهائي:</span>
+            <span class="text-primary font-bold">{{ printData()!.totalAmount | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stamp & Signatures Box -->
+    <div class="grid pt-4 mt-4 border-top-1 surface-border">
+      <div class="col-4 text-center">
+        <div class="text-sm font-bold text-700 mb-5">إعداد العرض</div>
+        <div class="text-xs text-500">التوقيع: .....................</div>
+      </div>
+      <div class="col-4 text-center">
+        <div class="text-sm font-bold text-700 mb-5">الختم الرسمي</div>
+        <div class="stamp-box mx-auto border-1 border-dashed surface-border border-round" style="width: 100px; height: 50px"></div>
+      </div>
+      <div class="col-4 text-center">
+        <div class="text-sm font-bold text-700 mb-5">موافقة وتوقيع العميل</div>
+        <div class="text-xs text-500">التوقيع: .....................</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Convert to Invoice Dialog -->
+  <p-dialog [(visible)]="showConvertDialog" [modal]="true" [header]="'تحويل عرض السعر إلى فاتورة مبيعات'" [style]="{ width: '480px' }" [draggable]="false" [resizable]="false">
+    <div *ngIf="quotation()" class="p-fluid">
+      <div class="p-3 mb-3 border-round surface-100">
+        <div class="flex justify-content-between mb-2">
+          <span class="text-600">رقم عرض السعر:</span>
+          <span class="font-bold text-primary">{{ quotation()!.quotationNumber }}</span>
+        </div>
+        <div class="flex justify-content-between mb-2">
+          <span class="text-600">العميل:</span>
+          <span class="font-semibold">{{ quotation()!.customerName || 'عميل نقدي' }}</span>
+        </div>
+        <div class="flex justify-content-between">
+          <span class="text-600">إجمالي الفاتورة:</span>
+          <span class="font-bold text-green-600 text-lg">{{ quotation()!.totalAmount | number:'1.2-2' }}</span>
+        </div>
+      </div>
+
+      <div class="field mb-3">
+        <label class="font-semibold block mb-1">طريقة الدفع للفاتورة</label>
+        <p-dropdown [options]="paymentMethods" [(ngModel)]="convertDto.paymentMethod" optionLabel="label" optionValue="value" (onChange)="onPaymentMethodChange()"></p-dropdown>
+      </div>
+
+      <div class="field mb-3" *ngIf="convertDto.paymentMethod !== 2">
+        <label class="font-semibold block mb-1">المبلغ المدفوع</label>
+        <p-inputNumber [(ngModel)]="convertDto.paidAmount" [min]="0" [max]="quotation()!.totalAmount" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2"></p-inputNumber>
+      </div>
+
+      <div class="field mb-3">
+        <label class="font-semibold block mb-1">ملاحظات الفاتورة</label>
+        <input type="text" pInputText [(ngModel)]="convertDto.notes" placeholder="ملاحظات إضافية..." />
+      </div>
+
+      <div class="text-500 text-sm mb-3">
+        <i class="pi pi-info-circle text-primary ml-1"></i>
+        سيتم خصم الأصناف من المخزون وتوليد رقم الفاتورة والباركود الضريبي ZATCA آلياً.
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <button pButton pRipple label="إلغاء" icon="pi pi-times" class="p-button-text" (click)="showConvertDialog.set(false)" [disabled]="converting()"></button>
+      <button pButton pRipple label="تأكيد التحويل الآن" icon="pi pi-check" class="p-button-success" (click)="submitConversion()" [loading]="converting()"></button>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -49,6 +49,31 @@ public class UpdatePurchaseInvoiceDto
     public string Notes { get; set; } = string.Empty;
 
     /// <summary>
+    /// تكاليف الشحن والنقل للمشتريات
+    /// </summary>
+    public decimal ShippingCost { get; set; } = 0;
+
+    /// <summary>
+    /// رسوم الجمارك والتخليص
+    /// </summary>
+    public decimal CustomsCost { get; set; } = 0;
+
+    /// <summary>
+    /// مصاريف إضافية أخرى (تأمين، عمالة وتنزيل)
+    /// </summary>
+    public decimal OtherLandedCosts { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة المطبقة (%)
+    /// </summary>
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// هل الأسعار شاملة الضريبة
+    /// </summary>
+    public bool IsTaxInclusive { get; set; } = true;
+
+    /// <summary>
     /// قائمة أصناف الفاتورة
     /// </summary>
     [Required]

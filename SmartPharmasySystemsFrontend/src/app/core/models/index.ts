@@ -49,6 +49,9 @@ export * from './warehouse.interface';
 export * from './stock-transfer.interface';
 export * from './damaged-goods.interface';
 export * from './stock-count.interface';
+export * from './held-invoice.models';
+export * from './product-variant.interface';
+export * from './product-serial-number.interface';
 
 // Re-export PagedResult for convenience
 export type { PagedResult } from './api-response.interface';

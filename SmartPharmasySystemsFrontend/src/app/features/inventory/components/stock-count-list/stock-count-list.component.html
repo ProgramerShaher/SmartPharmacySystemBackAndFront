@@ -1,112 +1,213 @@
-<div class="movement-container" dir="rtl">
-  <div class="page-header">
-    <div class="title-wrap">
-      <div class="icon-circle"><i class="pi pi-check-square"></i></div>
-      <div>
-        <h1>الجرد المخزني</h1>
-        <p>إدارة جرد المخزون وتسوية الأرصدة</p>
+<div class="statement-container fadein" dir="rtl">
+
+  <!-- ═══════════ Imperial Search Bar & Controls ═══════════ -->
+  <div class="imperial-search-bar mb-3">
+    <div class="search-content">
+      <div class="flex-align">
+        <div class="search-icon-badge">
+          <i class="pi pi-clipboard"></i>
+        </div>
+        <div class="search-input-wrapper">
+          <label class="search-label">أوامر جرد المخزون</label>
+          <span class="text-xs text-500 font-bold">إدارة عمليات الجرد الفعلي، مطابقة الأرصدة وتسوية الفروقات</span>
+        </div>
       </div>
-    </div>
-    
-    <div class="actions no-print">
-        <p-button icon="pi pi-plus" label="إنشاء أمر جرد جديد" [rounded]="true" severity="primary" size="small" routerLink="/inventory/stock-counts/new"></p-button>
+
+      <form [formGroup]="filterForm" (ngSubmit)="onFilter()" class="flex flex-wrap gap-2 align-items-center">
+        <!-- حالة الجرد -->
+        <p-dropdown [options]="statusOptions" formControlName="status" placeholder="حالة الجرد"
+          styleClass="p-inputtext-sm imperial-dropdown" appendTo="body" (onChange)="onFilter()"></p-dropdown>
+
+        <!-- من تاريخ -->
+        <input pInputText type="date" formControlName="from" (change)="onFilter()"
+          class="p-inputtext-sm imperial-field" placeholder="من تاريخ" style="width: auto; min-width: 140px;">
+
+        <!-- إلى تاريخ -->
+        <input pInputText type="date" formControlName="to" (change)="onFilter()"
+          class="p-inputtext-sm imperial-field" placeholder="إلى تاريخ" style="width: auto; min-width: 140px;">
+
+        <button pButton icon="pi pi-search" type="submit" label="بحث" class="p-button-primary p-button-sm px-3"></button>
+        <button pButton icon="pi pi-refresh" type="button" label="إعادة ضبط" severity="secondary" [outlined]="true"
+          class="p-button-sm px-3" (click)="resetFilter()"></button>
+      </form>
+
+      <div class="action-buttons flex gap-2 align-items-center">
+        <!-- Multi-View Switcher -->
+        <div class="view-switcher-group">
+          <button type="button" class="view-btn" [class.active]="viewMode === 'table'"
+            (click)="setViewMode('table')" pTooltip="عرض جدولي">
+            <i class="pi pi-table"></i>
+            <span>جدول</span>
+          </button>
+          <button type="button" class="view-btn" [class.active]="viewMode === 'grid'"
+            (click)="setViewMode('grid')" pTooltip="عرض كروت">
+            <i class="pi pi-th-large"></i>
+            <span>كروت</span>
+          </button>
+        </div>
+
+        <button pButton icon="pi pi-plus" label="أمر جرد جديد" routerLink="/inventory/stock-counts/new"
+          class="imperial-btn-primary p-button-sm px-4"></button>
+      </div>
     </div>
   </div>
 
-  <section class="filters-panel no-print">
-    <form [formGroup]="filterForm" (ngSubmit)="onFilter()" class="w-full" style="display: contents;">
-      <div class="filter-field">
-        <label>حالة الجرد</label>
-        <p-dropdown [options]="statusOptions" formControlName="status" placeholder="الكل"
-            styleClass="w-full" appendTo="body" (onChange)="onFilter()"></p-dropdown>
-      </div>
-      <div class="filter-field">
-        <label>من تاريخ</label>
-        <input pInputText type="date" class="w-full" formControlName="from" (change)="onFilter()">
-      </div>
-      <div class="filter-field">
-        <label>إلى تاريخ</label>
-        <input pInputText type="date" class="w-full" formControlName="to" (change)="onFilter()">
-      </div>
-      <div class="filter-field" style="grid-column: span 2;">
-          <label>&nbsp;</label>
-          <div class="flex gap-2">
-              <p-button icon="pi pi-search" type="submit" label="بحث" size="small"></p-button>
-              <p-button icon="pi pi-refresh" type="button" label="إعادة ضبط" severity="secondary" [outlined]="true" size="small" (onClick)="resetFilter()"></p-button>
+  <!-- ═══════════ View Mode 1: Ledger Table ═══════════ -->
+  <div [hidden]="viewMode !== 'table'" class="ledger-card-wrapper">
+    <p-table [value]="stockCounts" [loading]="isLoading" [rowHover]="true" responsiveLayout="scroll"
+      styleClass="p-datatable-sm imperial-statement-table" dir="rtl">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="min-width: 8rem">
+            رقم الجرد
+            <div class="header-subtext">Count Code</div>
+          </th>
+          <th style="min-width: 14rem">
+            المستودع / المخزن
+            <div class="header-subtext">Warehouse</div>
+          </th>
+          <th class="text-center" style="min-width: 9rem">
+            نوع الجرد
+            <div class="header-subtext">Type</div>
+          </th>
+          <th class="text-center" style="min-width: 10rem">
+            تاريخ البدء
+            <div class="header-subtext">Started At</div>
+          </th>
+          <th class="text-center" style="min-width: 10rem">
+            تاريخ الانتهاء
+            <div class="header-subtext">Finished At</div>
+          </th>
+          <th class="text-center" style="min-width: 9rem">
+            الحالة
+            <div class="header-subtext">Status</div>
+          </th>
+          <th class="text-center" style="width: 7rem">الإجراءات</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>
+            <strong class="font-mono font-bold" style="color: var(--primary-color);">#{{item.countCode}}</strong>
+          </td>
+          <td>
+            <div class="flex align-items-center gap-2">
+              <span class="inventory-chip blue">مخزن</span>
+              <strong style="color: var(--text-color);">{{item.warehouseName || 'المخزن الرئيسي'}}</strong>
+            </div>
+          </td>
+          <td class="text-center">
+            <span class="inventory-chip gray font-bold" *ngIf="isType(item, StockCountType.Daily, 'Daily')">يومي</span>
+            <span class="inventory-chip green font-bold" *ngIf="isType(item, StockCountType.Monthly, 'Monthly')">شهري</span>
+            <span class="inventory-chip orange font-bold" *ngIf="isType(item, StockCountType.BiAnnual, 'BiAnnual')">نصف سنوي</span>
+            <span class="inventory-chip red font-bold" *ngIf="isType(item, StockCountType.Annual, 'Annual')">سنوي</span>
+          </td>
+          <td class="text-center">
+            <div class="flex flex-column">
+              <span class="font-bold text-sm" style="color: var(--text-color);">{{item.startedAt | date:'dd/MM/yyyy'}}</span>
+              <span class="text-xs font-mono" style="color: var(--text-color-secondary);">{{item.startedAt | date:'HH:mm'}}</span>
+            </div>
+          </td>
+          <td class="text-center">
+            <div class="flex flex-column" *ngIf="item.finishedAt">
+              <span class="font-bold text-sm" style="color: var(--text-color);">{{item.finishedAt | date:'dd/MM/yyyy'}}</span>
+              <span class="text-xs font-mono" style="color: var(--text-color-secondary);">{{item.finishedAt | date:'HH:mm'}}</span>
+            </div>
+            <span *ngIf="!item.finishedAt" style="color: var(--text-color-secondary);">-</span>
+          </td>
+          <td class="text-center">
+            <p-tag [severity]="'info'" value="مسودة" *ngIf="isStatus(item, StockCountStatus.Draft, 'Draft')"></p-tag>
+            <p-tag [severity]="'contrast'" value="قيد الجرد" *ngIf="isStatus(item, StockCountStatus.InProgress, 'InProgress')"></p-tag>
+            <p-tag [severity]="'warning'" value="بانتظار الاعتماد" *ngIf="isStatus(item, StockCountStatus.PendingApproval, 'PendingApproval')"></p-tag>
+            <p-tag [severity]="'success'" value="معتمد" *ngIf="isStatus(item, StockCountStatus.Approved, 'Approved')"></p-tag>
+            <p-tag [severity]="'danger'" value="مغلق" *ngIf="isStatus(item, StockCountStatus.Closed, 'Closed')"></p-tag>
+          </td>
+          <td class="text-center">
+            <div class="flex justify-content-center gap-1">
+              <button pButton icon="pi pi-eye" class="p-button-text p-button-rounded p-button-sm p-button-info w-2rem h-2rem p-0"
+                pTooltip="عرض التفاصيل" tooltipPosition="top" (click)="viewDetails(item.id)"></button>
+              <button *ngIf="canEditOrDelete(item)" pButton icon="pi pi-pencil"
+                class="p-button-text p-button-rounded p-button-sm p-button-success w-2rem h-2rem p-0"
+                pTooltip="تعديل" tooltipPosition="top" (click)="editStockCount(item.id)"></button>
+              <button *ngIf="canEditOrDelete(item)" pButton icon="pi pi-trash"
+                class="p-button-text p-button-rounded p-button-sm p-button-danger w-2rem h-2rem p-0"
+                pTooltip="حذف" tooltipPosition="top" (click)="deleteStockCount(item)"></button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7" class="empty-table-placeholder">
+            <i class="pi pi-clipboard mb-2"></i>
+            <div>لا توجد أوامر جرد مسجلة أو مطابقة للشروط المحددة</div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ═══════════ View Mode 2: Cards Grid ═══════════ -->
+  <div [hidden]="viewMode !== 'grid'" class="ledger-card-wrapper">
+    <div class="imperial-cards-grid">
+      <div *ngFor="let item of stockCounts" class="imperial-data-card">
+        <!-- Card Top Row -->
+        <div class="card-top-row">
+          <div class="flex flex-column gap-1 text-right">
+            <span class="card-title">أمر جرد #{{ item.countCode }}</span>
+            <div class="flex align-items-center gap-1 mt-1">
+              <span class="inventory-chip blue">{{ item.warehouseName || 'المخزن الرئيسي' }}</span>
+              <span class="inventory-chip gray font-bold" *ngIf="isType(item, StockCountType.Daily, 'Daily')">يومي</span>
+              <span class="inventory-chip green font-bold" *ngIf="isType(item, StockCountType.Monthly, 'Monthly')">شهري</span>
+              <span class="inventory-chip orange font-bold" *ngIf="isType(item, StockCountType.BiAnnual, 'BiAnnual')">نصف سنوي</span>
+              <span class="inventory-chip red font-bold" *ngIf="isType(item, StockCountType.Annual, 'Annual')">سنوي</span>
+            </div>
           </div>
+          <div>
+            <p-tag [severity]="'info'" value="مسودة" *ngIf="isStatus(item, StockCountStatus.Draft, 'Draft')"></p-tag>
+            <p-tag [severity]="'contrast'" value="قيد الجرد" *ngIf="isStatus(item, StockCountStatus.InProgress, 'InProgress')"></p-tag>
+            <p-tag [severity]="'warning'" value="بانتظار الاعتماد" *ngIf="isStatus(item, StockCountStatus.PendingApproval, 'PendingApproval')"></p-tag>
+            <p-tag [severity]="'success'" value="معتمد" *ngIf="isStatus(item, StockCountStatus.Approved, 'Approved')"></p-tag>
+            <p-tag [severity]="'danger'" value="مغلق" *ngIf="isStatus(item, StockCountStatus.Closed, 'Closed')"></p-tag>
+          </div>
+        </div>
+
+        <!-- Card Fields Grid -->
+        <div class="card-fields-grid">
+          <div class="card-field">
+            <span class="field-label">تاريخ البدء</span>
+            <span class="field-value font-mono">{{ item.startedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="card-field">
+            <span class="field-label">تاريخ الانتهاء</span>
+            <span class="field-value font-mono">{{ (item.finishedAt | date:'dd/MM/yyyy HH:mm') || 'مستمر' }}</span>
+          </div>
+        </div>
+
+        <!-- Card Actions Row -->
+        <div class="card-actions-row">
+          <button pButton icon="pi pi-eye" label="عرض التفاصيل"
+            class="p-button-text p-button-sm p-button-info px-2"
+            (click)="viewDetails(item.id)"></button>
+          <button *ngIf="canEditOrDelete(item)" pButton icon="pi pi-pencil" label="تعديل"
+            class="p-button-text p-button-sm p-button-success px-2"
+            (click)="editStockCount(item.id)"></button>
+          <button *ngIf="canEditOrDelete(item)" pButton icon="pi pi-trash" label="حذف"
+            class="p-button-text p-button-sm p-button-danger px-2"
+            (click)="deleteStockCount(item)"></button>
+        </div>
       </div>
-    </form>
-  </section>
 
-  <section class="table-panel">
-      <p-table [value]="stockCounts" [loading]="isLoading" [rowHover]="true" responsiveLayout="scroll"
-          styleClass="p-datatable-sm compact-table">
-
-          <ng-template pTemplate="header">
-              <tr>
-                  <th style="width: 10rem">رقم الجرد</th>
-                  <th>المخزن</th>
-                  <th class="text-center">نوع الجرد</th>
-                  <th class="text-center">تاريخ البدء</th>
-                  <th class="text-center">تاريخ الانتهاء</th>
-                  <th class="text-center">الحالة</th>
-                  <th class="text-center" style="width: 8rem">إجراءات</th>
-              </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-item>
-              <tr>
-                  <td><strong class="ref-number">#{{item.countCode}}</strong></td>
-                  <td>
-                      <strong class="medicine-name">{{item.warehouseName || 'مخزن رئيسي'}}</strong>
-                  </td>
-                  <td class="text-center">
-                      <span class="type-pill type-gray" *ngIf="isType(item, StockCountType.Daily, 'Daily')">يومي</span>
-                      <span class="type-pill type-green" *ngIf="isType(item, StockCountType.Monthly, 'Monthly')">شهري</span>
-                      <span class="type-pill type-amber" *ngIf="isType(item, StockCountType.BiAnnual, 'BiAnnual')">نصف سنوي</span>
-                      <span class="type-pill type-red" *ngIf="isType(item, StockCountType.Annual, 'Annual')">سنوي</span>
-                  </td>
-                  <td class="text-center">
-                    <span class="date-main">{{item.startedAt | date:'dd/MM/yyyy'}}</span>
-                    <small class="date-time">{{item.startedAt | date:'HH:mm'}}</small>
-                  </td>
-                  <td class="text-center">
-                    <span class="date-main" *ngIf="item.finishedAt">{{item.finishedAt | date:'dd/MM/yyyy'}}</span>
-                    <small class="date-time" *ngIf="item.finishedAt">{{item.finishedAt | date:'HH:mm'}}</small>
-                    <span class="muted" *ngIf="!item.finishedAt">-</span>
-                  </td>
-                  <td class="text-center">
-                      <p-tag [severity]="'info'" value="مسودة" *ngIf="isStatus(item, StockCountStatus.Draft, 'Draft')"></p-tag>
-                      <p-tag [severity]="'contrast'" value="قيد الجرد"
-                          *ngIf="isStatus(item, StockCountStatus.InProgress, 'InProgress')"></p-tag>
-                      <p-tag [severity]="'warning'" value="بانتظار الاعتماد"
-                          *ngIf="isStatus(item, StockCountStatus.PendingApproval, 'PendingApproval')"></p-tag>
-                      <p-tag [severity]="'success'" value="معتمد"
-                          *ngIf="isStatus(item, StockCountStatus.Approved, 'Approved')"></p-tag>
-                      <p-tag [severity]="'danger'" value="مغلق"
-                          *ngIf="isStatus(item, StockCountStatus.Closed, 'Closed')"></p-tag>
-                  </td>
-                  <td class="text-center">
-                      <div class="flex justify-content-center gap-1">
-                          <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" size="small"
-                              pTooltip="التفاصيل" tooltipPosition="top" (onClick)="viewDetails(item.id)"></p-button>
-                          <p-button *ngIf="canEditOrDelete(item)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="success" size="small"
-                              pTooltip="تعديل" tooltipPosition="top" (onClick)="editStockCount(item.id)"></p-button>
-                          <p-button *ngIf="canEditOrDelete(item)" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
-                              pTooltip="حذف" tooltipPosition="top" (onClick)="deleteStockCount(item)"></p-button>
-                      </div>
-                  </td>
-              </tr>
-          </ng-template>
-
-          <ng-template pTemplate="emptymessage">
-              <tr>
-                  <td colspan="7" class="empty-message">
-                      <i class="pi pi-inbox"></i>
-                      <span>لا يوجد أوامر جرد لعرضها</span>
-                  </td>
-              </tr>
-          </ng-template>
-      </p-table>
-  </section>
+      <!-- Empty state for grid -->
+      <div *ngIf="stockCounts.length === 0" class="col-12 text-center p-5 w-full">
+        <div class="flex flex-column align-items-center text-500">
+          <i class="pi pi-clipboard text-4xl mb-3" style="color: var(--primary-color);"></i>
+          <span class="font-bold text-lg" style="color: var(--text-color);">لا توجد أوامر جرد مسجلة</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

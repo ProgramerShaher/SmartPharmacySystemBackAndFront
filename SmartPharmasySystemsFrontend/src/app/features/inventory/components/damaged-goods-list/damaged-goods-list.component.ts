@@ -19,6 +19,7 @@ import { DividerModule } from 'primeng/divider';
 import { DamagedGoodsService, DamagedGoodsRecord, CreateDamagedGoodsDto } from '../../services/damaged-goods.service';
 import { MedicineService } from '../../services/medicine.service';
 import { InventoryService } from '../../services/inventory.service';
+import { WarehouseService } from '../../../warehouses/services/warehouse.service';
 
 @Component({
   selector: 'app-damaged-goods-list',
@@ -73,6 +74,7 @@ export class DamagedGoodsListComponent implements OnInit {
     private damagedGoodsService: DamagedGoodsService,
     private medicineService: MedicineService,
     private inventoryService: InventoryService,
+    private warehouseService: WarehouseService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService,
     private router: Router
@@ -111,7 +113,7 @@ export class DamagedGoodsListComponent implements OnInit {
   }
 
   loadWarehouses() {
-    this.inventoryService.getWarehouses().subscribe({
+    this.warehouseService.getAll().subscribe({
       next: (data: any[]) => this.warehouses = data.map(w => ({ label: w.name, value: w.id })),
       error: () => {}
     });

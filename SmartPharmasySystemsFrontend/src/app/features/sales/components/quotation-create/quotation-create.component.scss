@@ -1,0 +1,19 @@
+.quotation-create-page {
+  padding: 1.5rem;
+
+  .header-card {
+    border: 1px solid var(--surface-border);
+  }
+
+  .sticky {
+    position: sticky;
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr > th {
+      background: var(--surface-50);
+      font-weight: 600;
+      color: var(--text-color);
+    }
+  }
+}

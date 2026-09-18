@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../../../core/models';
 import { SettingsService } from '../../../../core/services/settings.service';
+import { BusinessProfileService } from '../../../../core/services/business-profile.service';
 import { PharmacySettings } from '../../../../core/models/settings/pharmacy-settings.interface';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -161,7 +162,8 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private messageService: MessageService,
     private settingsService: SettingsService,
-    private branchService: BranchService
+    private branchService: BranchService,
+    private businessProfileService: BusinessProfileService
   ) { }
 
   ngOnInit() {
@@ -178,6 +180,7 @@ export class LoginComponent implements OnInit {
     });
 
     this.loadPharmacySettings();
+    this.businessProfileService.loadActiveProfile().subscribe({ error: () => {} });
   }
 
   private loadPharmacySettings(): void {

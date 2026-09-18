@@ -150,4 +150,8 @@
     <app-sales-return-details [(visible)]="showDetailsDialog" [invoiceId]="selectedReturnId"
         (onAction)="loadReturns()">
     </app-sales-return-details>
+
+    <!-- Create Return Modal -->
+    <app-sales-return-create [(visible)]="showCreateModal" (onSaved)="loadReturns()">
+    </app-sales-return-create>
 </div>

@@ -29,15 +29,18 @@ public class BarcodeResolverService : IBarcodeResolverService
             return await BuildResultAsync(medicine, batch);
         }
 
-        // 2. Try to find a medicine by its default barcode
-        var medicines = await _unitOfWork.Medicines.GetAllAsync(); // This is inefficient for large DBs, should add GetByDefaultBarcodeAsync
-        var medicineByDefault = medicines.FirstOrDefault(m => m.DefaultBarcode == barcode);
+        // 2. Try to find a medicine by its default barcode, OEM part number, or Manufacturer part number
+        var medicines = await _unitOfWork.Medicines.GetAllAsync();
+        var medicineMatch = medicines.FirstOrDefault(m => 
+            m.DefaultBarcode == barcode ||
+            (!string.IsNullOrWhiteSpace(m.OemPartNumber) && m.OemPartNumber.Equals(barcode, StringComparison.OrdinalIgnoreCase)) ||
+            (!string.IsNullOrWhiteSpace(m.ManufacturerPartNumber) && m.ManufacturerPartNumber.Equals(barcode, StringComparison.OrdinalIgnoreCase)));
 
-        if (medicineByDefault != null)
+        if (medicineMatch != null)
         {
-            // If default barcode scanned, find the BEST batch for sale (FIFO)
-            var fifoBatch = await _unitOfWork.MedicineBatches.GetNearestExpiryBatchAsync(medicineByDefault.Id);
-            return await BuildResultAsync(medicineByDefault, fifoBatch);
+            // If barcode or OEM scanned, find the BEST batch for sale (FIFO)
+            var fifoBatch = await _unitOfWork.MedicineBatches.GetNearestExpiryBatchAsync(medicineMatch.Id);
+            return await BuildResultAsync(medicineMatch, fifoBatch);
         }
 
         _logger.LogWarning("Barcode not found: {Barcode}", barcode);

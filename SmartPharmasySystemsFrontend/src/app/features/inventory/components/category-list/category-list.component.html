@@ -1,75 +1,110 @@
-<div class="inventory-page" dir="rtl">
-    <section class="inventory-hero">
-        <div class="inventory-title">
-            <div class="inventory-icon">
-                <i class="pi pi-tags"></i>
+<div class="statement-container fadein" dir="rtl">
+
+    <!-- ═══════════ Imperial Search Bar ═══════════ -->
+    <div class="imperial-search-bar mb-3">
+        <div class="search-content">
+            <div class="flex-align">
+                <div class="search-icon-badge">
+                    <i class="pi pi-tags"></i>
+                </div>
+                <div class="search-input-wrapper">
+                    <label class="search-label">بحث وتصفية تصنيفات الأدوية</label>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="onSearch($event)"
+                            placeholder="بحث باسم التصنيف أو الوصف..." class="w-full p-inputtext-sm" />
+                    </span>
+                </div>
             </div>
-            <div>
-                <h1>قائمة الفئات</h1>
-                <p>تنظيم تصنيفات الأدوية والمنتجات لتسهيل البحث والجرد</p>
+
+            <div class="action-buttons flex gap-2 align-items-center">
+                <!-- Multi-View Switcher -->
+                <div class="view-switcher-group">
+                    <button type="button" class="view-btn" [class.active]="viewMode === 'table'"
+                        (click)="setViewMode('table')" pTooltip="عرض جدولي">
+                        <i class="pi pi-table"></i>
+                        <span>جدول</span>
+                    </button>
+                    <button type="button" class="view-btn" [class.active]="viewMode === 'grid'"
+                        (click)="setViewMode('grid')" pTooltip="عرض كروت">
+                        <i class="pi pi-th-large"></i>
+                        <span>كروت</span>
+                    </button>
+                </div>
+
+                <button pButton label="تحميل قالب الإكسل" icon="pi pi-download" (click)="downloadTemplate()"
+                    class="p-button-outlined p-button-sm px-3"></button>
+
+                <div class="relative">
+                    <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls, .csv"
+                        style="display: none;">
+                    <button pButton label="استيراد من إكسل" icon="pi pi-upload" (click)="fileInput.click()"
+                        class="p-button-secondary p-button-sm px-3"></button>
+                </div>
+
+                <button *ngIf="selectedCategories.length > 0" pButton label="حذف المحدد ({{selectedCategories.length}})"
+                    icon="pi pi-trash" (click)="deleteSelectedCategories()"
+                    class="p-button-danger p-button-sm px-3 mx-2"></button>
+
+                <button pButton label="إضافة فئة جديدة" icon="pi pi-plus" (click)="showAddModal()"
+                    class="imperial-btn-primary p-button-sm px-4"></button>
             </div>
         </div>
+    </div>
 
-        <div class="inventory-actions flex gap-2">
-            <input type="file" #fileInput (change)="onFileSelected($event)" accept=".csv, .xlsx, .xls"
-                style="display: none;">
-            <p-button label="تحميل قالب الاستيراد" icon="pi pi-download"
-                styleClass="p-button-outlined p-button-secondary border-round-md font-bold p-button-sm"
-                (onClick)="downloadTemplate()" pTooltip="تحميل قالب إكسل لإضافة الأصناف"></p-button>
-            <p-button label="استيراد من إكسل" icon="pi pi-upload"
-                styleClass="p-button-outlined p-button-info border-round-md font-bold p-button-sm"
-                (onClick)="fileInput.click()" pTooltip="رفع ملف إكسل لدفعة أصناف"></p-button>
-            <p-button *ngIf="selectedCategories.length > 0" label="حذف المحدد ({{selectedCategories.length}})"
-                icon="pi pi-trash" styleClass="p-button-danger border-round-md font-bold p-button-sm"
-                (onClick)="deleteSelectedCategories()"></p-button>
-            <p-button label="إضافة فئة" icon="pi pi-plus"
-                styleClass="p-button-success border-round-md font-bold p-button-sm"
-                (onClick)="showAddModal()"></p-button>
-        </div>
-    </section>
-
-    <section class="inventory-filter-panel">
-        <div class="inventory-filters p-fluid">
-            <div class="inventory-filter wide">
-                <label>بحث سريع</label>
-                <span class="p-input-icon-left w-full">
-                    <i class="pi pi-search text-400"></i>
-                    <input pInputText type="text" (input)="onSearch($event)" placeholder="بحث باسم الفئة أو الوصف..."
-                        class="p-inputtext-sm border-round-md w-full" />
-                </span>
-            </div>
-        </div>
-    </section>
-
-    <section class="inventory-panel">
+    <!-- ═══════════ View Mode 1: Ledger Table Wrapper ═══════════ -->
+    <div [hidden]="viewMode !== 'table'" class="ledger-card-wrapper">
         <p-table [value]="categories" [lazy]="true" (onLazyLoad)="loadCategories($event)" [paginator]="true" [rows]="10"
-            [totalRecords]="totalRecords" [loading]="loading" [showCurrentPageReport]="true"
-            [(selection)]="selectedCategories" dataKey="id" currentPageReportTemplate="{first}-{last} من {totalRecords}"
-            responsiveLayout="scroll" styleClass="p-datatable-sm inventory-table" [rowsPerPageOptions]="[10, 25, 50]" dir="rtl">
+            [totalRecords]="totalRecords" [loading]="loading" [rowHover]="true"
+            [(selection)]="selectedCategories" dataKey="id" responsiveLayout="scroll"
+            styleClass="p-datatable-sm imperial-statement-table" [rowsPerPageOptions]="[10, 25, 50]" dir="rtl">
+
             <ng-template pTemplate="header">
-                <tr [style]="{'background': 'var(--table-header-bg)'}">
-                    <th style="width: 4rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
-                    <th pSortableColumn="id" class="text-center w-5rem">ID <p-sortIcon field="id"></p-sortIcon></th>
-                    <th pSortableColumn="name">اسم الفئة <p-sortIcon field="name"></p-sortIcon></th>
-                    <th>الوصف</th>
-                    <th class="text-center w-8rem">الإجراءات</th>
+                <tr>
+                    <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
+                    <th class="col-num text-center" style="width: 5rem">#</th>
+                    <th pSortableColumn="name" style="min-width: 15rem">
+                        اسم التصنيف
+                        <div class="header-subtext">Category Name</div>
+                    </th>
+                    <th>
+                        الوصف والملاحظات
+                        <div class="header-subtext">Description</div>
+                    </th>
+                    <th class="text-center" style="width: 8rem">
+                        حالة الأدوية
+                        <div class="header-subtext">Status</div>
+                    </th>
+                    <th class="text-center" style="width: 8rem">الإجراءات</th>
                 </tr>
             </ng-template>
 
             <ng-template pTemplate="body" let-category>
-                <tr class="hover:bg-surface-hover transition-all transition-duration-200">
+                <tr>
                     <td><p-tableCheckbox *ngIf="!category.hasMedicines" [value]="category"></p-tableCheckbox></td>
-                    <td class="text-center font-bold text-color-secondary">{{category.id}}</td>
-                    <td class="font-bold text-color">{{category.name}}</td>
-                    <td class="text-color-secondary">{{category.description || '-'}}</td>
+                    <td class="col-num text-center font-mono">#{{category.id}}</td>
+                    <td>
+                        <div class="flex align-items-center gap-2">
+                            <span class="inventory-chip green">تصنيف</span>
+                            <span class="font-bold" style="color: var(--text-color);">{{category.name}}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span style="color: var(--text-color-secondary);">{{category.description || '-'}}</span>
+                    </td>
                     <td class="text-center">
-                        <div class="flex align-items-center justify-content-center gap-2">
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
-                                pTooltip="تعديل" tooltipPosition="top" (onClick)="editCategory(category)"
-                                styleClass="p-button-sm"></p-button>
-                            <p-button *ngIf="!category.hasMedicines" icon="pi pi-trash" [rounded]="true" [text]="true"
-                                severity="danger" pTooltip="حذف" tooltipPosition="top"
-                                (onClick)="deleteCategory(category)" styleClass="p-button-sm"></p-button>
+                        <span class="qty-pill font-mono" [ngClass]="category.hasMedicines ? 'success' : 'neutral'">
+                            {{category.hasMedicines ? 'مرتبط بأدوية' : 'فارغ'}}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="flex justify-content-center gap-1">
+                            <button pButton icon="pi pi-pencil"
+                                class="p-button-text p-button-sm p-button-info p-0 w-2rem h-2rem"
+                                (click)="editCategory(category)" pTooltip="تعديل"></button>
+                            <button *ngIf="!category.hasMedicines" pButton icon="pi pi-trash"
+                                class="p-button-text p-button-sm p-button-danger p-0 w-2rem h-2rem"
+                                (click)="deleteCategory(category)" pTooltip="حذف"></button>
                         </div>
                     </td>
                 </tr>
@@ -77,19 +112,69 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="4" class="inventory-empty">
-                        <i class="pi pi-info-circle"></i>
-                        <span>لا توجد فئات حالياً.</span>
+                    <td colspan="6" class="empty-table-placeholder">
+                        <i class="pi pi-tags mb-2"></i>
+                        <div>لا توجد أي تصنيفات مسجلة أو تطابق بحثك</div>
                     </td>
                 </tr>
             </ng-template>
         </p-table>
-    </section>
+    </div>
+
+    <!-- ═══════════ View Mode 2: Responsive Cards Grid ═══════════ -->
+    <div [hidden]="viewMode !== 'grid'" class="ledger-card-wrapper">
+        <div class="imperial-cards-grid">
+            <div *ngFor="let category of categories" class="imperial-data-card">
+                <!-- Card Top Row -->
+                <div class="card-top-row">
+                    <div class="flex flex-column gap-1 text-right">
+                        <span class="card-title">{{ category.name }}</span>
+                        <div class="flex align-items-center gap-1 mt-1">
+                            <span class="inventory-chip green">تصنيف</span>
+                            <span class="inventory-chip gray font-mono">#{{ category.id }}</span>
+                        </div>
+                    </div>
+                    <span class="qty-pill font-mono" [ngClass]="category.hasMedicines ? 'success' : 'neutral'">
+                        {{ category.hasMedicines ? 'أدوية مرتبطة' : 'فارغ' }}
+                    </span>
+                </div>
+
+                <!-- Card Body / Description -->
+                <div class="card-fields-grid">
+                    <div class="card-field" style="grid-column: span 2;">
+                        <span class="field-label">الوصف والملاحظات</span>
+                        <span class="field-value">{{ category.description || 'لا يوجد وصف مسجل' }}</span>
+                    </div>
+                </div>
+
+                <!-- Card Actions Row -->
+                <div class="card-actions-row">
+                    <button pButton icon="pi pi-pencil" label="تعديل"
+                        class="p-button-text p-button-sm p-button-info px-2"
+                        (click)="editCategory(category)"></button>
+                    <button *ngIf="!category.hasMedicines" pButton icon="pi pi-trash" label="حذف"
+                        class="p-button-text p-button-sm p-button-danger px-2"
+                        (click)="deleteCategory(category)"></button>
+                </div>
+            </div>
+
+            <!-- Empty state for grid -->
+            <div *ngIf="categories.length === 0" class="col-12 text-center p-5 w-full">
+                <div class="flex flex-column align-items-center text-500">
+                    <i class="pi pi-tags text-4xl mb-3" style="color: var(--primary-color);"></i>
+                    <span class="font-bold text-lg" style="color: var(--text-color);">لا توجد فئات مسجلة</span>
+                </div>
+            </div>
+        </div>
+
+        <p-paginator [rows]="10" [totalRecords]="totalRecords" [rowsPerPageOptions]="[10, 20, 50]"
+            (onPageChange)="loadCategories($event)"></p-paginator>
+    </div>
 </div>
 
 <!-- Add/Edit Modal -->
 <p-dialog [(visible)]="displayModal" [modal]="true" [showHeader]="false" [style]="{ width: 'min(92vw, 760px)' }"
-    [draggable]="false" [resizable]="false" styleClass="p-fluid category-dialog border-round-2xl overflow-hidden"
+    [draggable]="false" [resizable]="false" styleClass="imperial-modal"
     [breakpoints]="{'960px': '92vw', '640px': '96vw'}">
     <app-category-add-edit [categoryId]="selectedCategoryId" (onSave)="onModalSave()"
         (onCancel)="onModalCancel()"></app-category-add-edit>

@@ -13,6 +13,8 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { SettingsService } from '../../../../core/services/settings.service';
 import { environment } from '../../../../../environments/environment';
 
+import { BusinessProfileSettingsComponent } from '../business-profile-settings/business-profile-settings.component';
+
 @Component({
   selector: 'app-pharmacy-profile',
   standalone: true,
@@ -25,7 +27,8 @@ import { environment } from '../../../../../environments/environment';
     InputTextModule,
     DropdownModule,
     InputTextareaModule,
-    FileUploadModule
+    FileUploadModule,
+    BusinessProfileSettingsComponent
   ],
   providers: [MessageService],
   templateUrl: './pharmacy-profile.component.html',
@@ -42,7 +45,7 @@ export class PharmacyProfileComponent implements OnInit {
   isSaving = false;
   currentLogoUrl: string | null = null;
   serverUrl = environment.apiUrl.replace('/api', ''); // Get base server URL for images
-  activeTab: 'identity' | 'contact' | 'legal' = 'identity';
+  activeTab: 'identity' | 'contact' | 'legal' | 'businessType' = 'identity';
 
   currencies = [
     { label: 'ريال سعودي (ر.س)', value: 'ر.س' },

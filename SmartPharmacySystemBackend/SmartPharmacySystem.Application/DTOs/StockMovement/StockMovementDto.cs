@@ -11,7 +11,7 @@ public class StockMovementDto
     public int? BatchId { get; set; }
     public StockMovementType MovementType { get; set; }
     public ReferenceType ReferenceType { get; set; }
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public DateTime Date { get; set; }
     public int ReferenceId { get; set; }
     public string ReferenceNumber { get; set; } = string.Empty;

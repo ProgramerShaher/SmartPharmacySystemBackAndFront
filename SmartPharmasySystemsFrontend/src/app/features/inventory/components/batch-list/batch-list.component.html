@@ -9,11 +9,10 @@
                 </div>
                 <div class="search-input-wrapper">
                     <label class="search-label">بحث وتصفية الدفعات</label>
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-search text-500" style="left: 0.75rem; right: auto;"></i>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-search"></i>
                         <input pInputText type="text" [(ngModel)]="searchTerm" (input)="applyFilters()"
-                            placeholder="ابحث بالاسم، الكود، أو الباركود..." class="w-full p-inputtext-sm"
-                            style="padding-right: 2rem; border-radius: 8px;" />
+                            placeholder="ابحث بالاسم، الكود، أو الباركود..." class="w-full p-inputtext-sm" />
                     </span>
                 </div>
 
@@ -33,19 +32,31 @@
                     <button pButton icon="pi pi-filter-slash"
                         (click)="searchTerm=''; sellableFilter=null; expiryFilter='all'; applyFilters()"
                         class="p-button-sm p-button-rounded p-button-text p-button-secondary"
-                        pTooltip="إعادة تعيين"></button>
+                        pTooltip="إعادة تعيين الفلاتر"></button>
                 </div>
             </div>
 
             <div class="action-buttons">
+                <!-- Multi-View Switcher -->
+                <div class="view-switcher-group">
+                    <button type="button" class="view-btn" [class.active]="viewMode === 'table'" (click)="setViewMode('table')" pTooltip="عرض جدولي">
+                        <i class="pi pi-table"></i>
+                        <span>جدول</span>
+                    </button>
+                    <button type="button" class="view-btn" [class.active]="viewMode === 'grid'" (click)="setViewMode('grid')" pTooltip="عرض كروت">
+                        <i class="pi pi-th-large"></i>
+                        <span>كروت</span>
+                    </button>
+                </div>
+
                 <button pButton label="تحديث البيانات" icon="pi pi-refresh" (click)="loadBatches()"
-                    class="imperial-btn-primary p-button-sm px-4"></button>
+                    class="imperial-btn-primary p-button-sm px-3"></button>
             </div>
         </div>
     </div>
 
-    <!-- ═══════════ Ledger Table Wrapper ═══════════ -->
-    <div class="ledger-card-wrapper">
+    <!-- ═══════════ View Mode 1: Ledger Table ═══════════ -->
+    <div [hidden]="viewMode !== 'table'" class="ledger-card-wrapper">
         <p-table [value]="filteredBatches" [loading]="loading" [paginator]="true" [rows]="10" [rowHover]="true"
             responsiveLayout="scroll" styleClass="p-datatable-sm imperial-statement-table">
 
@@ -84,7 +95,7 @@
                         حالة البيع
                         <div class="header-subtext">Sellable</div>
                     </th>
-                    <th class="text-center" style="width: 10rem">
+                    <th class="text-center" style="width: 8rem">
                         الإجراءات
                         <div class="header-subtext">Actions</div>
                     </th>
@@ -93,19 +104,20 @@
 
             <ng-template pTemplate="body" let-batch let-rowIndex="rowIndex">
                 <tr [ngClass]="{
-                    'row-expired': batch.daysUntilExpiry <= 0,
-                    'row-expiring-soon': batch.daysUntilExpiry > 0 && batch.daysUntilExpiry <= 30
+                    'row-expired': (batch.daysUntilExpiry ?? 0) <= 0,
+                    'row-expiring-soon': (batch.daysUntilExpiry ?? 0) > 0 && (batch.daysUntilExpiry ?? 0) <= 30
                 }">
                     <td class="col-num text-center">{{ rowIndex + 1 }}</td>
 
                     <td>
-                        <div class="flex-column">
-                            <span class="font-bold text-900">{{ batch.medicineName }}</span>
+                        <div class="flex flex-column text-right">
+                            <span class="font-bold text-900" style="color: var(--text-color);">{{ batch.medicineName }}</span>
                             <div class="flex flex-column gap-1 mt-1">
-                                <span *ngIf="!batch.locations?.length" class="text-xs text-500">
+                                <span *ngIf="!batch.locations?.length" class="text-xs" style="color: var(--text-color-secondary);">
                                     <i class="pi pi-map-marker text-xs mr-1"></i> غير محدد (مباع/تالف بالكامل)
                                 </span>
-                                <span *ngFor="let loc of batch.locations" class="text-xs text-600 bg-gray-100 px-2 py-1 border-round w-max">
+                                <span *ngFor="let loc of batch.locations" class="text-xs px-2 py-1 border-round w-max"
+                                      style="background: var(--surface-hover); color: var(--text-color);">
                                     <i class="pi pi-box text-xs mr-1 text-primary"></i> 
                                     {{ loc.warehouseName }} 
                                     <span class="font-bold text-primary mr-1">({{ loc.quantity }})</span>
@@ -123,15 +135,11 @@
                     </td>
 
                     <td class="text-center">
-                        <div class="flex-column align-items-center gap-1">
-                            <span class="status-badge" [ngClass]="{
-                                    'expired': batch.daysUntilExpiry <= 0,
-                                    'warning': batch.daysUntilExpiry > 0 && batch.daysUntilExpiry <= 30,
-                                    'good': batch.daysUntilExpiry > 30
-                                  }">
+                        <div class="flex flex-column align-items-center gap-1">
+                            <span class="status-badge" [ngClass]="getExpiryClass(batch.daysUntilExpiry)">
                                 {{ getExpiryLabel(batch.daysUntilExpiry) }}
                             </span>
-                            <span class="text-xs font-bold text-700">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</span>
+                            <span class="text-xs font-bold" style="color: var(--text-color);">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</span>
                         </div>
                     </td>
 
@@ -174,11 +182,11 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="9" class="text-center p-4">
+                    <td colspan="10" class="text-center p-4">
                         <div class="flex flex-column align-items-center text-500">
-                            <i class="pi pi-inbox text-4xl mb-3"></i>
-                            <span class="font-bold text-lg">لا توجد دفعات مخزنية</span>
-                            <span class="text-sm mt-1">قم بتغيير خيارات البحث أو أضف توريداً جديداً.</span>
+                            <i class="pi pi-inbox text-4xl mb-3" style="color: var(--primary-color);"></i>
+                            <span class="font-bold text-lg" style="color: var(--text-color);">لا توجد دفعات مخزنية</span>
+                            <span class="text-sm mt-1" style="color: var(--text-color-secondary);">قم بتغيير خيارات البحث أو أضف توريداً جديداً.</span>
                         </div>
                     </td>
                 </tr>
@@ -186,6 +194,94 @@
 
         </p-table>
     </div>
+
+    <!-- ═══════════ View Mode 2: Responsive Cards Grid ═══════════ -->
+    <div [hidden]="viewMode !== 'grid'" class="ledger-card-wrapper">
+        <div class="imperial-cards-grid">
+            <div *ngFor="let batch of pagedGridBatches" class="imperial-data-card">
+                <!-- Card Header -->
+                <div class="card-top-row">
+                    <div class="flex flex-column gap-1 text-right">
+                        <span class="card-title">{{ batch.medicineName }}</span>
+                        <div class="flex align-items-center gap-2">
+                            <span class="batch-chip">{{ batch.companyBatchNumber }}</span>
+                            <span *ngIf="batch.batchBarcode" class="batch-chip barcode">{{ batch.batchBarcode }}</span>
+                        </div>
+                    </div>
+                    <span class="status-badge cursor-pointer" [ngClass]="batch.status === 'Active' ? 'sellable' : 'unsellable'"
+                        (click)="toggleStatus(batch)" pTooltip="انقر لتغيير حالة الدفعة">
+                        <i class="pi" [ngClass]="batch.status === 'Active' ? 'pi-check-circle' : 'pi-ban'" style="font-size: 0.7rem"></i>
+                        {{ batch.status === 'Active' ? 'نشط' : 'موقوف' }}
+                    </span>
+                </div>
+
+                <!-- Locations badge -->
+                <div class="mb-2">
+                    <div *ngFor="let loc of batch.locations" class="text-xs px-2 py-1 border-round w-max mb-1"
+                         style="background: var(--surface-hover); color: var(--text-color);">
+                        <i class="pi pi-map-marker text-xs mr-1 text-primary"></i> 
+                        {{ loc.warehouseName }}: <strong class="text-primary">{{ loc.quantity }}</strong>
+                    </div>
+                    <span *ngIf="!batch.locations?.length" class="text-xs" style="color: var(--text-color-secondary);">
+                        <i class="pi pi-info-circle text-xs mr-1"></i> لا توجد مواقع حالية
+                    </span>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="card-fields-grid">
+                    <div class="card-field">
+                        <span class="field-label">الصلاحية</span>
+                        <div class="flex align-items-center gap-1">
+                            <span class="status-badge" [ngClass]="getExpiryClass(batch.daysUntilExpiry)">
+                                {{ getExpiryLabel(batch.daysUntilExpiry) }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="card-field">
+                        <span class="field-label">تاريخ الانتهاء</span>
+                        <span class="field-value">{{ batch.expiryDate | date:'dd/MM/yyyy' }}</span>
+                    </div>
+
+                    <div class="card-field">
+                        <span class="field-label">الكمية الكلية / المباعة</span>
+                        <span class="field-value">{{ batch.quantity }} / {{ batch.soldQuantity }}</span>
+                    </div>
+
+                    <div class="card-field">
+                        <span class="field-label">الرصيد المتبقي</span>
+                        <span class="qty-pill" [ngClass]="batch.remainingQuantity === 0 ? 'danger' : 'success'">
+                            {{ batch.remainingQuantity }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Actions -->
+                <div class="card-actions-row">
+                    <button pButton label="التفاصيل" icon="pi pi-eye"
+                        class="p-button-outlined p-button-sm px-3"
+                        (click)="viewBatch(batch.id)"></button>
+                    <button pButton label="إجراء / تالف" icon="pi pi-exclamation-triangle"
+                        class="p-button-warning p-button-sm px-3"
+                        (click)="showAction(batch)"></button>
+                </div>
+            </div>
+
+            <!-- Empty State for Grid -->
+            <div *ngIf="filteredBatches.length === 0" class="col-12 text-center p-5 w-full">
+                <div class="flex flex-column align-items-center text-500">
+                    <i class="pi pi-inbox text-4xl mb-3" style="color: var(--primary-color);"></i>
+                    <span class="font-bold text-lg" style="color: var(--text-color);">لا توجد دفعات مخزنية</span>
+                    <span class="text-sm mt-1" style="color: var(--text-color-secondary);">قم بتغيير خيارات البحث أو أضف توريداً جديداً.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Paginator -->
+        <p-paginator *ngIf="filteredBatches.length > 0" [rows]="gridRows" [totalRecords]="filteredBatches.length"
+            [rowsPerPageOptions]="[12, 24, 48]" (onPageChange)="onGridPageChange($event)"></p-paginator>
+    </div>
+
 </div>
 
 <!-- Dialogs -->

@@ -8,10 +8,10 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { PaginatorModule } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { InventoryService } from '../../services/inventory.service';
-import { MedicineBatch, StockMovementType } from '../../../../core/models';
-import { differenceInDays, isBefore } from 'date-fns';
+import { MedicineBatch } from '../../../../core/models';
 import { DialogModule } from 'primeng/dialog';
 import { BatchActionsDialogComponent } from '../batch-actions-dialog/batch-actions-dialog.component';
 import { BatchDetailsComponent } from '../batch-details/batch-details.component';
@@ -28,6 +28,7 @@ import { BatchDetailsComponent } from '../batch-details/batch-details.component'
         DropdownModule,
         TagModule,
         TooltipModule,
+        PaginatorModule,
         DialogModule,
         BatchActionsDialogComponent,
         BatchDetailsComponent
@@ -39,6 +40,11 @@ export class BatchListComponent implements OnInit {
     batches: MedicineBatch[] = [];
     filteredBatches: MedicineBatch[] = [];
     loading = true;
+
+    // View Mode: Table vs Grid Cards
+    viewMode: 'table' | 'grid' = (typeof localStorage !== 'undefined' && localStorage.getItem('batches-view-mode') as 'table' | 'grid') || 'table';
+    gridPage = 0;
+    gridRows = 12;
 
     // Dialog state
     displayActionDialog = false;
@@ -73,11 +79,27 @@ export class BatchListComponent implements OnInit {
         this.loadBatches();
     }
 
+    setViewMode(mode: 'table' | 'grid') {
+        this.viewMode = mode;
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('batches-view-mode', mode);
+        }
+    }
+
+    get pagedGridBatches(): MedicineBatch[] {
+        const start = this.gridPage * this.gridRows;
+        return this.filteredBatches.slice(start, start + this.gridRows);
+    }
+
+    onGridPageChange(event: any) {
+        this.gridPage = event.page;
+        this.gridRows = event.rows;
+    }
+
     loadBatches() {
         this.loading = true;
         this.inventoryService.getAllBatches().subscribe({
             next: (data: any) => {
-                // استخدام البيانات من Backend مباشرة (Backend يحسب كل شيء)
                 this.batches = data;
                 this.applyFilters();
                 this.loading = false;
@@ -88,8 +110,6 @@ export class BatchListComponent implements OnInit {
             }
         });
     }
-
-    // تم إزالة calculateBatchFields - Backend يحسب كل الحقول
 
     applyFilters() {
         this.filteredBatches = this.batches.filter(batch => {
@@ -106,18 +126,25 @@ export class BatchListComponent implements OnInit {
 
             return matchesSearch && matchesSellable && matchesExpiry;
         });
+        this.gridPage = 0; // reset grid page on filter change
     }
 
-    getExpirySeverity(days: number): 'success' | 'warning' | 'danger' {
-        if (days <= 0) return 'danger';
+    getExpirySeverity(days: number | undefined | null): 'success' | 'warning' | 'danger' {
+        if (days === undefined || days === null || days <= 0) return 'danger';
         if (days <= 30) return 'warning';
         return 'success';
     }
 
-    getExpiryLabel(days: number): string {
-        if (days <= 0) return 'منتهية الصلاحية';
+    getExpiryLabel(days: number | undefined | null): string {
+        if (days === undefined || days === null || days <= 0) return 'منتهية الصلاحية';
         if (days <= 30) return `تنتهي خلال ${days} يوم`;
         return `صالحة (${days} يوم)`;
+    }
+
+    getExpiryClass(days: number | undefined | null): string {
+        if (days === undefined || days === null || days <= 0) return 'expired';
+        if (days <= 30) return 'warning';
+        return 'good';
     }
 
     viewBatch(id: number) {

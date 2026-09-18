@@ -85,6 +85,45 @@
                 <input id="storageLocationInput" type="text" formControlName="storageLocation" placeholder="مثل: رف أ - قسم 1"
                     [readonly]="isReadOnly" (focus)="onInputFocus($event)" (keydown.enter)="focusNext('medicineAutoComplete', $event)" class="custom-native-input" />
             </div>
+
+            <!-- ضريبة القيمة المضافة -->
+            <div *ngIf="enableVAT" class="input-group" style="min-width: 150px;">
+                <label>ضريبة المشتريات %</label>
+                <p-inputNumber formControlName="taxRate" [min]="0" [max]="100" suffix="%" [showButtons]="false"
+                    [disabled]="isReadOnly" styleClass="custom-p-input"></p-inputNumber>
+            </div>
+        </div>
+
+        <!-- مصاريف الشحن والجمارك (Landed Costs) لمواد البناء والتجارة -->
+        <div *ngIf="useLandedCost" class="landed-cost-section" style="margin-top: 12px; margin-bottom: 12px; padding: 12px 16px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <i class="pi pi-truck" style="color: #0284c7; font-size: 1.1rem;"></i>
+                    <strong style="color: #1e293b; font-size: 0.95rem;">مصاريف الشحن والجمارك والتخليص (Landed Cost)</strong>
+                    <span style="font-size: 0.78rem; color: #64748b;">(توزع آلياً على تكلفة أصناف الفاتورة)</span>
+                </div>
+                <div *ngIf="totalLandedCost > 0" style="background: #e0f2fe; color: #0369a1; padding: 3px 10px; border-radius: 20px; font-weight: 800; font-size: 0.85rem;">
+                    إجمالي المصاريف الموزعة: {{ totalLandedCost | number:'1.2-2' }} ر.ي
+                </div>
+            </div>
+
+            <div class="grid-container p-fluid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                <div class="input-group">
+                    <label>مصاريف الشحن والنقل</label>
+                    <p-inputNumber formControlName="shippingCost" [min]="0" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"
+                        [showButtons]="false" placeholder="0.00" [disabled]="isReadOnly" styleClass="custom-p-input"></p-inputNumber>
+                </div>
+                <div class="input-group">
+                    <label>رسوم الجمارك والتخليص</label>
+                    <p-inputNumber formControlName="customsCost" [min]="0" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"
+                        [showButtons]="false" placeholder="0.00" [disabled]="isReadOnly" styleClass="custom-p-input"></p-inputNumber>
+                </div>
+                <div class="input-group">
+                    <label>مصاريف إضافية أخرى (تنزيل/تأمين)</label>
+                    <p-inputNumber formControlName="otherLandedCosts" [min]="0" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2"
+                        [showButtons]="false" placeholder="0.00" [disabled]="isReadOnly" styleClass="custom-p-input"></p-inputNumber>
+                </div>
+            </div>
         </div>
     </form>
 
@@ -100,6 +139,7 @@
                     <th style="text-align: center; width: 12%;">الموقع</th>
                     <th style="text-align: center; width: 10%;">الكمية</th>
                     <th style="text-align: right; width: 12%;">سعر الشراء</th>
+                    <th *ngIf="useLandedCost && totalLandedCost > 0" style="text-align: right; width: 12%;">التكلفة الواصلة</th>
                     <th style="text-align: right; width: 12%;">الإجمالي</th>
                     <th style="width: 80px; text-align: center;" *ngIf="!isReadOnly">الإجراءات</th>
                 </tr>
@@ -119,11 +159,17 @@
                         {{ item.storageLocation || '-' }}
                     </td>
                     <td style="text-align: center;">
-                        <span style="font-weight: 800; font-size: 13px; color: #0f172a;">{{ item.quantity }}</span>
-                        <span *ngIf="item.bonusQuantity > 0" class="bonus-tag">+{{item.bonusQuantity}} مجاني</span>
+                        <span style="font-weight: 800; font-size: 13px; color: #0f172a;">{{ item.quantity | number : '1.0-3' }}</span>
+                        <span *ngIf="item.bonusQuantity > 0" class="bonus-tag">+{{ item.bonusQuantity | number : '1.0-3' }} مجاني</span>
                     </td>
                     <td style="text-align: right; font-weight: 600; color: #334155;">{{ item.purchasePrice | number :
                         '1.2-2' }}</td>
+                    <td *ngIf="useLandedCost && totalLandedCost > 0" style="text-align: right; font-weight: 800; color: #0284c7;">
+                        {{ getItemEffectiveUnitCost(i) | number : '1.2-2' }}
+                        <div style="font-size: 10px; color: #64748b; font-weight: normal;">
+                            (+{{ getItemAllocatedLandedCost(i) | number:'1.1-2' }} شحن)
+                        </div>
+                    </td>
                     <td style="text-align: right; font-weight: 800; color: #0d9488;">{{ item.total | number : '1.2-2' }}
                         ر.ي</td>
                     <td style="text-align: center;" *ngIf="!isReadOnly">
@@ -161,11 +207,23 @@
             </span>
             <span class="stat-badge stat-qty">
                 <i class="pi pi-box"></i>
-                إجمالي القطع: <span class="stat-number">{{ calculateTotalQuantity() }}</span>
+                إجمالي القطع: <span class="stat-number">{{ calculateTotalQuantity() | number : '1.0-3' }}</span>
             </span>
             <span class="stat-badge stat-total">
                 <i class="pi pi-calculator"></i>
-                الإجمالي النهائي: <span class="stat-number">{{ calculateTotal() | number : '1.2-2' }} ر.ي</span>
+                إجمالي البضاعة: <span class="stat-number">{{ calculateTotal() | number : '1.2-2' }} ر.ي</span>
+            </span>
+            <span *ngIf="enableVAT && taxRate > 0" class="stat-badge" style="background: #eff6ff; color: #1e40af;">
+                <i class="pi pi-percentage"></i>
+                ضريبة ({{ taxRate }}%): <span class="stat-number font-mono">{{ totalTaxAmount | number : '1.2-2' }} ر.ي</span>
+            </span>
+            <span *ngIf="useLandedCost && totalLandedCost > 0" class="stat-badge" style="background: #e0f2fe; color: #0369a1;">
+                <i class="pi pi-truck"></i>
+                الشحن والجمارك: <span class="stat-number">{{ totalLandedCost | number : '1.2-2' }} ر.ي</span>
+            </span>
+            <span class="stat-badge stat-total">
+                <i class="pi pi-check-circle"></i>
+                الإجمالي النهائي: <span class="stat-number">{{ grandTotalWithTaxAndLandedCost | number : '1.2-2' }} ر.ي</span>
             </span>
         </div>
         <div class="footer-actions">
@@ -213,7 +271,8 @@
             <!-- الكمية (تأخذ Focus تلقائياً + Select All) -->
             <div class="input-group">
                 <label>الكمية <span class="text-red-500">*</span></label>
-                <p-inputNumber #qtyInputEl formControlName="quantity" [min]="1" [showButtons]="false"
+                <p-inputNumber #qtyInputEl formControlName="quantity" [min]="quantityMin" [step]="quantityStep"
+                    [minFractionDigits]="0" [maxFractionDigits]="quantityFractionDigits" [showButtons]="false"
                     (onFocus)="onInputFocus($event)" (keyup.enter)="confirmModalItem()"
                     styleClass="custom-p-input modal-input-highlight"></p-inputNumber>
             </div>
@@ -250,7 +309,8 @@
             <!-- كمية البونص / المجاني -->
             <div class="input-group">
                 <label>كمية المجاني (Bonus)</label>
-                <p-inputNumber formControlName="bonusQuantity" [min]="0" (onFocus)="onInputFocus($event)"
+                <p-inputNumber formControlName="bonusQuantity" [min]="0" [step]="quantityStep"
+                    [minFractionDigits]="0" [maxFractionDigits]="quantityFractionDigits" (onFocus)="onInputFocus($event)"
                     styleClass="custom-p-input"></p-inputNumber>
             </div>
 

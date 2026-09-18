@@ -26,6 +26,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly ICurrentUserService _currentUserService;
         private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
         private readonly IClosingValidationService _closingValidationService;
+        private readonly IAccountLookupService _accountLookupService;
 
         public PurchaseInvoiceService(
             IUnitOfWork unitOfWork,
@@ -39,7 +40,8 @@ namespace SmartPharmacySystem.Application.Services
             IBarcodeService barcodeService,
             ICurrentUserService currentUserService,
             Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor,
-            IClosingValidationService closingValidationService)
+            IClosingValidationService closingValidationService,
+            IAccountLookupService accountLookupService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -53,6 +55,7 @@ namespace SmartPharmacySystem.Application.Services
             _currentUserService = currentUserService;
             _httpContextAccessor = httpContextAccessor;
             _closingValidationService = closingValidationService;
+            _accountLookupService = accountLookupService;
         }
 
         public async Task<PurchaseInvoiceDto> CreateAsync(CreatePurchaseInvoiceDto dto, int userId)
@@ -67,8 +70,6 @@ namespace SmartPharmacySystem.Application.Services
             invoice.WarehouseId = await ResolveReceivingWarehouseIdAsync(dto.WarehouseId);
             invoice.PurchaseInvoiceDetails = new List<PurchaseInvoiceDetail>();
 
-            decimal calculatedTotal = 0;
-
             foreach (var itemDto in dto.Items)
             {
                 if (itemDto.ExpiryDate.Date < DateTime.Today)
@@ -82,18 +83,86 @@ namespace SmartPharmacySystem.Application.Services
                     var med = await _unitOfWork.Medicines.GetByIdAsync(itemDto.MedicineId);
                     throw new InvalidOperationException($"عذراً، سعر البيع ({itemDto.SalePrice}) أقل من سعر الشراء ({itemDto.PurchasePrice}) للدواء '{med?.Name}'.");
                 }
+            }
 
+            invoice.TaxRate = dto.TaxRate;
+            invoice.IsTaxInclusive = dto.IsTaxInclusive;
+            decimal calculatedTotal = 0;
+            decimal calculatedSubtotal = 0;
+            decimal calculatedTaxAmount = 0;
+
+            foreach (var itemDto in dto.Items)
+            {
                 int batchId = await GetOrCreateBatchIdAsync(itemDto.MedicineId, itemDto.BatchBarcode, itemDto.CompanyBatchNumber, itemDto.ExpiryDate, userId);
 
                 var detail = _mapper.Map<PurchaseInvoiceDetail>(itemDto);
                 detail.BatchId = batchId;
-                detail.Total = itemDto.Quantity * itemDto.PurchasePrice;
 
-                calculatedTotal += detail.Total;
+                var lineGross = itemDto.Quantity * itemDto.PurchasePrice;
+                var lineTaxRate = itemDto.TaxRate.HasValue && itemDto.TaxRate.Value > 0 ? itemDto.TaxRate.Value : dto.TaxRate;
+                decimal lineSubtotal;
+                decimal lineTaxAmount;
+                decimal lineTotal;
+
+                if (lineTaxRate > 0)
+                {
+                    if (dto.IsTaxInclusive)
+                    {
+                        lineSubtotal = Math.Round(lineGross / (1m + (lineTaxRate / 100m)), 2);
+                        lineTaxAmount = Math.Round(lineGross - lineSubtotal, 2);
+                        lineTotal = lineGross;
+                    }
+                    else
+                    {
+                        lineSubtotal = lineGross;
+                        lineTaxAmount = Math.Round(lineSubtotal * (lineTaxRate / 100m), 2);
+                        lineTotal = lineSubtotal + lineTaxAmount;
+                    }
+                }
+                else
+                {
+                    lineSubtotal = lineGross;
+                    lineTaxAmount = 0;
+                    lineTotal = lineGross;
+                }
+
+                detail.Subtotal = lineSubtotal;
+                detail.TaxRate = lineTaxRate;
+                detail.TaxAmount = lineTaxAmount;
+                detail.Total = lineTotal;
+
+                calculatedSubtotal += lineSubtotal;
+                calculatedTaxAmount += lineTaxAmount;
+                calculatedTotal += lineTotal;
                 invoice.PurchaseInvoiceDetails.Add(detail);
             }
 
+            invoice.Subtotal = calculatedSubtotal;
+            invoice.TaxAmount = calculatedTaxAmount;
             invoice.TotalAmount = calculatedTotal;
+            invoice.ShippingCost = dto.ShippingCost;
+            invoice.CustomsCost = dto.CustomsCost;
+            invoice.OtherLandedCosts = dto.OtherLandedCosts;
+            decimal totalLandedCost = invoice.TotalLandedCost;
+
+            if (calculatedTotal > 0 && totalLandedCost > 0)
+            {
+                foreach (var detail in invoice.PurchaseInvoiceDetails)
+                {
+                    detail.AllocatedLandedCost = Math.Round((detail.Total / calculatedTotal) * totalLandedCost, 4);
+                    decimal lineQty = detail.Quantity > 0 ? detail.Quantity : 1m;
+                    detail.EffectiveUnitCost = Math.Round(detail.PurchasePrice + (detail.AllocatedLandedCost / lineQty), 4);
+                }
+            }
+            else
+            {
+                foreach (var detail in invoice.PurchaseInvoiceDetails)
+                {
+                    detail.AllocatedLandedCost = 0;
+                    detail.EffectiveUnitCost = detail.PurchasePrice;
+                }
+            }
+
             invoice.PurchaseInvoiceNumber = await _invoiceNumberGenerator.GeneratePurchaseInvoiceNumberAsync();
 
             await _unitOfWork.PurchaseInvoices.AddAsync(invoice);
@@ -168,11 +237,18 @@ namespace SmartPharmacySystem.Application.Services
             invoice.PaymentMethod = dto.PaymentMethod;
             invoice.WarehouseId = await ResolveReceivingWarehouseIdAsync(dto.WarehouseId);
             invoice.Notes = dto.Notes;
+            invoice.ShippingCost = dto.ShippingCost;
+            invoice.CustomsCost = dto.CustomsCost;
+            invoice.OtherLandedCosts = dto.OtherLandedCosts;
+            invoice.TaxRate = dto.TaxRate;
+            invoice.IsTaxInclusive = dto.IsTaxInclusive;
 
             _unitOfWork.PurchaseInvoiceDetails.RemoveRange(invoice.PurchaseInvoiceDetails);
             invoice.PurchaseInvoiceDetails.Clear();
 
             decimal calculatedTotal = 0;
+            decimal calculatedSubtotal = 0;
+            decimal calculatedTaxAmount = 0;
 
             foreach (var itemDto in dto.Items)
             {
@@ -193,13 +269,68 @@ namespace SmartPharmacySystem.Application.Services
                 var detail = _mapper.Map<PurchaseInvoiceDetail>(itemDto);
                 detail.BatchId = batchId;
                 detail.PurchaseInvoiceId = invoice.Id;
-                detail.Total = itemDto.Quantity * itemDto.PurchasePrice;
 
-                calculatedTotal += detail.Total;
+                var lineGross = itemDto.Quantity * itemDto.PurchasePrice;
+                var lineTaxRate = itemDto.TaxRate.HasValue && itemDto.TaxRate.Value > 0 ? itemDto.TaxRate.Value : dto.TaxRate;
+                decimal lineSubtotal;
+                decimal lineTaxAmount;
+                decimal lineTotal;
+
+                if (lineTaxRate > 0)
+                {
+                    if (dto.IsTaxInclusive)
+                    {
+                        lineSubtotal = Math.Round(lineGross / (1m + (lineTaxRate / 100m)), 2);
+                        lineTaxAmount = Math.Round(lineGross - lineSubtotal, 2);
+                        lineTotal = lineGross;
+                    }
+                    else
+                    {
+                        lineSubtotal = lineGross;
+                        lineTaxAmount = Math.Round(lineSubtotal * (lineTaxRate / 100m), 2);
+                        lineTotal = lineSubtotal + lineTaxAmount;
+                    }
+                }
+                else
+                {
+                    lineSubtotal = lineGross;
+                    lineTaxAmount = 0;
+                    lineTotal = lineGross;
+                }
+
+                detail.Subtotal = lineSubtotal;
+                detail.TaxRate = lineTaxRate;
+                detail.TaxAmount = lineTaxAmount;
+                detail.Total = lineTotal;
+
+                calculatedSubtotal += lineSubtotal;
+                calculatedTaxAmount += lineTaxAmount;
+                calculatedTotal += lineTotal;
                 invoice.PurchaseInvoiceDetails.Add(detail);
             }
 
+            invoice.Subtotal = calculatedSubtotal;
+            invoice.TaxAmount = calculatedTaxAmount;
             invoice.TotalAmount = calculatedTotal;
+            decimal updateLandedCost = invoice.TotalLandedCost;
+
+            if (calculatedTotal > 0 && updateLandedCost > 0)
+            {
+                foreach (var detail in invoice.PurchaseInvoiceDetails)
+                {
+                    detail.AllocatedLandedCost = Math.Round((detail.Total / calculatedTotal) * updateLandedCost, 4);
+                    decimal lineQty = detail.Quantity > 0 ? detail.Quantity : 1m;
+                    detail.EffectiveUnitCost = Math.Round(detail.PurchasePrice + (detail.AllocatedLandedCost / lineQty), 4);
+                }
+            }
+            else
+            {
+                foreach (var detail in invoice.PurchaseInvoiceDetails)
+                {
+                    detail.AllocatedLandedCost = 0;
+                    detail.EffectiveUnitCost = detail.PurchasePrice;
+                }
+            }
 
             await _unitOfWork.PurchaseInvoices.UpdateAsync(invoice);
             await _unitOfWork.SaveChangesAsync();
@@ -247,9 +378,9 @@ namespace SmartPharmacySystem.Application.Services
                         conversionFactor = purchaseUnit?.ConversionFactor ?? 1;
                     }
 
-                    int rawQty = detail.Quantity;
-                    int rawBonus = detail.BonusQuantity;
-                    int baseUnits = (rawQty + rawBonus) * conversionFactor;
+                    decimal rawQty = detail.Quantity;
+                    decimal rawBonus = detail.BonusQuantity;
+                    decimal baseUnits = (rawQty + rawBonus) * conversionFactor;
 
                     detail.QuantityInPurchaseUnit = rawQty;
                     detail.Quantity = baseUnits;
@@ -258,7 +389,7 @@ namespace SmartPharmacySystem.Application.Services
                     batch.RemainingQuantity += baseUnits;
                     batch.Status = "Active";
 
-                    decimal trueUnitCost = baseUnits > 0 ? detail.Total / baseUnits : detail.PurchasePrice;
+                    decimal trueUnitCost = baseUnits > 0 ? (detail.Total + detail.AllocatedLandedCost) / baseUnits : detail.PurchasePrice;
                     batch.UnitPurchasePrice = trueUnitCost;
                     decimal perBaseUnitSalePrice = conversionFactor > 0 ? detail.SalePrice / conversionFactor : detail.SalePrice;
                     decimal perBaseUnitPurchasePrice = conversionFactor > 0 ? detail.PurchasePrice / conversionFactor : detail.PurchasePrice;
@@ -266,6 +397,7 @@ namespace SmartPharmacySystem.Application.Services
                     batch.RetailPrice = perBaseUnitSalePrice;
                     batch.PurchaseInvoiceId = invoice.Id;
                     detail.TrueUnitCost = trueUnitCost;
+                    detail.EffectiveUnitCost = trueUnitCost;
 
                     await _unitOfWork.MedicineBatches.UpdateAsync(batch);
                     await IncreaseInventoryStockAsync(invoice.WarehouseId, detail.MedicineId, batch.CompanyBatchNumber, batch.ExpiryDate, baseUnits);
@@ -285,9 +417,10 @@ namespace SmartPharmacySystem.Application.Services
                     var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
                     if (medicine != null)
                     {
-                        int totalStock = await _unitOfWork.MedicineBatches.GetTotalQuantityAsync(medicine.Id);
-                        decimal oldVal = Math.Max(0, (totalStock - baseUnits) * medicine.MovingAverageCost);
-                        decimal newVal = oldVal + detail.Total;
+                        decimal totalStock = await _unitOfWork.MedicineBatches.GetTotalQuantityAsync(medicine.Id);
+                        decimal totalLineCost = detail.Total + detail.AllocatedLandedCost;
+                        decimal oldVal = Math.Max(0m, (totalStock - baseUnits) * medicine.MovingAverageCost);
+                        decimal newVal = oldVal + totalLineCost;
                         medicine.MovingAverageCost = totalStock > 0 ? newVal / totalStock : trueUnitCost;
 
                         medicine.DefaultSalePrice = perBaseUnitSalePrice;
@@ -300,6 +433,7 @@ namespace SmartPharmacySystem.Application.Services
                 }
 
                 invoice.TotalAmount = validTotal;
+                decimal totalInventoryCost = invoice.TotalAmount + invoice.TotalLandedCost;
 
                 var journalEntry = new JournalEntryDto
                 {
@@ -310,33 +444,38 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<JournalEntryLineDto>()
                 };
 
+                // Dynamic Account Resolution
+                var inventoryAccount = await _accountLookupService.GetInventoryAccountAsync();
+                var cashAccount = await _accountLookupService.GetCashAccountAsync(userId);
+                var payablesAccount = await _accountLookupService.GetPayablesAccountAsync();
+
                 journalEntry.Lines.Add(new JournalEntryLineDto
                 {
-                    AccountId = 1301,
-                    Debit = invoice.TotalAmount,
+                    AccountId = inventoryAccount.Id,
+                    Debit = totalInventoryCost,
                     Credit = 0,
-                    Description = $"إضافة للمخزون - فاتورة شراء {invoice.PurchaseInvoiceNumber}"
+                    Description = $"إضافة للمخزون (شامل تكاليف الشحن والتوريد) - فاتورة شراء {invoice.PurchaseInvoiceNumber}"
                 });
 
                 if (invoice.PaymentMethod == PaymentType.Cash)
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1101,
+                        AccountId = cashAccount.Id,
                         Debit = 0,
-                        Credit = invoice.TotalAmount,
-                        Description = $"صرف قيمة مشتريات نقدية - فاتورة {invoice.PurchaseInvoiceNumber}"
+                        Credit = totalInventoryCost,
+                        Description = $"صرف قيمة مشتريات نقدية ومصاريف شحن - فاتورة {invoice.PurchaseInvoiceNumber}"
                     });
                     invoice.IsPaid = true;
                     
                     // NEW: Record Expense for Cash Purchase!
                     await _financialService.ProcessTransactionAsync(
                         accountId: 1, 
-                        amount: invoice.TotalAmount, 
+                        amount: totalInventoryCost, 
                         type: FinancialTransactionType.Expense, 
                         referenceType: ReferenceType.PurchaseInvoice, 
                         referenceId: invoice.Id, 
-                        description: $"مشتريات نقدية - فاتورة {invoice.PurchaseInvoiceNumber}");
+                        description: $"مشتريات نقدية ومصاريف شحن - فاتورة {invoice.PurchaseInvoiceNumber}");
                 }
                 else
                 {
@@ -345,7 +484,7 @@ namespace SmartPharmacySystem.Application.Services
 
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = supplier.AccountId ?? 2101,
+                        AccountId = supplier.AccountId ?? payablesAccount.Id,
                         Debit = 0,
                         Credit = invoice.TotalAmount,
                         Description = $"مشتريات آجلة - فاتورة {invoice.PurchaseInvoiceNumber}"
@@ -354,6 +493,26 @@ namespace SmartPharmacySystem.Application.Services
                     supplier.Balance += invoice.TotalAmount;
                     await _unitOfWork.Suppliers.UpdateAsync(supplier);
                     invoice.IsPaid = false;
+
+                    // If there is Landed Cost on credit invoice, record separate credit line for cash expense
+                    if (invoice.TotalLandedCost > 0)
+                    {
+                        journalEntry.Lines.Add(new JournalEntryLineDto
+                        {
+                            AccountId = cashAccount.Id,
+                            Debit = 0,
+                            Credit = invoice.TotalLandedCost,
+                            Description = $"سداد مصاريف شحن وجمارك نقدية - فاتورة {invoice.PurchaseInvoiceNumber}"
+                        });
+
+                        await _financialService.ProcessTransactionAsync(
+                            accountId: 1, 
+                            amount: invoice.TotalLandedCost, 
+                            type: FinancialTransactionType.Expense, 
+                            referenceType: ReferenceType.PurchaseInvoice, 
+                            referenceId: invoice.Id, 
+                            description: $"مصاريف شحن وجمارك مشتريات - فاتورة {invoice.PurchaseInvoiceNumber}");
+                    }
                 }
 
                 var createdEntry = await _journalEntryService.CreateAsync(journalEntry, userId);
@@ -623,8 +782,8 @@ namespace SmartPharmacySystem.Application.Services
                 var medicine = await _unitOfWork.Medicines.GetByIdAsync(detail.MedicineId);
                 if (medicine != null)
                 {
-                    int totalStock = await _unitOfWork.MedicineBatches.GetTotalQuantityAsync(medicine.Id);
-                    decimal oldVal = Math.Max(0, (totalStock - detail.Quantity - detail.BonusQuantity) * medicine.MovingAverageCost);
+                    decimal totalStock = await _unitOfWork.MedicineBatches.GetTotalQuantityAsync(medicine.Id);
+                    decimal oldVal = Math.Max(0m, (totalStock - detail.Quantity - detail.BonusQuantity) * medicine.MovingAverageCost);
                     decimal newVal = oldVal + (detail.Total);
                     medicine.MovingAverageCost = totalStock > 0 ? newVal / totalStock : trueUnitCost;
 
@@ -643,9 +802,13 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<JournalEntryLineDto>()
                 };
 
+                var quickInvAccount = await _accountLookupService.GetInventoryAccountAsync();
+                var quickCashAccount = await _accountLookupService.GetCashAccountAsync(userId);
+                var quickPayablesAccount = await _accountLookupService.GetPayablesAccountAsync();
+
                 journalEntry.Lines.Add(new JournalEntryLineDto
                 {
-                    AccountId = 1301,
+                    AccountId = quickInvAccount.Id,
                     Debit = invoice.TotalAmount,
                     Credit = 0,
                     Description = $"توريد سريع للمخزون - {medicine?.Name}"
@@ -655,7 +818,7 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1101,
+                        AccountId = quickCashAccount.Id,
                         Debit = 0,
                         Credit = invoice.TotalAmount,
                         Description = $"صرف نقدي لتوريد سريع - {medicine?.Name}"
@@ -680,7 +843,7 @@ namespace SmartPharmacySystem.Application.Services
                     
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = supplier.AccountId ?? 2101,
+                        AccountId = supplier.AccountId ?? quickPayablesAccount.Id,
                         Debit = 0,
                         Credit = invoice.TotalAmount,
                         Description = $"توريد آجل سريع - {medicine?.Name}"
@@ -767,7 +930,7 @@ namespace SmartPharmacySystem.Application.Services
             throw new InvalidOperationException($"No receiving warehouse is configured for branch {currentBranchId}.");
         }
 
-        private async Task IncreaseInventoryStockAsync(int warehouseId, int medicineId, string batchNumber, DateTime expiryDate, int quantity)
+        private async Task IncreaseInventoryStockAsync(int warehouseId, int medicineId, string batchNumber, DateTime expiryDate, decimal quantity)
         {
             var stock = await _unitOfWork.InventoryStocks.GetByWarehouseMedicineBatchAsync(warehouseId, medicineId, batchNumber);
             if (stock == null)
@@ -789,7 +952,7 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.InventoryStocks.UpdateAsync(stock);
         }
 
-        private async Task DecreaseInventoryStockAsync(int warehouseId, int medicineId, string batchNumber, int quantity)
+        private async Task DecreaseInventoryStockAsync(int warehouseId, int medicineId, string batchNumber, decimal quantity)
         {
             var stock = await _unitOfWork.InventoryStocks.GetByWarehouseMedicineBatchAsync(warehouseId, medicineId, batchNumber)
                 ?? throw new InvalidOperationException($"Inventory stock for medicine {medicineId}, batch '{batchNumber}', warehouse {warehouseId} was not found.");

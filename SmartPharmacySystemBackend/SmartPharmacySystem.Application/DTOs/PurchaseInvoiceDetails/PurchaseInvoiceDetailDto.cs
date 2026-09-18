@@ -49,12 +49,12 @@ public class PurchaseInvoiceDetailDto
     /// <summary>
     /// الكمية بالوحدة المشتراة
     /// </summary>
-    public int QuantityInPurchaseUnit { get; set; }
+    public decimal QuantityInPurchaseUnit { get; set; }
 
     /// <summary>
     /// الكمية (محولة للوحدة الأساسية)
     /// </summary>
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// معرف وحدة الشراء
@@ -69,7 +69,7 @@ public class PurchaseInvoiceDetailDto
     /// <summary>
     /// الكمية المجانية (Bonus)
     /// </summary>
-    public int BonusQuantity { get; set; }
+    public decimal BonusQuantity { get; set; }
 
     /// <summary>
     /// سعر الشراء للوحدة
@@ -82,14 +82,39 @@ public class PurchaseInvoiceDetailDto
     public decimal SalePrice { get; set; }
 
     /// <summary>
-    /// الإجمالي لهذا الصنف
+    /// الإجمالي لهذا الصنف (شاملاً الضريبة)
     /// </summary>
     public decimal Total { get; set; }
+
+    /// <summary>
+    /// المجموع الفرعي قبل الضريبة
+    /// </summary>
+    public decimal Subtotal { get; set; }
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة (%)
+    /// </summary>
+    public decimal TaxRate { get; set; }
+
+    /// <summary>
+    /// مبلغ ضريبة القيمة المضافة لهذا السطر
+    /// </summary>
+    public decimal TaxAmount { get; set; }
 
     /// <summary>
     /// سعر التكلفة الحقيقي (بعد المجاني)
     /// </summary>
     public decimal TrueUnitCost { get; set; }
+
+    /// <summary>
+    /// نصيب السطر من مصاريف التوريد الإضافية (الشحن والجمارك)
+    /// </summary>
+    public decimal AllocatedLandedCost { get; set; }
+
+    /// <summary>
+    /// التكلفة الفعلية الواصلة للمخزن للوحدة بعد تحميل المصاريف
+    /// </summary>
+    public decimal EffectiveUnitCost { get; set; }
 
     /// <summary>
     /// هل محذوف

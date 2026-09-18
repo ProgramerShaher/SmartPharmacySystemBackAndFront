@@ -57,10 +57,10 @@ export class CategoryAddEditComponent implements OnInit, OnChanges {
 
         // التحقق من الحجم (الحد الأقصى 2 ميجابايت) لمنع تعليق الجهاز
         if (file.size > 2 * 1024 * 1024) {
-            this.messageService.add({ 
-                severity: 'warn', 
-                summary: 'تنبيه', 
-                detail: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت' 
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'تنبيه',
+                detail: 'حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 2 ميجابايت'
             });
             return;
         }

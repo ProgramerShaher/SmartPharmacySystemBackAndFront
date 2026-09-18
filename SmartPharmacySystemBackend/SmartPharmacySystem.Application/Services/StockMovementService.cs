@@ -286,7 +286,7 @@ namespace SmartPharmacySystem.Application.Services
             };
         }
 
-        public async Task<int> GetCurrentBalanceAsync(int medicineId, int? batchId = null)
+        public async Task<decimal> GetCurrentBalanceAsync(int medicineId, int? batchId = null)
         {
             return await _unitOfWork.InventoryMovements.GetCurrentBalanceAsync(medicineId, batchId);
         }
@@ -295,7 +295,7 @@ namespace SmartPharmacySystem.Application.Services
         {
             var movements = await _unitOfWork.InventoryMovements.GetStockCardMovementsAsync(medicineId, batchId);
             var result = new List<StockCardDto>();
-            int runningBalance = 0;
+            decimal runningBalance = 0m;
 
             foreach (var mov in movements)
             {
@@ -489,7 +489,7 @@ namespace SmartPharmacySystem.Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        private async Task ValidateStockAvailability(int medicineId, int? batchId, int requestedQuantity)
+        private async Task ValidateStockAvailability(int medicineId, int? batchId, decimal requestedQuantity)
         {
             var currentBalance = await GetCurrentBalanceAsync(medicineId, batchId);
             if (currentBalance < requestedQuantity)

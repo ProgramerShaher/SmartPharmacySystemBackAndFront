@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace SmartPharmacySystem.Core.Entities;
 
 /// <summary>
@@ -26,13 +28,15 @@ public class PurchaseInvoiceDetail : BaseEntity
     /// Quantity purchased (stored in Base Unit = smallest unit, e.g. pills).
     /// الكمية المشتراة محوّلة إلى أصغر وحدة (حبة). محسوبة تلقائياً.
     /// </summary>
-    public int Quantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Quantity as entered by the user in the selected purchase unit (e.g. 5 cartons).
     /// الكمية كما أدخلها المستخدم بالوحدة المحددة (مثلاً: 5 كراتين).
     /// </summary>
-    public int QuantityInPurchaseUnit { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal QuantityInPurchaseUnit { get; set; }
 
     /// <summary>
     /// The unit used when purchasing (FK to MedicineUnit). Null = base unit.
@@ -43,7 +47,8 @@ public class PurchaseInvoiceDetail : BaseEntity
     /// <summary>
     /// Free quantity received (Bonus).
     /// </summary>
-    public int BonusQuantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal BonusQuantity { get; set; }
 
     /// <summary>
     /// Purchase price per unit.
@@ -61,9 +66,39 @@ public class PurchaseInvoiceDetail : BaseEntity
     public decimal Total { get; set; }
 
     /// <summary>
+    /// المجموع الفرعي للسطر قبل الضريبة
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Subtotal { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة الضريبة المطبقة على الصنف (%)
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// مبلغ ضريبة القيمة المضافة لهذا السطر
+    /// </summary>
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal TaxAmount { get; set; } = 0;
+
+    /// <summary>
     /// Calculated true cost per unit after bonus.
     /// </summary>
     public decimal TrueUnitCost { get; set; }
+
+    /// <summary>
+    /// نصيب السطر من مصاريف التوريد الإضافية (الشحن والجمارك) موزعة بالقيمة
+    /// </summary>
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal AllocatedLandedCost { get; set; } = 0;
+
+    /// <summary>
+    /// التكلفة الفعلية الواصلة للمخزن للوحدة بعد تحميل المصاريف
+    /// </summary>
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal EffectiveUnitCost { get; set; } = 0;
 
     /// <summary>
     /// Storage location for this item in the warehouse (e.g. Shelf 1, Rack A)
@@ -92,4 +127,15 @@ public class PurchaseInvoiceDetail : BaseEntity
     /// خاصية التنقل لوحدة الشراء المستخدمة.
     /// </summary>
     public MedicineUnit? PurchaseUnit { get; set; }
+
+    /// <summary>
+    /// معرف تنويعة الصنف (المقاس / اللون)
+    /// </summary>
+    public int? ProductVariantId { get; set; }
+    public virtual ProductVariant? ProductVariant { get; set; }
+
+    /// <summary>
+    /// الأرقام التسلسلية للأجهزة المشتراة في هذا السطر
+    /// </summary>
+    public virtual ICollection<ProductSerialNumber> SerialNumbers { get; set; } = new List<ProductSerialNumber>();
 }

@@ -14,16 +14,16 @@ public class MedicineBatchUpdateDto : IValidatableObject
     /// كمية الوحدات في هذه الدفعة. يجب أن تكون أكبر من صفر.
     /// </summary>
     /// <example>100</example>
-    [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than 0 | الكمية يجب أن تكون أكبر من صفر")]
-    public int? Quantity { get; set; }
+    [Range(0.0001, double.MaxValue, ErrorMessage = "Quantity must be greater than 0 | الكمية يجب أن تكون أكبر من صفر")]
+    public decimal? Quantity { get; set; }
 
     /// <summary>
     /// Remaining quantity available. Cannot exceed total quantity.
     /// الكمية المتبقية المتاحة. لا يمكن أن تتجاوز الكمية الإجمالية.
     /// </summary>
     /// <example>50</example>
-    [Range(0, int.MaxValue, ErrorMessage = "Remaining quantity cannot be negative | الكمية المتبقية لا يمكن أن تكون سالبة")]
-    public int? RemainingQuantity { get; set; }
+    [Range(0, double.MaxValue, ErrorMessage = "Remaining quantity cannot be negative | الكمية المتبقية لا يمكن أن تكون سالبة")]
+    public decimal? RemainingQuantity { get; set; }
 
     /// <summary>
     /// Expiry date of the batch.

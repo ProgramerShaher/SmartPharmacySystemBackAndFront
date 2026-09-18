@@ -1,0 +1,214 @@
+<div class="quotation-create-page">
+  <p-toast position="top-left"></p-toast>
+
+  <!-- Header Section -->
+  <div class="header-card mb-4 p-4 surface-card border-round shadow-1">
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center gap-3">
+      <div>
+        <h2 class="m-0 text-900 font-bold flex align-items-center gap-2">
+          <i class="pi pi-file-edit text-primary text-2xl"></i>
+          {{ isEditMode() ? 'تعديل عرض السعر (' + quotationNumber() + ')' : 'إنشاء عرض سعر جديد (New Quotation)' }}
+        </h2>
+        <p class="text-500 m-0 mt-1">
+          عروض الأسعار لا تؤثر على المخزون أو الحسابات حتى يتم قبولها وتحويلها رسمياً إلى فاتورة مبيعات
+        </p>
+      </div>
+      <div class="flex gap-2">
+        <button pButton pRipple label="إلغاء" icon="pi pi-times" class="p-button-outlined p-button-secondary" (click)="cancel()"></button>
+        <button pButton pRipple [label]="isEditMode() ? 'حفظ التعديلات' : 'حفظ عرض السعر'" icon="pi pi-check" class="p-button-primary" (click)="saveQuotation()" [loading]="saving()"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- Customer & Dates Info Card -->
+    <div class="col-12 lg:col-8">
+      <div class="surface-card p-4 border-round shadow-1 mb-4">
+        <h3 class="text-lg font-bold text-900 m-0 mb-3 flex align-items-center gap-2">
+          <i class="pi pi-user text-primary"></i>
+          بيانات العميل وفترة سريان العرض
+        </h3>
+        <div class="grid p-fluid">
+          <div class="col-12 md:col-6">
+            <label class="font-semibold block mb-1">العميل المسجل (اختياري)</label>
+            <p-dropdown [options]="customers" [(ngModel)]="selectedCustomer" optionLabel="name" [filter]="true" filterBy="name,phoneNumber" placeholder="اختر من قائمة العملاء..." [showClear]="true" (onChange)="onCustomerSelect($event)"></p-dropdown>
+          </div>
+          <div class="col-12 md:col-6">
+            <label class="font-semibold block mb-1">اسم العميل / المؤسسة <span class="text-red-500">*</span></label>
+            <input type="text" pInputText [(ngModel)]="customerName" placeholder="أدخل اسم العميل أو الجهة" />
+          </div>
+          <div class="col-12 md:col-4">
+            <label class="font-semibold block mb-1">رقم هاتف التواصل</label>
+            <input type="text" pInputText [(ngModel)]="customerPhone" placeholder="05XXXXXXXX" />
+          </div>
+          <div class="col-12 md:col-4">
+            <label class="font-semibold block mb-1">البريد الإلكتروني</label>
+            <input type="email" pInputText [(ngModel)]="customerEmail" placeholder="client@example.com" />
+          </div>
+          <div class="col-12 md:col-4">
+            <label class="font-semibold block mb-1">تاريخ انتهاء صلاحية العرض</label>
+            <p-calendar [(ngModel)]="expiryDate" [showIcon]="true" dateFormat="yy/mm/dd" placeholder="تاريخ الصلاحية"></p-calendar>
+          </div>
+        </div>
+      </div>
+
+      <!-- Medicine Search & Line Items Card -->
+      <div class="surface-card p-4 border-round shadow-1 mb-4">
+        <div class="flex justify-content-between align-items-center mb-3">
+          <h3 class="text-lg font-bold text-900 m-0 flex align-items-center gap-2">
+            <i class="pi pi-shopping-cart text-primary"></i>
+            بنود وأصناف عرض السعر
+          </h3>
+          <span class="text-sm font-semibold text-500">عدد الأصناف: {{ items().length }}</span>
+        </div>
+
+        <!-- Medicine Autocomplete Search -->
+        <div class="mb-3 p-fluid">
+          <span class="p-input-icon-right w-full">
+            <i class="pi pi-search"></i>
+            <p-autoComplete [(ngModel)]="selectedMedicine" [suggestions]="filteredMedicines" (completeMethod)="searchMedicines($event)" field="name" placeholder="ابحث باسم الصنف أو الباركود أو الكود لإضافته..." (onSelect)="onMedicineSelect($event)" [style]="{ width: '100%' }">
+              <ng-template let-med pTemplate="item">
+                <div class="flex justify-content-between align-items-center">
+                  <div>
+                    <div class="font-semibold">{{ med.name }}</div>
+                    <small class="text-500">كود: {{ med.internalCode || '—' }} | باركود: {{ med.defaultBarcode || '—' }}</small>
+                  </div>
+                  <div class="text-primary font-bold">
+                    {{ (med.defaultPurchasePrice ? med.defaultPurchasePrice * 1.25 : 0) | number:'1.2-2' }}
+                  </div>
+                </div>
+              </ng-template>
+            </p-autoComplete>
+          </span>
+        </div>
+
+        <!-- Line Items Table -->
+        <p-table [value]="items()" responsiveLayout="scroll" styleClass="p-datatable-sm p-datatable-gridlines">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 40px">#</th>
+              <th>الصنف</th>
+              <th style="width: 110px">الكمية</th>
+              <th style="width: 120px">سعر الوحدة</th>
+              <th style="width: 90px">خصم %</th>
+              <th style="width: 100px">الضريبة</th>
+              <th style="width: 120px">الإجمالي</th>
+              <th style="width: 60px"></th>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="body" let-item let-i="rowIndex">
+            <tr>
+              <td class="text-center font-bold">{{ i + 1 }}</td>
+              <td>
+                <div class="font-semibold text-900">{{ item.medicineName }}</div>
+                <small *ngIf="item.barcode" class="text-500">{{ item.barcode }}</small>
+              </td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.quantity" [min]="0.001" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="3" (ngModelChange)="onLineChange(item)" [inputStyle]="{ width: '100%', 'text-align': 'center' }"></p-inputNumber>
+              </td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.unitPrice" [min]="0" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" (ngModelChange)="onLineChange(item)" [inputStyle]="{ width: '100%', 'text-align': 'center' }"></p-inputNumber>
+              </td>
+              <td>
+                <p-inputNumber [(ngModel)]="item.discountPercentage" [min]="0" [max]="100" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="2" (ngModelChange)="onLineChange(item)" [inputStyle]="{ width: '100%', 'text-align': 'center' }"></p-inputNumber>
+              </td>
+              <td class="text-center">
+                {{ item.taxAmount | number:'1.2-2' }}
+              </td>
+              <td class="text-center font-bold text-primary">
+                {{ item.total | number:'1.2-2' }}
+              </td>
+              <td class="text-center">
+                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger p-button-sm" (click)="removeItem(i)"></button>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="8" class="text-center p-4 text-500">
+                <i class="pi pi-info-circle text-2xl mb-2 block"></i>
+                لم تقم بإضافة أي أصناف بعد. استخدم شريط البحث أعلاه لإضافة بنود العرض.
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+
+      <!-- Terms & Conditions Section -->
+      <div class="surface-card p-4 border-round shadow-1">
+        <h3 class="text-lg font-bold text-900 m-0 mb-3 flex align-items-center gap-2">
+          <i class="pi pi-shield text-primary"></i>
+          الشروط والأحكام وملاحظات العرض
+        </h3>
+        <div class="grid p-fluid">
+          <div class="col-12 md:col-6">
+            <label class="font-semibold block mb-1">الشروط والأحكام المطبوعة على العرض</label>
+            <textarea pInputTextarea [(ngModel)]="termsAndConditions" rows="5" placeholder="الشروط، مدة التوريد، الضمان، طريقة الدفع..."></textarea>
+          </div>
+          <div class="col-12 md:col-6">
+            <label class="font-semibold block mb-1">ملاحظات إضافية</label>
+            <textarea pInputTextarea [(ngModel)]="notes" rows="5" placeholder="ملاحظات داخلية أو تعليمات خاصة..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Card Column -->
+    <div class="col-12 lg:col-4">
+      <div class="surface-card p-4 border-round shadow-1 sticky" style="top: 1rem">
+        <h3 class="text-lg font-bold text-900 m-0 mb-3 pb-2 border-bottom-1 surface-border flex align-items-center gap-2">
+          <i class="pi pi-calculator text-primary"></i>
+          ملخص وحسابات عرض السعر
+        </h3>
+
+        <!-- Tax Mode Options -->
+        <div class="mb-3 p-3 surface-100 border-round">
+          <div class="flex align-items-center justify-content-between mb-2">
+            <span class="font-semibold text-sm">الأسعار شاملة الضريبة:</span>
+            <p-checkbox [(ngModel)]="isTaxInclusive" [binary]="true" (onChange)="recalculateAll()"></p-checkbox>
+          </div>
+          <div class="flex align-items-center justify-content-between">
+            <span class="font-semibold text-sm">نسبة الضريبة (%):</span>
+            <p-inputNumber [(ngModel)]="headerTaxRate" [min]="0" [max]="100" mode="decimal" [style]="{ width: '80px' }" (ngModelChange)="recalculateAll()"></p-inputNumber>
+          </div>
+        </div>
+
+        <div class="flex flex-column gap-3 mb-4">
+          <div class="flex justify-content-between text-600">
+            <span>المجموع قبل الضريبة:</span>
+            <span class="font-bold text-900">{{ subtotal() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="flex justify-content-between text-600">
+            <span>إجمالي الضريبة (VAT):</span>
+            <span class="font-bold text-900">{{ taxAmount() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="flex justify-content-between align-items-center">
+            <span class="text-600">خصم إضافي على العرض:</span>
+            <p-inputNumber [(ngModel)]="headerDiscount" [min]="0" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" [style]="{ width: '110px' }"></p-inputNumber>
+          </div>
+
+          <div class="flex justify-content-between text-600">
+            <span>إجمالي الخصم الممنوح:</span>
+            <span class="font-bold text-orange-500">{{ totalDiscount() | number:'1.2-2' }}</span>
+          </div>
+
+          <p-divider></p-divider>
+
+          <div class="flex justify-content-between align-items-center p-3 surface-ground border-round">
+            <span class="text-xl font-bold text-900">الإجمالي النهائي:</span>
+            <span class="text-2xl font-bold text-green-600">{{ netTotal() | number:'1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="p-fluid flex flex-column gap-2">
+          <button pButton pRipple [label]="isEditMode() ? 'حفظ التعديلات' : 'حفظ عرض السعر'" icon="pi pi-check" class="p-button-primary p-button-lg" (click)="saveQuotation()" [loading]="saving()"></button>
+          <button pButton pRipple label="رجوع للقائمة" icon="pi pi-arrow-right" class="p-button-text p-button-secondary" (click)="cancel()"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

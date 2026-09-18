@@ -29,8 +29,14 @@ namespace SmartPharmacySystem.Infrastructure
         private IPurchaseInvoiceRepository? _purchaseInvoices;
         public IPurchaseInvoiceRepository PurchaseInvoices => _purchaseInvoices ??= new PurchaseInvoiceRepository(_context);
 
+        private IPurchaseOrderRepository? _purchaseOrders;
+        public IPurchaseOrderRepository PurchaseOrders => _purchaseOrders ??= new PurchaseOrderRepository(_context);
+
         private ISaleInvoiceRepository? _saleInvoices;
         public ISaleInvoiceRepository SaleInvoices => _saleInvoices ??= new SaleInvoiceRepository(_context);
+
+        private IQuotationRepository? _quotations;
+        public IQuotationRepository Quotations => _quotations ??= new QuotationRepository(_context);
 
         private ISalesReturnRepository? _salesReturns;
         public ISalesReturnRepository SalesReturns => _salesReturns ??= new SalesReturnRepository(_context);
@@ -64,6 +70,18 @@ namespace SmartPharmacySystem.Infrastructure
 
         private ISaleInvoiceDetailRepository? _saleInvoiceDetails;
         public ISaleInvoiceDetailRepository SaleInvoiceDetails => _saleInvoiceDetails ??= new SaleInvoiceDetailRepository(_context);
+
+        private ISaleInvoicePaymentRepository? _saleInvoicePayments;
+        public ISaleInvoicePaymentRepository SaleInvoicePayments => _saleInvoicePayments ??= new SaleInvoicePaymentRepository(_context);
+
+        private IHeldInvoiceRepository? _heldInvoices;
+        public IHeldInvoiceRepository HeldInvoices => _heldInvoices ??= new HeldInvoiceRepository(_context);
+
+        private IProductVariantRepository? _productVariants;
+        public IProductVariantRepository ProductVariants => _productVariants ??= new ProductVariantRepository(_context);
+
+        private IProductSerialNumberRepository? _productSerialNumbers;
+        public IProductSerialNumberRepository ProductSerialNumbers => _productSerialNumbers ??= new ProductSerialNumberRepository(_context);
 
         private ISalesReturnDetailRepository? _salesReturnDetails;
         public ISalesReturnDetailRepository SalesReturnDetails => _salesReturnDetails ??= new SalesReturnDetailRepository(_context);

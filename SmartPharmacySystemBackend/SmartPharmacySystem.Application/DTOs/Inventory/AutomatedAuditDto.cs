@@ -39,20 +39,20 @@ namespace SmartPharmacySystem.Application.DTOs.Inventory
         public string? Barcode { get; set; }
         public DateTime? ExpiryDate { get; set; }
         
-        public int OpeningBalance { get; set; }
-        public int TotalPurchases { get; set; }
-        public int TotalSales { get; set; }
-        public int TotalTransfersIn { get; set; }
-        public int TotalTransfersOut { get; set; }
-        public int TotalDamages { get; set; }
-        public int TotalAdjustments { get; set; }
-        public int TotalSalesReturns { get; set; }
-        public int TotalPurchaseReturns { get; set; }
+        public decimal OpeningBalance { get; set; }
+        public decimal TotalPurchases { get; set; }
+        public decimal TotalSales { get; set; }
+        public decimal TotalTransfersIn { get; set; }
+        public decimal TotalTransfersOut { get; set; }
+        public decimal TotalDamages { get; set; }
+        public decimal TotalAdjustments { get; set; }
+        public decimal TotalSalesReturns { get; set; }
+        public decimal TotalPurchaseReturns { get; set; }
 
-        public int ExpectedSystemBalance { get; set; }
-        public int ActualSystemBalance { get; set; }
+        public decimal ExpectedSystemBalance { get; set; }
+        public decimal ActualSystemBalance { get; set; }
         
-        public int Variance { get; set; }
+        public decimal Variance { get; set; }
 
         public decimal UnitCost { get; set; }
         public decimal VarianceValue { get; set; }

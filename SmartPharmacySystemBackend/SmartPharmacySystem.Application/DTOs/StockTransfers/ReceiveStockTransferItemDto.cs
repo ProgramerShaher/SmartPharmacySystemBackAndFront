@@ -11,6 +11,6 @@ public class ReceiveStockTransferItemDto
     public int StockTransferItemId { get; set; }
 
     [Required(ErrorMessage = "الكمية المستلمة مطلوبة")]
-    [Range(0, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون صفر أو أكثر")]
-    public int QuantityReceived { get; set; }
+    [Range(0, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون صفر أو أكثر")]
+    public decimal QuantityReceived { get; set; }
 }

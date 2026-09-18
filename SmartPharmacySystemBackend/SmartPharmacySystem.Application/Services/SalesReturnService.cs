@@ -19,7 +19,8 @@ namespace SmartPharmacySystem.Application.Services
         IStockMovementService stockMovementService,
         IJournalEntryService journalEntryService,
         IBarcodeService barcodeService,
-        IShiftService shiftService) : ISalesReturnService
+        IShiftService shiftService,
+        IAccountLookupService accountLookupService) : ISalesReturnService
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
@@ -28,6 +29,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IJournalEntryService _journalEntryService = journalEntryService;
         private readonly IBarcodeService _barcodeService = barcodeService;
         private readonly IShiftService _shiftService = shiftService;
+        private readonly IAccountLookupService _accountLookupService = accountLookupService;
 
         public async Task<SalesReturnDto> CreateAsync(CreateSalesReturnDto dto, int userId)
         {
@@ -161,10 +163,17 @@ namespace SmartPharmacySystem.Application.Services
                     Lines = new List<JournalEntryLineDto>()
                 };
 
+                // Dynamic Account Resolution
+                var salesRevAccount = await _accountLookupService.GetSalesRevenueAccountAsync();
+                var receivablesAccount = await _accountLookupService.GetReceivablesAccountAsync();
+                var cashAccount = await _accountLookupService.GetCashAccountAsync(userId);
+                var inventoryAccount = await _accountLookupService.GetInventoryAccountAsync();
+                var cogsAccount = await _accountLookupService.GetCostOfGoodsSoldAccountAsync();
+
                 // 1. الطرف المدين (من حـ/ الإيرادات - تخفيض الإيرادات)
                 journalEntry.Lines.Add(new JournalEntryLineDto
                 {
-                    AccountId = 41, // إيرادات المبيعات
+                    AccountId = salesRevAccount.Id, // إيرادات المبيعات
                     Debit = ret.TotalAmount,
                     Credit = 0,
                     Description = $"مردودات مبيعات لفاتورة {invoice.SaleInvoiceNumber}"
@@ -175,7 +184,7 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 2101, // ذمم العملاء
+                        AccountId = invoice.Customer?.AccountId ?? receivablesAccount.Id, // ذمم العملاء
                         Debit = 0,
                         Credit = ret.TotalAmount,
                         Description = $"تخفيض مديونية العميل بمرتجع {ret.Id}"
@@ -186,7 +195,7 @@ namespace SmartPharmacySystem.Application.Services
                 {
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1101, // الصندوق الرئيسي
+                        AccountId = cashAccount.Id, // الصندوق
                         Debit = 0,
                         Credit = ret.TotalAmount,
                         Description = $"استرداد نقدي لمرتجع مبيعات {ret.Id}"
@@ -199,16 +208,16 @@ namespace SmartPharmacySystem.Application.Services
                     // من حـ/ المخزون
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1301, // مخزون الصيدلية
+                        AccountId = inventoryAccount.Id, // مخزون البضاعة
                         Debit = ret.TotalCost,
                         Credit = 0,
                         Description = $"زيادة المخزون بمرتجع {ret.Id}"
                     });
 
-                    // إلى حـ/ تكلفة المشتريات
+                    // إلى حـ/ تكلفة المبيعات
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 51, // تكلفة البضاعة المباعة
+                        AccountId = cogsAccount.Id, // تكلفة البضاعة المباعة
                         Debit = 0,
                         Credit = ret.TotalCost,
                         Description = $"عكس تكلفة مبيعات المرتجع {ret.Id}"

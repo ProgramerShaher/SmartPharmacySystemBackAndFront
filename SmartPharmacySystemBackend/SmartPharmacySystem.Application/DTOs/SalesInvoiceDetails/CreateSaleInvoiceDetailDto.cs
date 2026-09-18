@@ -29,8 +29,8 @@ public class CreateSaleInvoiceDetailDto
     /// الكمية كما أدخلها الكاشير بالوحدة المحددة (مثلاً: 2 شريط).
     /// </summary>
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; } // acts as QuantityInSaleUnit when creating
+    [Range(0.0001, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
+    public decimal Quantity { get; set; } // acts as QuantityInSaleUnit when creating
 
     /// <summary>
     /// معرف وحدة البيع (مثلاً: شريط). إذا كان null سيتم التعامل بالوحدة الأساسية.
@@ -51,4 +51,9 @@ public class CreateSaleInvoiceDetailDto
     /// </summary>
     [Range(0, 100)]
     public decimal DiscountPercentage { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة الخاصة بهذا الصنف (اختياري، إن وجد إعفاء أو ضريبة خاصة)
+    /// </summary>
+    public decimal? TaxRate { get; set; }
 }

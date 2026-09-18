@@ -80,7 +80,7 @@ public class InventoryMovementRepository : IInventoryMovementRepository
 
         return (results.Select(x => x.Movement), totalCount);
     }
-    public async Task<int> GetCurrentBalanceAsync(int medicineId, int? batchId = null)
+    public async Task<decimal> GetCurrentBalanceAsync(int medicineId, int? batchId = null)
     {
         var query = _context.InventoryMovements
             .Where(m => m.MedicineId == medicineId);

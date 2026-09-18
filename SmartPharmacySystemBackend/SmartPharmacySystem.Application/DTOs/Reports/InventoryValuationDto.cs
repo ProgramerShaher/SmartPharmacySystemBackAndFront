@@ -71,7 +71,7 @@ public class InventoryValuationDto
     /// إجمالي الكمية المتوفرة
     /// Total Available Quantity
     /// </summary>
-    public int TotalQuantity { get; set; }
+    public decimal TotalQuantity { get; set; }
 
     /// <summary>
     /// تفاصيل الدفعات
@@ -132,7 +132,7 @@ public class BatchValuationDto
     /// الكمية المتبقية
     /// Remaining Quantity
     /// </summary>
-    public int RemainingQuantity { get; set; }
+    public decimal RemainingQuantity { get; set; }
 
     /// <summary>
     /// سعر الوحدة للشراء

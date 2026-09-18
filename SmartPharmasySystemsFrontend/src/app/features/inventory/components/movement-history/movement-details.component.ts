@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InventoryMovement } from '../../../../core/models';
+import { StockMovementDto, InventoryMovement } from '../../../../core/models';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { InventoryMovementService } from '../../services/inventory-movement.service';
@@ -15,7 +15,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     styleUrl: './movement-details.component.scss'
 })
 export class MovementDetailsComponent implements OnInit {
-    @Input() movement: InventoryMovement | null = null;
+    @Input() movement: StockMovementDto | any = null;
     @Output() close = new EventEmitter<void>();
     today = new Date();
     loading = false;

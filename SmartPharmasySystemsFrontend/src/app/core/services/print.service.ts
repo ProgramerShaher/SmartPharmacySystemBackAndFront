@@ -635,15 +635,21 @@ export class PrintService {
                             </div>
                             <div class="summary-row">
                                 <span class="summary-label">الإجمالي الفرعي:</span>
-                                <span class="summary-val"><span dir="ltr">${this.formatNumber(totalAmount, 2)}</span> <span>${this.escapeHtml(currency)}</span></span>
+                                <span class="summary-val"><span dir="ltr">${this.formatNumber(invoice.subtotal || totalAmount, 2)}</span> <span>${this.escapeHtml(currency)}</span></span>
                             </div>
+                            ${(invoice.taxAmount && invoice.taxAmount > 0) ? `
+                            <div class="summary-row">
+                                <span class="summary-label">ضريبة القيمة المضافة (${invoice.taxRate || 15}%):</span>
+                                <span class="summary-val" style="color: #0284c7;"><span dir="ltr">${this.formatNumber(invoice.taxAmount, 2)}</span> <span>${this.escapeHtml(currency)}</span></span>
+                            </div>
+                            ` : ''}
                             <div class="summary-row">
                                 <span class="summary-label">الخصم:</span>
-                                <span class="summary-val"><span dir="ltr">0.00</span> <span>${this.escapeHtml(currency)}</span></span>
+                                <span class="summary-val"><span dir="ltr">${this.formatNumber(invoice.totalDiscount || 0, 2)}</span> <span>${this.escapeHtml(currency)}</span></span>
                             </div>
                             
                             <div class="net-total-box">
-                                <span class="net-total-label">الصافي الإجمالي:</span>
+                                <span class="net-total-label">${(invoice.taxAmount && invoice.taxAmount > 0) ? 'الإجمالي شامل الضريبة:' : 'الصافي الإجمالي:'}</span>
                                 <span class="net-total-val"><span dir="ltr">${this.formatNumber(totalAmount, 2)}</span> <span>${this.escapeHtml(currency)}</span></span>
                             </div>
                         </div>
@@ -651,6 +657,12 @@ export class PrintService {
 
                     <!-- Footer -->
                     <footer class="footer-section">
+                        ${invoice.zatcaQrCode ? `
+                        <div class="zatca-qr-wrapper" style="margin-bottom: 12px; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(invoice.zatcaQrCode)}" alt="ZATCA QR Code" style="width: 110px; height: 110px; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px;" />
+                            <span style="font-size: 10px; font-weight: 700; color: #0284c7;">فاتورة ضريبية إلكترونية مبسطة (ZATCA)</span>
+                        </div>
+                        ` : ''}
                         <div class="barcode-container">
                             <div class="barcode-lines">*${this.escapeHtml(invoice.saleInvoiceNumber || String(invoice.id))}*</div>
                             <div class="barcode-subtext">${this.escapeHtml(invoice.saleInvoiceNumber || String(invoice.id))}</div>

@@ -11,6 +11,7 @@ public interface IUnitOfWork
     IRoleRepository Roles { get; }
     ISupplierRepository Suppliers { get; }
     IPurchaseInvoiceRepository PurchaseInvoices { get; }
+    IPurchaseOrderRepository PurchaseOrders { get; }
     ISaleInvoiceRepository SaleInvoices { get; }
     ISalesReturnRepository SalesReturns { get; }
     IInventoryMovementRepository InventoryMovements { get; }
@@ -23,6 +24,11 @@ public interface IUnitOfWork
     IPurchaseInvoiceDetailRepository PurchaseInvoiceDetails { get; }
     IPurchaseReturnDetailRepository PurchaseReturnDetails { get; }
     ISaleInvoiceDetailRepository SaleInvoiceDetails { get; }
+    ISaleInvoicePaymentRepository SaleInvoicePayments { get; }
+    IHeldInvoiceRepository HeldInvoices { get; }
+    IQuotationRepository Quotations { get; }
+    IProductVariantRepository ProductVariants { get; }
+    IProductSerialNumberRepository ProductSerialNumbers { get; }
     ISalesReturnDetailRepository SalesReturnDetails { get; }
     IPurchaseReturnRepository PurchaseReturns { get; }
     IFinancialRepository Financials { get; }

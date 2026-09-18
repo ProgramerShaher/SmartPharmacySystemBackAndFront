@@ -9,5 +9,5 @@ public class BatchLocationDto
     public string WarehouseName { get; set; } = string.Empty;
     public int BranchId { get; set; }
     public string BranchName { get; set; } = string.Empty;
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 }

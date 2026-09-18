@@ -59,6 +59,12 @@ public class BusinessProfile : BaseEntity
     public bool UseScaleBarcode { get; set; } = false;
 
     /// <summary>
+    /// بادئة باركود الميزان الإلكتروني (الافتراضي 20 أو 21)
+    /// </summary>
+    [MaxLength(5)]
+    public string ScaleBarcodePrefix { get; set; } = "20";
+
+    /// <summary>
     /// دعم تسجيل وتتبع فترات الضمان
     /// </summary>
     public bool HasWarranty { get; set; } = false;
@@ -131,6 +137,11 @@ public class BusinessProfile : BaseEntity
     public bool AllowHoldInvoice { get; set; } = true;
 
     /// <summary>
+    /// دعم إنشاء عروض الأسعار وتحويلها إلى فواتير مبيعات (Quotations & Proforma Invoices)
+    /// </summary>
+    public bool AllowQuotations { get; set; } = true;
+
+    /// <summary>
     /// فتح درج النقود آلياً عند الطباعة أو السداد
     /// </summary>
     public bool UseCashDrawer { get; set; } = true;
@@ -141,6 +152,11 @@ public class BusinessProfile : BaseEntity
     public InvoicePrintTemplate DefaultPrintTemplate { get; set; } = InvoicePrintTemplate.Thermal80mm;
 
     // ─── إعدادات المشتريات (Purchases) ────────────────────────────────────
+
+    /// <summary>
+    /// دعم تفعيل دورة أوامر الشراء وإصدارها للموردين (Purchase Orders)
+    /// </summary>
+    public bool AllowPurchaseOrders { get; set; } = true;
 
     /// <summary>
     /// إلزامية أمر الشراء (PO) قبل إدخال فاتورة المشتريات

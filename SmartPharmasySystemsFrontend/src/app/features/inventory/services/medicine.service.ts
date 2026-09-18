@@ -49,6 +49,12 @@ export class MedicineService {
                     if (med.internalCode) {
                         this.barcodeMap.set(med.internalCode.trim().toLowerCase(), med);
                     }
+                    if (med.oemPartNumber) {
+                        this.barcodeMap.set(med.oemPartNumber.trim().toLowerCase(), med);
+                    }
+                    if (med.manufacturerPartNumber) {
+                        this.barcodeMap.set(med.manufacturerPartNumber.trim().toLowerCase(), med);
+                    }
                     if (med.medicineUnits && med.medicineUnits.length > 0) {
                         med.medicineUnits.forEach(unit => {
                             if (unit.barcode) {
@@ -92,12 +98,15 @@ export class MedicineService {
 
             const name = (item.name || '').toLowerCase();
             const sciName = (item.scientificName || '').toLowerCase();
+            const oem = (item.oemPartNumber || '').toLowerCase();
+            const mfrPart = (item.manufacturerPartNumber || '').toLowerCase();
+            const compVehicles = (item.compatibleVehicles || '').toLowerCase();
 
-            if (name === q) {
+            if (name === q || oem === q || mfrPart === q) {
                 exactNameMatches.push(item);
-            } else if (name.startsWith(q)) {
+            } else if (name.startsWith(q) || oem.startsWith(q) || mfrPart.startsWith(q)) {
                 startsWithMatches.push(item);
-            } else if (name.includes(q) || sciName.includes(q)) {
+            } else if (name.includes(q) || sciName.includes(q) || oem.includes(q) || mfrPart.includes(q) || compVehicles.includes(q)) {
                 containsMatches.push(item);
             }
         }

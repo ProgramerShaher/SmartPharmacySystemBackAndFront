@@ -16,6 +16,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ChartModule } from 'primeng/chart';
 import { ToastModule } from 'primeng/toast';
 import { SalesReturnDetailsComponent } from '../sales-return-details/sales-return-details.component';
+import { SalesReturnCreateComponent } from '../sales-return-create/sales-return-create.component';
 
 @Component({
     selector: 'app-sales-return-list',
@@ -32,7 +33,8 @@ import { SalesReturnDetailsComponent } from '../sales-return-details/sales-retur
         ToolbarModule,
         ChartModule,
         ToastModule,
-        SalesReturnDetailsComponent
+        SalesReturnDetailsComponent,
+        SalesReturnCreateComponent
     ],
     templateUrl: './sales-return-list.component.html',
     styleUrls: ['./sales-return-list.component.scss'],
@@ -43,6 +45,7 @@ export class SalesReturnListComponent implements OnInit {
     loading = true;
 
     showDetailsDialog = false;
+    showCreateModal = false;
     selectedReturnId: number | null = null;
 
     // KPI Signals
@@ -182,7 +185,7 @@ export class SalesReturnListComponent implements OnInit {
     }
 
     navigateToCreate() {
-        this.router.navigate(['/sales/returns/create']);
+        this.showCreateModal = true;
     }
 
     viewDetails(id: number) {

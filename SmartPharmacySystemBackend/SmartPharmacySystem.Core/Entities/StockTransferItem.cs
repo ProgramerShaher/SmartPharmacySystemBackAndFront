@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SmartPharmacySystem.Core.Entities;
 
@@ -19,12 +20,15 @@ public class StockTransferItem : BaseEntity
     public DateTime ExpiryDate { get; set; }
 
     [Required]
-    public int QuantityRequested { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal QuantityRequested { get; set; }
 
     [Required]
-    public int QuantityDispatched { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal QuantityDispatched { get; set; }
 
-    public int? QuantityReceived { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal? QuantityReceived { get; set; }
 
     // Navigation properties
     public virtual StockTransfer StockTransfer { get; set; } = null!;

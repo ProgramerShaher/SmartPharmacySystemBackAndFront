@@ -11,7 +11,7 @@ public interface IInventoryStockService
     Task<IEnumerable<InventoryStockDto>> GetExpiringSoonAsync(int daysThreshold);
     Task<IEnumerable<InventoryStockDto>> GetExpiredAsync();
     Task<IEnumerable<InventoryStockDto>> GetBelowReorderLevelAsync();
-    Task<int> GetTotalQuantityAsync(int warehouseId, int medicineId);
+    Task<decimal> GetTotalQuantityAsync(int warehouseId, int medicineId);
     Task<InventoryStockDto> CreateAsync(CreateInventoryStockDto dto);
     Task UpdateAsync(UpdateInventoryStockDto dto);
     Task DeleteAsync(int id);

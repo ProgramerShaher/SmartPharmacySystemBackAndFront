@@ -1,4 +1,4 @@
-﻿namespace SmartPharmacySystem.Application.DTOs.StockMovement;
+namespace SmartPharmacySystem.Application.DTOs.StockMovement;
 
 public class StockMovementSummaryDto
 {
@@ -13,13 +13,13 @@ public class StockMovementSummaryDto
 public class StockMovementTrendDto
 {
     public DateTime Date { get; set; }
-    public int Additions { get; set; }
-    public int Deductions { get; set; }
+    public decimal Additions { get; set; }
+    public decimal Deductions { get; set; }
 }
 
 public class StockCategoryDistributionDto
 {
     public string CategoryName { get; set; } = string.Empty;
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public decimal Value { get; set; }
 }

@@ -20,7 +20,8 @@ public class InventoryStock : BaseEntity
     public DateTime ExpiryDate { get; set; }
 
     [Required]
-    public int Quantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// موقع التخزين داخل المخزن (رف، ممر، منطقة)

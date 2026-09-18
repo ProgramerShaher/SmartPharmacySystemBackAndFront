@@ -8,8 +8,8 @@ namespace SmartPharmacySystem.Application.DTOs.StockCounts;
 public class UpdateStockCountItemDto
 {
     [Required(ErrorMessage = "الكمية الفعلية مطلوبة")]
-    [Range(0, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون صفر أو أكثر")]
-    public int PhysicalQuantity { get; set; }
+    [Range(0, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون صفر أو أكثر")]
+    public decimal PhysicalQuantity { get; set; }
 
     [MaxLength(250)]
     public string? VarianceReason { get; set; }

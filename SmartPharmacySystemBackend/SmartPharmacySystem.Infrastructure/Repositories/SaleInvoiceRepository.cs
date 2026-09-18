@@ -32,6 +32,7 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
                 .ThenInclude(d => d.Batch)
             .Include(s => s.SaleInvoiceDetails)
                 .ThenInclude(d => d.SaleUnit)
+            .Include(s => s.Payments)
             .Include(s => s.Creator)
             .Include(s => s.Approver)
             .Include(s => s.Canceller)
@@ -52,6 +53,7 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
                 .ThenInclude(d => d.Batch)
             .Include(s => s.SaleInvoiceDetails)
                 .ThenInclude(d => d.SaleUnit)
+            .Include(s => s.Payments)
             .Include(s => s.Creator)
             .Include(s => s.Approver)
             .Include(s => s.Canceller)
@@ -67,6 +69,7 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
         return await _context.SaleInvoices
             .AsNoTracking()
             .Where(s => !s.IsDeleted)
+            .Include(s => s.Payments)
             .Include(s => s.Creator)
             .Include(s => s.Approver)
             .Include(s => s.Canceller)
@@ -91,7 +94,13 @@ public class SaleInvoiceRepository : ISaleInvoiceRepository
                 InvoiceDate = s.InvoiceDate,
                 SaleInvoiceNumber = s.SaleInvoiceNumber,
                 TotalAmount = s.TotalAmount,
-                Status = s.Status
+                TotalDiscount = s.TotalDiscount,
+                PaidAmount = s.PaidAmount,
+                PaymentMethod = s.PaymentMethod,
+                CustomerId = s.CustomerId,
+                CustomerName = s.CustomerName,
+                Status = s.Status,
+                IsPaid = s.IsPaid
             })
             .ToListAsync();
     }

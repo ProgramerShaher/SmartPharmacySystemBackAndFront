@@ -16,6 +16,10 @@ public interface IApplicationDbContext
     DbSet<PurchaseInvoiceDetail> PurchaseInvoiceDetails { get; }
     DbSet<SaleInvoice> SaleInvoices { get; }
     DbSet<SaleInvoiceDetail> SaleInvoiceDetails { get; }
+    DbSet<SaleInvoicePayment> SaleInvoicePayments { get; }
+    DbSet<HeldInvoice> HeldInvoices { get; }
+    DbSet<ProductVariant> ProductVariants { get; }
+    DbSet<ProductSerialNumber> ProductSerialNumbers { get; }
     DbSet<InventoryMovement> InventoryMovements { get; }
     DbSet<ExpenseCategory> ExpenseCategories { get; }
     DbSet<Expense> Expenses { get; }

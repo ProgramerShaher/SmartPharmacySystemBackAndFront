@@ -330,7 +330,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     /// <summary>
     /// Optimized: Direct sum of RemainingQuantity
     /// </summary>
-    public async Task<int> GetTotalAvailableQuantityAsync(int medicineId)
+    public async Task<decimal> GetTotalAvailableQuantityAsync(int medicineId)
     {
         var now = DateTime.UtcNow.Date;
 
@@ -344,7 +344,7 @@ public class MedicineBatchRepository : IMedicineBatchRepository
     }
 
     /// <inheritdoc/>
-    public async Task<int> GetTotalQuantityAsync(int medicineId)
+    public async Task<decimal> GetTotalQuantityAsync(int medicineId)
     {
         return await _context.MedicineBatches
             .AsNoTracking()

@@ -1,9 +1,9 @@
 <p-sidebar [(visible)]="visible" position="left" styleClass="theme-settings-sidebar" [showCloseIcon]="true" appendTo="body">
 
     <!-- Header -->
-    <div class="sidebar-header">
+    <div class="sidebar-header" dir="rtl">
         <i class="pi pi-palette"></i>
-        <h3>تخصيص المظهر</h3>
+        <h3>تخصيص المظهر والنظام</h3>
     </div>
 
     <div class="sidebar-divider"></div>
@@ -13,7 +13,7 @@
 
         <!-- Theme Mode Section -->
         <div class="setting-section">
-            <h4><i class="pi pi-circle-fill"></i> وضع الإضاءة</h4>
+            <h4><i class="pi pi-sun"></i> وضع الإضاءة (الثيم)</h4>
             <div class="theme-options">
                 <div class="theme-option" [class.active]="currentTheme === 'light'" (click)="setTheme('light')">
                     <i class="pi pi-sun"></i>
@@ -28,9 +28,33 @@
 
         <div class="sidebar-divider"></div>
 
+        <!-- Button & Field Shape Section -->
+        <div class="setting-section">
+            <h4><i class="pi pi-sliders-v"></i> نمط وشكل الأزرار والحقول الموحد</h4>
+            <p class="section-hint">تغيير هذا الإعداد يطبق فوراً على كافة الأزرار وحقول الإدخال في جميع الصفحات:</p>
+            <div class="button-shape-grid">
+                <div *ngFor="let opt of buttonShapeOptions" 
+                     class="button-shape-option" 
+                     [class.active]="currentButtonShape === opt.key"
+                     (click)="setButtonShape(opt.key)">
+                    <div class="shape-preview-box">
+                        <button class="preview-btn" [style.border-radius]="opt.radius">
+                            <span>زر</span>
+                        </button>
+                        <div class="preview-input" [style.border-radius]="opt.key === 'pill' ? '22px' : opt.radius">
+                            <span>حقل...</span>
+                        </div>
+                    </div>
+                    <span class="shape-name">{{ opt.name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-divider"></div>
+
         <!-- Color Palette Section -->
         <div class="setting-section">
-            <h4><i class="pi pi-circle-fill"></i> لون النظام الأساسي</h4>
+            <h4><i class="pi pi-sliders-h"></i> لون النظام الأساسي</h4>
             <div class="color-grid">
                 <div *ngFor="let opt of colorOptions"
                      class="color-option"

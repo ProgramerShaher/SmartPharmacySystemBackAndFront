@@ -1,141 +1,11 @@
 /* medicine-list.component.scss - Premium Imperial Theme adapted for Medicines */
-
 @import "primeflex/primeflex.css";
 
 :host {
   display: block;
 }
 
-.statement-container {
-  padding: 0.75rem;
-  background: transparent;
-  min-height: calc(100vh - 70px);
-  color: var(--text-color, #1e293b);
-}
-
-/* ═══════════ Imperial Search Bar ═══════════ */
-.imperial-search-bar {
-  .search-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--card-bg, #ffffff);
-    padding: 0.6rem 1rem;
-    border-radius: 12px;
-    border: var(--card-border, 1px solid rgba(0, 0, 0, 0.08));
-    box-shadow: var(--shadow-sm);
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    backdrop-filter: var(--glass-blur, blur(10px));
-  }
-
-  .flex-align {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .search-icon-badge {
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 8px;
-    background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
-    color: var(--primary-color, #10b981);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
-
-  .search-input-wrapper {
-    flex: 1;
-    max-width: 28rem;
-    min-width: 0;
-
-    .search-label {
-      display: block;
-      font-size: 0.68rem;
-      font-weight: 800;
-      color: var(--text-color-secondary);
-      margin-bottom: 0.2rem;
-    }
-  }
-
-  .action-buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-}
-
-/* Premium Primary Button override */
-.imperial-btn-primary {
-  background: linear-gradient(135deg, var(--primary-600, #059669), var(--primary-400, #34d399)) !important;
-  border: none !important;
-  color: #fff !important;
-  font-weight: 700 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 2px 4px rgba(var(--primary-rgb), 0.15);
-  transition: transform 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.25);
-  }
-}
-
-/* ═══════════ Ledger Table Wrapper ═══════════ */
-.ledger-card-wrapper {
-  background: var(--card-bg, #ffffff);
-  border-radius: 12px;
-  border: var(--card-border, 1px solid rgba(0,0,0,0.08));
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  backdrop-filter: var(--glass-blur, blur(10px));
-}
-
-::ng-deep .imperial-statement-table {
-  .p-datatable-thead > tr > th {
-    background: var(--table-header-bg, var(--surface-hover, #f4f6f9)) !important;
-    color: var(--text-color-secondary) !important;
-    font-size: 0.72rem;
-    font-weight: 800;
-    padding: 0.55rem 0.75rem;
-    border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
-    vertical-align: bottom;
-    line-height: 1.2;
-    text-align: right !important;
-
-    .header-subtext {
-      font-size: 0.6rem;
-      font-weight: 500;
-      opacity: 0.75;
-      margin-top: 0.1rem;
-    }
-  }
-
-  .p-datatable-tbody > tr > td {
-    padding: 0.45rem 0.75rem;
-    font-size: 0.78rem;
-    border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.04)) !important;
-    vertical-align: middle;
-    color: var(--text-color);
-    text-align: right !important;
-  }
-
-  .p-datatable-thead > tr > th.text-center,
-  .p-datatable-tbody > tr > td.text-center {
-    text-align: center !important;
-  }
-
-  /* Table column colors */
-  .th-primary { color: var(--primary-color) !important; background: rgba(var(--primary-rgb, 16, 185, 129), 0.04) !important; }
-}
-
-/* Chips and Units */
+/* Units list styling inside medicine table and cards */
 .medicine-units-list {
   display: flex;
   flex-direction: column;
@@ -146,69 +16,191 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--surface-hover, #f8fafc);
-  padding: 0.3rem 0.5rem;
+  background: var(--surface-hover);
+  padding: 0.35rem 0.6rem;
   border-radius: 6px;
-  border: 1px solid var(--border-color, rgba(0,0,0,0.04));
+  border: 1px solid var(--border-color);
   font-size: 0.75rem;
-  
+  color: var(--text-color);
+
   .unit-name {
     font-weight: 800;
-    color: var(--text-color);
-    background: rgba(var(--primary-rgb, 16, 185, 129), 0.1);
-    color: var(--primary-color, #10b981);
-    padding: 0.1rem 0.4rem;
+    background: rgba(var(--primary-rgb), 0.12);
+    color: var(--primary-color);
+    padding: 0.15rem 0.45rem;
     border-radius: 4px;
-    font-size: 0.65rem;
+    font-size: 0.68rem;
   }
-  
+
   .unit-price {
-    font-family: monospace;
+    font-family: monospace, var(--font-family);
     font-weight: 700;
   }
-  
+
   .unit-stock {
     font-weight: 800;
-    color: #0ea5e9;
+    color: var(--info-color, #0ea5e9);
   }
 }
 
-/* Badges */
-.status-badge {
-  font-size: 0.64rem;
-  font-weight: 800;
-  padding: 0.15rem 0.45rem;
-  border-radius: 4px;
+.empty-table-placeholder {
+  text-align: center;
+  padding: 3rem 1rem !important;
+  color: var(--text-color-secondary);
 
-  &.active { background: rgba(16,185,129,0.08); color: #10b981; border: 1px solid rgba(16,185,129,0.15); }
-  &.inactive { background: rgba(239,68,68,0.08); color: #ef4444; border: 1px solid rgba(239,68,68,0.15); }
+  i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+  }
 }
 
-.inventory-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.1rem 0.4rem;
-  border-radius: 4px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  
-  &.green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-  &.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-  &.gray { background: rgba(100, 116, 139, 0.1); color: #64748b; }
-  &.indigo { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
+.statement-container {
+  padding: 0 0.5rem 0.2rem 0.5rem !important;
+  /* إزالة الـ padding العلوي تماماً لتقليل الـ margin */
+  height: calc(100vh - 85px) !important;
+  /* تحديد الارتفاع بدقة بناءً على الشاشة */
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  /* يمنع تحرك الصفحة بأكملها */
+  transition: padding-bottom 0.3s ease;
+
+  &.has-action-bar {
+    padding-bottom: 90px !important;
+  }
 }
 
-.fadein {
-  animation: fadeIn 0.3s ease-out forwards;
+.imperial-search-bar {
+  margin-bottom: 0.25rem !important;
+  /* تقليل المسافة بين صندوق البحث والجدول */
+  flex-shrink: 0;
+  /* منع تصغير صندوق البحث */
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+.ledger-card-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+::ng-deep .imperial-statement-table {
+  .p-datatable-wrapper {
+    overflow-x: auto;
+  }
 }
 
 /* =========================================
-   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   Bottom Action Bar & Row Selection
+   ========================================= */
+
+::ng-deep .imperial-statement-table {
+  .p-datatable-tbody>tr {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+      background-color: rgba(var(--primary-rgb, 16, 185, 129), 0.05) !important;
+    }
+
+    &.active-row {
+      background-color: rgba(var(--primary-rgb, 16, 185, 129), 0.1) !important;
+      position: relative;
+
+      td {
+        border-bottom-color: var(--primary-color) !important;
+      }
+    }
+  }
+}
+
+.imperial-data-card {
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+
+  &.active-card {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 4px 15px rgba(var(--primary-rgb, 16, 185, 129), 0.15) !important;
+    transform: translateY(-2px);
+  }
+}
+
+/* Floating Action Dock */
+.floating-action-dock {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%) translateY(150px);
+  background: rgba(var(--surface-a-rgb, 255, 255, 255), 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+  border-radius: 50px;
+  padding: 0.5rem 1.5rem;
+  z-index: 1000;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  direction: rtl;
+  opacity: 0;
+  visibility: hidden;
+
+  :host-context(.dark-theme) &,
+  .dark-theme & {
+    background: rgba(var(--surface-a-rgb, 30, 30, 30), 0.85);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  }
+
+  &.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .action-buttons {
+    margin: 0;
+  }
+
+  .action-btn {
+    width: 2.7rem !important;
+    height: 2.7rem !important;
+    transition: transform 0.2s, background-color 0.2s;
+    font-size: 1.1rem;
+
+    &:hover {
+      transform: scale(1.15);
+      background-color: var(--surface-hover);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--surface-border);
+    margin: 0 0.25rem;
+  }
+
+  .close-btn {
+    width: 2.7rem !important;
+    height: 2.7rem !important;
+    color: var(--text-color-secondary);
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: var(--surface-hover);
+      color: var(--text-color);
+      transform: rotate(90deg);
+    }
+  }
+}
+
+/* =========================================
+   RESPONSIVE MOBILE OVERRIDES
    ========================================= */
 @media (max-width: 768px) {
   .statement-container {
@@ -220,7 +212,7 @@
       flex-direction: column !important;
       align-items: stretch !important;
       padding: 8px 10px !important;
-      border-radius: 8px !important;
+      border-radius: var(--btn-border-radius, 8px) !important;
       gap: 6px !important;
     }
 
@@ -242,39 +234,51 @@
 
     .action-buttons {
       width: 100% !important;
+      justify-content: center !important;
+      flex-wrap: wrap !important;
+      gap: 0.5rem !important;
+
       button {
-        width: 100% !important;
-        height: 32px !important;
-        font-size: 11px !important;
+        flex: 0 0 auto !important;
       }
     }
   }
 
   .ledger-card-wrapper {
-    border-radius: 8px !important;
+    border-radius: var(--btn-border-radius, 8px) !important;
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
   }
 
-  /* تحويل جدول دليل الأدوية إلى كروت تطبيق موبايل */
+  /* تحويل جدول دليل الأدوية إلى كروت تطبيق موبايل متوافقة 100% مع الثيم الداكن */
   ::ng-deep .imperial-statement-table {
-    table, thead, tbody, th, td, tr {
+
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
       display: block !important;
       width: 100% !important;
       box-sizing: border-box !important;
     }
+
     thead {
       display: none !important;
     }
+
     tr {
       margin-bottom: 8px !important;
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 8px !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: var(--btn-border-radius, 8px) !important;
       padding: 8px !important;
-      background: #ffffff !important;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+      background: var(--card-bg) !important;
+      color: var(--text-color) !important;
+      box-shadow: var(--shadow-sm) !important;
     }
+
     td {
       border-bottom: none !important;
       padding: 4px 0 !important;
@@ -282,30 +286,57 @@
       justify-content: space-between !important;
       align-items: center !important;
       font-size: 11px !important;
+      color: var(--text-color) !important;
 
-      &:nth-child(1) { display: none !important; } /* Hide number */
-      &:nth-child(2):before { content: "المنتج الدوائي:"; font-weight: 700; color: #64748b; }
-      &:nth-child(3):before { content: "معلومات الصنف:"; font-weight: 700; color: #64748b; }
-      &:nth-child(4) {
+      &:nth-child(1) {
+        display: none !important;
+      }
+
+      &:nth-child(2):before {
+        content: "الكود:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(3):before {
+        content: "المنتج الدوائي:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(4):before {
+        content: "معلومات الصنف:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(5) {
         flex-direction: column !important;
         align-items: stretch !important;
         margin-top: 4px !important;
-        background: #f8fafc !important;
+        background: var(--surface-hover) !important;
         padding: 6px !important;
         border-radius: 6px !important;
-        &:before { content: "هيكلة الأسعار والوحدات:"; font-weight: 700; color: #64748b; margin-bottom: 4px; }
-      }
-      &:nth-child(5):before { content: "إجمالي المخزون:"; font-weight: 700; color: #64748b; }
-      &:nth-child(6):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
-      &:nth-child(7) {
-        justify-content: center !important;
-        margin-top: 6px !important;
-        border-top: 1px dashed #e2e8f0 !important;
-        padding-top: 6px !important;
-        .flex {
-          width: 100% !important;
-          justify-content: space-around !important;
+        border: 1px solid var(--border-color) !important;
+
+        &:before {
+          content: "هيكلة الأسعار والوحدات:";
+          font-weight: 700;
+          color: var(--text-color-secondary);
+          margin-bottom: 4px;
         }
+      }
+
+      &:nth-child(6):before {
+        content: "إجمالي المخزون:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(7):before {
+        content: "الحالة:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
       }
     }
 
@@ -314,8 +345,23 @@
       padding: 0.2rem !important;
     }
   }
+
+  /* Mobile overrides for floating dock */
+  .floating-action-dock {
+    padding: 0.5rem 1rem;
+    bottom: 20px;
+    width: 90%;
+
+    .action-buttons {
+      justify-content: center;
+      gap: 0.25rem !important;
+
+      .action-btn,
+      .close-btn {
+        width: 2.2rem !important;
+        height: 2.2rem !important;
+        font-size: 1rem;
+      }
+    }
+  }
 }
-
-
-
-

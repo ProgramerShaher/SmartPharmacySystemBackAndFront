@@ -1,56 +1,67 @@
-<div class="statement-container fadein" dir="rtl">
+<div class="statement-container fadein" dir="rtl" [class.has-action-bar]="activeMedicine">
 
     <!-- ═══════════ Imperial Search Bar ═══════════ -->
-    <div class="imperial-search-bar mb-3">
-        <div class="search-content">
-            <div class="flex-align">
-                <div class="search-icon-badge">
+    <div class="imperial-search-bar">
+        <div class="search-content py-2 px-3">
+            <div class="flex-align" style="align-items: flex-end;">
+                <div class="search-icon-badge" style="margin-bottom: 2px;">
                     <i class="pi pi-search"></i>
                 </div>
                 <div class="search-input-wrapper">
-                    <label class="search-label">بحث وتصفية دليل الأدوية</label>
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-search text-500" style="left: 0.75rem; right: auto;"></i>
+                    <label class="search-label font-bold text-xs mb-1 block text-500">بحث</label>
+                    <span class="p-input-icon-right w-full">
+                        <i class="pi pi-search"></i>
                         <input pInputText type="text" (input)="onSearch($any($event.target).value)"
-                            placeholder="بحث سريع بالاسم، الكود، الباركود..."
-                            class="w-full p-inputtext-sm"
-                            style="padding-right: 2rem; border-radius: 8px;" />
+                            placeholder="الاسم، الكود، الباركود..." class="w-full p-inputtext-sm" />
                     </span>
                 </div>
-                <div class="search-input-wrapper" style="max-width: 15rem;">
-                    <label class="search-label">تصفية بالحالة</label>
+                <div class="search-input-wrapper" style="max-width: 12rem;">
+                    <label class="search-label font-bold text-xs mb-1 block text-500">الحالة</label>
                     <p-dropdown [options]="statusOptions" [ngModel]="status()"
-                        (ngModelChange)="status.set($event); loadMedicines({first:0, rows:10})"
-                        placeholder="الكل" styleClass="w-full p-dropdown-sm" appendTo="body"></p-dropdown>
+                        (ngModelChange)="status.set($event); loadMedicines({first:0, rows:10})" placeholder="الكل"
+                        styleClass="w-full p-dropdown-sm" appendTo="body"></p-dropdown>
                 </div>
             </div>
             <div class="action-buttons flex gap-2 align-items-center">
-                <button pButton label="تحميل قالب الإكسل" icon="pi pi-download" (click)="downloadTemplate()"
-                    class="p-button-outlined p-button-sm px-3"></button>
-                
-                <div class="relative">
-                    <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;">
-                    <button pButton label="استيراد من إكسل" icon="pi pi-upload" 
-                        (click)="fileInput.click()" [loading]="isImporting()"
-                        class="p-button-secondary p-button-sm px-3"></button>
+                <!-- Multi-View Switcher -->
+                <div class="view-switcher-group">
+                    <button type="button" class="view-btn p-2" [class.active]="viewMode() === 'table'"
+                        (click)="setViewMode('table')" pTooltip="عرض جدولي" tooltipPosition="bottom">
+                        <i class="pi pi-table"></i>
+                    </button>
+                    <button type="button" class="view-btn p-2" [class.active]="viewMode() === 'grid'"
+                        (click)="setViewMode('grid')" pTooltip="عرض كروت" tooltipPosition="bottom">
+                        <i class="pi pi-th-large"></i>
+                    </button>
                 </div>
 
-                <button *ngIf="selectedMedicines.length > 0" pButton label="حذف المحدد ({{selectedMedicines.length}})" icon="pi pi-trash"
-                    (click)="deleteSelectedMedicines()" class="p-button-danger p-button-sm px-3 mx-2"></button>
+                <div style="width: 1px; height: 24px; background: var(--surface-border); margin: 0 4px;"></div>
 
-                <button pButton label="إضافة دواء جديد" icon="pi pi-plus" (click)="openAddMedicine()"
-                    class="imperial-btn-primary p-button-sm px-4"></button>
+                <button pButton icon="pi pi-download" (click)="downloadTemplate()" pTooltip="تحميل قالب الإكسل"
+                    tooltipPosition="bottom" class="p-button-outlined p-button-secondary p-button-sm"></button>
+
+                <div class="relative">
+                    <input type="file" #fileInput (change)="onFileSelected($event)" accept=".xlsx, .xls"
+                        style="display: none;">
+                    <button pButton icon="pi pi-upload" (click)="fileInput.click()" pTooltip="استيراد من إكسل"
+                        tooltipPosition="bottom" [loading]="isImporting()"
+                        class="p-button-secondary p-button-sm"></button>
+                </div>
+
+                <button pButton icon="pi pi-plus" (click)="openAddMedicine()" pTooltip="إضافة دواء جديد"
+                    tooltipPosition="bottom" class="imperial-btn-primary p-button-sm"></button>
             </div>
         </div>
     </div>
 
-    <!-- ═══════════ Ledger Table Wrapper ═══════════ -->
-    <div class="ledger-card-wrapper">
+    <div *ngIf="viewMode() === 'table'" class="ledger-card-wrapper">
         <p-table #dt [value]="medicines()" [lazy]="true" (onLazyLoad)="loadMedicines($event)" [paginator]="true"
             [rows]="10" [totalRecords]="totalRecords()" [loading]="loading()" [rowHover]="true"
-            [(selection)]="selectedMedicines" dataKey="id"
-            responsiveLayout="scroll" styleClass="p-datatable-sm imperial-statement-table" dir="rtl">
-            
+            [showCurrentPageReport]="true" currentPageReportTemplate="الصفحة {currentPage} من {totalPages}"
+            [rowsPerPageOptions]="[10, 20, 50]" [(selection)]="selectedMedicines"
+            (selectionChange)="onSelectionChange()" dataKey="id" [rowSelectable]="isRowSelectable" [scrollable]="true"
+            scrollHeight="calc(100vh - 310px)" styleClass="p-datatable-sm imperial-statement-table" dir="rtl">
+
             <ng-template pTemplate="header">
                 <tr>
                     <th style="width: 3rem"><p-tableHeaderCheckbox></p-tableHeaderCheckbox></th>
@@ -72,42 +83,57 @@
                         <div class="header-subtext">بالوحدة الأساسية</div>
                     </th>
                     <th class="text-center" style="width: 5rem">الحالة</th>
-                    <th class="text-center" style="width: 8rem">الإجراءات</th>
                 </tr>
             </ng-template>
 
             <ng-template pTemplate="body" let-medicine let-i="rowIndex">
-                <tr>
-                    <td><p-tableCheckbox [value]="medicine"></p-tableCheckbox></td>
+                <tr (click)="onRowClick(medicine, $event)" [class.active-row]="activeMedicine?.id === medicine.id">
+                    <td style="position: relative;">
+                        <div class="flex align-items-center gap-2">
+                            <p-tableCheckbox *ngIf="medicine.totalStock === 0" [value]="medicine"></p-tableCheckbox>
+
+                            <!-- زر الحذف العائم فوق الصف المحدد (يظهر فقط إذا كان هناك صف واحد فقط محدد) -->
+                            <button *ngIf="selectedMedicines.length === 1 && selectedMedicines.includes(medicine)"
+                                pButton icon="pi pi-trash"
+                                class="p-button-rounded p-button-danger p-button-sm absolute fadein row-delete-btn"
+                                style="right: 2.5rem; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.2);"
+                                pTooltip="حذف الدواء" tooltipPosition="top"
+                                (click)="deleteMedicine(medicine); $event.stopPropagation()"></button>
+                        </div>
+                    </td>
                     <td class="col-num text-center">{{medicine.internalCode || '-'}}</td>
-                    
-                    <td>
-                        <div class="flex flex-column gap-1">
-                            <div class="flex align-items-center gap-2">
+
+                    <td class="text-center">
+                        <div class="flex flex-column gap-1 align-items-center justify-content-center">
+                            <div class="flex align-items-center justify-content-center gap-2 w-full">
                                 <span class="inventory-chip green">تجاري</span>
                                 <span class="font-bold text-900">{{medicine.name}}</span>
                             </div>
-                            <div class="flex align-items-center gap-2" *ngIf="medicine.scientificName">
+                            <div class="flex align-items-center justify-content-center gap-2 w-full"
+                                *ngIf="medicine.scientificName">
                                 <span class="inventory-chip blue">علمي</span>
                                 <span class="text-xs text-700 italic line-height-2">{{medicine.scientificName}}</span>
                             </div>
                         </div>
                     </td>
-                    
+
                     <td class="text-center">
                         <div class="flex flex-column gap-1 align-items-center">
                             <span class="inventory-chip green w-full justify-content-center" title="التصنيف">
                                 {{medicine.categoryName || 'عام'}}
                             </span>
-                            <span class="inventory-chip gray w-full justify-content-center font-mono" title="الكود الداخلي">
+                            <span class="inventory-chip gray w-full justify-content-center font-mono"
+                                title="الكود الداخلي">
                                 #{{medicine.internalCode}}
                             </span>
-                            <span *ngIf="medicine.defaultBarcode" class="inventory-chip blue w-full justify-content-center font-mono text-xs" title="الباركود">
+                            <span *ngIf="medicine.defaultBarcode"
+                                class="inventory-chip blue w-full justify-content-center font-mono text-xs cursor-pointer"
+                                title="نسخ الباركود" (click)="copyBarcode(medicine.defaultBarcode, $event)">
                                 <i class="pi pi-barcode ml-1 text-xs"></i> {{medicine.defaultBarcode}}
                             </span>
                         </div>
                     </td>
-                    
+
                     <td>
                         <div class="medicine-units-list">
                             <!-- الوحدة الأساسية -->
@@ -119,11 +145,13 @@
                                 <div class="flex gap-3">
                                     <div class="flex flex-column text-right">
                                         <span class="text-xs text-500">شراء</span>
-                                        <span class="unit-price text-red-500">{{ medicine.defaultPurchasePrice | number }}</span>
+                                        <span class="unit-price text-red-500">{{ medicine.defaultPurchasePrice | number
+                                            }}</span>
                                     </div>
                                     <div class="flex flex-column text-right">
                                         <span class="text-xs text-500">بيع</span>
-                                        <span class="unit-price text-teal-600">{{ medicine.defaultSalePrice | number }}</span>
+                                        <span class="unit-price text-teal-600">{{ medicine.defaultSalePrice | number
+                                            }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -137,56 +165,35 @@
                                     <div class="flex gap-3">
                                         <div class="flex flex-column text-right">
                                             <span class="text-xs text-500">شراء</span>
-                                            <span class="unit-price text-red-500">{{ u.defaultPurchasePrice | number }}</span>
+                                            <span class="unit-price text-red-500">{{ u.defaultPurchasePrice | number
+                                                }}</span>
                                         </div>
                                         <div class="flex flex-column text-right">
                                             <span class="text-xs text-500">بيع</span>
-                                            <span class="unit-price text-teal-600">{{ u.defaultSalePrice | number }}</span>
+                                            <span class="unit-price text-teal-600">{{ u.defaultSalePrice | number
+                                                }}</span>
                                         </div>
                                     </div>
                                 </div>
                             </ng-container>
                         </div>
                     </td>
-                    
+
                     <td class="text-center">
                         <span class="font-mono text-lg"
                             [ngClass]="((medicine.totalStock ?? medicine.totalQuantity ?? 0) <= medicine.reorderLevel) ? 'text-red-500 font-bold' : 'text-teal-600 font-bold'">
                             {{medicine.totalStock ?? medicine.totalQuantity ?? 0}}
                         </span>
-                        <div class="text-xs text-500 mt-1" *ngIf="((medicine.totalStock ?? medicine.totalQuantity ?? 0) <= medicine.reorderLevel)">
+                        <div class="text-xs text-500 mt-1"
+                            *ngIf="((medicine.totalStock ?? medicine.totalQuantity ?? 0) <= medicine.reorderLevel)">
                             <i class="pi pi-exclamation-triangle text-red-500"></i> إعادة الطلب
                         </div>
                     </td>
-                    
+
                     <td class="text-center">
-                        <span class="status-badge"
-                            [ngClass]="medicine.status === 'Active' ? 'active' : 'inactive'">
+                        <span class="status-badge" [ngClass]="medicine.status === 'Active' ? 'active' : 'inactive'">
                             {{medicine.status === 'Active' ? 'نشط' : 'خامل'}}
                         </span>
-                    </td>
-                    
-                    <td class="text-center">
-                        <div class="flex justify-content-center gap-1">
-                            <button pButton icon="pi pi-eye"
-                                class="p-button-text p-button-sm p-button-secondary p-0 w-2rem h-2rem"
-                                (click)="viewDetails(medicine); $event.stopPropagation()" pTooltip="التفاصيل"></button>
-                            <button pButton icon="pi pi-plus-circle"
-                                class="p-button-text p-button-sm p-button-success p-0 w-2rem h-2rem"
-                                (click)="openAddBatch(medicine); $event.stopPropagation()"
-                                pTooltip="توريد سريع"></button>
-                            <button *ngIf="(medicine.totalStock ?? medicine.totalQuantity ?? 0) > 0"
-                                pButton icon="pi pi-shopping-cart"
-                                class="p-button-text p-button-sm p-button-warning p-0 w-2rem h-2rem"
-                                (click)="quickSale(medicine); $event.stopPropagation()" pTooltip="بيع سريع"></button>
-                            <button pButton icon="pi pi-pencil"
-                                class="p-button-text p-button-sm p-button-info p-0 w-2rem h-2rem"
-                                (click)="editMedicine(medicine); $event.stopPropagation()" pTooltip="تعديل"></button>
-                            <button *ngIf="(medicine.totalStock ?? medicine.totalQuantity ?? 0) === 0" 
-                                pButton icon="pi pi-trash"
-                                class="p-button-text p-button-sm p-button-danger p-0 w-2rem h-2rem"
-                                (click)="deleteMedicine(medicine); $event.stopPropagation()" pTooltip="حذف"></button>
-                        </div>
                     </td>
                 </tr>
             </ng-template>
@@ -200,22 +207,142 @@
                 </tr>
             </ng-template>
         </p-table>
+        <!-- Grid View -->
+        <div *ngIf="viewMode() === 'grid'" class="ledger-card-wrapper">
+            <div class="imperial-cards-grid p-3" style="overflow-y: auto; flex: 1;">
+                <div *ngFor="let medicine of medicines()" class="imperial-data-card cursor-pointer"
+                    (click)="onRowClick(medicine, $event)" [class.active-card]="activeMedicine?.id === medicine.id">
+                    <!-- Card Top Row -->
+                    <div class="card-top-row">
+                        <div class="flex flex-column gap-1 text-right">
+                            <span class="card-title">{{ medicine.name }}</span>
+                            <span *ngIf="medicine.scientificName" class="text-xs italic"
+                                style="color: var(--text-color-secondary);">
+                                {{ medicine.scientificName }}
+                            </span>
+                            <div class="flex align-items-center gap-1 mt-1 flex-wrap">
+                                <span class="inventory-chip green">{{ medicine.categoryName || 'عام' }}</span>
+                                <span class="inventory-chip gray font-mono">#{{ medicine.internalCode }}</span>
+                                <span *ngIf="medicine.defaultBarcode"
+                                    class="inventory-chip blue font-mono cursor-pointer" title="نسخ الباركود"
+                                    (click)="copyBarcode(medicine.defaultBarcode, $event)">
+                                    <i class="pi pi-barcode ml-1 text-xs"></i>{{ medicine.defaultBarcode }}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="status-badge" [ngClass]="medicine.status === 'Active' ? 'good' : 'expired'">
+                            {{ medicine.status === 'Active' ? 'نشط' : 'خامل' }}
+                        </span>
+                    </div>
+
+                    <!-- Units & Prices -->
+                    <div class="card-fields-grid">
+                        <div class="card-field">
+                            <span class="field-label">الوحدة الأساسية</span>
+                            <span class="field-value">{{ medicine.baseUnitName || 'أساسية' }}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">إجمالي المخزون</span>
+                            <span class="qty-pill"
+                                [ngClass]="(medicine.totalQuantity ?? 0) === 0 ? 'danger' : 'success'">
+                                {{ medicine.totalQuantity ?? 0 }}
+                            </span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">سعر الشراء</span>
+                            <span class="field-value font-mono" style="color: var(--danger-color, #ef4444);">{{
+                                medicine.defaultPurchasePrice | number }}</span>
+                        </div>
+                        <div class="card-field">
+                            <span class="field-label">سعر البيع</span>
+                            <span class="field-value font-mono" style="color: var(--primary-color, #10b981);">{{
+                                medicine.defaultSalePrice | number }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Sub Units if any -->
+                    <div *ngIf="medicine.medicineUnits?.length" class="mb-2">
+                        <div class="text-xs font-bold mb-1" style="color: var(--text-color-secondary);">وحدات التعبئة
+                            الأخرى:</div>
+                        <div class="flex flex-wrap gap-1">
+                            <span *ngFor="let u of medicine.medicineUnits" class="inventory-chip gray text-xs">
+                                {{ u.name }} (x{{ u.conversionFactor }}): <strong class="text-primary">{{
+                                    u.defaultSalePrice
+                                    | number }}</strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div *ngIf="medicines().length === 0" class="col-12 text-center p-5 w-full">
+                    <div class="flex flex-column align-items-center text-500">
+                        <i class="pi pi-box text-4xl mb-3" style="color: var(--primary-color);"></i>
+                        <span class="font-bold text-lg" style="color: var(--text-color);">لا توجد أدوية مسجلة</span>
+                        <span class="text-sm mt-1" style="color: var(--text-color-secondary);">قم بإضافة دواء جديد أو
+                            استيراد من ملف إكسل.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paginator for Grid -->
+            <p-paginator [rows]="10" [totalRecords]="totalRecords()" [rowsPerPageOptions]="[10, 20, 50]"
+                [showCurrentPageReport]="true" currentPageReportTemplate="الصفحة {currentPage} من {totalPages}"
+                (onPageChange)="loadMedicines($event)"></p-paginator>
+        </div>
+
+        <!-- ═══════════ Floating Action Dock ═══════════ -->
+        <div class="floating-action-dock" [class.show]="activeMedicine">
+            <div class="action-buttons flex align-items-center gap-2" *ngIf="activeMedicine">
+                <button pButton icon="pi pi-eye" class="p-button-rounded p-button-secondary p-button-text action-btn"
+                    pTooltip="التفاصيل" tooltipPosition="top" (click)="viewDetails(activeMedicine)"></button>
+
+                <button pButton icon="pi pi-plus-circle"
+                    class="p-button-rounded p-button-success p-button-text action-btn" pTooltip="توريد سريع"
+                    tooltipPosition="top" (click)="openAddBatch(activeMedicine)"></button>
+
+                <button *ngIf="(activeMedicine.totalStock ?? activeMedicine.totalQuantity ?? 0) > 0" pButton
+                    icon="pi pi-shopping-cart" class="p-button-rounded p-button-warning p-button-text action-btn"
+                    pTooltip="بيع سريع" tooltipPosition="top" (click)="quickSale(activeMedicine)"></button>
+
+                <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-info p-button-text action-btn"
+                    pTooltip="تعديل" tooltipPosition="top" (click)="editMedicine(activeMedicine)"></button>
+
+                <button *ngIf="(activeMedicine.totalStock ?? activeMedicine.totalQuantity ?? 0) === 0" pButton
+                    icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text action-btn" pTooltip="حذف"
+                    tooltipPosition="top" (click)="deleteMedicine(activeMedicine)"></button>
+
+                <div class="divider"></div>
+
+                <button pButton icon="pi pi-times" class="p-button-rounded p-button-plain p-button-text close-btn"
+                    pTooltip="إغلاق" tooltipPosition="top" (click)="closeActionBar()"></button>
+            </div>
+        </div>
+        <!-- ═══════════ Floating Center Bulk Delete ═══════════ -->
+        <div *ngIf="selectedMedicines.length > 1" class="fixed fadein flex flex-column align-items-center gap-2"
+            style="top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 9999;">
+            <button id="bulkDeleteBtnCenter" pButton icon="pi pi-trash"
+                class="p-button-rounded p-button-danger shadow-4" style="width: 4rem; height: 4rem; font-size: 1.8rem;"
+                (click)="deleteSelectedMedicines()" pTooltip="حذف المحدد" tooltipPosition="top"></button>
+            <span class="surface-0 px-3 py-1 border-round shadow-1 font-bold text-red-500">حذف
+                {{selectedMedicines.length}} أدوية</span>
+        </div>
     </div>
-</div>
 
-<p-confirmDialog [style]="{width: '450px'}" acceptLabel="نعم، احذف" rejectLabel="إلغاء"></p-confirmDialog>
-<p-toast></p-toast>
+    <p-confirmDialog [style]="{width: '450px'}" acceptLabel="نعم، احذف" rejectLabel="إلغاء"
+        defaultFocus="accept"></p-confirmDialog>
+    <p-toast></p-toast>
 
-<!-- Details Modal -->
-<app-medicine-details-modal [(visible)]="showDetailsDialog" [medicineId]="selectedMedicineId()">
-</app-medicine-details-modal>
+    <!-- Details Modal -->
+    <app-medicine-details-modal [(visible)]="showDetailsDialog" [medicineId]="selectedMedicineId()">
+    </app-medicine-details-modal>
 
-<!-- Add/Edit Medicine Dialog -->
-<app-medicine-add-edit [(visible)]="showMedicineDialog" [medicine]="selectedMedicine! || null"
-    (onSave)="onMedicineSaved()">
-</app-medicine-add-edit>
+    <!-- Add/Edit Medicine Dialog -->
+    <app-medicine-add-edit [(visible)]="showMedicineDialog" [medicine]="selectedMedicine! || null"
+        (onSave)="onMedicineSaved()">
+    </app-medicine-add-edit>
 
-<!-- Add Batch Dialog -->
-<app-batch-add-edit [(visible)]="showBatchDialog" [medicineId]="selectedMedicineIdForBatch"
-    [medicineName]="selectedMedicineNameForBatch" (onSave)="onBatchSaved()">
-</app-batch-add-edit>
+    <!-- Add Batch Dialog -->
+    <app-batch-add-edit [(visible)]="showBatchDialog" [medicineId]="selectedMedicineIdForBatch"
+        [medicineName]="selectedMedicineNameForBatch" (onSave)="onBatchSaved()">
+    </app-batch-add-edit>

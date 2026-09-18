@@ -22,8 +22,8 @@ public class EmployeePerformanceReportDto
     public decimal TotalReturns { get; set; }
     public int SalesReturnCount { get; set; }
     public decimal NetSales => TotalSales - TotalReturns;
-    public int ItemsSold { get; set; }
-    public int ItemsReturned { get; set; }
+    public decimal ItemsSold { get; set; }
+    public decimal ItemsReturned { get; set; }
     public List<EmployeePerformanceSummaryDto> Employees { get; set; } = new();
     public List<EmployeeSalesInvoiceDto> SaleInvoices { get; set; } = new();
     public List<EmployeeSalesReturnDto> SalesReturns { get; set; } = new();
@@ -38,10 +38,10 @@ public class EmployeePerformanceSummaryDto
     public string RoleName { get; set; } = string.Empty;
     public decimal TotalSales { get; set; }
     public int SalesInvoiceCount { get; set; }
-    public int ItemsSold { get; set; }
+    public decimal ItemsSold { get; set; }
     public decimal TotalReturns { get; set; }
     public int SalesReturnCount { get; set; }
-    public int ItemsReturned { get; set; }
+    public decimal ItemsReturned { get; set; }
     public decimal NetSales => TotalSales - TotalReturns;
 }
 
@@ -57,7 +57,7 @@ public class EmployeeSalesInvoiceDto
     public string? CustomerName { get; set; }
     public string PaymentMethod { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
-    public int ItemsCount { get; set; }
+    public decimal ItemsCount { get; set; }
     public List<EmployeeOperationItemDto> Items { get; set; } = new();
 }
 
@@ -74,7 +74,7 @@ public class EmployeeSalesReturnDto
     public string? CustomerName { get; set; }
     public string? Reason { get; set; }
     public decimal TotalAmount { get; set; }
-    public int ItemsCount { get; set; }
+    public decimal ItemsCount { get; set; }
     public List<EmployeeOperationItemDto> Items { get; set; } = new();
 }
 
@@ -84,7 +84,7 @@ public class EmployeeOperationItemDto
     public string MedicineName { get; set; } = string.Empty;
     public int BatchId { get; set; }
     public string? BatchNumber { get; set; }
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalAmount { get; set; }
 }

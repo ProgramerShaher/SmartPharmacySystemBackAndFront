@@ -39,16 +39,16 @@ public class MedicineBatch : BaseMultiBranchEntity
     /// إجمالي الكمية المشتراة في هذه الدفعة.
     /// </summary>
     [Required]
-    [Range(0, int.MaxValue)]
-    public int Quantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// Remaining quantity available for sale.
     /// الكمية المتبقية المتاحة للبيع.
     /// </summary>
     [Required]
-    [Range(0, int.MaxValue)]
-    public int RemainingQuantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal RemainingQuantity { get; set; }
 
     /// <summary>
     /// Unit purchase price for this batch.
@@ -190,8 +190,8 @@ public class MedicineBatch : BaseMultiBranchEntity
     /// إجمالي الكمية المباعة من هذه الدفعة.
     /// </summary>
     [Required]
-    [Range(0, int.MaxValue)]
-    public int SoldQuantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal SoldQuantity { get; set; }
 
     // ===================== Business Logic Methods =====================
 

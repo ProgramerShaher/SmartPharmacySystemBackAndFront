@@ -1,329 +1,148 @@
-/* category-list.component.scss */
+/* category-list.component.scss - Premium Imperial Theme adapted for Categories */
+@import "primeflex/primeflex.css";
+
 :host {
-    .inventory-page {
-        padding: 0.5rem !important;
-        zoom: 0.85; /* تصغير متناسق ومقبول */
-    }
-
-    .inventory-hero {
-        padding: 0.5rem 1rem !important;
-        margin-bottom: 0.5rem !important;
-        gap: 0.5rem !important;
-
-        .inventory-title {
-            h1 {
-                font-size: 1.1rem !important;
-                margin: 0 0 0.25rem 0 !important;
-            }
-
-            p {
-                font-size: 0.8rem !important;
-                margin: 0 !important;
-            }
-
-            .inventory-icon {
-                width: 32px !important;
-                height: 32px !important;
-
-                i {
-                    font-size: 1.1rem !important;
-                }
-            }
-        }
-    }
-
-    .inventory-filter-panel {
-        padding: 0.5rem 1rem !important;
-        margin-bottom: 0.5rem !important;
-
-        .inventory-filter label {
-            font-size: 0.8rem !important;
-            margin-bottom: 0.25rem !important;
-        }
-    }
-
-    ::ng-deep {
-        .p-button {
-            padding: 0.4rem 0.8rem !important;
-            font-size: 0.85rem !important;
-            height: auto !important;
-
-            .p-button-icon {
-                font-size: 0.85rem !important;
-            }
-        }
-
-        .p-inputtext {
-            padding: 0.4rem 0.8rem !important;
-            font-size: 0.85rem !important;
-            height: auto !important;
-        }
-
-        .pi {
-            color: inherit !important;
-            font-size: inherit !important;
-        }
-
-        .p-datatable-tbody>tr>td {
-            padding: 0.4rem 0.6rem !important;
-            font-size: 0.85rem !important;
-            height: auto !important;
-            text-align: right;
-        }
-
-        .p-datatable-thead>tr>th {
-            font-size: 0.8rem !important;
-            padding: 0.4rem 0.6rem !important;
-            text-transform: uppercase;
-            letter-spacing: 0.025em;
-            text-align: right;
-        }
-
-        .p-datatable-thead>tr>th.text-center,
-        .p-datatable-tbody>tr>td.text-center {
-            text-align: center !important;
-        }
-
-        .p-button-teal {
-            background-color: #0d9488 !important;
-            border-color: #0d9488 !important;
-            color: #ffffff !important;
-
-            &:hover {
-                background-color: #0f766e !important;
-                border-color: #0f766e !important;
-            }
-        }
-
-        .category-dialog .p-dialog-content {
-            padding: 0 !important;
-            border-radius: 1rem;
-            overflow: hidden;
-        }
-    }
+  display: block;
 }
 
-:host-context(.dark-theme) {
-    ::ng-deep {
+.empty-table-placeholder {
+  text-align: center;
+  padding: 3rem 1rem !important;
+  color: var(--text-color-secondary);
 
-        /* ========== إصلاح شريط البحث ========== */
-        .p-inputtext {
-            background-color: var(--input-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-color) !important;
-        }
-
-        .p-input-icon-left>i {
-            color: var(--text-color-secondary) !important;
-        }
-
-        /* ========== إصلاح الجدول ========== */
-        .p-datatable {
-            .p-datatable-thead>tr>th {
-                background-color: var(--table-header-bg) !important;
-                border-color: var(--border-color) !important;
-                color: var(--text-color) !important;
-            }
-
-            .p-datatable-tbody>tr {
-                background-color: var(--card-bg) !important;
-                color: var(--text-color) !important;
-
-                >td {
-                    background-color: inherit !important;
-                    color: var(--text-color) !important;
-                    border-color: var(--border-color) !important;
-                }
-
-                &:nth-child(even) {
-                    background-color: var(--surface-50) !important;
-                }
-
-                &:hover {
-                    background-color: var(--surface-hover) !important;
-                }
-            }
-        }
-
-        /* ========== إصلاح Paginator ========== */
-        .p-paginator {
-            background-color: var(--card-bg) !important;
-            border-color: var(--border-color) !important;
-            color: var(--text-color) !important;
-
-            .p-paginator-pages .p-paginator-page {
-                background-color: transparent !important;
-                border-color: var(--border-color) !important;
-                color: var(--text-color) !important;
-
-                &:hover:not(.p-disabled) {
-                    background-color: var(--surface-hover) !important;
-                }
-
-                &.p-highlight {
-                    background-color: var(--primary-color) !important;
-                    color: white !important;
-                    border-color: var(--primary-color) !important;
-                }
-            }
-
-            .p-paginator-first,
-            .p-paginator-prev,
-            .p-paginator-next,
-            .p-paginator-last {
-                background-color: transparent !important;
-                border-color: var(--border-color) !important;
-                color: var(--text-color) !important;
-
-                &:hover:not(.p-disabled) {
-                    background-color: var(--surface-hover) !important;
-                }
-            }
-        }
-
-        /* ========== إصلاح الأزرار ========== */
-        .p-button.p-button-outlined {
-            border-color: var(--border-color) !important;
-            color: var(--text-color) !important;
-
-            &:hover {
-                background-color: var(--surface-hover) !important;
-            }
-        }
-
-        /* ========== إصلاح شريط الأدوات ========== */
-        .p-toolbar {
-            background-color: var(--surface-50) !important;
-            border-color: var(--border-color) !important;
-        }
-    }
+  i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+  }
 }
 
 /* =========================================
-   RESPONSIVE DESIGN (MOBILE APP FEEL)
+   RESPONSIVE MOBILE OVERRIDES
    ========================================= */
 @media (max-width: 768px) {
-    .inventory-page {
-        padding: 6px !important;
+  .statement-container {
+    padding: 6px !important;
+  }
+
+  .imperial-search-bar {
+    .search-content {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      padding: 8px 10px !important;
+      border-radius: var(--btn-border-radius, 8px) !important;
+      gap: 6px !important;
     }
 
-    .inventory-hero {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 8px !important;
-        padding: 8px 10px !important;
-        border-radius: 8px !important;
-
-        .inventory-title {
-            .inventory-icon {
-                width: 32px !important;
-                height: 32px !important;
-                font-size: 14px !important;
-            }
-
-            h1 {
-                font-size: 15px !important;
-            }
-
-            p {
-                font-size: 10px !important;
-            }
-        }
-
-        .inventory-actions {
-            button {
-                width: 100% !important;
-                height: 32px !important;
-                font-size: 11px !important;
-            }
-        }
+    .flex-align {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 6px !important;
+      width: 100% !important;
     }
 
-    .inventory-filter-panel {
-        padding: 6px 8px !important;
-        border-radius: 8px !important;
-        margin-bottom: 6px !important;
-
-        .inventory-filter label {
-            font-size: 10px !important;
-        }
-
-        input {
-            height: 32px !important;
-            font-size: 11px !important;
-        }
+    .search-icon-badge {
+      display: none !important;
     }
 
-    .inventory-panel {
-        border-radius: 8px !important;
-        border: none !important;
-        box-shadow: none !important;
+    .search-input-wrapper {
+      max-width: 100% !important;
+      width: 100% !important;
     }
 
-    /* تحويل جدول الفئات إلى كروت للموبايل */
-    :host ::ng-deep .inventory-table {
+    .action-buttons {
+      width: 100% !important;
+      flex-wrap: wrap;
 
-        table,
-        thead,
-        tbody,
-        th,
-        td,
-        tr {
-            display: block !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
-
-        thead {
-            display: none !important;
-        }
-
-        tr {
-            margin-bottom: 8px !important;
-            border: 1px solid #e2e8f0 !important;
-            border-radius: 8px !important;
-            padding: 8px !important;
-            background: #ffffff !important;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
-        }
-
-        td {
-            border-bottom: none !important;
-            padding: 4px 0 !important;
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            font-size: 11px !important;
-
-            &:nth-child(1):before {
-                content: "رقم الفئة:";
-                font-weight: 700;
-                color: #64748b;
-            }
-
-            &:nth-child(2):before {
-                content: "اسم الفئة:";
-                font-weight: 700;
-                color: #64748b;
-            }
-
-            &:nth-child(3):before {
-                content: "الوصف:";
-                font-weight: 700;
-                color: #64748b;
-            }
-
-            &:nth-child(4) {
-                justify-content: center !important;
-                margin-top: 6px !important;
-                border-top: 1px dashed #e2e8f0 !important;
-                padding-top: 6px !important;
-            }
-        }
-
-        .p-paginator {
-            font-size: 10px !important;
-            padding: 0.2rem !important;
-        }
+      button {
+        flex: 1;
+        height: 34px !important;
+        font-size: 11px !important;
+      }
     }
+  }
+
+  .ledger-card-wrapper {
+    border-radius: var(--btn-border-radius, 8px) !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  ::ng-deep .imperial-statement-table {
+
+    table,
+    thead,
+    tbody,
+    th,
+    td,
+    tr {
+      display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
+    }
+
+    thead {
+      display: none !important;
+    }
+
+    tr {
+      margin-bottom: 8px !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: var(--btn-border-radius, 8px) !important;
+      padding: 8px !important;
+      background: var(--card-bg) !important;
+      color: var(--text-color) !important;
+      box-shadow: var(--shadow-sm) !important;
+    }
+
+    td {
+      border-bottom: none !important;
+      padding: 4px 0 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      font-size: 11px !important;
+      color: var(--text-color) !important;
+
+      &:nth-child(1) {
+        display: none !important;
+      }
+
+      &:nth-child(2):before {
+        content: "رقم الفئة:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(3):before {
+        content: "اسم الفئة:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(4):before {
+        content: "الوصف:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(5):before {
+        content: "حالة الأدوية:";
+        font-weight: 700;
+        color: var(--text-color-secondary);
+      }
+
+      &:nth-child(6) {
+        justify-content: center !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed var(--border-color) !important;
+        padding-top: 6px !important;
+      }
+    }
+
+    .p-paginator {
+      font-size: 10px !important;
+      padding: 0.2rem !important;
+    }
+  }
 }

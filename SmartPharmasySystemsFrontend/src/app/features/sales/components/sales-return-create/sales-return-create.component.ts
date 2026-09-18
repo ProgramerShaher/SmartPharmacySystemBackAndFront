@@ -1,26 +1,24 @@
-import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SaleInvoiceService } from '../../services/sales-invoice.service';
 import { SalesReturnService } from '../../services/sales-return.service';
-import { SaleInvoice, SalesReturn, DocumentStatus } from '../../../../core/models';
+import { SaleInvoice, DocumentStatus } from '../../../../core/models';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TableModule } from 'primeng/table';
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { CardModule } from 'primeng/card';
 import { CalendarModule } from 'primeng/calendar';
 import { ToastModule } from 'primeng/toast';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { InputTextareaModule } from 'primeng/inputtextarea';
-import { SearchIcon } from 'primeng/icons/search';
+import { DialogModule } from 'primeng/dialog';
 
-interface ReturnItem {
+export interface ReturnItem {
     id: number; // SaleInvoiceDetailId
     medicineId: number;
     batchId: number;
@@ -45,25 +43,37 @@ interface ReturnItem {
         InputNumberModule,
         TableModule,
         AutoCompleteModule,
-        CardModule,
         CalendarModule,
         ToastModule,
         DividerModule,
         TagModule,
         TooltipModule,
-        InputTextareaModule
+        DialogModule
     ],
     templateUrl: './sales-return-create.component.html',
-    styleUrls: ['../sale-invoice-create/sale-invoice-create.component.scss'],
+    styleUrls: ['./sales-return-create.component.scss'],
     providers: [MessageService]
 })
-export class SalesReturnCreateComponent implements OnInit {
+export class SalesReturnCreateComponent implements OnInit, OnChanges {
+    // 🪟 Modal Inputs / Outputs
+    @Input() visible = false;
+    @Output() visibleChange = new EventEmitter<boolean>();
+    @Input() invoiceId: number | null = null;
+    @Output() onSaved = new EventEmitter<any>();
+
+    isRouted = false;
+    shortcutsHelpVisible = false;
+
     // 🎯 Signals
     returnItems = signal<ReturnItem[]>([]);
 
     // 💰 Computed total
     totalReturnAmount = computed(() =>
         this.returnItems().reduce((sum, item) => sum + item.totalReturnAmount, 0)
+    );
+
+    totalReturnQuantity = computed(() =>
+        this.returnItems().reduce((sum, item) => sum + (item.returnQuantity || 0), 0)
     );
 
     // 📋 State
@@ -85,10 +95,82 @@ export class SalesReturnCreateComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        // Check for invoiceId in query params (quick return from list)
-        const invoiceId = this.route.snapshot.queryParams['invoiceId'];
-        if (invoiceId) {
-            this.loadInvoiceForReturn(+invoiceId);
+        const qInvoiceId = this.route.snapshot.queryParams['invoiceId'];
+        const isCreateRoute = this.router.url.includes('/sales/returns/create');
+
+        if (isCreateRoute) {
+            this.isRouted = true;
+            this.visible = true;
+        }
+
+        if (qInvoiceId) {
+            this.loadInvoiceForReturn(+qInvoiceId);
+        } else if (this.invoiceId) {
+            this.loadInvoiceForReturn(this.invoiceId);
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['invoiceId'] && this.invoiceId) {
+            this.loadInvoiceForReturn(this.invoiceId);
+        }
+        if (changes['visible'] && this.visible) {
+            setTimeout(() => {
+                this.focusFirstInput();
+            }, 250);
+        }
+    }
+
+    focusFirstInput() {
+        const searchInput = document.getElementById('salesReturnInvoiceSearch') as HTMLInputElement;
+        if (searchInput) {
+            searchInput.focus();
+        }
+    }
+
+    // ⌨️ Keyboard Hotkeys
+    @HostListener('window:keydown', ['$event'])
+    handleKeyboardEvent(event: KeyboardEvent) {
+        if (!this.visible) return;
+
+        if (event.key === 'F1') {
+            event.preventDefault();
+            this.shortcutsHelpVisible = !this.shortcutsHelpVisible;
+            return;
+        }
+        if (event.key === 'F2' || (event.ctrlKey && event.key === 'Enter')) {
+            event.preventDefault();
+            if (!this.saving && this.selectedInvoice && !this.hasExceededQuantity && this.totalReturnAmount() > 0) {
+                this.approveReturn();
+            }
+            return;
+        }
+        if (event.key === 'F3') {
+            event.preventDefault();
+            if (!this.saving && this.selectedInvoice && this.totalReturnAmount() > 0) {
+                this.saveDraft();
+            }
+            return;
+        }
+        if (event.key === 'F4') {
+            event.preventDefault();
+            this.returnAllItems();
+            return;
+        }
+        if (event.key === 'F5') {
+            event.preventDefault();
+            this.resetQuantities();
+            return;
+        }
+        if (event.key === 'Escape') {
+            if (this.shortcutsHelpVisible) {
+                this.shortcutsHelpVisible = false;
+                event.preventDefault();
+                return;
+            }
+            event.preventDefault();
+            this.close();
+            return;
         }
     }
 
@@ -98,15 +180,13 @@ export class SalesReturnCreateComponent implements OnInit {
     searchInvoice(event: any) {
         const query = (event?.query ?? '').toString().trim();
 
-        // SaleInvoiceService.getAll expects an object (search/page/...) not a raw string
         this.salesService.getAll(query).subscribe({
             next: (invoices) => {
-                // Only show approved invoices
                 this.filteredInvoices = invoices.filter(
                     inv => this.isApprovedInvoice(inv)
                 );
             },
-            error: (err) => {
+            error: () => {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'خطأ',
@@ -118,10 +198,7 @@ export class SalesReturnCreateComponent implements OnInit {
 
     private isApprovedInvoice(invoice: SaleInvoice): boolean {
         const status: any = (invoice as any)?.status;
-
-        // Backend might return numeric enum (2) or string ("Approved")
         if (status === 'Approved') return true;
-
         const statusNum = Number(status);
         return statusNum === Number(DocumentStatus.Approved);
     }
@@ -130,7 +207,8 @@ export class SalesReturnCreateComponent implements OnInit {
      * 📋 Invoice selected
      */
     onInvoiceSelect(invoice: SaleInvoice) {
-        this.invoiceSearchQuery = invoice?.saleInvoiceNumber || '';
+        if (!invoice) return;
+        this.invoiceSearchQuery = invoice.saleInvoiceNumber || '';
         this.loadInvoiceForReturn(invoice.id);
     }
 
@@ -152,20 +230,16 @@ export class SalesReturnCreateComponent implements OnInit {
                 this.selectedInvoice = invoice;
                 this.invoiceSearchQuery = invoice?.saleInvoiceNumber || '';
 
-                // Map items to return items
-                const items: ReturnItem[] = invoice.items.map(item => {
-                    // Use backend provided remainingQtyToReturn directly as per requirement
-                    // If backend sends 0 or undefined, we fallback to 0 to prevent issues
-                    const remainingQty = item.remainingQtyToReturn !== undefined ? item.remainingQtyToReturn : 0;
-
+                const items: ReturnItem[] = (invoice.items || []).map(item => {
+                    const remainingQty = item.remainingQtyToReturn !== undefined ? item.remainingQtyToReturn : item.quantity;
                     return {
                         id: item.id,
                         medicineId: item.medicineId,
                         batchId: item.batchId,
                         medicineName: item.medicineName || 'Unknown',
-                        batchNumber: item.companyBatchNumber || '', // Correct property
+                        batchNumber: item.companyBatchNumber || '',
                         originalQuantity: item.quantity,
-                        returnedQuantity: item.quantity - remainingQty, // Infer returned qty if needed for display, or 0 if not tracking
+                        returnedQuantity: item.quantity - remainingQty,
                         remainingQtyToReturn: remainingQty,
                         returnQuantity: 0,
                         salePrice: item.salePrice,
@@ -174,8 +248,12 @@ export class SalesReturnCreateComponent implements OnInit {
                 });
 
                 this.returnItems.set(items);
+
+                setTimeout(() => {
+                    this.focusRowQuantity(0);
+                }, 200);
             },
-            error: (err) => {
+            error: () => {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'خطأ',
@@ -198,38 +276,99 @@ export class SalesReturnCreateComponent implements OnInit {
             item.returnQuantity = item.remainingQtyToReturn;
         }
 
-        item.totalReturnAmount = item.returnQuantity * item.salePrice;
-
-        // Trigger signal update
+        item.totalReturnAmount = (item.returnQuantity || 0) * item.salePrice;
         this.returnItems.set([...this.returnItems()]);
     }
 
     /**
-     * ✅ Check if has exceeded quantity
+     * ⚡ Return all items
      */
+    returnAllItems() {
+        const updated = this.returnItems().map(item => {
+            const qty = item.remainingQtyToReturn;
+            return {
+                ...item,
+                returnQuantity: qty,
+                totalReturnAmount: qty * item.salePrice
+            };
+        });
+        this.returnItems.set(updated);
+        this.messageService.add({
+            severity: 'info',
+            summary: 'إرجاع الكل',
+            detail: 'تم تحديد كامل الكميات المتاحة للإرجاع'
+        });
+    }
+
+    /**
+     * 🧹 Reset quantities
+     */
+    resetQuantities() {
+        const updated = this.returnItems().map(item => ({
+            ...item,
+            returnQuantity: 0,
+            totalReturnAmount: 0
+        }));
+        this.returnItems.set(updated);
+    }
+
+    /**
+     * ⌨️ Keyboard Navigation between Table Rows
+     */
+    onQtyKeydown(index: number, event: KeyboardEvent) {
+        if (event.key === 'ArrowDown' || event.key === 'Enter') {
+            event.preventDefault();
+            if (index < this.returnItems().length - 1) {
+                this.focusRowQuantity(index + 1);
+            } else {
+                const btn = document.getElementById('salesReturnApproveBtn');
+                if (btn) btn.focus();
+            }
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (index > 0) {
+                this.focusRowQuantity(index - 1);
+            } else {
+                const reasonInput = document.getElementById('salesReturnReason') as HTMLInputElement;
+                if (reasonInput) reasonInput.focus();
+            }
+        } else if (event.key === 'Tab' && !event.shiftKey) {
+            if (index < this.returnItems().length - 1) {
+                event.preventDefault();
+                this.focusRowQuantity(index + 1);
+            }
+        } else if (event.key === 'Tab' && event.shiftKey) {
+            if (index > 0) {
+                event.preventDefault();
+                this.focusRowQuantity(index - 1);
+            }
+        }
+    }
+
+    focusRowQuantity(index: number) {
+        setTimeout(() => {
+            const el = document.getElementById(`return_qty_${index}`) as HTMLInputElement;
+            if (el) {
+                el.focus();
+                el.select();
+            }
+        }, 50);
+    }
+
     get hasExceededQuantity(): boolean {
         return this.returnItems().some(item =>
             item.returnQuantity > item.remainingQtyToReturn
         );
     }
 
-    /**
-     * 💾 Save as draft
-     */
     saveDraft() {
         this.saveReturn(false);
     }
 
-    /**
-     * ✅ Approve return
-     */
     approveReturn() {
         this.saveReturn(true);
     }
 
-    /**
-     * 💾 Save return
-     */
     private saveReturn(approve: boolean) {
         if (!this.selectedInvoice) {
             this.messageService.add({
@@ -266,6 +405,8 @@ export class SalesReturnCreateComponent implements OnInit {
                 summary: 'تنبيه',
                 detail: 'يجب إدخال سبب الإرجاع'
             });
+            const rInput = document.getElementById('salesReturnReason');
+            if (rInput) rInput.focus();
             return;
         }
 
@@ -284,38 +425,37 @@ export class SalesReturnCreateComponent implements OnInit {
             }))
         };
 
-        const action$ = this.returnsService.create(payload);
-
-        action$.subscribe({
+        this.returnsService.create(payload).subscribe({
             next: (returnDoc) => {
                 if (approve) {
                     this.returnsService.approve(returnDoc.id).subscribe({
                         next: () => {
+                            this.saving = false;
                             this.messageService.add({
                                 severity: 'success',
                                 summary: 'نجاح',
                                 detail: 'تم اعتماد المرتجع بنجاح'
                             });
-                            this.router.navigate(['/sales/returns']);
+                            this.onSaved.emit(returnDoc);
+                            setTimeout(() => this.close(), 500);
                         },
                         error: (err) => this.handleError(err)
                     });
                 } else {
+                    this.saving = false;
                     this.messageService.add({
                         severity: 'success',
                         summary: 'نجاح',
                         detail: 'تم حفظ المرتجع كمسودة'
                     });
-                    this.router.navigate(['/sales/returns']);
+                    this.onSaved.emit(returnDoc);
+                    setTimeout(() => this.close(), 500);
                 }
             },
             error: (err) => this.handleError(err)
         });
     }
 
-    /**
-     * ⚠️ Handle errors
-     */
     private handleError(err: any) {
         this.saving = false;
         this.messageService.add({
@@ -325,10 +465,11 @@ export class SalesReturnCreateComponent implements OnInit {
         });
     }
 
-    /**
-     * 🔙 Go back
-     */
-    goBack() {
-        this.router.navigate(['/sales/returns']);
+    close() {
+        this.visible = false;
+        this.visibleChange.emit(false);
+        if (this.isRouted) {
+            this.router.navigate(['/sales/returns']);
+        }
     }
 }

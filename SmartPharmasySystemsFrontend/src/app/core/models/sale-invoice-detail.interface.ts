@@ -13,6 +13,9 @@ export interface SaleInvoiceDetail {
     salePrice: number;
     unitCost: number;
     totalLineAmount: number;
+    subtotal?: number;
+    taxRate?: number;
+    taxAmount?: number;
     totalCost: number;
     profit: number;
     remainingQtyToReturn: number; // Critical for Returns
@@ -28,5 +31,6 @@ export interface CreateSaleInvoiceDetailDto {
     quantity: number;
     salePrice: number; 
     saleUnitId?: number | null;
+    taxRate?: number;
     // UnitCost not sent from frontend, determined by backend
 }

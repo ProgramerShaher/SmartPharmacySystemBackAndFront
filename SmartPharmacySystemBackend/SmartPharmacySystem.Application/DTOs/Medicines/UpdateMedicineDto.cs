@@ -59,12 +59,12 @@ public class UpdateMedicineDto
     /// <summary>
     /// الحد الأدنى للتنبيه بالكمية
     /// </summary>
-    public int MinAlertQuantity { get; set; }
+    public decimal MinAlertQuantity { get; set; }
 
     /// <summary>
     /// نقطة إعادة الطلب
     /// </summary>
-    public int ReorderLevel { get; set; }
+    public decimal ReorderLevel { get; set; }
 
     /// <summary>
     /// هل يُباع بالوحدة
@@ -95,4 +95,19 @@ public class UpdateMedicineDto
     /// الوحدات المتعددة للدواء
     /// </summary>
     public List<MedicineUnitDto> MedicineUnits { get; set; } = new List<MedicineUnitDto>();
+
+    /// <summary>
+    /// رقم القطعة الأصلي للشركة المصنعة (OEM Part Number)
+    /// </summary>
+    public string? OemPartNumber { get; set; }
+
+    /// <summary>
+    /// رقم القطعة التجاري أو البديل من الشركة الصانعة (Manufacturer Part Number)
+    /// </summary>
+    public string? ManufacturerPartNumber { get; set; }
+
+    /// <summary>
+    /// الموديلات والمركبات المتوافقة (Compatible Vehicles / Models)
+    /// </summary>
+    public string? CompatibleVehicles { get; set; }
 }

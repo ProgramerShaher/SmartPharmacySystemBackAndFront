@@ -10,15 +10,17 @@
         </div>
 
         <!-- Error State -->
-        <div *ngIf="!loading() && errorOccurred()" class="p-4 text-center flex flex-column align-items-center gap-3 border-round-xl bg-white shadow-2">
-            <div class="w-4rem h-4rem border-circle bg-red-100 flex align-items-center justify-content-center shadow-1">
-                <i class="pi pi-bolt text-red-600 text-3xl"></i>
+        <div *ngIf="!loading() && errorOccurred()" class="p-4 text-center flex flex-column align-items-center gap-3 border-round-xl shadow-2"
+             style="background: var(--card-bg); border: 1px solid var(--border-color);">
+            <div class="w-4rem h-4rem border-circle flex align-items-center justify-content-center shadow-1"
+                 style="background: rgba(239, 68, 68, 0.15);">
+                <i class="pi pi-bolt text-red-500 text-3xl"></i>
             </div>
             <div>
-                <h3 class="text-900 font-bold m-0">خطأ في الاتصال</h3>
-                <p class="text-600 mt-2 text-sm">{{errorMessage()}}</p>
+                <h3 class="font-bold m-0" style="color: var(--text-color);">خطأ في الاتصال</h3>
+                <p class="mt-2 text-sm" style="color: var(--text-color-secondary);">{{errorMessage()}}</p>
             </div>
-            <button pButton label="إعادة المحاولة" icon="pi pi-refresh" class="p-button-raised p-button-danger px-4 p-button-sm border-round-xl" (click)="loadDetails()"></button>
+            <button pButton label="إعادة المحاولة" icon="pi pi-refresh" class="p-button-raised p-button-danger px-4 p-button-sm" (click)="loadDetails()"></button>
         </div>
 
         <!-- Data Content -->
@@ -95,24 +97,24 @@
                     </ng-template>
                     <ng-template pTemplate="body">
                         <!-- Base Unit Row -->
-                        <tr class="bg-teal-50">
+                        <tr style="background: rgba(var(--primary-rgb), 0.08) !important;">
                             <td class="py-2">
-                                <div class="flex align-items-center gap-1 font-bold text-teal-800 text-xs">
-                                    <i class="pi pi-star-fill text-xs text-teal-500" style="font-size: 0.6rem"></i>
+                                <div class="flex align-items-center gap-1 font-bold text-xs" style="color: var(--primary-color);">
+                                    <i class="pi pi-star-fill text-xs" style="font-size: 0.6rem"></i>
                                     {{ medicineDetails()?.baseUnitName || 'أساسية' }}
                                 </div>
                             </td>
-                            <td class="text-center font-mono font-bold text-600 text-xs py-2">1</td>
+                            <td class="text-center font-mono font-bold text-xs py-2" style="color: var(--text-color);">1</td>
                             <td class="text-center font-mono font-bold text-red-500 text-xs py-2">{{ medicineDetails()?.defaultPurchasePrice | number }} ر.ي</td>
-                            <td class="text-center font-mono font-bold text-teal-600 text-xs py-2">{{ medicineDetails()?.defaultSalePrice | number }} ر.ي</td>
+                            <td class="text-center font-mono font-bold text-teal-500 text-xs py-2">{{ medicineDetails()?.defaultSalePrice | number }} ر.ي</td>
                         </tr>
                         <!-- Additional Units Rows -->
                         <ng-container *ngIf="medicineDetails()?.medicineUnits?.length">
                             <tr *ngFor="let u of medicineDetails()?.medicineUnits">
-                                <td class="font-bold text-700 text-xs py-2">{{ u.name }}</td>
-                                <td class="text-center font-mono font-bold text-600 text-xs py-2">x{{ u.conversionFactor }}</td>
+                                <td class="font-bold text-xs py-2" style="color: var(--text-color);">{{ u.name }}</td>
+                                <td class="text-center font-mono font-bold text-xs py-2" style="color: var(--text-color-secondary);">x{{ u.conversionFactor }}</td>
                                 <td class="text-center font-mono font-bold text-red-500 text-xs py-2">{{ u.defaultPurchasePrice | number }} ر.ي</td>
-                                <td class="text-center font-mono font-bold text-teal-600 text-xs py-2">{{ u.defaultSalePrice | number }} ر.ي</td>
+                                <td class="text-center font-mono font-bold text-teal-500 text-xs py-2">{{ u.defaultSalePrice | number }} ر.ي</td>
                             </tr>
                         </ng-container>
                     </ng-template>
@@ -122,10 +124,11 @@
             <!-- ═══════════ Ledger Table Wrapper (Inventory & Batches) ═══════════ -->
             <div class="flex justify-content-between align-items-center mt-3 mb-2">
                 <h4 class="section-header m-0 text-sm"><i class="pi pi-box"></i> تتبع الدفعات وتواريخ الصلاحية</h4>
-                <div class="flex align-items-center gap-2 bg-white px-2 py-1 border-round-lg border-1 border-300 shadow-1">
-                    <span class="font-bold text-500 text-xs">إجمالي المخزون الفعلي:</span>
-                    <span class="text-lg font-bold font-mono" [ngClass]="isLowStock() ? 'text-red-600' : 'text-teal-600'">{{ medicineDetails()?.totalStock || 0 }}</span>
-                    <span class="text-xs font-bold text-500">{{ medicineDetails()?.baseUnitName || 'وحدة أساسية' }}</span>
+                <div class="flex align-items-center gap-2 px-3 py-1 border-round-lg border-1"
+                     style="background: var(--card-bg); border-color: var(--border-color); box-shadow: var(--shadow-sm);">
+                    <span class="font-bold text-xs" style="color: var(--text-color-secondary);">إجمالي المخزون الفعلي:</span>
+                    <span class="text-lg font-bold font-mono" [ngClass]="isLowStock() ? 'text-red-500' : 'text-teal-500'">{{ medicineDetails()?.totalStock || 0 }}</span>
+                    <span class="text-xs font-bold" style="color: var(--text-color-secondary);">{{ medicineDetails()?.baseUnitName || 'وحدة أساسية' }}</span>
                 </div>
             </div>
             
@@ -144,20 +147,21 @@
                         <tr>
                             <td class="py-2">
                                 <div class="flex align-items-center gap-1">
-                                    <i class="pi pi-hashtag text-400 text-xs"></i>
-                                    <span class="font-mono font-bold text-700 text-xs">{{batch.batchNumber}}</span>
+                                    <i class="pi pi-hashtag text-xs" style="color: var(--text-color-secondary);"></i>
+                                    <span class="font-mono font-bold text-xs" style="color: var(--text-color);">{{batch.batchNumber}}</span>
                                 </div>
                             </td>
                             <td class="text-center py-2">
-                                <span class="font-mono font-bold px-2 py-1 border-round-md bg-gray-100 text-600 text-xs">
+                                <span class="font-mono font-bold px-2 py-1 border-round-md text-xs"
+                                      style="background: var(--surface-hover); color: var(--text-color); border: 1px solid var(--border-color);">
                                     {{batch.expiryDate | date:'yyyy/MM/dd'}}
                                 </span>
                             </td>
                             <td class="text-center py-2">
-                                <span class="font-bold font-mono text-700 text-sm">{{batch.remainingQuantity}}</span>
+                                <span class="font-bold font-mono text-sm" style="color: var(--text-color);">{{batch.remainingQuantity}}</span>
                             </td>
                             <td class="text-center py-2">
-                                <span class="px-2 py-1 border-round-3xl font-bold text-xs" style="font-size: 0.65rem"
+                                <span class="px-2 py-1 border-round-3xl font-bold text-xs" style="font-size: 0.68rem"
                                       [ngClass]="{
                                         'bg-green-100 text-green-700': batch.statusColor === 'success',
                                         'bg-red-100 text-red-700': batch.statusColor === 'danger',
@@ -174,8 +178,8 @@
                     <ng-template pTemplate="emptymessage">
                         <tr>
                             <td colspan="5" class="text-center p-4">
-                                <i class="pi pi-inbox text-2xl text-300 mb-2 block"></i>
-                                <span class="text-500 font-bold text-xs">لا توجد دفعات نشطة لهذا الدواء</span>
+                                <i class="pi pi-inbox text-2xl text-400 mb-2 block"></i>
+                                <span class="font-bold text-xs" style="color: var(--text-color-secondary);">لا توجد دفعات نشطة لهذا الدواء</span>
                             </td>
                         </tr>
                     </ng-template>
@@ -183,9 +187,10 @@
             </div>
 
             <!-- Notes Section -->
-            <div *ngIf="medicineDetails()?.notes" class="mt-3 p-2 bg-yellow-50 border-round-lg border-1 border-yellow-200">
-                <div class="font-bold text-yellow-800 mb-1 text-xs"><i class="pi pi-info-circle"></i> ملاحظات الدواء</div>
-                <div class="text-xs text-yellow-900 line-height-3">{{ medicineDetails()?.notes }}</div>
+            <div *ngIf="medicineDetails()?.notes" class="mt-3 p-3 border-round-lg border-1"
+                 style="background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.25);">
+                <div class="font-bold mb-1 text-xs" style="color: #f59e0b;"><i class="pi pi-info-circle"></i> ملاحظات الدواء</div>
+                <div class="text-xs line-height-3" style="color: var(--text-color);">{{ medicineDetails()?.notes }}</div>
             </div>
 
         </div>

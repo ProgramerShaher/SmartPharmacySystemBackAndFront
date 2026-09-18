@@ -18,6 +18,6 @@ public class CreateStockTransferItemDto
     public DateTime ExpiryDate { get; set; }
 
     [Required(ErrorMessage = "الكمية المطلوبة مطلوبة")]
-    [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون 1 أو أكثر")]
-    public int QuantityRequested { get; set; }
+    [Range(0.0001, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
+    public decimal QuantityRequested { get; set; }
 }

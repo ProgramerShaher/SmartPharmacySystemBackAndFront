@@ -82,7 +82,9 @@ export class NotificationBellComponent implements OnInit, OnDestroy {
     }
 
     markAllAsRead() {
-        this.alertService.markAllAsRead().subscribe({
+        const unreadIds = this.unreadAlerts.map(a => a.id);
+        if (unreadIds.length === 0) return;
+        this.alertService.markMultipleAsRead(unreadIds).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',

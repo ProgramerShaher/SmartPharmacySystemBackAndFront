@@ -31,7 +31,7 @@ public class MedicineBatchDetailDto
     /// <summary>
     /// الكمية المتبقية
     /// </summary>
-    public int RemainingQuantity { get; set; }
+    public decimal RemainingQuantity { get; set; }
 
     /// <summary>
     /// حالة التنبيه (مثلاً: "LowStock", "Critical", "Normal")

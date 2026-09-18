@@ -15,7 +15,7 @@ public class BarcodeResultDto
     public int BatchId { get; set; }
     public string BatchNumber { get; set; } = string.Empty;
     public decimal SalePrice { get; set; }
-    public int AvailableQuantity { get; set; }
+    public decimal AvailableQuantity { get; set; }
     public DateTime? ExpiryDate { get; set; }
     public bool IsNearExpiry { get; set; }
 
@@ -28,5 +28,5 @@ public class MedicineAlternativeDto
     public int MedicineId { get; set; }
     public string Name { get; set; } = string.Empty;
     public decimal SalePrice { get; set; }
-    public int AvailableQuantity { get; set; }
+    public decimal AvailableQuantity { get; set; }
 }

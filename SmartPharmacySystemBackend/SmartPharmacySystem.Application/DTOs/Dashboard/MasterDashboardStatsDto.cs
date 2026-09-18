@@ -139,7 +139,7 @@ public class InventoryIntelligenceDto
     public int ActiveBatches { get; set; }
     public int ExpiredBatches { get; set; }
     public int NearExpiryBatches { get; set; }
-    public int TotalStockQuantity { get; set; }
+    public decimal TotalStockQuantity { get; set; }
     public int ActiveAlerts { get; set; }
 
     /// <summary>
@@ -209,9 +209,9 @@ public class CriticalStockItemDto
 {
     public int MedicineId { get; set; }
     public string MedicineName { get; set; } = string.Empty;
-    public int CurrentStock { get; set; }
-    public int ReorderPoint { get; set; }
-    public int SuggestedOrderQuantity { get; set; }
+    public decimal CurrentStock { get; set; }
+    public decimal ReorderPoint { get; set; }
+    public decimal SuggestedOrderQuantity { get; set; }
     public int? PreferredSupplierId { get; set; }
     public string? PreferredSupplierName { get; set; }
 }
@@ -300,7 +300,7 @@ public class TopSellingMedicineDto
 {
     public int MedicineId { get; set; }
     public string MedicineName { get; set; } = string.Empty;
-    public int TotalQuantitySold { get; set; }
+    public decimal TotalQuantitySold { get; set; }
     public decimal TotalRevenue { get; set; }
 }
 

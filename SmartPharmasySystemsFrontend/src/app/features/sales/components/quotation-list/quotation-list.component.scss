@@ -1,0 +1,26 @@
+.quotations-page {
+  padding: 1.5rem;
+
+  .header-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+  }
+
+  .filters-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+  }
+
+  .table-card {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+  }
+
+  :host ::ng-deep {
+    .p-datatable .p-datatable-thead > tr > th {
+      background: var(--surface-50);
+      font-weight: 600;
+      color: var(--text-color);
+    }
+  }
+}

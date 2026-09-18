@@ -29,7 +29,7 @@ public class UpdateStockMovementDto
     /// <summary>
     /// الكمية
     /// </summary>
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// التاريخ

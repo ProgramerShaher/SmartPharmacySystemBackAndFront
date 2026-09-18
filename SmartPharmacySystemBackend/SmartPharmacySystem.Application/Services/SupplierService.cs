@@ -22,16 +22,24 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<SupplierService> _logger;
         private readonly IAccountService _accountService;
+        private readonly IAccountLookupService _accountLookupService;
         private readonly IMemoryCache _cache;
 
         private const string SupplierLookupCacheKey = "lookup_suppliers_cache";
 
-        public SupplierService(IUnitOfWork unitOfWork, IMapper mapper, ILogger<SupplierService> logger, IAccountService accountService, IMemoryCache cache)
+        public SupplierService(
+            IUnitOfWork unitOfWork, 
+            IMapper mapper, 
+            ILogger<SupplierService> logger, 
+            IAccountService accountService, 
+            IAccountLookupService accountLookupService,
+            IMemoryCache cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _logger = logger;
             _accountService = accountService;
+            _accountLookupService = accountLookupService;
             _cache = cache;
         }
 
@@ -47,11 +55,11 @@ namespace SmartPharmacySystem.Application.Services
                 supplier.CreatedAt = DateTime.UtcNow;
                 supplier.IsDeleted = false;
 
-                // 1. إنشاء حساب للمورد في شجرة الحسابات
-                var parentAccount = await _unitOfWork.Accounts.GetByCodeAsync("2101");
-                var lastAccount = (await _unitOfWork.Accounts.GetChildrenAsync(2101)).OrderByDescending(a => a.Code).FirstOrDefault();
+                // 1. إنشاء حساب للمورد في شجرة الحسابات ديناميكياً
+                var parentAccount = await _accountLookupService.GetPayablesAccountAsync();
+                var lastAccount = (await _unitOfWork.Accounts.GetChildrenAsync(parentAccount.Id)).OrderByDescending(a => a.Code).FirstOrDefault();
 
-                string nextCode = "2101001";
+                string nextCode = $"{parentAccount.Code}001";
                 if (lastAccount != null && long.TryParse(lastAccount.Code, out long lastCode))
                 {
                     nextCode = (lastCode + 1).ToString();
@@ -62,7 +70,7 @@ namespace SmartPharmacySystem.Application.Services
                     Code = nextCode,
                     Name = $"مورد: {supplier.Name}",
                     Type = Core.Enums.AccountType.Liability,
-                    ParentId = parentAccount?.Id ?? 2101, // fallback to seeded ID
+                    ParentId = parentAccount.Id,
                     IsMainAccount = false,
                     IsActive = true,
                     CreatedAt = DateTime.UtcNow

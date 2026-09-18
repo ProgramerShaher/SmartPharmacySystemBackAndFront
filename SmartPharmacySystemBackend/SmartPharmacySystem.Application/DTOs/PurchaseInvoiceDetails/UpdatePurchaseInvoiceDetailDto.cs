@@ -36,8 +36,8 @@ public class UpdatePurchaseInvoiceDetailDto
     /// الكمية
     /// </summary>
     [Required]
-    [Range(1, int.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
-    public int Quantity { get; set; }
+    [Range(0.0001, double.MaxValue, ErrorMessage = "الكمية يجب أن تكون أكبر من صفر")]
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// سعر الشراء للوحدة
@@ -75,5 +75,12 @@ public class UpdatePurchaseInvoiceDetailDto
     public string? StorageLocation { get; set; }
 
     public int? PurchaseUnitId { get; set; }
-    public int BonusQuantity { get; set; }
+    public decimal BonusQuantity { get; set; }
+    public decimal AllocatedLandedCost { get; set; } = 0;
+    public decimal EffectiveUnitCost { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة المطبقة (%)
+    /// </summary>
+    public decimal? TaxRate { get; set; }
 }

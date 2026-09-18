@@ -21,6 +21,15 @@ namespace SmartPharmacySystem.Core.Entities
         [MaxLength(50)]
         public string? ReferenceNo { get; set; }
 
+        /// <summary>
+        /// Optional linked sale invoice for this receipt.
+        /// معرف فاتورة المبيعات المرتبطة بالسند (اختياري)
+        /// </summary>
+        public int? SaleInvoiceId { get; set; }
+
+        [ForeignKey("SaleInvoiceId")]
+        public virtual SaleInvoice? SaleInvoice { get; set; }
+
         [MaxLength(100)]
         public PaymentType PaymentMethod { get; set; } = PaymentType.Cash;
 

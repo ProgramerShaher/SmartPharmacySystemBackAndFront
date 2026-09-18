@@ -12,9 +12,9 @@ public class StockCountItemDto
     public string MedicineBarcode { get; set; } = string.Empty;
     public string BatchNumber { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
-    public int SystemQuantity { get; set; }
-    public int? PhysicalQuantity { get; set; }
-    public int Variance { get; set; }
+    public decimal SystemQuantity { get; set; }
+    public decimal? PhysicalQuantity { get; set; }
+    public decimal Variance { get; set; }
     public decimal PurchasePrice { get; set; }
     public decimal VarianceValue { get; set; }
     public string? VarianceReason { get; set; }

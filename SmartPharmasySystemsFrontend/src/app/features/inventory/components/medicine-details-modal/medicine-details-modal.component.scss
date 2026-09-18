@@ -161,19 +161,19 @@
 
 ::ng-deep .imperial-statement-table {
     .p-datatable-thead > tr > th {
-        background: var(--table-header-bg, var(--surface-hover, #f4f6f9)) !important;
-        color: var(--text-color-secondary) !important;
+        background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%) !important;
+        color: var(--primary-color-text, #ffffff) !important;
         font-size: 0.75rem;
         font-weight: 800;
         padding: 0.6rem 1rem;
-        border-bottom: 2px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
+        border: none;
     }
 
     .p-datatable-tbody > tr > td {
         padding: 0.6rem 1rem;
         font-size: 0.8rem;
-        border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.04)) !important;
-        color: var(--text-color);
+        border-bottom: 1px solid var(--border-color) !important;
+        color: var(--text-color) !important;
         vertical-align: middle;
     }
 }

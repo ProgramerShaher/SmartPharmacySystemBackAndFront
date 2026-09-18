@@ -47,6 +47,30 @@ export const SALES_ROUTES: Routes = [
     {
         path: 'pricelists',
         loadComponent: () => import('./components/pricelist-list/pricelist-list.component').then(m => m.PricelistListComponent)
+    },
+    {
+        path: 'quotations',
+        canActivate: [permissionGuard],
+        data: { anyPermission: ['sales.invoices.view', 'sales.invoices.create', 'sales.create', 'sales.manage'] },
+        loadComponent: () => import('./components/quotation-list/quotation-list.component').then(m => m.QuotationListComponent)
+    },
+    {
+        path: 'quotations/create',
+        canActivate: [permissionGuard],
+        data: { anyPermission: ['sales.invoices.create', 'sales.create', 'sales.manage'] },
+        loadComponent: () => import('./components/quotation-create/quotation-create.component').then(m => m.QuotationCreateComponent)
+    },
+    {
+        path: 'quotations/edit/:id',
+        canActivate: [permissionGuard],
+        data: { anyPermission: ['sales.invoices.edit', 'sales.manage'] },
+        loadComponent: () => import('./components/quotation-create/quotation-create.component').then(m => m.QuotationCreateComponent)
+    },
+    {
+        path: 'quotations/:id',
+        canActivate: [permissionGuard],
+        data: { anyPermission: ['sales.invoices.view', 'sales.invoices.create', 'sales.manage'] },
+        loadComponent: () => import('./components/quotation-details/quotation-details.component').then(m => m.QuotationDetailsComponent)
     }
 
 ];

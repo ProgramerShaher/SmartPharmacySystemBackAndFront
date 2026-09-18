@@ -10,6 +10,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { CurrentUserResponse } from '../../core/models/auth-response.interface';
+import { BusinessProfileService } from '../../core/services/business-profile.service';
 
 interface SidebarMenuItem {
   key?: string;
@@ -52,7 +53,7 @@ interface SidebarSection {
 
     <div class="brand-copy">
       <h2>{{ pharmacyName }}</h2>
-      <span>نظام الإدارة الذكي</span>
+      <span>{{ activeBusinessTypeName || 'نظام الإدارة الذكي' }}</span>
     </div>
 
     <button type="button" class="collapse-btn" (click)="toggleCollapsed()"
@@ -193,6 +194,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
         },
         {
           label: 'قوائم الأسعار والخصومات', route: '/sales/pricelists', icon: 'pi pi-tag',
+        },
+        {
+          label: 'عروض الأسعار (Quotations)', route: '/sales/quotations', icon: 'pi pi-file-edit',
+          anyPermission: ['sales.invoices.view', 'sales.invoices.create', 'sales.manage']
         }
       ]
     },
@@ -482,6 +487,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
           permission: 'admin.alerts.manage'
         },
         {
+          label: 'نمط النشاط التجاري', route: '/settings/business-profile', icon: 'pi pi-sliders-h',
+          anyPermission: ['settings.general.view', 'admin.settings.manage']
+        },
+        {
           label: 'الإعدادات العامة', route: '/settings', icon: 'pi pi-cog', exact: true,
           anyPermission: ['settings.general.view', 'admin.settings.manage']
         }
@@ -489,6 +498,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     }
   ];
 
+  activeBusinessTypeName: string = '';
+  private businessProfileService = inject(BusinessProfileService);
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -501,6 +512,14 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadPharmacySettings();
+
+    this.businessProfileService.profile$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(profile => {
+        if (profile) {
+          this.activeBusinessTypeName = profile.displayName;
+        }
+      });
 
     // Load current user for sidebar footer
     this.authService.currentUser$

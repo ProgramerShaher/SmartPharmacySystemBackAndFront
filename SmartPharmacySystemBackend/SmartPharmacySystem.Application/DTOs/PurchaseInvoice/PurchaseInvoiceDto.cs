@@ -35,21 +35,42 @@ public class PurchaseInvoiceDto
     /// رقم فاتورة الشراء الداخلي
     /// </summary>
     public string PurchaseInvoiceNumber { get; set; } = string.Empty;
-
     /// <summary>
     /// تاريخ الشراء
     /// </summary>
     public DateTime PurchaseDate { get; set; }
 
     /// <summary>
-    /// المبلغ الإجمالي
+    /// المبلغ الإجمالي (شاملاً الضريبة)
     /// </summary>
     public decimal TotalAmount { get; set; }
+
+    /// <summary>
+    /// المجموع الفرعي قبل الضريبة
+    /// </summary>
+    public decimal Subtotal { get; set; } = 0;
+
+    /// <summary>
+    /// نسبة ضريبة القيمة المضافة (%)
+    /// </summary>
+    public decimal TaxRate { get; set; } = 0;
+
+    /// <summary>
+    /// إجمالي مبلغ الضريبة لفاتورة الشراء
+    /// </summary>
+    public decimal TaxAmount { get; set; } = 0;
+
+    /// <summary>
+    /// هل الأسعار شاملة الضريبة
+    /// </summary>
+    public bool IsTaxInclusive { get; set; } = true;
 
     public decimal PaidAmount { get; set; }
     public decimal RemainingAmount => TotalAmount - PaidAmount;
     public bool IsPaid { get; set; }
-
+    public decimal ShippingCost { get; set; }
+    public decimal CustomsCost { get; set; }
+    public decimal OtherLandedCosts { get; set; }
     /// <summary>
     /// طريقة الدفع
     /// </summary>

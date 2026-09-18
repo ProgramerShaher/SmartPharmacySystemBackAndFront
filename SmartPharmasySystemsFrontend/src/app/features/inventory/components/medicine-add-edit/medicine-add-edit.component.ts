@@ -15,6 +15,7 @@ import { MedicineDto, CreateMedicineDto, UpdateMedicineDto, CategoryDto } from '
 import { TagModule } from "primeng/tag";
 import { DialogModule } from "primeng/dialog";
 import { UploadService } from '../../../../core/services/upload.service';
+import { BusinessProfileService } from '../../../../core/services/business-profile.service';
 
 @Component({
     selector: 'app-medicine-add-edit',
@@ -74,7 +75,8 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
         private medicineService: MedicineService,
         private categoryService: CategoryService,
         private messageService: MessageService,
-        private uploadService: UploadService
+        private uploadService: UploadService,
+        public businessProfileService: BusinessProfileService
     ) {
         this.medicineForm = this.fb.group({
             internalCode: [''], // Hidden in UI, auto-generated
@@ -93,6 +95,9 @@ export class MedicineAddEditComponent implements OnInit, OnChanges {
             imageUrl: [''],
             notes: [''],
             baseUnitName: ['حبة', Validators.required],
+            oemPartNumber: [''],
+            manufacturerPartNumber: [''],
+            compatibleVehicles: [''],
             medicineUnits: this.fb.array([])
         }, { validators: this.priceValidator });
 

@@ -57,7 +57,7 @@ public class InventoryStockService : IInventoryStockService
         return _mapper.Map<IEnumerable<InventoryStockDto>>(stocks);
     }
 
-    public async Task<int> GetTotalQuantityAsync(int warehouseId, int medicineId)
+    public async Task<decimal> GetTotalQuantityAsync(int warehouseId, int medicineId)
     {
         return await _unitOfWork.InventoryStocks.GetTotalQuantityAsync(warehouseId, medicineId);
     }

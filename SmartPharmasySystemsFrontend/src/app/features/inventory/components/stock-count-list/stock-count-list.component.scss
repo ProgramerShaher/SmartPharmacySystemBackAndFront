@@ -1,239 +1,85 @@
+/* stock-count-list.component.scss - Unified Imperial Theme */
+@import "primeflex/primeflex.css";
+
 :host {
   display: block;
   width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
 }
 
-.movement-container {
-  min-height: 100vh;
-  padding: 0.5rem;
-  background: linear-gradient(135deg, #f8fafc 0%, #eef6f8 52%, #f8fafc 100%);
-  color: #1e293b;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  box-sizing: border-box;
-}
-
-.page-header,
-.panel,
-.filters-panel,
-.table-panel {
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-}
-
-.page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  border-radius: 8px;
-  padding: 0.4rem 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-}
-
-.icon-circle {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  background: linear-gradient(135deg, #0f766e, #2563eb);
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.18);
-}
-
-.icon-circle i { font-size: 1rem; }
-
-h1 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.page-header p {
-  margin: 0.12rem 0 0;
-  color: #64748b;
-  font-size: 0.62rem;
-}
-
-.actions { display: flex; gap: 0.35rem; align-items: center; }
-
-.filters-panel {
-  display: grid;
-  grid-template-columns: 1.3fr 1fr 1fr 1fr auto;
-  align-items: end;
-  gap: 0.4rem;
-  border-radius: 8px;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.filter-field label {
-  display: block;
-  margin-bottom: 0.2rem;
-  font-size: 0.6rem;
-  font-weight: 800;
-  color: #475569;
-}
-
-.table-panel {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.type-pill,
-.batch-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  padding: 0.1rem 0.5rem;
-  font-size: 0.55rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.type-green { background: #dcfce7; color: #15803d; }
-.type-blue { background: #dbeafe; color: #1d4ed8; }
-.type-amber { background: #fef3c7; color: #b45309; }
-.type-red { background: #fee2e2; color: #b91c1c; }
-.type-gray { background: #f1f5f9; color: #475569; }
-
-.batch-chip { background: #eef2ff; color: #4338ca; font-family: Consolas, monospace; }
-
-.date-main,
-.medicine-name,
-.ref-number {
-  display: block;
-  font-size: 0.65rem;
-}
-
-.date-main { color: #0f766e; font-weight: 800; }
-.date-time { color: #64748b; font-size: 0.55rem; }
-.medicine-name { color: #1d4ed8; font-weight: 700; }
-.ref-number { color: #0f172a; font-family: Consolas, monospace; font-weight: 700; }
-.muted { display: block; color: #94a3b8; font-size: 0.55rem; margin-top: 0.1rem; }
-.text-center { text-align: center; }
-
-.empty-message {
+.empty-table-placeholder {
   text-align: center;
-  padding: 2rem !important;
-  color: #64748b;
-}
-.empty-message i { display: block; font-size: 2rem; color: #cbd5e1; margin-bottom: 0.4rem; }
+  padding: 3rem 1rem !important;
+  color: var(--text-color-secondary);
 
-:host ::ng-deep {
-  .compact-table .p-datatable-thead > tr > th {
-    background: #f8fafc;
-    color: #475569;
-    font-size: 0.6rem;
-    font-weight: 800;
-    padding: 0.3rem 0.4rem;
-    border-bottom: 1px solid #e2e8f0;
-  }
-
-  .compact-table .p-datatable-tbody > tr > td {
-    padding: 0.25rem 0.4rem;
-    border-color: #eef2f7;
-    vertical-align: middle;
-  }
-
-  .compact-table .p-datatable-tbody > tr:hover {
-    background: #f8fafc !important;
-  }
-
-  .p-paginator {
-    padding: 0.3rem;
-    background: #f8fafc;
-    border: 0;
-    font-size: 0.65rem;
-  }
-
-  .p-button.p-button-sm,
-  .p-button.p-button-icon-only {
-    width: 2rem;
-    height: 2rem;
-  }
-
-  .p-inputtext,
-  .p-dropdown,
-  .p-calendar .p-inputtext {
-    min-height: 1.8rem;
-    font-size: 0.65rem;
-    border-radius: 6px;
-    padding: 0.3rem 0.5rem;
+  i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
   }
 }
 
+/* =========================================
+   RESPONSIVE MOBILE OVERRIDES
+   ========================================= */
 @media (max-width: 768px) {
-  .movement-container {
+  .statement-container {
     padding: 6px !important;
   }
 
-  .page-header {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-    padding: 8px 10px !important;
-    border-radius: 8px !important;
+  .imperial-search-bar {
+    .search-content {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      padding: 8px 10px !important;
+      border-radius: var(--btn-border-radius, 8px) !important;
+      gap: 8px !important;
+    }
 
-    .actions {
+    .flex-align {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 6px !important;
       width: 100% !important;
-      button, ::ng-deep .p-button {
+    }
+
+    .search-icon-badge {
+      display: none !important;
+    }
+
+    .search-input-wrapper {
+      max-width: 100% !important;
+      width: 100% !important;
+    }
+
+    form {
+      width: 100% !important;
+      flex-direction: column !important;
+      align-items: stretch !important;
+
+      .imperial-dropdown,
+      .imperial-field {
         width: 100% !important;
-        height: 32px !important;
       }
+
+      button {
+        width: 100% !important;
+      }
+    }
+
+    .action-buttons {
+      width: 100% !important;
+      flex-wrap: wrap;
+      justify-content: space-between;
     }
   }
 
-  .filters-panel {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-    padding: 6px 8px !important;
-    border-radius: 8px !important;
-
-    .filter-field {
-      width: 100% !important;
-      grid-column: auto !important;
-
-      label { font-size: 10px !important; }
-      input, .p-dropdown, .p-calendar, .p-calendar .p-inputtext {
-        width: 100% !important;
-        height: 32px !important;
-        font-size: 11px !important;
-      }
-
-      .flex.gap-2 {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr !important;
-        gap: 6px !important;
-        width: 100% !important;
-
-        button, ::ng-deep .p-button {
-          width: 100% !important;
-          height: 32px !important;
-          font-size: 11px !important;
-        }
-      }
-    }
+  .ledger-card-wrapper {
+    border-radius: var(--btn-border-radius, 8px) !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
   }
 
-  /* تحويل جدول أوامر الجرد إلى كروت للموبايل */
-  :host ::ng-deep .compact-table {
+  ::ng-deep .imperial-statement-table {
     table, thead, tbody, th, td, tr {
       display: block !important;
       width: 100% !important;
@@ -244,11 +90,12 @@ h1 {
     }
     tr {
       margin-bottom: 8px !important;
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 8px !important;
+      border: 1px solid var(--border-color) !important;
+      border-radius: var(--btn-border-radius, 8px) !important;
       padding: 8px !important;
-      background: #ffffff !important;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.01) !important;
+      background: var(--card-bg) !important;
+      color: var(--text-color) !important;
+      box-shadow: var(--shadow-sm) !important;
     }
     td {
       border-bottom: none !important;
@@ -257,20 +104,20 @@ h1 {
       justify-content: space-between !important;
       align-items: center !important;
       font-size: 11px !important;
+      color: var(--text-color) !important;
 
-      &:nth-child(1):before { content: "رقم الجرد:"; font-weight: 700; color: #64748b; }
-      &:nth-child(2):before { content: "المخزن:"; font-weight: 700; color: #64748b; }
-      &:nth-child(3):before { content: "نوع الجرد:"; font-weight: 700; color: #64748b; }
-      &:nth-child(4):before { content: "تاريخ البدء:"; font-weight: 700; color: #64748b; }
-      &:nth-child(5):before { content: "تاريخ الانتهاء:"; font-weight: 700; color: #64748b; }
-      &:nth-child(6):before { content: "الحالة:"; font-weight: 700; color: #64748b; }
+      &:nth-child(1):before { content: "رقم الجرد:"; font-weight: 700; color: var(--text-color-secondary); }
+      &:nth-child(2):before { content: "المستودع:"; font-weight: 700; color: var(--text-color-secondary); }
+      &:nth-child(3):before { content: "نوع الجرد:"; font-weight: 700; color: var(--text-color-secondary); }
+      &:nth-child(4):before { content: "تاريخ البدء:"; font-weight: 700; color: var(--text-color-secondary); }
+      &:nth-child(5):before { content: "تاريخ الانتهاء:"; font-weight: 700; color: var(--text-color-secondary); }
+      &:nth-child(6):before { content: "الحالة:"; font-weight: 700; color: var(--text-color-secondary); }
       &:nth-child(7) {
         justify-content: center !important;
-        margin-top: 4px !important;
-        border-top: 1px dashed #e2e8f0 !important;
-        padding-top: 4px !important;
+        margin-top: 6px !important;
+        border-top: 1px dashed var(--border-color) !important;
+        padding-top: 6px !important;
       }
     }
   }
 }
-

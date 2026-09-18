@@ -27,6 +27,7 @@ import { InventoryService } from '../../../inventory/services/inventory.service'
 import { MedicineService } from '../../../inventory/services/medicine.service';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { BusinessProfileService } from '../../../../core/services/business-profile.service';
 
 @Component({
     selector: 'app-purchase-invoice-create',
@@ -91,6 +92,95 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
         { label: 'آجل (On Credit)', value: 2 }
     ];
 
+    get allowDecimalQuantity(): boolean {
+        return this.businessProfileService.allowDecimalQuantity;
+    }
+
+    get quantityMin(): number {
+        return this.allowDecimalQuantity ? 0.001 : 1;
+    }
+
+    get quantityStep(): number {
+        return this.allowDecimalQuantity ? 0.25 : 1;
+    }
+
+    get quantityFractionDigits(): number {
+        return this.allowDecimalQuantity ? 3 : 0;
+    }
+
+    get useLandedCost(): boolean {
+        return this.businessProfileService.useLandedCost;
+    }
+
+    get enableVAT(): boolean {
+        return this.businessProfileService.enableVAT;
+    }
+
+    get defaultVATRate(): number {
+        return this.businessProfileService.defaultVATRate || 0;
+    }
+
+    get taxRate(): number {
+        return Number(this.purchaseForm?.get('taxRate')?.value) || 0;
+    }
+
+    get isTaxInclusive(): boolean {
+        return Boolean(this.purchaseForm?.get('isTaxInclusive')?.value);
+    }
+
+    get totalTaxAmount(): number {
+        if (!this.enableVAT || this.taxRate <= 0) return 0;
+        const sub = this.totalProductAmount;
+        if (this.isTaxInclusive) {
+            const net = sub / (1 + this.taxRate / 100);
+            return Math.round((sub - net) * 100) / 100;
+        }
+        return Math.round((sub * (this.taxRate / 100)) * 100) / 100;
+    }
+
+    get grandTotalWithTaxAndLandedCost(): number {
+        const sub = this.totalProductAmount;
+        const landed = this.totalLandedCost;
+        if (!this.enableVAT || this.taxRate <= 0) {
+            return sub + landed;
+        }
+        if (this.isTaxInclusive) {
+            return sub + landed;
+        }
+        return sub + this.totalTaxAmount + landed;
+    }
+
+    get totalLandedCost(): number {
+        const shipping = Number(this.purchaseForm?.get('shippingCost')?.value) || 0;
+        const customs = Number(this.purchaseForm?.get('customsCost')?.value) || 0;
+        const other = Number(this.purchaseForm?.get('otherLandedCosts')?.value) || 0;
+        return shipping + customs + other;
+    }
+
+    get totalProductAmount(): number {
+        return this.calculateTotal();
+    }
+
+    get grandTotalWithLandedCost(): number {
+        return this.grandTotalWithTaxAndLandedCost;
+    }
+
+    getItemAllocatedLandedCost(index: number): number {
+        const totalProducts = this.totalProductAmount;
+        if (totalProducts <= 0 || this.totalLandedCost <= 0) return 0;
+        const itemTotal = Number(this.details.at(index)?.get('total')?.value) || 0;
+        return Math.round((itemTotal / totalProducts) * this.totalLandedCost * 100) / 100;
+    }
+
+    getItemEffectiveUnitCost(index: number): number {
+        const item = this.details.at(index);
+        if (!item) return 0;
+        const price = Number(item.get('purchasePrice')?.value) || 0;
+        const qty = Number(item.get('quantity')?.value) || 1;
+        const allocated = this.getItemAllocatedLandedCost(index);
+        return Math.round((price + (qty > 0 ? (allocated / qty) : 0)) * 100) / 100;
+    }
+
     constructor(
         private fb: FormBuilder,
         private purchaseService: PurchaseInvoiceService,
@@ -102,7 +192,8 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
         private confirmationService: ConfirmationService,
         private barcodeService: BarcodeService,
         private inventoryService: InventoryService,
-        private medicineService: MedicineService
+        private medicineService: MedicineService,
+        private businessProfileService: BusinessProfileService
     ) {
 
         this.purchaseForm = this.fb.group({
@@ -113,6 +204,11 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
             paymentMethod: [1, Validators.required],
             notes: [''],
             storageLocation: [''],
+            shippingCost: [0],
+            customsCost: [0],
+            otherLandedCosts: [0],
+            taxRate: [this.businessProfileService.defaultVATRate || 0],
+            isTaxInclusive: [false],
             purchaseInvoiceDetails: this.fb.array([])
         });
 
@@ -121,7 +217,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
             medicineName: [''],
             companyBatchNumber: [''],
             expiryDate: [this.getDefaultExpiryDate(), Validators.required],
-            quantity: [1, [Validators.required, Validators.min(1)]],
+            quantity: [1, [Validators.required, Validators.min(0.0001)]],
             bonusQuantity: [0],
             price: [0, [Validators.required, Validators.min(0)]],
             salePrice: [0],
@@ -434,7 +530,7 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
             barcode: [detail.barcode || detail.medicineBarcode || detail.defaultBarcode || null],
             companyBatchNumber: [detail.companyBatchNumber],
             expiryDate: [detail.expiryDate ? new Date(detail.expiryDate) : null],
-            quantity: [displayQuantity, [Validators.required, Validators.min(1)]],
+            quantity: [displayQuantity, [Validators.required, Validators.min(0.0001)]],
             purchaseUnitId: [detail.purchaseUnitId || null],
             bonusQuantity: [detail.bonusQuantity || 0],
             purchasePrice: [detail.purchasePrice, Validators.required],
@@ -703,7 +799,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
             supplierInvoiceNumber: formValue.supplierInvoiceNumber || null,
             purchaseDate: formValue.purchaseDate,
             paymentMethod: formValue.paymentMethod,
+            taxRate: Number(formValue.taxRate) || 0,
+            isTaxInclusive: Boolean(formValue.isTaxInclusive),
             notes: formValue.notes,
+            shippingCost: Number(formValue.shippingCost) || 0,
+            customsCost: Number(formValue.customsCost) || 0,
+            otherLandedCosts: Number(formValue.otherLandedCosts) || 0,
             items: items
         };
 
@@ -751,7 +852,12 @@ export class PurchaseInvoiceCreateComponent implements OnInit, AfterViewInit {
             supplierInvoiceNumber: formValue.supplierInvoiceNumber || null,
             purchaseDate: formValue.purchaseDate,
             paymentMethod: formValue.paymentMethod,
+            taxRate: Number(formValue.taxRate) || 0,
+            isTaxInclusive: Boolean(formValue.isTaxInclusive),
             notes: formValue.notes,
+            shippingCost: Number(formValue.shippingCost) || 0,
+            customsCost: Number(formValue.customsCost) || 0,
+            otherLandedCosts: Number(formValue.otherLandedCosts) || 0,
             items: items
         };
 

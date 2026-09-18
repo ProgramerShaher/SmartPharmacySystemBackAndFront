@@ -118,11 +118,14 @@ public class MedicineRepository : IMedicineRepository
         // Optimized search: Use StartsWith for indexed search
         if (!string.IsNullOrWhiteSpace(search))
         {
-            // Try StartsWith first (faster with index)
             query = query.Where(m =>
                 m.Name.StartsWith(search) ||
                 m.ScientificName.StartsWith(search) ||
                 m.DefaultBarcode.StartsWith(search) ||
+                (m.OemPartNumber != null && m.OemPartNumber.StartsWith(search)) ||
+                (m.OemPartNumber != null && m.OemPartNumber.Contains(search)) ||
+                (m.ManufacturerPartNumber != null && m.ManufacturerPartNumber.Contains(search)) ||
+                (m.CompatibleVehicles != null && m.CompatibleVehicles.Contains(search)) ||
                 // Fallback to Contains for other fields
                 (m.Notes != null && m.Notes.Contains(search)));
         }

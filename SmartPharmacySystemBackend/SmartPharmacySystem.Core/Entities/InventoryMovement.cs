@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations.Schema;
 using SmartPharmacySystem.Core.Enums;
 
 namespace SmartPharmacySystem.Core.Entities;
@@ -32,7 +33,8 @@ public class InventoryMovement : BaseMultiBranchEntity
     /// <summary>
     /// Quantity involved (Positive for Addition, Negative for Deduction).
     /// </summary>
-    public int Quantity { get; private set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal Quantity { get; private set; }
 
     /// <summary>
     /// Date of the movement.
@@ -57,7 +59,7 @@ public class InventoryMovement : BaseMultiBranchEntity
 
     public InventoryMovement() { } // For EF Core
 
-    public InventoryMovement(int medicineId, int? batchId, StockMovementType movementType, ReferenceType referenceType, int quantity, int referenceId, string referenceNumber, int? createdBy, string notes)
+    public InventoryMovement(int medicineId, int? batchId, StockMovementType movementType, ReferenceType referenceType, decimal quantity, int referenceId, string referenceNumber, int? createdBy, string notes)
     {
         MedicineId = medicineId;
         BatchId = batchId;

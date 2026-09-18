@@ -20,12 +20,14 @@ public class StockCountItem : BaseEntity
     public DateTime ExpiryDate { get; set; }
 
     [Required]
-    public int SystemQuantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal SystemQuantity { get; set; }
 
-    public int? PhysicalQuantity { get; set; }
+    [Column(TypeName = "decimal(18,4)")]
+    public decimal? PhysicalQuantity { get; set; }
 
     [NotMapped]
-    public int Variance => (PhysicalQuantity ?? 0) - SystemQuantity;
+    public decimal Variance => (PhysicalQuantity ?? 0m) - SystemQuantity;
 
     [NotMapped]
     public decimal VarianceValue => Variance * PurchasePrice;

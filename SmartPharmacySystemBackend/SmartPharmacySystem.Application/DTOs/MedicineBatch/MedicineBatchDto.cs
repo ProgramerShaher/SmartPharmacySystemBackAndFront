@@ -34,12 +34,12 @@ public class MedicineBatchDto
     /// <summary>
     /// الكمية
     /// </summary>
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     /// <summary>
     /// الكمية المتبقية
     /// </summary>
-    public int RemainingQuantity { get; set; }
+    public decimal RemainingQuantity { get; set; }
 
     /// <summary>
     /// سعر الشراء للوحدة

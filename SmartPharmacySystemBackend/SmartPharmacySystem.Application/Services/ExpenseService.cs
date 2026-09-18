@@ -21,6 +21,7 @@ namespace SmartPharmacySystem.Application.Services
         private readonly IFinancialService _financialService;
         private readonly IJournalEntryService _journalEntryService;
         private readonly IClosingValidationService _closingValidationService;
+        private readonly IAccountLookupService _accountLookupService;
 
         public ExpenseService(
             IUnitOfWork unitOfWork, 
@@ -28,7 +29,8 @@ namespace SmartPharmacySystem.Application.Services
             ILogger<ExpenseService> logger, 
             IFinancialService financialService, 
             IJournalEntryService journalEntryService,
-            IClosingValidationService closingValidationService)
+            IClosingValidationService closingValidationService,
+            IAccountLookupService accountLookupService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -36,6 +38,7 @@ namespace SmartPharmacySystem.Application.Services
             _financialService = financialService;
             _journalEntryService = journalEntryService;
             _closingValidationService = closingValidationService;
+            _accountLookupService = accountLookupService;
         }
 
         public async Task<ExpenseDto> CreateExpenseAsync(CreateExpenseDto dto)
@@ -73,10 +76,14 @@ namespace SmartPharmacySystem.Application.Services
                         Lines = new List<JournalEntryLineDto>()
                     };
 
+                    // Dynamic Account Resolution
+                    var cashAccount = await _accountLookupService.GetCashAccountAsync(expense.CreatedBy);
+                    var defaultExpenseAccount = await _accountLookupService.GetOperatingExpenseAccountAsync();
+
                     // 1. الطرف المدين (من حـ/ المصروف)
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = category.AccountId ?? 5, // حساب المصروف المرتبط بالفئة أو حساب المصروفات العام
+                        AccountId = category.AccountId ?? defaultExpenseAccount.Id, // حساب المصروف المرتبط بالفئة أو حساب المصروفات التشغيلية
                         Debit = expense.Amount,
                         Credit = 0,
                         Description = $"إثبات مصروف {category.Name}"
@@ -85,7 +92,7 @@ namespace SmartPharmacySystem.Application.Services
                     // 2. الطرف الدائن (إلى حـ/ الصندوق)
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1101, // الصندوق الرئيسي
+                        AccountId = cashAccount.Id, // الصندوق
                         Debit = 0,
                         Credit = expense.Amount,
                         Description = $"صرف نقدية مقابل مصروف {category.Name}"
@@ -178,9 +185,12 @@ namespace SmartPharmacySystem.Application.Services
                         Lines = new List<JournalEntryLineDto>()
                     };
 
+                    var cashAccount = await _accountLookupService.GetCashAccountAsync(expense.CreatedBy);
+                    var defaultExpenseAccount = await _accountLookupService.GetOperatingExpenseAccountAsync();
+
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = category.AccountId ?? 5,
+                        AccountId = category.AccountId ?? defaultExpenseAccount.Id,
                         Debit = expense.Amount,
                         Credit = 0,
                         Description = $"إثبات مصروف {category.Name}"
@@ -188,7 +198,7 @@ namespace SmartPharmacySystem.Application.Services
 
                     journalEntry.Lines.Add(new JournalEntryLineDto
                     {
-                        AccountId = 1101, // الصندوق الرئيسي
+                        AccountId = cashAccount.Id, // الصندوق
                         Debit = 0,
                         Credit = expense.Amount,
                         Description = $"صرف نقدية مقابل مصروف {category.Name}"
@@ -214,14 +224,8 @@ namespace SmartPharmacySystem.Application.Services
                         // For simplicity, we cancel the old and create a new one.
                         await _journalEntryService.CancelAsync(existingEntry.Id, expense.CreatedBy, $"تعديل مبلغ المصروف من {oldAmount} إلى {expense.Amount}");
 
-                        // Ensure Drawer Account Exists
-                        var allAccounts = await _unitOfWork.Accounts.GetAllAsync();
-                        var cashAccount = await _unitOfWork.Accounts.GetByCodeAsync($"11101-{expense.CreatedBy}")
-                                          ?? await _unitOfWork.Accounts.GetByCodeAsync("11101") 
-                                          ?? await _unitOfWork.Accounts.GetByCodeAsync("1101") 
-                                          ?? allAccounts.FirstOrDefault(a => a.Name.Contains("صندوق") || a.Name.Contains("نقد"));
-
-                        var cashAccountId = cashAccount?.Id ?? 1101; // Fallback to 1101 if not found
+                        var cashAccount = await _accountLookupService.GetCashAccountAsync(expense.CreatedBy);
+                        var defaultExpenseAccount = await _accountLookupService.GetOperatingExpenseAccountAsync();
 
                         var newJournalEntry = new JournalEntryDto
                         {
@@ -231,8 +235,8 @@ namespace SmartPharmacySystem.Application.Services
                             Type = SmartPharmacySystem.Core.Enums.VoucherType.ExpenseVoucher,
                             Lines = new List<JournalEntryLineDto>
                             {
-                                new JournalEntryLineDto { AccountId = category.AccountId ?? 5, Debit = expense.Amount, Credit = 0, Description = $"إثبات مصروف {category.Name}" },
-                                new JournalEntryLineDto { AccountId = cashAccountId, Debit = 0, Credit = expense.Amount, Description = $"دفع نقدي لمصروف {category.Name}" }
+                                new JournalEntryLineDto { AccountId = category.AccountId ?? defaultExpenseAccount.Id, Debit = expense.Amount, Credit = 0, Description = $"إثبات مصروف {category.Name}" },
+                                new JournalEntryLineDto { AccountId = cashAccount.Id, Debit = 0, Credit = expense.Amount, Description = $"دفع نقدي لمصروف {category.Name}" }
                             }
                         };
                         var createdEntry = await _journalEntryService.CreateAsync(newJournalEntry, expense.CreatedBy);

@@ -128,11 +128,11 @@
                 <div class="form-field span-2" [ngClass]="{'span-3': !medicine}">
                     <label>ملاحظات إضافية وصورة <span class="text-hint">(اختياري)</span></label>
                     <div class="flex gap-2">
-                        <input pInputText id="notesInput" formControlName="notes" placeholder="أي ملاحظات حول الدواء..."
+                        <input pInputText id="notesInput" formControlName="notes" placeholder="أي ملاحظات حول الصنف..."
                             class="flex-1" (focus)="selectText($event)" (keydown.enter)="focusNext('saveMedicineBtn', $event)" />
 
                         <div class="image-frame flex align-items-center gap-2 border-1 surface-border border-round px-2"
-                            style="background: #f8fafc; height: 34px;">
+                            style="background: var(--input-bg); height: var(--field-height, 38px);">
                             <img *ngIf="medicineForm.get('imageUrl')?.value" [src]="medicineForm.get('imageUrl')?.value"
                                 class="w-2rem h-2rem object-cover border-round shadow-1" />
                             <label for="imageUpload"
@@ -142,6 +142,33 @@
                             </label>
                             <input type="file" id="imageUpload" class="hidden" accept="image/*"
                                 (change)="onFileSelected($event)" [disabled]="uploading()" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 12. بيانات قطع الغيار والمركبات المتوافقة (Auto Parts & OEM) -->
+                <div class="form-field span-4 mt-2 p-3 border-round-xl border-1 surface-border"
+                    *ngIf="businessProfileService.isAutoParts || businessProfileService.currentProfile?.trackModelNumber"
+                    style="background: var(--surface-hover);">
+                    <div class="flex align-items-center gap-2 mb-2">
+                        <i class="pi pi-wrench text-primary text-xl"></i>
+                        <span class="font-bold text-900">بيانات قطع الغيار والمركبات المتوافقة (Auto Parts & OEM)</span>
+                    </div>
+                    <div class="grid p-fluid">
+                        <div class="col-12 md:col-6">
+                            <label class="text-sm font-semibold text-700">رقم القطعة الأصلي (OEM Part Number)</label>
+                            <input pInputText id="oemPartNumberInput" formControlName="oemPartNumber"
+                                placeholder="مثال: 04465-33450 أو 90919-01210" class="w-full font-mono text-sm mt-1" />
+                        </div>
+                        <div class="col-12 md:col-6">
+                            <label class="text-sm font-semibold text-700">رقم القطعة البديل / الشركة الصانعة (Manufacturer Part #)</label>
+                            <input pInputText id="mfrPartNumberInput" formControlName="manufacturerPartNumber"
+                                placeholder="مثال: Bosch 0986AB456 أو Denso SK20R11" class="w-full font-mono text-sm mt-1" />
+                        </div>
+                        <div class="col-12">
+                            <label class="text-sm font-semibold text-700">المركبات والموديلات المتوافقة (Compatible Vehicles)</label>
+                            <input pInputText id="compatibleVehiclesInput" formControlName="compatibleVehicles"
+                                placeholder="مثال: تويوتا كامري 2018-2024، لكزس ES 2019-2023، أفلون 2019-2022" class="w-full text-sm mt-1" />
                         </div>
                     </div>
                 </div>
@@ -168,7 +195,7 @@
         </form>
 
         <div class="modal-footer">
-            <span class="text-hint"><i class="pi pi-info-circle"></i> يمكنك إضافة הדواء فوراً بالضغط على F2 في أي
+            <span class="text-hint"><i class="pi pi-info-circle"></i> يمكنك إضافة الدواء فوراً بالضغط على F2 في أي
                 وقت.</span>
             <div class="footer-actions">
                 <button pButton label="إلغاء [Esc]" class="p-button-text p-button-secondary" (click)="close()"></button>
@@ -180,7 +207,7 @@
 </p-dialog>
 
 <p-dialog [(visible)]="unitModalVisible" [modal]="true" [style]="{ width: '450px' }" header="إضافة وحدة جديدة" [closable]="false" styleClass="unit-dialog" dir="rtl" [draggable]="false" [resizable]="false" [dismissableMask]="true">
-    <div class="p-3 bg-white">
+    <div class="p-3" style="background: var(--card-bg); color: var(--text-color);">
         <form [formGroup]="newUnitForm" class="form-grid compact-layout">
             <div class="form-field span-4">
                 <label class="required-star">الاسم (علبة، كرتون...)</label>

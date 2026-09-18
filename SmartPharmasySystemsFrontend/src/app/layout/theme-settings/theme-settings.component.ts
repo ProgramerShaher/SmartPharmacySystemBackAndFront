@@ -4,7 +4,7 @@ import { SidebarModule } from 'primeng/sidebar';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
-import { ThemeService } from '../../core/services/theme.service';
+import { ThemeService, ButtonShape } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-theme-settings',
@@ -19,7 +19,10 @@ export class ThemeSettingsComponent implements OnInit {
   visible = false;
   currentTheme = 'light';
   currentColor = 'emerald';
+  currentButtonShape: ButtonShape = 'rounded';
+
   colorOptions = this.themeService.colorOptions;
+  buttonShapeOptions = this.themeService.buttonShapeOptions;
 
   ngOnInit() {
     this.themeService.currentTheme$.subscribe(theme => {
@@ -28,6 +31,10 @@ export class ThemeSettingsComponent implements OnInit {
 
     this.themeService.currentColor$.subscribe(color => {
       this.currentColor = color;
+    });
+
+    this.themeService.currentButtonShape$.subscribe(shape => {
+      this.currentButtonShape = shape;
     });
   }
 
@@ -41,5 +48,9 @@ export class ThemeSettingsComponent implements OnInit {
 
   setColor(colorKey: string) {
     this.themeService.setColor(colorKey);
+  }
+
+  setButtonShape(shape: ButtonShape) {
+    this.themeService.setButtonShape(shape);
   }
 }

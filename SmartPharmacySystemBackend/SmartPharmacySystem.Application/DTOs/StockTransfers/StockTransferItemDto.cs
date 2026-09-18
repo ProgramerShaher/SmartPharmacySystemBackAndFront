@@ -14,8 +14,8 @@ public class StockTransferItemDto
     public string MedicineBarcode { get; set; } = string.Empty;
     public string BatchNumber { get; set; } = string.Empty;
     public DateTime ExpiryDate { get; set; }
-    public int QuantityRequested { get; set; }
-    public int QuantityDispatched { get; set; }
-    public int? QuantityReceived { get; set; }
-    public int Variance { get; set; }
+    public decimal QuantityRequested { get; set; }
+    public decimal QuantityDispatched { get; set; }
+    public decimal? QuantityReceived { get; set; }
+    public decimal Variance { get; set; }
 }
